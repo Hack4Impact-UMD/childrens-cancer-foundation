@@ -15,5 +15,20 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if request.time < timestamp.date(2024, 10, 25);
     }
+
+    match /applicantUsers/{userId} {
+      allow write: request.resource.data.name != null &&
+        request.resource.data.title != null && size(request.resource.data.title) > 0 &&
+        request.resource.data.email != null && size(request.resource.data.email) > 0 &&
+        request.resource.data.institutionalAffiliation != null && size(request.resource.data.institutionalAffiliation) > 0 &&
+        request.resource.data.principalInvestigator != null && size(request.resource.data.principalInvestigator) > 0;
+    }
+
+    match /reviewerUsers/{userId} {
+      allow write: if request.auth != null &&
+        request.resource.data.name != null && size(request.resource.data.name) > 0 &&
+        request.resource.data.email != null && size(request.resource.data.email) > 0 &&
+        request.resource.data.institutionalAffiliation != null size(request.resource.data.institutionalAffiliation) > 0;
+    }
   }
 }
