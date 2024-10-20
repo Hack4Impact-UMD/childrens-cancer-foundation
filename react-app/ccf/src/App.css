@@ -1,0 +1,13 @@
+.App {
+  display: flex;
+}
+
+/* Sidebar takes up space, and content shifts accordingly */
+.content {
+  margin-left: 280px;
+  padding: 50px;
+}
+
+.sidebar.collapsed + .content {
+  margin-left: 60px;
+}
