@@ -1,5 +1,7 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AccountPageApplicants from './create-acc-pages/CreateAccApplicant';
+import AccountPageReviewers from './create-acc-pages/create-acc-reviewer/CreateAccReviewer';
 import ApplicantUsersDashboard from './applicant-dashboard/ApplicantDashboard';
 
 function App(): JSX.Element {
@@ -32,10 +34,11 @@ function App(): JSX.Element {
             <></>
           } 
         />
+        {/* Need to change path to create-account after authentication */}
         <Route
-          path="/create-account" 
+          path="/create-account-applicants" 
           element={
-            <></>
+            <AccountPageApplicants />
           } 
         />        
         <Route
@@ -50,7 +53,14 @@ function App(): JSX.Element {
           element={
             <></>
           } 
-        />      
+        />
+        {/* Need to change path to create-account after authentication */}
+        <Route
+          path="/create-account-reviewers" 
+          element={
+            <AccountPageReviewers />
+          } 
+        />            
       </Routes>
     </BrowserRouter>
   );
