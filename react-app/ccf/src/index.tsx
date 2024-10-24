@@ -6,6 +6,7 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 //If this line says import not found then you need to set up firebase api on your machine
 import firebaseConfig from "./firebase_config/FireConfig";
+import './index.css';
 
 //import the connections
 import { getAuth, connectAuthEmulator } from "firebase/auth";
