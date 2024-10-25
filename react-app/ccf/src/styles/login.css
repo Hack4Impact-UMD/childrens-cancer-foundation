@@ -1,0 +1,86 @@
+.container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 20px;
+    font-family: 'Roboto', sans-serif;
+    gap: 50px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 60%;
+    background-color: #fff;
+    padding: 20px;
+    margin-right: 20px;
+  }
+  
+  .input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .button {
+    width: 95%;
+    padding: 10px;
+    background-color: #BE0019;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin: 10px 0;
+  }
+  
+  .error {
+    color: #BE0019;
+    margin-bottom: 10px;
+  }
+  
+  .rememberMe {
+    margin: 10px 0;
+  }
+  
+  .imageContainer {
+    flex: 1;
+    height: 70%;
+    background-image: url('../../public/login.png');
+    background-position: center;
+    background-size: cover;
+    border-radius: 8px;
+    max-width: 40%;
+    margin-top: 20px;
+  }
+  
+  .heading {
+    text-align: center;
+    color: #BE0019;
+  }
+  
+  .spacing {
+    margin-top: 20px;
+  }
+  
+  .logo {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .logoImage {
+    max-width: 100px;
+  }
+  
+  a {
+    color: blue;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }

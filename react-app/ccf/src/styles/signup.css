@@ -1,0 +1,82 @@
+.signupContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  .formContainer {
+    background-color: white;
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .logo {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .logoImage {
+    max-width: 100px;
+  }
+  
+  .heading {
+    color: #333;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .inputGroup {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+  }
+  
+  .passwordRequirements {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 1rem;
+  }
+  
+  .errorMessage {
+    color: red;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  
+  .button {
+    width: 100%;
+    padding: 0.55rem;
+    background-color: #c41e3a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .loginLink {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .loginLinkAnchor {
+    color: blue;
+    text-decoration: none;
+  }
+  
+  .loginLinkAnchor:hover {
+    text-decoration: underline;
+  }
