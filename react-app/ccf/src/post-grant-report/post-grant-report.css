@@ -1,0 +1,142 @@
+.PostGrantReport {
+    font-family: Arial, sans-serif;
+    color: #333;
+    background-color: #ffffff;
+}
+
+.PostGrantReport-header-container {
+    display: flex;
+    align-items: center;
+}
+
+.PostGrantReport-logo {
+    width: 75px;
+    margin-right: 20px;
+}
+
+.PostGrantReport-submit {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.report-upload {
+    display: flex;
+}
+
+.PostGrantReport-header {
+    font-size: 2rem;
+    color: #BE0019;
+}
+
+.PostGrantReport-sections-content {
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.PostGrantReport-section-box {
+    border: 5px solid #BE0019;
+    border-radius: 8px;
+    background-color: white;
+    margin-top: 20px;
+    padding: 20px;
+    padding-bottom: 100px;
+}
+
+.PostGrantReport-subsection {
+    padding-bottom: 25px;
+}
+
+.PostGrantReport-section-title {
+    color: #003E83;
+    font-size: 1.33rem;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+ul, ol {
+    padding-left: 50px;
+}
+
+li {
+    font-size: 1.1rem;
+    padding-bottom: 10px;
+}
+
+.header-title {
+    font-size: 1.2rem;
+    padding-bottom: 25px;
+}
+
+.attestation {
+    float: left;
+    width: 33.33%;
+}
+
+.attestation:after {
+    content: "";
+    display: "table";
+    clear: "both";
+}
+
+.attestation-label {
+    font-size: 1.2rem;
+}
+
+.application-btn {
+    background-color: #003E83;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    width: 25%;
+}
+
+.application-btn:hover {
+    background-color: #163256;
+}
+
+.upload-label {
+    background-color: #BE0019;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    max-width: 100%;
+}
+
+.upload-label:hover {
+    background-color: #71000f;
+}
+
+#report-pdf {
+    display: none;
+}
+
+.remove-upload {
+    margin-left: 10px;
+    border: none;
+    color: #646464;
+    background: none;
+    max-width: fit-content;
+}
+
+.remove-upload:hover {
+    color: #000000;
+}
+
+.attestation-input {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 90%;
+    margin-top: 10px;
+    max-height: 50px;
+    font-size: 1.2rem;
+    padding: 10px;
+  }
