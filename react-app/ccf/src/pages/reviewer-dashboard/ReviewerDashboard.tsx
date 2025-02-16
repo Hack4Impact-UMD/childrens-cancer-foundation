@@ -35,12 +35,12 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     const [isContactCollapsed, setContactCollapsed] = useState(false);
 
     // State for sidebar
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    // const [isCollapsed, setIsCollapsed] = useState(false);
 
     // State for reminder banner
-    const [showReminder, setShowReminder] = useState(true);
-    const currentDueDate = "May 5, 2024";
-    const reviewCount = 4;
+    // const [showReminder, setShowReminder] = useState(true);
+    // const currentDueDate = "May 5, 2024";
+    // const reviewCount = 4;
 
     // State for applications
     const [pendingReviews, setPendingReviews] = useState<Application[]>([]);
@@ -119,23 +119,6 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
         <div>
             <Sidebar links={sidebarItems}/>
             <div className="dashboard-container">
-            {/*<div className={`dashboard-sidebar ${isCollapsed ? "collapsed" : ""}`}>*/}
-            {/*    <div className="collapse-arrow" onClick={() => setIsCollapsed(!isCollapsed)}>*/}
-            {/*        {isCollapsed ? ">>>" : "<<<"}*/}
-            {/*    </div>*/}
-            {/*    <nav className="sidebar-nav">*/}
-            {/*        {sidebarItems.map((item) => (*/}
-            {/*            <button*/}
-            {/*                key={item}*/}
-            {/*                className={`nav-item ${item === activePage ? "active" : ""}`}*/}
-            {/*                onClick={() => setActivePage(item)}*/}
-            {/*            >*/}
-            {/*                {item}*/}
-            {/*            </button>*/}
-            {/*        ))}*/}
-            {/*    </nav>*/}
-            {/*</div>*/}
-
 
             <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
 
@@ -143,19 +126,6 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                     <img src={logo} alt="Logo" className="dashboard-logo" />
                     <h1 className="dashboard-header">Reviewer Dashboard</h1>
                 </div>
-
-                {/*{showReminder && (*/}
-                {/*    // <div className="reminder-banner">*/}
-                {/*    //     <div> REMINDER: {reviewCount} Reviews Due {currentDueDate}.*/}
-                {/*    //     </div>*/}
-                {/*    //*/}
-                {/*    //     <button className="close-button" onClick={() => setShowReminder(false)}>*/}
-                {/*    //         ×*/}
-                {/*    //     </button>*/}
-                {/*    //*/}
-                {/*    //*/}
-                {/*    // </div>*/}
-                {/*)}*/}
 
                 <div className="dashboard-sections-content" style={{flexGrow: 1}}>
                     <div className="dashboard-section">

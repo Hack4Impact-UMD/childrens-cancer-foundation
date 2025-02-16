@@ -5,6 +5,7 @@ import "./login.css";
 import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
 import toretsky from "../../assets/toretskywithpatient 1.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
+import Button from "../../components/buttons/Button";
 
 function Login() {
   const [input, setInput] = useState({ email: "", password: "" });
@@ -24,7 +25,7 @@ function Login() {
     setError("");
     const email = input.email.toLowerCase().trim();
     const password = input.password;
-    if (validateEmail(email) === false) {
+    if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
     } else {
       const { error: loginError } = await loginUser(email, password);
@@ -91,14 +92,11 @@ function Login() {
           />
 
           {error && <p className="error">{error}</p>}
-          <button
-            title="Login"
-            aria-label="Login"
-            type="submit"
-            className="button"
-          >
-            Log in
-          </button>
+          <Button variant={"red"} type={"submit"} className={"button"}>
+              <>
+                Login
+              </>
+          </Button>
           <div className="loginText">
             <Link to="/forgot-password" className="forgotPasswordLink">
               <u>Forgot password</u>
