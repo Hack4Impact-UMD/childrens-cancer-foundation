@@ -1,0 +1,50 @@
+.faq-container {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    width: 100%; /* Full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    margin: 0 auto; /* Center the container on the page */
+}
+
+.faq-item {
+    border: 2px solid #b71c1c;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+    width: 100%; /* Full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    display: flex;
+    flex-direction: column; /* Stack question and answer vertically */
+    align-items: flex-start; /* Align content to the left */
+}
+
+.faq-question {
+    font-weight: bold;
+    font-size: 18px;
+    color: #b71c1c;
+    display: flex;
+    align-items: center;
+    text-align: left; /* Align text within the question element to the left */
+    width: 100%; /* Ensure the question takes up full width */
+}
+
+.faq-question span {
+    margin-right: 10px; /* Add space between the icon and text */
+}
+
+.faq-answer {
+    margin-top: 5px;
+    font-size: 16px;
+    color: #333;
+    text-align: left; /* Ensure the answer text is left-aligned */
+    width: 100%; /* Full width for the answer */
+}
+
+/* Optional: Adjust padding for larger screens */
+@media (min-width: 768px) {
+    .faq-container {
+        padding: 30px;
+    }
+}

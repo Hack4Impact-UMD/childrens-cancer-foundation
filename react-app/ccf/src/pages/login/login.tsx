@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { loginUser } from "../../services/auth_login";
 import "./login.css";
 import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
 import toretsky from "../../assets/toretskywithpatient 1.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
+import Button from "../../components/buttons/Button";
 
 function Login() {
   const [input, setInput] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
+  const [loggedIn, setLoggedIn] = useState<boolean>(false)
   const [isWideScreen, setIsWideScreen] = useState<boolean>(
     window.innerWidth > 750
   );
@@ -23,11 +25,12 @@ function Login() {
     setError("");
     const email = input.email.toLowerCase().trim();
     const password = input.password;
-    if (validateEmail(email) === false) {
+    if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
     } else {
       const { error: loginError } = await loginUser(email, password);
       if (loginError) setError(loginError);
+      else setLoggedIn(true)
     }
   };
 
@@ -51,6 +54,7 @@ function Login() {
 
   return (
     <div className="container">
+      {loggedIn && <Navigate to="/" replace={true} />}
       <div className="content">
         <form className="form" onSubmit={handleSubmit}>
           <div className="logo">
@@ -60,7 +64,7 @@ function Login() {
           <div className="loginText">
             <p>
               New to CCF?{" "}
-              <Link to="/signup">
+              <Link to="/create-account-menu">
                 <u>Create Account</u>
               </Link>
             </p>
@@ -88,14 +92,11 @@ function Login() {
           />
 
           {error && <p className="error">{error}</p>}
-          <button
-            title="Login"
-            aria-label="Login"
-            type="submit"
-            className="button"
-          >
-            Log in
-          </button>
+          <Button variant={"red"} type={"submit"} className={"button"}>
+              <>
+                Login
+              </>
+          </Button>
           <div className="loginText">
             <Link to="/forgot-password" className="forgotPasswordLink">
               <u>Forgot password</u>

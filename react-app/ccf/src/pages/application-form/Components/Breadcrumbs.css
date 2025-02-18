@@ -1,0 +1,47 @@
+.breadcrumbs {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    position: relative; /* Add this line */
+}
+
+.breadcrumb-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.breadcrumb-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* Add this line */
+}
+
+.breadcrumb-line {
+    position: absolute;
+    top: 23%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: var(--color-blue);
+}
+
+.breadcrumb-circle {
+    background-color: var(--color-blue);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 100%;
+    border: solid transparent;
+}
+
+.breadcrumb-circle-active {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 100%;
+    border-width: 10px;
+    border-color: var(--color-blue);
+    border-style: solid;
+    background-color: var(--color-white);
+}
