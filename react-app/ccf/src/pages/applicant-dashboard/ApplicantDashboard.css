@@ -3,6 +3,30 @@
     color: #333;
 }
 
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f3f4f6;
+}
+
+.dashboard-sidebar {
+    width: 256px;
+    background-color: #003e83;
+    margin-right: 20px;
+    padding: 1rem;
+    position: relative;
+    transition: 0.3s ease;
+}
+
+.dashboard-sidebar.collapsed {
+    width: 10px;
+}
+
+.dashboard-sidebar.collapsed .sidebar-nav {
+    opacity: 0;
+}
+
+
 .ApplicantDashboard-header-container {
     display: flex;
     align-items: center;
@@ -45,45 +69,37 @@
     justify-content: space-around;
     margin-top: 10px;
 }
-
 .ApplicantDashboard-section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px;
 }
-
 .expand-collapse-btn {
     background: none;
     border: none;
     cursor: pointer;
+    max-width: 30px;
     font-size: 18px;
     color: #6e7f91;
 }
-
 .expand-collapse-btn:hover {
     color: #6e7f91;
 }
-
 ul {
     padding-left: 20px;
 }
-
 .header-title {
     display: flex;
     align-items: center;
-
 }
-
 .section-icon {
     margin-right: 10px;
 }
-
 .completed-applications,
 .in-progress-applications {
     margin-bottom: 20px;
 }
-
 .red-line {
     border: 1.5px solid #BE0019;
     border-radius: 2px;
@@ -111,7 +127,6 @@ ul {
     display: flex;
     align-items: center;
 }
-
 .application-icon {
     background-color: #F0C567;
     margin-right: 10px;
@@ -129,8 +144,124 @@ ul {
     text-align: center;
     align-items: center;
 }
+.application-status-icon {
+    margin-left: 10px;
+    color: white;
+
+}
+
+/* Main container for the dashboard and sidebar */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh; /* Ensures the full height aligns with the sidebar */
+}
+
+/* Sidebar-adjusted dashboard content */
+.dashboard-content {
+    flex-grow: 1; /* Allows the content area to expand fully */
+    margin-left: 250px; /* Default sidebar width */
+    transition: margin-left 0.3s ease; /* Smooth transition for collapse */
+    padding: 20px; /* Consistent padding for the dashboard */
+    background-color: #f3f4f6; /* Matches the overall page styling */
+}
+
+/* Adjust when the sidebar is collapsed */
+.dashboard-content.collapsed {
+    margin-left: 60px; /* Collapsed sidebar width */
+}
+
+/* Dashboard header container */
+.ApplicantDashboard-header-container {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Logo and header styles */
+.ApplicantDashboard-logo {
+    width: 90px;
+    margin-right: 20px;
+}
+
+.ApplicantDashboard-header {
+    font-size: 2.5rem;
+    color: #BE0019;
+}
+
+/* Dashboard section container */
+.ApplicantDashboard-sections-content {
+    background-color: #F0C567;
+    padding: 20px;
+    border-radius: 8px;
+    flex-grow: 1;
+}
+
+/* Individual section styling */
+.ApplicantDashboard-section {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Collapsible expand/collapse button */
+.expand-collapse-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #6e7f91;
+}
+
+.expand-collapse-btn:hover {
+    color: #6e7f91;
+}
+
+/* Application status boxes */
+.ApplicantDashboard-single-application-box {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #003E83;
+    margin-bottom: 20px;
+    height: 50px;
+}
+
+.ApplicantDashboard-single-application-box p {
+    color: white;
+    margin: 0;
+}
+
+.application-info {
+    display: flex;
+    align-items: center;
+}
+
+.application-icon {
+    background-color: #F0C567;
+    margin-right: 10px;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+/* Status display within application cards */
+.ApplicantDashboard-application-status {
+    display: flex;
+    background-color: rgba(217, 217, 217, 0.5);
+    border-radius: 8px;
+    padding: 10px;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+}
 
 .application-status-icon {
     margin-left: 10px;
     color: white;
 }
+
+
+

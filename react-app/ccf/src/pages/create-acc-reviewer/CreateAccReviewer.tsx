@@ -89,7 +89,7 @@ function AccountPageReviewers(): JSX.Element {
         console.log('Error: ', error);
       });
       
-      navigate("/login");
+      navigate("/");
     } catch (error) {
       if(user !== null){
         await deleteUser(user);
@@ -256,7 +256,7 @@ function AccountPageReviewers(): JSX.Element {
 
               <p className="acc-req2">
                 Already have an account?{" "}
-                <Link to="/log-in" className="acc-req2" id="link-to">
+                <Link to="/login" className="acc-req2" id="link-to">
                   <b>Log in</b>
                 </Link>{" "}
               </p>
