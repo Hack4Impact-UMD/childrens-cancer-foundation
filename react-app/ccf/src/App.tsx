@@ -6,9 +6,6 @@ import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplic
 import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
 import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
 
-import ApplicationForm from "./application-form/ApplicationForm";
-import NRApplicationForm from "./application-form/NRApplicationForm";
-
 import Sidebar from "./components/sidebar/Sidebar";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
 import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
@@ -27,7 +24,6 @@ function App(): JSX.Element {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<></>} />
         <Route path="/Login" element={<Login />} />
         {/* 404 page */}
         <Route path="*" element={<></>} />
@@ -58,11 +54,11 @@ function App(): JSX.Element {
         />
         <Route
           path="/application-form/nextgen"
-          element={<ApplicationForm type="NextGen" />}
+          element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
         />
         <Route
           path="/application-form/nonresearch"
-          element={<NRApplicationForm />}
+          element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
         />
         {/* Admin dashboard */}
         <Route path="/admin" element={<></>} />
@@ -111,6 +107,10 @@ function App(): JSX.Element {
         <Route
             path="/create-account-reviewers"
             element={<AccountPageReviewers />}
+        />
+        <Route
+            path="/create-account-applicants"
+            element={<AccountPageApplicants />}
         />
         <Route
             path={"/settings"}
