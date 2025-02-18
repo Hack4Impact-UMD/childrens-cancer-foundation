@@ -1,10 +1,14 @@
-import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Login from './pages/login/login';
-import './App.css';
-import AccountPageApplicants from './pages/create-acc-applicants/CreateAccApplicant';
-import AccountPageReviewers from './pages/create-acc-reviewer/CreateAccReviewer';
-import ApplicantUsersDashboard from './pages/applicant-dashboard/ApplicantDashboard';
+import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Login from "./pages/login/login";
+import "./App.css";
+import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplicant";
+import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
+import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
+
+import ApplicationForm from "./application-form/ApplicationForm";
+import NRApplicationForm from "./application-form/NRApplicationForm";
+
 import Sidebar from "./components/sidebar/Sidebar";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
 import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
@@ -22,7 +26,14 @@ import AccountSettingsPage from "./pages/settings/settings";
 function App(): JSX.Element {
   return (
     <BrowserRouter>
-    <Routes>
+      <Routes>
+        <Route path="/" element={<></>} />
+        <Route path="/Login" element={<Login />} />
+        {/* 404 page */}
+        <Route path="*" element={<></>} />
+        <Route path="/forgot-password" element={<></>} />
+        <Route path="/create-account-menu" element={<CreateAccMenu />} />
+        {/* Need to change path to create-account after authentication */}
         <Route
           path="/"
           element={
@@ -34,39 +45,28 @@ function App(): JSX.Element {
         }>
         </Route>
         <Route
-          path="/Login" 
+          path="/applicant-dashboard"
           element={
-            <Login />
-          } 
+            <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
+          }
         />
-        {/* 404 page */}
         <Route
           path="*" 
           element={
             <ErrorPage type="404"/>
-          } 
+          }
         />
         <Route
-          path="/forgot-password" 
-          element={
-            <></>
-          } 
+          path="/application-form/nextgen"
+          element={<ApplicationForm type="NextGen" />}
         />
-
         <Route
-          path="/create-account-menu" 
-          element={
-            <CreateAccMenu/>
-          } 
+          path="/application-form/nonresearch"
+          element={<NRApplicationForm />}
         />
-        
-        {/* Need to change path to create-account after authentication */}
-        <Route
-          path="/create-account-applicants" 
-          element={
-            <AccountPageApplicants />
-          } 
-        />        
+        {/* Admin dashboard */}
+        <Route path="/admin" element={<></>} />
+        Need to change path to create-account after authentication
         <Route
           path="/applicant-dashboard" 
           element={
