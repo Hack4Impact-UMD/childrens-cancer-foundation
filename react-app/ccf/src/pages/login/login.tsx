@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { loginUser } from "../../services/auth_login";
+import { validateEmail } from "../../utils/validation";
 import "./login.css";
 import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
 import toretsky from "../../assets/toretskywithpatient 1.png";
@@ -13,22 +14,18 @@ function Login() {
     window.innerWidth > 750
   );
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    const emailError = validateEmail(input.email);
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
     const email = input.email.toLowerCase().trim();
     const password = input.password;
-    if (validateEmail(email) === false) {
-      setError("Please enter a valid email address.");
-    } else {
-      const { error: loginError } = await loginUser(email, password);
-      if (loginError) setError(loginError);
-    }
+    const { error: loginError } = await loginUser(email, password);
+    if (loginError) setError(loginError);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
