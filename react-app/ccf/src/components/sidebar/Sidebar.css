@@ -1,35 +1,32 @@
-/* Sidebar basic styling */
 .sidebar {
   width: 250px;
   height: 100vh;
   background-color: #003366;
-  transition: width 0.3s ease-in-out;
   position: fixed;
   top: 0;
   left: 0;
-  padding: 20px;
-  font-family: "Poppins", sans-serif;
+  padding-top: 20px;
+  transition: width 0.3s ease-in-out;
+  z-index: 1000;
 }
 
 .sidebar.collapsed {
   width: 60px;
-  padding: 10px;
 }
 
 .sidebar-header {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  padding: 0 10px;
 }
 
 .toggle-btn {
-  background-color: #003366;
+  background-color: transparent;
   border: none;
-  padding: 5px 10px;
+  color: #fff;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  color: #f4f4f4;
+  font-size: 18px;
 }
 
 .sidebar-menu {
@@ -39,26 +36,59 @@
 }
 
 .sidebar-item {
-  padding: 10px;
-  margin: 10px 0;
+  padding: 10px 15px;
+  margin: 10px;
   background-color: #fff;
-  border-radius: 20px;
+  border-radius: 8px;
   cursor: pointer;
-  text-align: center;
+  text-align: left;
   font-size: 16px;
   font-weight: 500;
   color: #003366;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, padding-left 0.3s ease;
 }
 
 .sidebar-item:hover {
   background-color: #e6e6e6;
 }
 
-.sidebar.collapsed .sidebar-item {
-  display: none;
+.sidebar-item.active {
+  background-color: #f8fafc;
+  font-weight: bold;
 }
 
-.sidebar.collapsed + .content {
+.sidebar.collapsed .sidebar-menu .sidebar-item {
+  text-align: center;
+  padding: 10px;
+}
+
+.sidebar.collapsed .sidebar-item {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .sidebar-item:hover {
+  background-color: #e6e6e6;
+}
+
+.sidebar.collapsed + .dashboard-container {
   margin-left: 60px;
+}
+
+.dashboard-container {
+  margin-left: 250px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+.dashboard-container.collapsed {
+  margin-left: 60px;
+}
+
+/* Transition Effect */
+.sidebar, .dashboard-container {
+  transition: all 0.3s ease;
 }

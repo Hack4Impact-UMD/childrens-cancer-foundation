@@ -1,0 +1,63 @@
+.contact-box {
+    border: 3px solid #BE0019;
+    padding: 30px;
+    border-radius: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+}
+
+.contact-method {
+    flex: 1;
+    margin-right: 50px;
+}
+
+.contact-method:last-child {
+    margin-right: 0;
+}
+
+.contact-method-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.contact-icon {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 3px;
+    margin-right: 7px;
+    color: #000000;
+    font-size: 1.2rem;
+}
+
+.contact-method-title {
+    font-size: 1.1rem;
+    color: #000000;
+    margin: 0;
+}
+
+.contact-text {
+    margin-bottom: 4px;
+    color: #333;
+    display: flex;
+    align-items: center;
+}
+
+.contact-link {
+    color: #000000;
+    text-decoration: underline;
+    margin-right: 10px;
+}
+
+.contact-link:hover {
+    text-decoration: none;
+}
+
+.contact-hours {
+    font-size: 0.85rem;
+    color: #666;
+    margin-left: 7px;
+    display: inline-block;
+}

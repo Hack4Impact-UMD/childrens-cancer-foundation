@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { initializeApp } from "firebase/app";
+
 import { getAnalytics } from "firebase/analytics";
 //If this line says import not found then you need to set up firebase api on your machine
 import firebaseConfig from "./firebase_config/FireConfig";
@@ -13,6 +14,7 @@ import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getStorage, connectStorageEmulator } from "firebase/storage";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
+import { initializeTestEnvironment } from './initialize-test-environment';
 
 // firebaseApps previously initialized using initializeApp()
 const cong = initializeApp(firebaseConfig);
@@ -21,7 +23,7 @@ const cong = initializeApp(firebaseConfig);
 
 // firestore database connection
 const db = getFirestore();
-// cloud storage connection
+// // cloud storage connection
 const storage = getStorage();
 // auth connection
 const auth = getAuth();
@@ -30,14 +32,15 @@ const functions = getFunctions();
 
 
 //flag for local testing
-// change to true to run using emulator
-const useEmulator = false
+// change to true to run -+using emulator
+const useEmulator = true
 
 if (useEmulator) {
   connectFirestoreEmulator(db, '127.0.0.1', 8080);
   connectStorageEmulator(storage, "127.0.0.1", 9199);
   connectAuthEmulator(auth, "http://127.0.0.1:9099");
   connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+  initializeTestEnvironment(db, auth, functions);
 }
 
 

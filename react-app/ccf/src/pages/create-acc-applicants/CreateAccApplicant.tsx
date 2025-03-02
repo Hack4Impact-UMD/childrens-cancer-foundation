@@ -3,12 +3,12 @@ import "./CreateAccApplicant.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { db, auth } from "../../index"
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   deleteUser,
 } from "firebase/auth";
-import { getFirestore, doc, setDoc, deleteDoc } from "firebase/firestore";
+import {doc, setDoc, deleteDoc } from "firebase/firestore";
 
 function AccountPageApplicants(): JSX.Element {
   //form inputs
@@ -69,8 +69,6 @@ function AccountPageApplicants(): JSX.Element {
       e.preventDefault();
       return;
     }
-    const auth = getAuth();
-    const db = getFirestore();
     let user = null;
 
     try {
@@ -94,7 +92,7 @@ function AccountPageApplicants(): JSX.Element {
         .catch((error) => {
           console.log("Error: ", error);
         });
-      navigate("/login");
+      navigate("/");
     } catch (e) {
       if (user !== null) {
         await deleteUser(user);
@@ -261,7 +259,7 @@ function AccountPageApplicants(): JSX.Element {
 
               <p className="acc-req2">
                 Already have an account?{" "}
-                <Link to="/log-in" className="acc-req2" id="link-to">
+                <Link to="/login" className="acc-req2" id="link-to">
                   <b>Log in</b>
                 </Link>
               </p>

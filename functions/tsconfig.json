@@ -10,6 +10,7 @@
   },
   "compileOnSave": true,
   "include": [
-    "src"
+    "src",
+    "../react-app/ccf/src/initialize-test-environment.ts"
   ]
 }

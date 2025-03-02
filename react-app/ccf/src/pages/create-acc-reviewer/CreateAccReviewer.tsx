@@ -78,15 +78,15 @@ function AccountPageReviewers(): JSX.Element {
         affiliation: affiliation,
         role: 'reviewer',
       });
-      await addReviewerRole({ email: email })
-        .then((result) => {
-          console.log(result.data);  // success message from the function
-        })
-        .catch((error) => {
-          console.log('Error: ', error);
-        });
-
-      navigate("/login");
+      await addReviewerRole({email: email})
+      .then((result) => {
+        console.log(result.data);  // Success message from the function
+      })
+      .catch((error) => {
+        console.log('Error: ', error);
+      });
+      
+      navigate("/");
     } catch (error) {
       if (user !== null) {
         await deleteUser(user);
@@ -252,7 +252,7 @@ function AccountPageReviewers(): JSX.Element {
 
               <p className="acc-req2">
                 Already have an account?{" "}
-                <Link to="/log-in" className="acc-req2" id="link-to">
+                <Link to="/login" className="acc-req2" id="link-to">
                   <b>Log in</b>
                 </Link>{" "}
               </p>
