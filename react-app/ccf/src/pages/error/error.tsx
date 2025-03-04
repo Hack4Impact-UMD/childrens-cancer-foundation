@@ -4,7 +4,7 @@ import "./error.css";
 import logo from '../../assets/ccf-logo.png';
 
 type ErrorProps = {
-  type: "404" | "505";
+  type: "404" | "505" | "401";
 };
 
 function ErrorPage({ type }: ErrorProps): JSX.Element {
@@ -31,6 +31,15 @@ function ErrorPage({ type }: ErrorProps): JSX.Element {
             <p className="error-message">Something went wrong.</p>
           </>
         );
+      case "401":
+        return (
+          <>
+          <button onClick={goToLogin} className = "logo-button"><img src={logo} alt="Logo" className = "logo"/></button>
+          <h1 className="big">401</h1>
+          <p className="page-not-found">Unauthorized Access</p>
+          <p className="error-message">You are not authorized to access this page. Please log in to continue.</p>
+          </>
+        )
       default:
         return null;
     }
@@ -40,20 +49,24 @@ function ErrorPage({ type }: ErrorProps): JSX.Element {
     navigate("/");
   };
 
-  return (
+  const goToLogin = () => {
+    navigate("/login");
+  };
 
-    <div className = "main-container-error">
-        <div className="error-page-container">
-            <div className="error-content">
-                {renderErrorMessage()}
-                <button onClick={goToHome} className="error-button">
-                    Back to Home
-                </button>
-            </div>
-        </div>
+  return (
+    <div className="main-container-error">
+    <div className="error-page-container">
+      <div className="error-content">
+        {renderErrorMessage()}
+        {type === "401" ? (
+          <button onClick={goToLogin} className="error-button">Go To Login</button>
+        ) : (
+          <button onClick={goToHome} className="error-button">Back to Home</button>
+        )}
+      </div>
+    </div>
   </div>
-    
-  );
+);
 }
 
 export default ErrorPage;
