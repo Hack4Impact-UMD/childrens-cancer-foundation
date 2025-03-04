@@ -52,6 +52,7 @@ function ErrorPage({ type }: ErrorProps): JSX.Element {
                     If you still experience this error, please contact CCF for further assistance.
                 </p>
             </>
+
         );
     }
   };
