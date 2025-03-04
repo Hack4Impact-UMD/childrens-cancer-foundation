@@ -41,7 +41,18 @@ function ErrorPage({ type }: ErrorProps): JSX.Element {
           </>
         )
       default:
-        return null;
+        return (
+            <>
+                <button onClick={goToLogin} className = "logo-button"><img src={logo} alt="Logo" className = "logo"/></button>
+                {/*<h1 className="big">401</h1>*/}
+                <p className="page-not-found">Unexpected Error</p>
+                <p className="error-message">
+                    We encountered an issue. Please try logging out and logging back in.
+                    If the problem persists, clear your browser's cookies and cache.
+                    If you still experience this error, please contact CCF for further assistance.
+                </p>
+            </>
+        );
     }
   };
 
