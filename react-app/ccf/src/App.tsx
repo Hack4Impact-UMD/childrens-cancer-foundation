@@ -52,6 +52,14 @@ function App(): JSX.Element {
             <ErrorPage type="404"/>
           }
         />
+
+        <Route 
+        path="/protected-page" 
+        element={
+          <ErrorPage type="401" />
+        } 
+        />          
+
         <Route
           path="/application-form/nextgen"
           element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
