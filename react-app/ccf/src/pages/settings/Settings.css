@@ -63,16 +63,36 @@ body {
   flex-direction: row;
   justify-content: flex-start;
   gap: 20px;
+  flex-wrap: wrap;
+  position: relative;
+  padding-bottom: 60px;
+}
+
+.AccountSetting-personal-info button {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
 }
 
 .AccountSetting-personal-info-field {
   flex-direction: column;
+  min-width: 200px;
+  flex: 1;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 }
 
 .personal-input-text {
   border-radius: 10px;
   padding: 7px;
-  border: 2px solid #000000; /* Optional: Border styling */
+  border: 2px solid #000000;
+  width: 100%;
+  min-width: 150px;
 }
 
 .account-input-text {
@@ -284,4 +304,20 @@ label {
   padding-bottom: 0.5rem;
   margin-top: 10px;
   font-weight: 500;
+}
+
+.success-message {
+  color: #4CAF50;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #e8f5e9;
+  border-radius: 4px;
+}
+
+.error-message {
+  color: #f44336;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 4px;
 }
