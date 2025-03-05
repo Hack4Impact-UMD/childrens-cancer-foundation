@@ -14,51 +14,104 @@ admin.initializeApp();
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 
-exports.helloWorld = functions.https.onRequest((request: any, response: any) => {
-  response.send("Hello from Firebase!");
-});
+exports.helloWorld = functions.https.onRequest(
+  (request: any, response: any) => {
+    response.send("Hello from Firebase!");
+  }
+);
 
-export const addReviewerRole = functions.https.onCall((data: any, context: any) => {
-    return admin.auth().getUserByEmail(data.email).then((user: any) => {
+export const addReviewerRole = functions.https.onCall(
+  (data: any, context: any) => {
+    return admin
+      .auth()
+      .getUserByEmail(data.email)
+      .then((user: any) => {
         return admin.auth().setCustomUserClaims(user.uid, {
-            "role": "reviewer"
+          role: "reviewer",
         });
-    }
-    ).then(() => {
+      })
+      .then(() => {
         return {
-            message: `Success! ${data.email} has been made a reviewer.`
+          message: `Success! ${data.email} has been made a reviewer.`,
         };
-    }).catch((err: any) => {
+      })
+      .catch((err: any) => {
         return err;
-    });
-});
+      });
+  }
+);
 
-export const addApplicantRole = functions.https.onCall((data: any, context: any) => {
-    return admin.auth().getUserByEmail(data.email).then((user: any) => {
+export const addApplicantRole = functions.https.onCall(
+  (data: any, context: any) => {
+    return admin
+      .auth()
+      .getUserByEmail(data.email)
+      .then((user: any) => {
         return admin.auth().setCustomUserClaims(user.uid, {
-            "role": "applicant"
+          role: "applicant",
         });
-    }
-    ).then(() => {
+      })
+      .then(() => {
         return {
-            message: `Success! ${data.email} has been made an applicant.`
+          message: `Success! ${data.email} has been made an applicant.`,
         };
-    }).catch((err: any) => {
+      })
+      .catch((err: any) => {
         return err;
-    });
-});
+      });
+  }
+);
 
-export const addAdminRole = functions.https.onCall((data: any, context: any) => {
-    return admin.auth().getUserByEmail(data.email).then((user: any) => {
+export const addAdminRole = functions.https.onCall(
+  (data: any, context: any) => {
+    return admin
+      .auth()
+      .getUserByEmail(data.email)
+      .then((user: any) => {
         return admin.auth().setCustomUserClaims(user.uid, {
-            "role": "admin"
+          role: "admin",
         });
-    }
-    ).then(() => {
+      })
+      .then(() => {
         return {
-            message: `Success! ${data.email} has been made an admin.`
+          message: `Success! ${data.email} has been made an admin.`,
         };
-    }).catch((err: any) => {
+      })
+      .catch((err: any) => {
         return err;
-    });
-});
+      });
+  }
+);
+
+export const getUserApplications = functions.https.onRequest(
+  async (req: any, res: any) => {
+    if (req.method !== "GET") {
+      res.status(405).send("Method Not Allowed");
+      return;
+    }
+
+    const userId = req.query.userId || req.body.userId;
+    if (!userId) {
+      res.status(400).send("Missing userId parameter");
+      return;
+    }
+
+    try {
+      const snapshot = await admin
+        .firestore()
+        .collection("applications")
+        .where("userId", "==", userId)
+        .get();
+
+      const applications: any[] = [];
+      snapshot.forEach((doc: any) => {
+        applications.push({ id: doc.id, ...doc.data() });
+      });
+
+      res.status(200).json({ applications });
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+);
