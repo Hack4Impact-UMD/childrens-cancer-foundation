@@ -3,10 +3,11 @@ import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css"
-import { getAuth, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { doc, getDoc, getFirestore, updateDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUserData, getCurrentUserClaims, UserData } from "../../services/auth_login";
+import { auth } from "../../index";
 
 function AccountSettingsPage(): JSX.Element {
   // User information
@@ -40,8 +41,6 @@ function AccountSettingsPage(): JSX.Element {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const auth = getAuth();
-    
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (user) {
@@ -98,7 +97,6 @@ function AccountSettingsPage(): JSX.Element {
       return;
     }
 
-    const auth = getAuth();
     const user = auth.currentUser;
 
     if (!user || !user.email) {
@@ -136,7 +134,6 @@ function AccountSettingsPage(): JSX.Element {
     setPersonalInfoError(null);
     setPersonalInfoSuccess(false);
 
-    const auth = getAuth();
     const user = auth.currentUser;
 
     if (!user) {
