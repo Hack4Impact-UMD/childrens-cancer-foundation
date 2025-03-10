@@ -1,5 +1,6 @@
 import { signInWithEmailAndPassword, AuthErrorCodes } from "firebase/auth";
 import { auth } from "../index"
+import { getFirestore, getDoc, doc } from "firebase/firestore";
 
 export const loginUser = async (email: string, password: string) => {
   try {
@@ -26,4 +27,58 @@ export const getRole = async () => {
   } else {
     return null
   }
+}
+
+// Gets the user claims from the idTokenResult
+export const getCurrentUserClaims = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('No user is currently signed in');
+    }
+
+    const idTokenResult = await user.getIdTokenResult();
+    return idTokenResult.claims;
+  } catch (error) {
+    console.error('Error fetching user claims:', error);
+    throw error;
+  }
+};
+
+
+// Uses getCurrentUserClaims to determine the collection and then gets the user data from the collection
+export const getCurrentUserData = async (): Promise<UserData | null> => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('No user is currently signed in');
+    }
+
+    // Get user claims to determine the collection
+    const claims = await getCurrentUserClaims();
+    const role = claims.role;
+
+    if (!role) {
+      throw new Error('User role not found');
+    }
+
+    const db = getFirestore();
+    const userDoc = await getDoc(doc(db, `${role}s`, user.uid));
+    
+    if (userDoc.exists()) {
+      return userDoc.data() as UserData;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw error;
+  }
+};
+
+
+export interface UserData {
+  firstName?: string;
+  lastName?: string;
+  title?: string;
+  affiliation?: string;
 }
