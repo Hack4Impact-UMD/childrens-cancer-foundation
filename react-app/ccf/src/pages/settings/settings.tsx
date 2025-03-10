@@ -240,17 +240,21 @@ function AccountSettingsPage(): JSX.Element {
               {personalInfoError && (
                 <p className="error-message">{personalInfoError}</p>
               )}
-              {personalInfoSuccess && (
-                <p className="success-message">Personal information updated successfully!</p>
-              )}
-              <button
-                type="button"
-                className="signup-btn2"
-                onClick={handlePersonalInfoSubmit}
-                style={{ width: "200px" }}
-              >
-                Save Personal Information
-              </button>
+            </div>
+            <div className="button-container">
+              <div className="button-message-container">
+                <button
+                  type="button"
+                  className="signup-btn2"
+                  onClick={handlePersonalInfoSubmit}
+                  style={{ width: "200px" }}
+                >
+                  Save Personal Information
+                </button>
+                {personalInfoSuccess && (
+                  <p className="success-message inline-message">Personal information updated successfully!</p>
+                )}
+              </div>
             </div>
           </div>
 
