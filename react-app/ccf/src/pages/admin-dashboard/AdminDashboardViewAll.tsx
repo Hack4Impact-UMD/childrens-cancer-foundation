@@ -1,13 +1,18 @@
 import "./AdminDashboardViewAll.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../index";
 
 function AdminDashboardViewAll(): JSX.Element {
     const [searchTerm, setSearchTerm] = useState("");
-    const [institutionFilter, setInstitutionFilter] = useState("");
+    const [affiliationFilter, setaffiliationFilter] = useState("");
     const [accountTypeFilter, setAccountTypeFilter] = useState("");
+    const [accounts, setAccounts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [uniqueAffiliations, setUniqueAffiliations] = useState<string[]>([]);
 
     const sidebarItems = [
         {name: "Home", path: "/"},
@@ -16,23 +21,74 @@ function AdminDashboardViewAll(): JSX.Element {
         {name: "Logout", path: "/login"}
     ];
 
-    // Dummy data for the accounts table
-    const accounts = [
-        { id: 1, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 2, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 3, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Inactive" },
-        { id: 4, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 5, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 6, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Inactive" },
-        { id: 7, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 8, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 9, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 10, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 11, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 12, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Inactive" },
-        { id: 13, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-        { id: 14, name: "John Lee", institution: "Holy Cross Hospital", email: "jlee@gmail.com", status: "Active" },
-    ];
+    // Fetch data from Firestore collections
+    useEffect(() => {
+        const fetchAllAccounts = async () => {
+            setLoading(true);
+            try {
+                // Fetch from all three collections
+                const adminSnapshot = await getDocs(collection(db, "admins"));
+                const applicantSnapshot = await getDocs(collection(db, "applicants"));
+                const reviewerSnapshot = await getDocs(collection(db, "reviewers"));
+                
+                // Process admin accounts
+                const adminAccounts = adminSnapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+                        affiliation: data.affiliation || "N/A",
+                        email: data.email || "",
+                        type: "Admin"
+                    };
+                });
+                
+                // Process applicant accounts
+                const applicantAccounts = applicantSnapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+                        affiliation: data.affiliation || "N/A",
+                        email: data.email || "",
+                        type: "Applicant"
+                    };
+                });
+                
+                // Process reviewer accounts
+                const reviewerAccounts = reviewerSnapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+                        affiliation: data.affiliation || "N/A",
+                        email: data.email || "",
+                        type: "Reviewer"
+                    };
+                });
+                
+                // Combine all accounts
+                const allAccounts = [...adminAccounts, ...applicantAccounts, ...reviewerAccounts];
+                setAccounts(allAccounts);
+                
+                // Extract unique affiliations for dropdown
+                const affiliations = allAccounts.map(account => account.affiliation);
+                const uniqueAffiliationSet = new Set(affiliations);
+                // Convert set to array and filter out empty values
+                const uniqueAffiliationArray = Array.from(uniqueAffiliationSet)
+                    .filter(affiliation => affiliation && affiliation !== "N/A")
+                    .sort();
+                    
+                setUniqueAffiliations(uniqueAffiliationArray);
+            } catch (error) {
+                console.error("Error fetching accounts:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchAllAccounts();
+    }, []);
 
     return (
         <div>
@@ -59,12 +115,15 @@ function AdminDashboardViewAll(): JSX.Element {
                         <div className="filters">
                             <div className="filter">
                                 <select 
-                                    value={institutionFilter}
-                                    onChange={(e) => setInstitutionFilter(e.target.value)}
+                                    value={affiliationFilter}
+                                    onChange={(e) => setaffiliationFilter(e.target.value)}
                                 >
-                                    <option value="">Institution</option>
-                                    <option value="holy-cross">Holy Cross Hospital</option>
-                                    <option value="other">Other Institutions</option>
+                                    <option value="">All affiliations</option>
+                                    {uniqueAffiliations.map(affiliation => (
+                                        <option key={affiliation} value={affiliation}>
+                                            {affiliation}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="filter">
@@ -73,9 +132,9 @@ function AdminDashboardViewAll(): JSX.Element {
                                     onChange={(e) => setAccountTypeFilter(e.target.value)}
                                 >
                                     <option value="">Account Type</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="applicant">Applicant</option>
-                                    <option value="reviewer">Reviewer</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Applicant">Applicant</option>
+                                    <option value="Reviewer">Reviewer</option>
                                 </select>
                             </div>
                         </div>
@@ -86,34 +145,54 @@ function AdminDashboardViewAll(): JSX.Element {
                             <div className="accounts-header">
                                 <h2>ALL ACCOUNTS</h2>
                             </div>
+                            {loading ? (
+                                <div className="loading-message">Loading accounts...</div>
+                            ) : (
                             <table className="accounts-table">
                                 <thead>
                                     <tr>
                                         <th></th>
                                         <th>Name</th>
-                                        <th>Institution/Hospital Affiliation</th>
+                                        <th>affiliation/Hospital Affiliation</th>
                                         <th>Email</th>
-                                        <th>Status</th>
+                                        <th>Type</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {accounts.map((account) => (
-                                        <tr key={account.id} className={account.status === "Inactive" ? "inactive-row" : ""}>
+                                    {accounts
+                                        .filter(account => {
+                                            // Filter by search term
+                                            const searchFilter = searchTerm.toLowerCase();
+                                            return (
+                                                searchTerm === "" || 
+                                                account.name.toLowerCase().includes(searchFilter) ||
+                                                account.email.toLowerCase().includes(searchFilter) ||
+                                                account.affiliation.toLowerCase().includes(searchFilter)
+                                            );
+                                        })
+                                        .filter(account => {
+                                            // Filter by affiliation
+                                            return affiliationFilter === "" || 
+                                                  account.affiliation.toLowerCase().includes(affiliationFilter.toLowerCase());
+                                        })
+                                        .filter(account => {
+                                            // Filter by account type
+                                            return accountTypeFilter === "" || account.type === accountTypeFilter;
+                                        })
+                                        .map((account) => (
+                                        <tr key={account.id}>
                                             <td>
                                                 <input type="checkbox" />
                                             </td>
                                             <td>{account.name}</td>
-                                            <td>{account.institution}</td>
+                                            <td>{account.affiliation}</td>
                                             <td>{account.email}</td>
-                                            <td>
-                                                <span className={`status-indicator ${account.status.toLowerCase()}`}>
-                                                    {account.status}
-                                                </span>
-                                            </td>
+                                            <td>{account.type}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+                            )}
                         </div>
                     </div>
                 </div>
