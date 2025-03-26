@@ -86,8 +86,12 @@
     color: white;
   }
   
+  .application-header:not(.expanded) h3 {
+    color: #a0a0a0; 
+  }
+  
   .application-header:not(.expanded) p {
-    color: #ccc;
+    color: #c0c0c0; 
   }
   
   .application-header.expanded {
@@ -114,7 +118,11 @@
   .applicant-type {
     font-size: 12px;
     opacity: 1;
-    color: #333;
+    color: #1e3a8a;
+  }
+  
+  .application-header.expanded .applicant-type {
+    color: #545454;
   }
   
   .expand-icon {
