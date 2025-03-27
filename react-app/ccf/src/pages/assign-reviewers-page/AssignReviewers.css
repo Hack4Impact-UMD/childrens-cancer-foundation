@@ -1,0 +1,209 @@
+.assign-reviewers-page {
+    display: flex;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+  }
+  
+  .dashboard-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .page-header {
+    background-color: white;
+    padding: 15px 20px;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .logo {
+    width: 90px;
+    height: 90px;
+    margin-top: 5px;
+    margin-right: 15px;
+  }
+  
+  .page-header h1 {
+    color: #BE0019;
+    font-size: 40px;
+  }
+  
+  .page-content {
+    background-color: #F0C567;
+    padding: 20px 20px 20px;
+    border-radius: 10px;;
+    flex-grow: 1;
+  }
+  
+  .applications-section {
+    margin-bottom: 30px;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .applications-section h2 {
+    font-size: 22px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .applications-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .application-card {
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    overflow: hidden;
+  }
+  
+  .application-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .application-header.expanded {
+    border-bottom: 2px solid #1e3a8a;
+  }
+  
+  .application-header:not(.expanded) {
+    background-color: #1e3a8a;
+    color: white;
+  }
+  
+  .application-header:not(.expanded) p {
+    color: #ccc;
+  }
+  
+  .application-header.expanded {
+    background-color: #b8d0f7;
+    color: #1e3a8a;
+  }
+  
+  .application-icon-title {
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .application-icon {
+    font-size: 33px;
+    margin-right: 10px;
+    margin-top: 16px;
+  }
+  
+  .application-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .applicant-type {
+    font-size: 12px;
+    opacity: 1;
+    color: #333;
+  }
+  
+  .expand-icon {
+    font-size: 12px;
+  }
+  
+  .application-details {
+    padding: 15px;
+    background-color: #b8d0f7;
+  }
+  
+  .reviewer-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .reviewer-field {
+    display: flex;
+    align-items: center;
+  }
+  
+  .reviewer-field label {
+    width: 150px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .reviewer-input-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .reviewer-input-container input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+  
+  .add-reviewer {
+    background-color: #003E83;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .reviewer-assigned {
+    display: flex;
+    align-items: center;
+    background-color: #e6effd;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+
+  .reviewer {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  
+  .remove-reviewer {
+    background-color: transparent;
+    color: #BE0019;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  
+  .reviewer-completed {
+    padding: 8px 12px;
+    background-color: #e6effd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .confirm-btn-container {
+    display: flex;
+    justify-content: center;
+  }
