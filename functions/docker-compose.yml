@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  code-server:
+    build: .
+    container_name: code-server
+    environment:
+      - PASSWORD=yourpassword  # Set your desired password here
+    ports:
+      - "8080:8080"
+    volumes:
+      - project_data: 
+
+  # firebase:
+  #   build: .
+  #   container_name: firebase-emulator
+  #   working_dir: /home/coder/project
+  #   ports:
+  #     - "5001:5001"
+  #   volumes:
+  #     - project_data:/home/coder/project
+  #   command: firebase emulators:start --only functions
+
+volumes:
+  project_data:
