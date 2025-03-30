@@ -3,30 +3,20 @@ import { FaArrowDown, FaArrowUp, FaFileAlt, FaArrowRight } from 'react-icons/fa'
 import Sidebar from '../../components/sidebar/Sidebar';
 import Button from '../../components/buttons/Button';
 import logo from "../../assets/ccf-logo.png";
+import { AssignReviewers } from '../../types/application-types';  
 import './AssignReviewers.css';
-
-interface Application {
-  id: string;
-  title: string;
-  applicant: string;
-  primaryReviewer: string | null;
-  secondaryReviewer: string | null;
-  status: 'not-started' | 'in-progress' | 'completed';
-  expanded: boolean;
-}
 
 const AssignReviewersPage: React.FC = () => {
   const sidebarLinks = [
-    { name: 'Home', path: '/' },
+    { name: 'Home', path: '/Login' },
     { name: 'Account Settings', path: '/account' },
-    { name: 'All Accounts', path: '/accounts' },
+    { name: 'All Accounts', path: '/all' },
     { name: 'Assign Reviewers', path: '/assign-reviewers' },
     { name: 'Assign Awards', path: '/assign-awards' },
     { name: 'Database', path: '/database' },
-    { name: 'Email Blast', path: '/email-blast' },
   ];
 
-  const [applications, setApplications] = useState<Application[]>([
+  const [applications, setApplications] = useState<AssignReviewers[]>([
     { 
       id: '1', 
       title: 'Application Title',
@@ -117,8 +107,93 @@ const AssignReviewersPage: React.FC = () => {
   };
 
   const confirmReviewers = (id: string) => {
-    console.log(`Confirming reviewers for application ${id}`);
-    
+  };
+
+  const renderApplications = (status: AssignReviewers['status']) => {
+    return applications
+      .filter(app => app.status === status)
+      .map(app => (
+        <div key={app.id} className="application-card">
+          <div 
+            className={`application-header ${app.expanded ? 'expanded' : ''}`} 
+            onClick={() => toggleExpand(app.id)}
+          >
+            <div className="application-icon-title">
+              <FaFileAlt className="application-icon" />
+              <div className="application-info">
+                <h3>{app.title}</h3>
+                <p className="applicant-type">{app.applicant}</p>
+              </div>
+            </div>
+            <span className="expand-icon">{app.expanded ? <FaArrowUp /> : <FaArrowDown />}</span>
+          </div>
+          
+          {app.expanded && (
+            <div className="application-details">
+              <div className="reviewer-fields">
+                {status === 'not-started' ? (
+                  <>
+                    <div className="reviewer-field">
+                      <label>Primary Reviewer:</label>
+                      <div className="reviewer-input-container">
+                        <button className="add-reviewer">+</button>
+                      </div>
+                    </div>
+                    <div className="reviewer-field">
+                      <label>Secondary Reviewer:</label>
+                      <div className="reviewer-input-container">
+                        <button className="add-reviewer">+</button>
+                      </div>
+                    </div>
+                  </>
+                ) : status === 'in-progress' ? (
+                  <>
+                    <div className="reviewer-field">
+                      <label>Primary Reviewer:</label>
+                      <div className="reviewer-assigned">
+                        <span className='reviewer'>{app.primaryReviewer}</span>
+                        <button className="remove-reviewer">×</button>
+                      </div>
+                    </div>
+                    <div className="reviewer-field">
+                      <label>Secondary Reviewer:</label>
+                      <div className="reviewer-assigned">
+                        <span className='reviewer'>{app.secondaryReviewer}</span>
+                        <button className="remove-reviewer">×</button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="reviewer-field">
+                      <label>Primary Reviewer:</label>
+                      <span className="reviewer-completed">{app.primaryReviewer}</span>
+                    </div>
+                    <div className="reviewer-field">
+                      <label>Secondary Reviewer:</label>
+                      <span className="reviewer-completed">{app.secondaryReviewer}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+              
+              {(status === 'not-started' || status === 'in-progress') && (
+                <div className="confirm-btn-container">
+                  <Button 
+                    variant="blue" 
+                    width="100%" 
+                    height="40px" 
+                    borderRadius="8px"
+                    onClick={() => confirmReviewers(app.id)}
+                  >
+                    Confirm Reviewers
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ));
   };
 
   return (
@@ -137,154 +212,21 @@ const AssignReviewersPage: React.FC = () => {
           <div className="applications-section">
             <h2>Not Started Assignments</h2>
             <div className="applications-container">
-              {applications
-                .filter(app => app.status === 'not-started')
-                .map(app => (
-                  <div key={app.id} className="application-card">
-                    <div 
-                      className={`application-header ${app.expanded ? 'expanded' : ''}`} 
-                      onClick={() => toggleExpand(app.id)}
-                    >
-                      <div className="application-icon-title">
-                        <FaFileAlt className="application-icon" />
-                        <div className="application-info">
-                          <h3>{app.title}</h3>
-                          <p className="applicant-type">{app.applicant}</p>
-                        </div>
-                      </div>
-                      <span className="expand-icon">{app.expanded ? <FaArrowUp /> : <FaArrowDown />}</span>
-                    </div>
-                    
-                    {app.expanded && (
-                      <div className="application-details">
-                        <div className="reviewer-fields">
-                          <div className="reviewer-field">
-                            <label>Primary Reviewer:</label>
-                            <div className="reviewer-input-container">
-                              <input type="text" placeholder="Select reviewer" />
-                              <button className="add-reviewer">+</button>
-                            </div>
-                          </div>
-                          <div className="reviewer-field">
-                            <label>Secondary Reviewer:</label>
-                            <div className="reviewer-input-container">
-                              <input type="text" placeholder="Select reviewer" />
-                              <button className="add-reviewer">+</button>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="confirm-btn-container">
-                          <Button 
-                            variant="blue" 
-                            width="100%" 
-                            height="40px" 
-                            borderRadius="8px"
-                            onClick={() => confirmReviewers(app.id)}
-                          >
-                            Confirm Reviewers
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              {renderApplications('not-started')}
             </div>
           </div>
 
           <div className="applications-section">
             <h2>In Progress Assignments</h2>
             <div className="applications-container">
-              {applications
-                .filter(app => app.status === 'in-progress')
-                .map(app => (
-                  <div key={app.id} className="application-card">
-                    <div 
-                      className={`application-header ${app.expanded ? 'expanded' : ''}`} 
-                      onClick={() => toggleExpand(app.id)}
-                    >
-                      <div className="application-icon-title">
-                        <FaFileAlt className="application-icon" />
-                        <div className="application-info">
-                          <h3>{app.title}</h3>
-                          <p className="applicant-type">{app.applicant}</p>
-                        </div>
-                      </div>
-                      <span className="expand-icon">{app.expanded ? <FaArrowUp /> : <FaArrowDown />}</span>
-                    </div>
-                    
-                    {app.expanded && (
-                      <div className="application-details">
-                        <div className="reviewer-fields">
-                          <div className="reviewer-field">
-                            <label>Primary Reviewer:</label>
-                            <div className="reviewer-assigned">
-                              <span className='reviewer'>{app.primaryReviewer}</span>
-                              <button className="remove-reviewer">×</button>
-                            </div>
-                          </div>
-                          <div className="reviewer-field">
-                            <label>Secondary Reviewer:</label>
-                            <div className="reviewer-assigned">
-                              <span className='reviewer'>{app.secondaryReviewer}</span>
-                              <button className="remove-reviewer">×</button>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="confirm-btn-container">
-                          <Button 
-                            variant="blue" 
-                            width="100%" 
-                            height="40px" 
-                            borderRadius="8px"
-                            onClick={() => confirmReviewers(app.id)}
-                          >
-                            Confirm Reviewers
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              {renderApplications('in-progress')}
             </div>
           </div>
 
           <div className="applications-section">
             <h2>Completed Assignments</h2>
             <div className="applications-container">
-              {applications
-                .filter(app => app.status === 'completed')
-                .map(app => (
-                  <div key={app.id} className="application-card">
-                    <div 
-                      className={`application-header ${app.expanded ? 'expanded' : ''}`} 
-                      onClick={() => toggleExpand(app.id)}
-                    >
-                      <div className="application-icon-title">
-                        <FaFileAlt className="application-icon" />
-                        <div className="application-info">
-                          <h3>{app.title}</h3>
-                          <p className="applicant-type">{app.applicant}</p>
-                        </div>
-                      </div>
-                      <span className="expand-icon">{app.expanded ? <FaArrowUp /> : <FaArrowDown />}</span>
-                    </div>
-                    
-                    {app.expanded && (
-                      <div className="application-details">
-                        <div className="reviewer-fields">
-                          <div className="reviewer-field">
-                            <label>Primary Reviewer:</label>
-                            <span className="reviewer-completed">{app.primaryReviewer}</span>
-                          </div>
-                          <div className="reviewer-field">
-                            <label>Secondary Reviewer:</label>
-                            <span className="reviewer-completed">{app.secondaryReviewer}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              {renderApplications('completed')}
             </div>
           </div>
         </div>
