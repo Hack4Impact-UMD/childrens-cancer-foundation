@@ -1,11 +1,19 @@
 import "./CreateAccReviewer.css";
-import logo from '../../assets/ccf-logo.png';
+import logo from "../../assets/ccf-logo.png";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { getAuth, createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  deleteUser,
+} from "firebase/auth";
 import { getFirestore, doc, setDoc, deleteDoc } from "firebase/firestore";
-import { checkEmailCreateAcc, validatePassword } from "../../utils/validation";
+import {
+  checkEmailCreateAcc,
+  validatePassword,
+  getPasswordValidationStatus,
+} from "../../utils/validation";
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
@@ -20,6 +28,7 @@ function AccountPageReviewers(): JSX.Element {
   const [specialChar, setSpecialChar] = useState(false);
   const [capitalLetter, setCapitalLetter] = useState(false);
   const [number, setNumber] = useState(false);
+  const [pass_length, setPassLength] = useState(false);
   const [showReqs, setShowReqs] = useState(false);
   const [pwdUnmatched, setPwdUnmatched] = useState(false);
 
@@ -44,13 +53,20 @@ function AccountPageReviewers(): JSX.Element {
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
 
     // Check password requirements
-    const passwordRequirements = validatePassword(pwd);
-    setSpecialChar(passwordRequirements.specialChar);
-    setCapitalLetter(passwordRequirements.capitalLetter);
-    setNumber(passwordRequirements.number);
+    const validationStatus = getPasswordValidationStatus(pwd);
+    setSpecialChar(validationStatus.specialChar);
+    setCapitalLetter(validationStatus.capitalLetter);
+    setNumber(validationStatus.number);
+    setPassLength(validationStatus.pass_length);
 
     // Don't let user submit if pwd reqs aren't met
-    if (!passwordRequirements.specialChar || !passwordRequirements.capitalLetter || !passwordRequirements.number || pwdUnmatched) {
+    if (
+      !validationStatus.specialChar ||
+      !validationStatus.capitalLetter ||
+      !validationStatus.number ||
+      !validationStatus.pass_length ||
+      pwdUnmatched
+    ) {
       console.log("Failed to submit. One requirement was not met.");
       e.preventDefault();
       return;
@@ -69,28 +85,32 @@ function AccountPageReviewers(): JSX.Element {
     let user = null;
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, pwd);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        pwd
+      );
       user = userCredential.user;
-      await setDoc(doc(db, 'reviewers', user.uid), {
+      await setDoc(doc(db, "reviewers", user.uid), {
         firstName: firstName,
         lastName: lastName,
         email: email,
         affiliation: affiliation,
-        role: 'reviewer',
+        role: "reviewer",
       });
       await addReviewerRole({ email: email })
         .then((result) => {
-          console.log(result.data);  // Success message from the function
+          console.log(result.data); // Success message from the function
         })
         .catch((error) => {
-          console.log('Error: ', error);
+          console.log("Error: ", error);
         });
 
       navigate("/login");
     } catch (error) {
       if (user !== null) {
         await deleteUser(user);
-        await deleteDoc(doc(db, 'reviewers', user.uid));
+        await deleteDoc(doc(db, "reviewers", user.uid));
       }
       console.log(error);
     }
@@ -169,10 +189,13 @@ function AccountPageReviewers(): JSX.Element {
                 value={pwd}
                 onChange={(e) => {
                   setPwd(e.target.value);
-                  const passwordRequirements = validatePassword(e.target.value);
-                  setSpecialChar(passwordRequirements.specialChar);
-                  setCapitalLetter(passwordRequirements.capitalLetter);
-                  setNumber(passwordRequirements.number);
+                  const validationStatus = getPasswordValidationStatus(
+                    e.target.value
+                  );
+                  setSpecialChar(validationStatus.specialChar);
+                  setCapitalLetter(validationStatus.capitalLetter);
+                  setNumber(validationStatus.number);
+                  setPassLength(validationStatus.pass_length);
                 }}
                 onFocus={() => setShowReqs(true)}
                 onBlur={() => setShowReqs(false)}
@@ -183,6 +206,16 @@ function AccountPageReviewers(): JSX.Element {
               {showReqs && (
                 <div className="pwd-reqs">
                   <p>Password requires:</p>
+                  <label id="checkbox">
+                    <input
+                      type="checkbox"
+                      name="options"
+                      value="Yes"
+                      checked={pass_length}
+                      readOnly
+                    />
+                    6 characters length
+                  </label>
                   <label id="checkbox">
                     <input
                       type="checkbox"
@@ -216,9 +249,13 @@ function AccountPageReviewers(): JSX.Element {
                 </div>
               )}
 
-              {((!specialChar || !number || !capitalLetter) && pwd && !showReqs) &&  (
-                <p className="validation">At least one password requirement was not met</p>
-              )}
+              {(!specialChar || !number || !capitalLetter || !pass_length) &&
+                pwd &&
+                !showReqs && (
+                  <p className="validation">
+                    At least one password requirement was not met
+                  </p>
+                )}
 
               <label>Confirm Password*</label>
               <div
@@ -262,7 +299,7 @@ function AccountPageReviewers(): JSX.Element {
               </p>
               <button
                 type="submit"
-                className={(
+                className={
                   !firstName ||
                   !lastName ||
                   !affiliation ||
@@ -272,9 +309,13 @@ function AccountPageReviewers(): JSX.Element {
                   !specialChar ||
                   !capitalLetter ||
                   !number ||
+                  !pass_length ||
                   pwdUnmatched ||
-                  emailError) ? "disable-submit" : "signup-btn2"}
-                disabled={(
+                  emailError
+                    ? "disable-submit"
+                    : "signup-btn2"
+                }
+                disabled={
                   !firstName ||
                   !lastName ||
                   !affiliation ||
@@ -284,8 +325,10 @@ function AccountPageReviewers(): JSX.Element {
                   !specialChar ||
                   !capitalLetter ||
                   !number ||
+                  !pass_length ||
                   pwdUnmatched ||
-                  emailError)}
+                  emailError
+                }
               >
                 Sign Up
               </button>
