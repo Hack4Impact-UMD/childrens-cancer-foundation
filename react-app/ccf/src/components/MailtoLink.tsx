@@ -1,45 +1,37 @@
 // react-app/ccf/src/components/MailtoLink.tsx
 
 import React from 'react';
+import MailtoLinkProps from "../types/MailToLinkTypes";
 
-// defining the props that our component expects
-interface MailtoLinkProps {
-    to: string | string[];
-    cc?: string | string[];
-    bcc?: string | string[];
-    subject?: string;
-    body?: string;
-    children: React.ReactNode; // The clickable content (link text, button, etc.)
-}
 
 const MailtoLink: React.FC<MailtoLinkProps> = ({
-  to,
-  cc,
-  bcc,
-  subject,
-  body,
-  children
-}) => {
-  // Helper function to handle either a single string or an array of strings
-  // Converts arrays into a comma-separated string
-  const formatList = (list: string | string[] | undefined) =>
-    Array.isArray(list) ? list.join(',') : list;
+                                                   to,
+                                                   cc,
+                                                   bcc,
+                                                   subject,
+                                                   body,
+                                                   children
+                                               }) => {
+    // Helper function to handle either a single string or an array of strings
+    // Converts arrays into a comma-separated string
+    const formatList = (list: string | string[] | undefined) =>
+        Array.isArray(list) ? list.join(',') : list;
 
-  let link = `mailto:${formatList(to)}`;
+    let link = `mailto:${formatList(to)}`;
 
-  const queryParts: string[] = [];
+    const queryParts: string[] = [];
 
-  if (cc) queryParts.push(`cc=${encodeURIComponent(formatList(cc) || '')}`);
-  if (bcc) queryParts.push(`bcc=${encodeURIComponent(formatList(bcc) || '')}`);
-  if (subject) queryParts.push(`subject=${encodeURIComponent(subject)}`);
-  if (body) queryParts.push(`body=${encodeURIComponent(body)}`);
+    if (cc) queryParts.push(`cc=${encodeURIComponent(formatList(cc) || '')}`);
+    if (bcc) queryParts.push(`bcc=${encodeURIComponent(formatList(bcc) || '')}`);
+    if (subject) queryParts.push(`subject=${encodeURIComponent(subject)}`);
+    if (body) queryParts.push(`body=${encodeURIComponent(body)}`);
 
-  // If any parameters were added, join them with "&" and attach to the mailto link
-  if (queryParts.length > 0) {
-    link += `?${queryParts.join('&')}`;
-  }
+    // If any parameters were added, join them with "&" and attach to the mailto link
+    if (queryParts.length > 0) {
+        link += `?${queryParts.join('&')}`;
+    }
 
-  return <a href={link}>{children}</a>;
+    return <a href={link}>{children}</a>;
 };
 
 export default MailtoLink;
