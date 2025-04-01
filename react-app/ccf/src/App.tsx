@@ -19,6 +19,7 @@ import faq_data from "./StaticData/FAQ-REVIEWER";
 import ApplicationForm from "./pages/application-form/ApplicationForm";
 import NRApplicationForm from "./pages/application-form/NRApplicationForm";
 import AccountSettingsPage from "./pages/settings/settings";
+import AdminDashboardViewAllAccounts from "./pages/admin-dashboard/AdminDashboardViewAll";
 
 function App(): JSX.Element {
   return (
@@ -77,11 +78,11 @@ function App(): JSX.Element {
             <ApplicantUsersDashboard />
           } 
         />    
-        {/* Admin dashboard */}   
+        {/* Admin View All Accounts Page*/}   
         <Route
-          path="/admin" 
+          path="/admin-all-accounts" 
           element={
-            <></>
+            <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
           } 
         />
         {/* Need to change path to create-account after authentication */}
