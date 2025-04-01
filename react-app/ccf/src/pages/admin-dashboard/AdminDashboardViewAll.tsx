@@ -50,6 +50,7 @@ function AdminDashboardViewAll(): JSX.Element {
                         decision: data.decision || "N/A",
                         grantType: data.grantType || "N/A",
                         cancerType: data.cancerType || "N/A",
+                        email: data.email || "N/A",
                     };
                 });
 
@@ -65,6 +66,8 @@ function AdminDashboardViewAll(): JSX.Element {
                         decision: data.decision || "N/A",
                         grantType: data.grantType || "N/A",
                         cancerType: data.cancerType || "N/A",
+                        email: data.email || "N/A",
+
                     };
                 });
 
@@ -80,6 +83,7 @@ function AdminDashboardViewAll(): JSX.Element {
                         decision: data.decision || "N/A",
                         grantType: data.grantType || "N/A",
                         cancerType: data.cancerType || "N/A",
+                        email: data.email || "N/A",
                     };
                 });
 
@@ -230,7 +234,7 @@ function AdminDashboardViewAll(): JSX.Element {
                                             <th>Name</th>
                                             <th>Institution/Hospital Affiliation</th>
                                             <th>Status</th>
-                                            <th>Account Number #</th>
+                                            <th>Email</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -281,7 +285,8 @@ function AdminDashboardViewAll(): JSX.Element {
                                                             <span className="status-text">{account.status}</span>
                                                         </div>
                                                     </td>
-                                                    <td>{account.accountNumber}</td>
+
+                                                    <td>{account.email}</td>
                                                 </tr>
                                             ))}
                                     </tbody>
