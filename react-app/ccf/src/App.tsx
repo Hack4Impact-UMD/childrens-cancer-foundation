@@ -8,6 +8,7 @@ import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashbo
 
 import Sidebar from "./components/sidebar/Sidebar";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
+import AdminApplicationsDatabase from "./pages/admin-database/AdminDatabase";
 import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
 import ReviewerProtectedRoute from './components/Routing/ReviewerProtectedRoute';
 import CreateAccMenu from './pages/create-acc-menu/CreateAccMenu';
@@ -61,8 +62,15 @@ function App(): JSX.Element {
           element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
         />
         {/* Admin dashboard */}
-        <Route path="/admin" element={<></>} />
+        <Route 
+          path="/admin" 
+          element={<></>} 
+        />
         Need to change path to create-account after authentication
+        <Route 
+          path="/admin-database"
+          element={<AdminApplicationsDatabase />}
+        />
         <Route
           path="/applicant-dashboard" 
           element={

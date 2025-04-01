@@ -1,0 +1,7 @@
+connectorId: default
+generate:
+  javascriptSdk:
+    outputDir: ../../react-app/ccf/dataconnect-generated/js/default-connector
+    package: "@firebasegen/default-connector"
+    packageJsonDir: ../../react-app/ccf
+    react: true
