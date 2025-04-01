@@ -231,3 +231,18 @@
     margin-top: 10px;
     font-weight: 500;
 }
+
+select.input {
+    width: 95%;
+    padding: 10px;
+    margin: 5px 0 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+select.input:focus {
+    outline: none;
+    border-color: #BE0019;
+}

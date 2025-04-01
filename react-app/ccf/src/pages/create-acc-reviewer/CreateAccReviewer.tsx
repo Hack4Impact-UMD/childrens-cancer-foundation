@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { getAuth, createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
 import { getFirestore, doc, setDoc, deleteDoc } from "firebase/firestore";
-import { checkEmailCreateAcc, validatePassword } from "../../utils/validation";
+import { checkEmailCreateAcc, validatePassword, VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
@@ -25,6 +25,8 @@ function AccountPageReviewers(): JSX.Element {
 
   //email req
   const [emailError, setEmailError] = useState(false);
+
+  const [institutionError, setInstitutionError] = useState(false);
 
   const navigate = useNavigate();
 
@@ -245,14 +247,25 @@ function AccountPageReviewers(): JSX.Element {
               )}
 
               <label>Institution/Hospital Affiliation*</label>
-              <input
-                type="text"
-                placeholder="Enter hospital name"
-                required
+              <select
                 value={affiliation}
-                onChange={(e) => setAffiliation(e.target.value)}
+                onChange={(e) => {
+                  setAffiliation(e.target.value);
+                  setInstitutionError(!validateInstitution(e.target.value));
+                }}
+                required
                 className="input"
-              />
+              >
+                <option value="">Select an institution</option>
+                {VALID_INSTITUTIONS.map((institution) => (
+                  <option key={institution} value={institution}>
+                    {institution}
+                  </option>
+                ))}
+              </select>
+              {institutionError && (
+                <p className="validation">Please select a valid institution</p>
+              )}
 
               <p className="acc-req2">
                 Already have an account?{" "}
@@ -273,7 +286,8 @@ function AccountPageReviewers(): JSX.Element {
                   !capitalLetter ||
                   !number ||
                   pwdUnmatched ||
-                  emailError) ? "disable-submit" : "signup-btn2"}
+                  emailError ||
+                  institutionError) ? "disable-submit" : "signup-btn2"}
                 disabled={(
                   !firstName ||
                   !lastName ||
@@ -285,7 +299,8 @@ function AccountPageReviewers(): JSX.Element {
                   !capitalLetter ||
                   !number ||
                   pwdUnmatched ||
-                  emailError)}
+                  emailError ||
+                  institutionError)}
               >
                 Sign Up
               </button>
