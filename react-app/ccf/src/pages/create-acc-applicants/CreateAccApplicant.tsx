@@ -6,11 +6,7 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import { db, auth } from "../../index";
 import { createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
-import {
-  checkEmailCreateAcc,
-  validatePassword,
-  getPasswordValidationStatus,
-} from "../../utils/validation";
+import { validatePassword } from "../../utils/validation";
 
 function AccountPageApplicants(): JSX.Element {
   //form inputs
@@ -25,7 +21,6 @@ function AccountPageApplicants(): JSX.Element {
   const [specialChar, setSpecialChar] = useState(false);
   const [capitalLetter, setCapitalLetter] = useState(false);
   const [number, setNumber] = useState(false);
-  const [pass_length, setPassLength] = useState(false);
   const [showReqs, setShowReqs] = useState(false);
   const [pwdUnmatched, setPwdUnmatched] = useState(false);
 
@@ -44,26 +39,27 @@ function AccountPageApplicants(): JSX.Element {
     pwdUnmatched,
   ]);
 
+  const checkEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.(com|edu|org)$/i;
+
+    if (!emailRegex.test(email)) {
+      setEmailError(true);
+    } else {
+      setEmailError(false);
+    }
+  };
+
   const handleSubmit = async (e: any) => {
+    // don't let user submit if pwd reqs aren't met
     e.preventDefault();
     const functions = getFunctions();
     const addApplicantRole = httpsCallable(functions, "addApplicantRole");
-
-    // Check password requirements
-    if (!validatePassword(pwd) || pwdUnmatched) {
+    console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
+    if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
       e.preventDefault();
       return;
     }
-
-    // Check email validity
-    if (!checkEmailCreateAcc(email)) {
-      setEmailError(true);
-      return;
-    } else {
-      setEmailError(false);
-    }
-
     let user = null;
 
     try {
@@ -153,7 +149,7 @@ function AccountPageApplicants(): JSX.Element {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  setEmailError(!checkEmailCreateAcc(e.target.value));
+                  checkEmail(e.target.value);
                 }}
                 className="input"
               />
@@ -170,15 +166,14 @@ function AccountPageApplicants(): JSX.Element {
                 value={pwd}
                 onChange={(e) => {
                   setPwd(e.target.value);
-                  const validationStatus = getPasswordValidationStatus(
+                  const requirements = validatePassword(
                     e.target.value
-                  );
-                  setSpecialChar(validationStatus.specialChar);
-                  setCapitalLetter(validationStatus.capitalLetter);
-                  setNumber(validationStatus.number);
-                  setPassLength(validationStatus.pass_length);
+                  ).requirements;
+                  setSpecialChar(requirements.specialChar);
+                  setCapitalLetter(requirements.capitalLetter);
+                  setNumber(requirements.number);
                 }}
-                onFocus={() => setShowReqs(true)}
+                onFocus={() => setShowReqs(true)} // Show on focus
                 onBlur={() => setShowReqs(false)}
                 onKeyUp={checkConfirmPwd}
                 className="input"
@@ -187,16 +182,6 @@ function AccountPageApplicants(): JSX.Element {
               {showReqs && (
                 <div className="pwd-reqs">
                   <p>Password requires:</p>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={pass_length}
-                      readOnly
-                    />
-                    6 characters length
-                  </label>
                   <label id="checkbox">
                     <input
                       type="checkbox"
@@ -230,7 +215,7 @@ function AccountPageApplicants(): JSX.Element {
                 </div>
               )}
 
-              {(!specialChar || !number || !capitalLetter || !pass_length) &&
+              {(!specialChar || !number || !capitalLetter) &&
                 pwd &&
                 !showReqs && (
                   <p className="validation">
@@ -290,7 +275,6 @@ function AccountPageApplicants(): JSX.Element {
                   !specialChar ||
                   !capitalLetter ||
                   !number ||
-                  !pass_length ||
                   pwdUnmatched ||
                   emailError
                     ? "disable-submit"
@@ -307,7 +291,6 @@ function AccountPageApplicants(): JSX.Element {
                   !specialChar ||
                   !capitalLetter ||
                   !number ||
-                  !pass_length ||
                   pwdUnmatched ||
                   emailError
                 }

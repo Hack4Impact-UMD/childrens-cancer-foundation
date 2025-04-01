@@ -43,22 +43,26 @@ export const checkPasswordRequirements = (
     specialChar: /[\W_]/.test(password), // Checks for special character
     capitalLetter: /[A-Z]/.test(password), // Checks for capital letter
     number: /[0-9]/.test(password), // Checks for number
-    pass_length: password.length >= 6, // Checks for password length >= 6 characters
+    pass_length: password.length >= 6, // Checks for minimum 6 characters
   };
 };
 
 // Check if user input satisfies password requirements
-export const validatePassword = (password: string): boolean => {
+export const validatePassword = (
+  password: string
+): {
+  isValid: boolean;
+  requirements: {
+    specialChar: boolean;
+    capitalLetter: boolean;
+    number: boolean;
+    pass_length: boolean;
+  };
+} => {
   const requirements = checkPasswordRequirements(password);
-  return (
-    requirements.specialChar &&
-    requirements.capitalLetter &&
-    requirements.number &&
-    requirements.pass_length
-  );
-};
-
-// Get detailed password validation status
-export const getPasswordValidationStatus = (password: string) => {
-  return checkPasswordRequirements(password);
+  const isValid = Object.values(requirements).every(Boolean);
+  return {
+    isValid,
+    requirements,
+  };
 };

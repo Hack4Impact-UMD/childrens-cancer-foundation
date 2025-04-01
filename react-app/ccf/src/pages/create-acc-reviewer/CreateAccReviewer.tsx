@@ -9,11 +9,7 @@ import {
   deleteUser,
 } from "firebase/auth";
 import { getFirestore, doc, setDoc, deleteDoc } from "firebase/firestore";
-import {
-  checkEmailCreateAcc,
-  validatePassword,
-  getPasswordValidationStatus,
-} from "../../utils/validation";
+import { checkEmailCreateAcc, validatePassword } from "../../utils/validation";
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
@@ -28,7 +24,6 @@ function AccountPageReviewers(): JSX.Element {
   const [specialChar, setSpecialChar] = useState(false);
   const [capitalLetter, setCapitalLetter] = useState(false);
   const [number, setNumber] = useState(false);
-  const [pass_length, setPassLength] = useState(false);
   const [showReqs, setShowReqs] = useState(false);
   const [pwdUnmatched, setPwdUnmatched] = useState(false);
 
@@ -53,20 +48,13 @@ function AccountPageReviewers(): JSX.Element {
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
 
     // Check password requirements
-    const validationStatus = getPasswordValidationStatus(pwd);
-    setSpecialChar(validationStatus.specialChar);
-    setCapitalLetter(validationStatus.capitalLetter);
-    setNumber(validationStatus.number);
-    setPassLength(validationStatus.pass_length);
+    const passwordRequirements = validatePassword(pwd);
+    setSpecialChar(passwordRequirements.requirements.specialChar);
+    setCapitalLetter(passwordRequirements.requirements.capitalLetter);
+    setNumber(passwordRequirements.requirements.number);
 
     // Don't let user submit if pwd reqs aren't met
-    if (
-      !validationStatus.specialChar ||
-      !validationStatus.capitalLetter ||
-      !validationStatus.number ||
-      !validationStatus.pass_length ||
-      pwdUnmatched
-    ) {
+    if (!passwordRequirements.isValid || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
       e.preventDefault();
       return;
@@ -189,13 +177,12 @@ function AccountPageReviewers(): JSX.Element {
                 value={pwd}
                 onChange={(e) => {
                   setPwd(e.target.value);
-                  const validationStatus = getPasswordValidationStatus(
-                    e.target.value
+                  const passwordRequirements = validatePassword(e.target.value);
+                  setSpecialChar(passwordRequirements.requirements.specialChar);
+                  setCapitalLetter(
+                    passwordRequirements.requirements.capitalLetter
                   );
-                  setSpecialChar(validationStatus.specialChar);
-                  setCapitalLetter(validationStatus.capitalLetter);
-                  setNumber(validationStatus.number);
-                  setPassLength(validationStatus.pass_length);
+                  setNumber(passwordRequirements.requirements.number);
                 }}
                 onFocus={() => setShowReqs(true)}
                 onBlur={() => setShowReqs(false)}
@@ -206,16 +193,6 @@ function AccountPageReviewers(): JSX.Element {
               {showReqs && (
                 <div className="pwd-reqs">
                   <p>Password requires:</p>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={pass_length}
-                      readOnly
-                    />
-                    6 characters length
-                  </label>
                   <label id="checkbox">
                     <input
                       type="checkbox"
@@ -249,7 +226,7 @@ function AccountPageReviewers(): JSX.Element {
                 </div>
               )}
 
-              {(!specialChar || !number || !capitalLetter || !pass_length) &&
+              {(!specialChar || !number || !capitalLetter) &&
                 pwd &&
                 !showReqs && (
                   <p className="validation">
@@ -309,7 +286,6 @@ function AccountPageReviewers(): JSX.Element {
                   !specialChar ||
                   !capitalLetter ||
                   !number ||
-                  !pass_length ||
                   pwdUnmatched ||
                   emailError
                     ? "disable-submit"
@@ -325,7 +301,6 @@ function AccountPageReviewers(): JSX.Element {
                   !specialChar ||
                   !capitalLetter ||
                   !number ||
-                  !pass_length ||
                   pwdUnmatched ||
                   emailError
                 }

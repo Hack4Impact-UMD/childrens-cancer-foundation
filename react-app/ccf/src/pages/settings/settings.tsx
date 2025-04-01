@@ -3,10 +3,7 @@ import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css";
-import {
-  validatePassword,
-  getPasswordValidationStatus,
-} from "../../utils/validation";
+import { validatePassword } from "../../utils/validation";
 
 function AccountSettingsPage(): JSX.Element {
   // User information
@@ -19,7 +16,6 @@ function AccountSettingsPage(): JSX.Element {
   const [specialChar, setSpecialChar] = useState(false);
   const [capitalLetter, setCapitalLetter] = useState(false);
   const [number, setNumber] = useState(false);
-  const [pass_length, setPassLength] = useState(false);
   const [showReqs, setShowReqs] = useState(false);
   const [pwdUnmatched, setPwdUnmatched] = useState(false);
   const [currentPasswordMatched, setCurrentPasswordMatched] = useState(true);
@@ -41,6 +37,14 @@ function AccountSettingsPage(): JSX.Element {
     }, 1000);
   }, []);
 
+  const checkPasswordRequirements = (password: string) => {
+    return {
+      specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+      capitalLetter: /[A-Z]/.test(password),
+      number: /\d/.test(password),
+    };
+  };
+
   const checkConfirmPwd = () => {
     if (confirmPwd !== "") {
       confirmPwd === pwd ? setPwdUnmatched(false) : setPwdUnmatched(true);
@@ -49,7 +53,13 @@ function AccountSettingsPage(): JSX.Element {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    if (!validatePassword(pwd) || pwdUnmatched || !currentPasswordMatched) {
+    if (
+      !specialChar ||
+      !capitalLetter ||
+      !number ||
+      pwdUnmatched ||
+      !currentPasswordMatched
+    ) {
       console.log("Failed to submit. One requirement was not met.");
       return;
     }
@@ -164,13 +174,12 @@ function AccountSettingsPage(): JSX.Element {
                         value={pwd}
                         onChange={(e) => {
                           setPwd(e.target.value);
-                          const validationStatus = getPasswordValidationStatus(
+                          const newRequirements = validatePassword(
                             e.target.value
-                          );
-                          setSpecialChar(validationStatus.specialChar);
-                          setCapitalLetter(validationStatus.capitalLetter);
-                          setNumber(validationStatus.number);
-                          setPassLength(validationStatus.pass_length);
+                          ).requirements;
+                          setSpecialChar(newRequirements.specialChar);
+                          setCapitalLetter(newRequirements.capitalLetter);
+                          setNumber(newRequirements.number);
                         }}
                         onFocus={() => setShowReqs(true)}
                         onBlur={() => setShowReqs(false)}
@@ -181,16 +190,6 @@ function AccountSettingsPage(): JSX.Element {
                     {showReqs && (
                       <div className="pwd-reqs">
                         <p>Password requires:</p>
-                        <label id="checkbox">
-                          <input
-                            type="checkbox"
-                            name="options"
-                            value="Yes"
-                            checked={pass_length}
-                            readOnly
-                          />
-                          6 characters length
-                        </label>
                         <label id="checkbox">
                           <input
                             type="checkbox"
@@ -224,10 +223,7 @@ function AccountSettingsPage(): JSX.Element {
                       </div>
                     )}
 
-                    {(!specialChar ||
-                      !number ||
-                      !capitalLetter ||
-                      !pass_length) &&
+                    {(!specialChar || !number || !capitalLetter) &&
                       pwd &&
                       !showReqs && (
                         <p className="validation">
@@ -266,7 +262,6 @@ function AccountSettingsPage(): JSX.Element {
                         !specialChar ||
                         !capitalLetter ||
                         !number ||
-                        !pass_length ||
                         pwdUnmatched
                           ? "disable-submit"
                           : "signup-btn2"
@@ -280,7 +275,6 @@ function AccountSettingsPage(): JSX.Element {
                         !specialChar ||
                         !capitalLetter ||
                         !number ||
-                        !pass_length ||
                         pwdUnmatched
                       }
                     >
