@@ -51,4 +51,21 @@ export const validatePassword = (password: string) => {
         capitalLetter: requirements.capitalLetter,
         number: requirements.number,
     };
+};
+
+export const VALID_INSTITUTIONS = [
+    "Johns Hopkins Medicine",
+    "Georgetown University",
+    "National Cancer Institute",
+    "University of Maryland",
+    "Children's National",
+    "Children's Hospital at Sinai",
+    "Other"
+] as const;
+
+export type Institution = typeof VALID_INSTITUTIONS[number];
+
+// make sure institution is in list above
+export const validateInstitution = (institution: string): boolean => {
+    return VALID_INSTITUTIONS.includes(institution as Institution);
 }; 

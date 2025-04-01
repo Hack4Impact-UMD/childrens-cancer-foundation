@@ -9,6 +9,7 @@ import {
   deleteUser,
 } from "firebase/auth";
 import {doc, setDoc, deleteDoc } from "firebase/firestore";
+import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
 
 function AccountPageApplicants(): JSX.Element {
   //form inputs
@@ -28,6 +29,8 @@ function AccountPageApplicants(): JSX.Element {
 
   //email req
   const [emailError, setEmailError] = useState(false);
+
+  const [institutionError, setInstitutionError] = useState(false);
 
   const navigate = useNavigate();
 
@@ -248,14 +251,25 @@ function AccountPageApplicants(): JSX.Element {
               )}
 
               <label>Institution/Hospital Affiliation*</label>
-              <input
-                type="text"
-                placeholder="Enter hospital name"
-                required
+              <select
                 value={affiliation}
-                onChange={(e) => setAffiliation(e.target.value)}
+                onChange={(e) => {
+                  setAffiliation(e.target.value);
+                  setInstitutionError(!validateInstitution(e.target.value));
+                }}
+                required
                 className="input"
-              />
+              >
+                <option value="">Select an institution</option>
+                {VALID_INSTITUTIONS.map((institution) => (
+                  <option key={institution} value={institution}>
+                    {institution}
+                  </option>
+                ))}
+              </select>
+              {institutionError && (
+                <p className="validation">Please select a valid institution</p>
+              )}
 
               <p className="acc-req2">
                 Already have an account?{" "}
@@ -276,7 +290,8 @@ function AccountPageApplicants(): JSX.Element {
                   !capitalLetter ||
                   !number ||
                   pwdUnmatched ||
-                  emailError
+                  emailError ||
+                  institutionError
                     ? "disable-submit"
                     : "signup-btn2"
                 }
@@ -292,7 +307,8 @@ function AccountPageApplicants(): JSX.Element {
                   !capitalLetter ||
                   !number ||
                   pwdUnmatched ||
-                  emailError
+                  emailError ||
+                  institutionError
                 }
               >
                 Sign Up
