@@ -1,23 +1,24 @@
 .dashboard-container {
     padding: 20px;
     margin-left: 250px;
+    background-color: #f5f5f5;
 }
 
-.ViewAll-header-container {
+.ApplicantDashboard-header-container {
     display: flex;
     align-items: center;
     margin-bottom: 30px;
 }
 
-.ViewAll-logo {
-    width: 60px;
-    height: 60px;
+.ApplicantDashboard-logo {
+    width: 100px;
+    height: 100px;
     margin-right: 15px;
 }
 
-.ViewAll-header {
+.ApplicantDashboard-header {
     color: #c41230;
-    font-size: 28px;
+    font-size: 60px;
     margin: 0;
 }
 
@@ -25,7 +26,7 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
-
+    padding: 10px;
     border-radius: 5px;
     gap: 10px;
 }
@@ -37,6 +38,7 @@
     border-radius: 4px;
     padding: 5px 10px;
     width: 100%;
+    border-radius: 10px;
 }
 
 .search-icon {
@@ -60,15 +62,16 @@
 .filter select {
     padding: 8px 12px;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #D9D9D9   ;
+    border-radius: 10px;
+    background-color: #D9D9D9;
     min-width: 150px;
+    margin-right: 20px;
 }
 
 .accounts-table-container {
     background-color: #fff;
+    border: 2px solid #c41230;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
@@ -76,6 +79,8 @@
     background-color: #f9f9f9;
     padding: 15px 20px;
     border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
 }
 
 .accounts-header h2 {
@@ -99,13 +104,13 @@
 .accounts-table th {
     background-color: #f9f5e7;
     font-weight: 600;
+    text-transform: uppercase;
 }
 
 .accounts-table tbody tr {
     background-color: #fff;
 }
 
-/* Apply alternating colors */
 .accounts-table tbody tr:nth-child(odd) {
     background-color: #fff;
 }
@@ -118,39 +123,83 @@
     background-color: #fff3c4;
 }
 
-.status-indicator {
-    display: inline-flex;
+.accounts-table td input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.status-container {
+    display: flex;
     align-items: center;
-    padding: 5px 10px;
-    border-radius: 20px;
+    gap: 8px;
+}
+
+.status-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+}
+
+.status-icon.active {
+    background-color: #2e7d32; 
+}
+
+.status-icon.active::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 4px;
+    border-left: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: translate(-50%, -70%) rotate(-45deg); 
+}
+
+.status-icon.inactive {
+    background-color: #c62828; 
+}
+
+.status-icon.inactive::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: transparent;
+    border: 2px solid white;
+    border-left: none;
+    border-top: none;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.status-icon.inactive::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: transparent;
+    border: 2px solid white;
+    border-right: none;
+    border-bottom: none;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.status-text {
     font-size: 14px;
     font-weight: 500;
 }
 
-.status-indicator.active {
+.status-text.active {
     color: #2e7d32;
 }
 
-.status-indicator.active::before {
-    content: "";
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    background-color: #2e7d32;
-    border-radius: 50%;
-    margin-right: 5px;
-}
-
-.status-indicator.inactive {
+.status-text.inactive {
     color: #c62828;
-}
-
-.status-indicator.inactive::before {
-    content: "";
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    background-color: #c62828;
-    border-radius: 50%;
-    margin-right: 5px;
 }
