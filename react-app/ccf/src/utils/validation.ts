@@ -37,13 +37,13 @@ export const checkPasswordRequirements = (
   specialChar: boolean;
   capitalLetter: boolean;
   number: boolean;
-  pass_length: boolean;
+  length: boolean;
 } => {
   return {
     specialChar: /[\W_]/.test(password), // Checks for special character
     capitalLetter: /[A-Z]/.test(password), // Checks for capital letter
     number: /[0-9]/.test(password), // Checks for number
-    pass_length: password.length >= 6, // Checks for minimum 6 characters
+    length: password.length >= 6, // Checks for minimum 6 characters
   };
 };
 
@@ -56,7 +56,7 @@ export const validatePassword = (
     specialChar: boolean;
     capitalLetter: boolean;
     number: boolean;
-    pass_length: boolean;
+    length: boolean;
   };
 } => {
   const requirements = checkPasswordRequirements(password);

@@ -169,9 +169,6 @@ function AccountPageApplicants(): JSX.Element {
                   const requirements = validatePassword(
                     e.target.value
                   ).requirements;
-                  setSpecialChar(requirements.specialChar);
-                  setCapitalLetter(requirements.capitalLetter);
-                  setNumber(requirements.number);
                 }}
                 onFocus={() => setShowReqs(true)} // Show on focus
                 onBlur={() => setShowReqs(false)}

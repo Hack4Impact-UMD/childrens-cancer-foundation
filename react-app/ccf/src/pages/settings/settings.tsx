@@ -173,10 +173,10 @@ function AccountSettingsPage(): JSX.Element {
                         required
                         value={pwd}
                         onChange={(e) => {
-                          setPwd(e.target.value);
                           const newRequirements = validatePassword(
                             e.target.value
                           ).requirements;
+                          setPwd(e.target.value);
                           setSpecialChar(newRequirements.specialChar);
                           setCapitalLetter(newRequirements.capitalLetter);
                           setNumber(newRequirements.number);

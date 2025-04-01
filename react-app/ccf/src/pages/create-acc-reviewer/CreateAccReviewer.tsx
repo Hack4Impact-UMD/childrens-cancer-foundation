@@ -48,13 +48,10 @@ function AccountPageReviewers(): JSX.Element {
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
 
     // Check password requirements
-    const passwordRequirements = validatePassword(pwd);
-    setSpecialChar(passwordRequirements.requirements.specialChar);
-    setCapitalLetter(passwordRequirements.requirements.capitalLetter);
-    setNumber(passwordRequirements.requirements.number);
+    const { isValid, requirements } = validatePassword(pwd);
 
     // Don't let user submit if pwd reqs aren't met
-    if (!passwordRequirements.isValid || pwdUnmatched) {
+    if (!isValid || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
       e.preventDefault();
       return;
@@ -160,7 +157,7 @@ function AccountPageReviewers(): JSX.Element {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  checkEmailCreateAcc(e.target.value);
+                  setEmailError(!checkEmailCreateAcc(e.target.value));
                 }}
                 className="input"
               />
@@ -177,12 +174,10 @@ function AccountPageReviewers(): JSX.Element {
                 value={pwd}
                 onChange={(e) => {
                   setPwd(e.target.value);
-                  const passwordRequirements = validatePassword(e.target.value);
-                  setSpecialChar(passwordRequirements.requirements.specialChar);
-                  setCapitalLetter(
-                    passwordRequirements.requirements.capitalLetter
-                  );
-                  setNumber(passwordRequirements.requirements.number);
+                  const { requirements } = validatePassword(e.target.value);
+                  setSpecialChar(requirements.specialChar);
+                  setCapitalLetter(requirements.capitalLetter);
+                  setNumber(requirements.number);
                 }}
                 onFocus={() => setShowReqs(true)}
                 onBlur={() => setShowReqs(false)}
