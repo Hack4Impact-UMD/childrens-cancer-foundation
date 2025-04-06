@@ -11,6 +11,7 @@ export interface ApplicationInfo {
     adminOfficialAddress: string;
     adminPhoneNumber: string;
     adminEmail: string;
+    decision: string;
 };
 
 export interface ApplicationQuestions {
@@ -22,4 +23,5 @@ export interface ApplicationQuestions {
     dates: string;
     continuation: boolean;
     continuationYears?: string;
+    grantType: string;
 }
