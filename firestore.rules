@@ -2,6 +2,31 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if user is an admin
+    function isAdmin() {
+      return request.auth != null && 
+        request.auth.token.role == 'admin';
+    }
+
+    // Helper function to check if user is an applicant
+    function isApplicant() {
+      return request.auth != null && 
+        request.auth.token.role == 'applicant';
+    }
+
+    // Applications collection rules
+    match /applications/{applicationId} {
+      // Allow only admins to read all applications
+      allow read: if isAdmin();
+      
+      // Allow applicants to create new applications
+      allow create: if isApplicant() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Allow applicants to update their own applications
+      allow update: if isApplicant() && 
+        resource.data.userId == request.auth.uid;
+    }
 
     // This rule allows anyone with your Firestore database reference to view, edit,
     // and delete all data in your Firestore database. It is useful for getting
