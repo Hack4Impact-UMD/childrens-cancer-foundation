@@ -197,7 +197,7 @@ const AssignReviewersPage: React.FC = () => {
   };
 
   return (
-    <div className="assign-revssiewers-page">
+    <div className="assign-reviewers-page">
       <Sidebar links={sidebarLinks} />
       
       <div className="assign-reviewers-container">
