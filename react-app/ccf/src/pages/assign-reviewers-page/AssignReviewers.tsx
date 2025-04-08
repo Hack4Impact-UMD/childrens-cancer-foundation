@@ -197,10 +197,10 @@ const AssignReviewersPage: React.FC = () => {
   };
 
   return (
-    <div className="assign-reviewers-page">
+    <div className="assign-revssiewers-page">
       <Sidebar links={sidebarLinks} />
       
-      <div className="dashboard-container">
+      <div className="assign-reviewers-container">
         <div className="page-header">
           <div className="logo-container">
             <img src={logo} alt="Logo" className="logo" />

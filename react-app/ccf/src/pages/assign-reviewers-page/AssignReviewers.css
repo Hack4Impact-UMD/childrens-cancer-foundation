@@ -4,10 +4,16 @@
   font-family: Arial, sans-serif;
 }
 
-.dashboard-container {
+.assign-reviewers-container {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  margin-left: 256px;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed + .assign-reviewers-container {
+  margin-left: 70px;
 }
 
 .page-header {
