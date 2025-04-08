@@ -1,9 +1,13 @@
+
 import { useEffect, useState } from "react";
 import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css"
+import { getSidebarbyRole} from "../../types/sidebar-types";
+
 function AccountSettingsPage(): JSX.Element {
+  const sidebarItems = getSidebarbyRole('applicant');
   // User information
   const [username, setUsername] = useState<string | null>("example_user");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -58,16 +62,15 @@ function AccountSettingsPage(): JSX.Element {
     console.log("Password changed successfully:", pwd);
   };
 
-  const sidebarItems = [
-    {name: "Home", path: "/"},
-    {name: "Account Settings", path: "/settings"},
-    {name: "Logout", path: "/login"}
-  ];
+  // const sidebarItems = [
+  //   {name: "Home", path: "/"},
+  //   {name: "Account Settings", path: "/settings"},
+  //   {name: "Logout", path: "/login"}
+  // ];
 
   return (
       <div>
-      <Sidebar links={sidebarItems}
-      />
+      <Sidebar links={sidebarItems} role="applicant" />
     <div className="dashboard-container">
 
       <div className="AccountSettings">
