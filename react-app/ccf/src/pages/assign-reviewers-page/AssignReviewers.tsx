@@ -107,78 +107,82 @@ const AssignReviewersPage: React.FC = () => {
   };
 
   const confirmReviewers = (id: string) => {
+    // Implementation to be added
   };
 
   const renderApplications = (status: AssignReviewers['status']) => {
     return applications
       .filter(app => app.status === status)
       .map(app => (
-        <div key={app.id} className="application-card">
+        <div key={app.id} className="ar-application-card">
           <div 
-            className={`application-header ${app.expanded ? 'expanded' : ''}`} 
+            className={`ar-application-header ${app.expanded ? 'expanded' : ''}`} 
             onClick={() => toggleExpand(app.id)}
           >
-            <div className="application-icon-title">
-              <FaFileAlt className="application-icon" />
-              <div className="application-info">
+            <div className="ar-application-icon-title">
+              <FaFileAlt className="ar-application-icon" />
+              <div className="ar-application-info">
                 <h3>{app.title}</h3>
-                <p className="applicant-type">{app.applicant}</p>
+                <p className="ar-applicant-type">{app.applicant}</p>
               </div>
             </div>
-            <span className="expand-icon">{app.expanded ? <FaArrowUp /> : <FaArrowDown />}</span>
+            <span className="ar-expand-icon">
+              {app.expanded ? <FaArrowUp color="#1e3a8a" /> : <FaArrowDown color="white" />}
+            </span>
           </div>
           
           {app.expanded && (
-            <div className="application-details">
-              <div className="reviewer-fields">
+            <div className="ar-application-details">
+              <div className="ar-application-divider"></div>
+              <div className="ar-reviewer-fields">
                 {status === 'not-started' ? (
                   <>
-                    <div className="reviewer-field">
+                    <div className="ar-reviewer-field">
                       <label>Primary Reviewer:</label>
-                      <div className="reviewer-input-container">
-                        <button className="add-reviewer">+</button>
+                      <div className="ar-reviewer-input-container">
+                        <button className="ar-add-reviewer">+</button>
                       </div>
                     </div>
-                    <div className="reviewer-field">
+                    <div className="ar-reviewer-field">
                       <label>Secondary Reviewer:</label>
-                      <div className="reviewer-input-container">
-                        <button className="add-reviewer">+</button>
+                      <div className="ar-reviewer-input-container">
+                        <button className="ar-add-reviewer">+</button>
                       </div>
                     </div>
                   </>
                 ) : status === 'in-progress' ? (
                   <>
-                    <div className="reviewer-field">
+                    <div className="ar-reviewer-field">
                       <label>Primary Reviewer:</label>
-                      <div className="reviewer-assigned">
-                        <span className='reviewer'>{app.primaryReviewer}</span>
-                        <button className="remove-reviewer">×</button>
+                      <div className="ar-reviewer-assigned">
+                        <span className='ar-reviewer'>{app.primaryReviewer}</span>
+                        <button className="ar-remove-reviewer">×</button>
                       </div>
                     </div>
-                    <div className="reviewer-field">
+                    <div className="ar-reviewer-field">
                       <label>Secondary Reviewer:</label>
-                      <div className="reviewer-assigned">
-                        <span className='reviewer'>{app.secondaryReviewer}</span>
-                        <button className="remove-reviewer">×</button>
+                      <div className="ar-reviewer-assigned">
+                        <span className='ar-reviewer'>{app.secondaryReviewer}</span>
+                        <button className="ar-remove-reviewer">×</button>
                       </div>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="reviewer-field">
+                    <div className="ar-reviewer-field">
                       <label>Primary Reviewer:</label>
-                      <span className="reviewer-completed">{app.primaryReviewer}</span>
+                      <span className="ar-reviewer-completed">{app.primaryReviewer}</span>
                     </div>
-                    <div className="reviewer-field">
+                    <div className="ar-reviewer-field">
                       <label>Secondary Reviewer:</label>
-                      <span className="reviewer-completed">{app.secondaryReviewer}</span>
+                      <span className="ar-reviewer-completed">{app.secondaryReviewer}</span>
                     </div>
                   </>
                 )}
               </div>
               
               {(status === 'not-started' || status === 'in-progress') && (
-                <div className="confirm-btn-container">
+                <div className="ar-confirm-btn-container">
                   <Button 
                     variant="blue" 
                     width="100%" 
@@ -197,36 +201,42 @@ const AssignReviewersPage: React.FC = () => {
   };
 
   return (
-    <div className="assign-reviewers-page">
+    <div className="ar-assign-reviewers-page">
       <Sidebar links={sidebarLinks} />
       
-      <div className="assign-reviewers-container">
-        <div className="page-header">
-          <div className="logo-container">
-            <img src={logo} alt="Logo" className="logo" />
+      <div className="ar-assign-reviewers-container">
+        <div className="ar-page-header">
+          <div className="ar-logo-container">
+            <img src={logo} alt="Logo" className="ar-logo" />
             <h1>Assign Reviewers</h1>
           </div>
         </div>
         
-        <div className="page-content">
-          <div className="applications-section">
+        <div className="ar-page-content">
+          <div className="ar-applications-section">
             <h2>Not Started Assignments</h2>
-            <div className="applications-container">
-              {renderApplications('not-started')}
+            <div className="ar-applications-border-container">
+              <div className="ar-applications-container">
+                {renderApplications('not-started')}
+              </div>
             </div>
           </div>
 
-          <div className="applications-section">
+          <div className="ar-applications-section">
             <h2>In Progress Assignments</h2>
-            <div className="applications-container">
-              {renderApplications('in-progress')}
+            <div className="ar-applications-border-container">
+              <div className="ar-applications-container">
+                {renderApplications('in-progress')}
+              </div>
             </div>
           </div>
 
-          <div className="applications-section">
+          <div className="ar-applications-section">
             <h2>Completed Assignments</h2>
-            <div className="applications-container">
-              {renderApplications('completed')}
+            <div className="ar-applications-border-container">
+              <div className="ar-applications-container">
+                {renderApplications('completed')}
+              </div>
             </div>
           </div>
         </div>
