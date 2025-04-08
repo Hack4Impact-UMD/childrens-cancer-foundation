@@ -120,3 +120,49 @@ export const getReviewerUser = async (userId: string): Promise<ReviewerUser | nu
     throw error;
   }
 };
+
+// Function to assign a reviewer to an application
+export const assignApplicationToReviewer = async (userId: string, applicationId: string): Promise<void> => {
+  try {
+    const reviewerRef = doc(collection(db, 'reviewerUsers'), userId);
+    
+    //snapshot
+    const reviewerSnap = await getDoc(reviewerRef);
+
+    if (!reviewerSnap.exists()) {
+      throw new Error(`Reviewer with ID ${userId} does not exist`);
+    }
+
+    const reviewerData = reviewerSnap.data();
+    const assignedApplications = reviewerData.assignedApplications || [];
+
+    // Avoid duplicates
+    if (!assignedApplications.includes(applicationId)) {
+      assignedApplications.push(applicationId);
+    }
+
+    await updateDoc(reviewerRef, {
+      assignedApplications,
+    });
+
+    // update the application to include the reviewer too
+    const appRef = doc(collection(db, 'applications'), applicationId);
+    const appSnap = await getDoc(appRef);
+    if (appSnap.exists()) {
+      const appData = appSnap.data();
+      const assignedReviewers = appData.assignedReviewers || [];
+
+      if (!assignedReviewers.includes(userId)) {
+        assignedReviewers.push(userId);
+        await updateDoc(appRef, {
+          assignedReviewers,
+        });
+      }
+    }
+
+    // warning if it didn't work
+  } catch (error) {
+    console.error('Error assigning application to reviewer:', error);
+    throw error;
+  }
+};
