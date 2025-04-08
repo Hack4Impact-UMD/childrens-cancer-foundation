@@ -59,7 +59,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const renderPage = () => {
         switch (currentPage) {
             case 1:
-                return <GrantProposal type={type} />;
+                return <GrantProposal type={type} formData={formData} setFormData={setFormData} />;
             case 2:
                 return <AboutGrant type={type} formData={formData} />;
             case 3:
