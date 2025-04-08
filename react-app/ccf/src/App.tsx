@@ -20,6 +20,7 @@ import ApplicationForm from "./pages/application-form/ApplicationForm";
 import NRApplicationForm from "./pages/application-form/NRApplicationForm";
 import AccountSettingsPage from "./pages/settings/settings";
 import AdminDashboardViewAllAccounts from "./pages/admin-dashboard/AdminDashboardViewAll";
+import GrantAwards from './pages/grant-awards/GrantAwards';
 
 function App(): JSX.Element {
   return (
@@ -124,6 +125,10 @@ function App(): JSX.Element {
         <Route
             path={"/settings"}
             element={<AccountSettingsPage/>}
+        />
+        <Route
+            path="/grant-awards"
+            element={<AdminProtectedRoute element={<GrantAwards />} />}
         />
       </Routes>
 

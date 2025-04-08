@@ -192,3 +192,30 @@
     color: #BE0019;
 }
 
+.editable-input {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 90%; 
+    box-sizing: border-box;
+    background-color: #fff; 
+}
+
+.editable-input:focus {
+    outline: none;
+    border-color: #BE0019;
+    box-shadow: 0 0 0 2px rgba(190, 0, 25, 0.2);
+}
+
+.score-input {
+    text-align: right;
+}
+
+.currency-input {
+    text-align: right;
+}
+
+.applications-table td {
+    vertical-align: middle;
+}
+
