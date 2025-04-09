@@ -59,7 +59,7 @@ function ApplicantUsersDashboard(): JSX.Element {
 
     return (
         <div>
-            <Sidebar links={sidebarItems} role="applicant"/>
+            <Sidebar links={sidebarItems}/>
             <div className={"dashboard-container"} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                 <div className="ApplicantDashboard">
                     <div className="ApplicantDashboard-header-container">
