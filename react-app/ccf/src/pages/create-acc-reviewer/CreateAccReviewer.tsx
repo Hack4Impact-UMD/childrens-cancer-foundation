@@ -1,11 +1,15 @@
+import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccReviewer.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { getAuth, createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
-import { getFirestore, doc, setDoc, deleteDoc } from "firebase/firestore";
-import { checkEmailCreateAcc, validatePassword, VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { db, auth } from "../../index"
+import {
+  createUserWithEmailAndPassword,
+  deleteUser,
+} from "firebase/auth";
+import {doc, setDoc, deleteDoc } from "firebase/firestore";
+import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
@@ -40,61 +44,64 @@ function AccountPageReviewers(): JSX.Element {
     pwdUnmatched,
   ]);
 
+  /* Check if user input satisfies password requirements */
+  const checkPasswordRequirements = (password: string) => {
+    setSpecialChar(/[\W_]/.test(password)); // Checks for special character
+    setCapitalLetter(/[A-Z]/.test(password)); // Checks for capital letter
+    setNumber(/[0-9]/.test(password)); // Checks for number
+  };
+
+  const checkEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.(com|edu|org)$/i;
+
+    if (!emailRegex.test(email)) {
+      setEmailError(true);
+    } else {
+      setEmailError(false);
+    }
+  };
+
   const handleSubmit = async (e: any) => {
+    // don't let user submit if pwd reqs aren't met
     e.preventDefault();
     const functions = getFunctions();
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
-
-    // Check password requirements
-    const passwordRequirements = validatePassword(pwd);
-    setSpecialChar(passwordRequirements.specialChar);
-    setCapitalLetter(passwordRequirements.capitalLetter);
-    setNumber(passwordRequirements.number);
-
-    // Don't let user submit if pwd reqs aren't met
-    if (!passwordRequirements.specialChar || !passwordRequirements.capitalLetter || !passwordRequirements.number || pwdUnmatched) {
+    console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
+    if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
       e.preventDefault();
       return;
     }
-
-    // Check email validity
-    if (!checkEmailCreateAcc(email)) {
-      setEmailError(true);
-      return;
-    } else {
-      setEmailError(false);
-    }
-
-    const auth = getAuth();
-    const db = getFirestore();
     let user = null;
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, pwd);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        pwd
+      );
       user = userCredential.user;
-      await setDoc(doc(db, 'reviewers', user.uid), {
+      await setDoc(doc(db, "reviewers", user.uid), {
         firstName: firstName,
         lastName: lastName,
         email: email,
         affiliation: affiliation,
-        role: 'reviewer',
+        role: "reviewer",
       });
       await addReviewerRole({ email: email })
         .then((result) => {
-          console.log(result.data);  // Success message from the function
+          console.log(result.data); // Success message from the function
         })
         .catch((error) => {
-          console.log('Error: ', error);
+          console.log("Error: ", error);
         });
-
-      navigate("/login");
-    } catch (error) {
+      navigate("/");
+    } catch (e) {
       if (user !== null) {
         await deleteUser(user);
-        await deleteDoc(doc(db, 'reviewers', user.uid));
+        await deleteDoc(doc(db, "reviewers", user.uid));
       }
-      console.log(error);
+      console.error(e);
     }
   };
 
@@ -118,7 +125,7 @@ function AccountPageReviewers(): JSX.Element {
               <h1 className="header2">Create Account</h1>
             </div>
 
-            <form className="form-container2" onSubmit={handleSubmit}>
+            <form className="form-container2">
               <div className="name-container">
                 <div>
                   <label>First Name*</label>
@@ -154,7 +161,7 @@ function AccountPageReviewers(): JSX.Element {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  checkEmailCreateAcc(e.target.value);
+                  checkEmail(e.target.value);
                 }}
                 className="input"
               />
@@ -171,12 +178,9 @@ function AccountPageReviewers(): JSX.Element {
                 value={pwd}
                 onChange={(e) => {
                   setPwd(e.target.value);
-                  const passwordRequirements = validatePassword(e.target.value);
-                  setSpecialChar(passwordRequirements.specialChar);
-                  setCapitalLetter(passwordRequirements.capitalLetter);
-                  setNumber(passwordRequirements.number);
+                  checkPasswordRequirements(e.target.value);
                 }}
-                onFocus={() => setShowReqs(true)}
+                onFocus={() => setShowReqs(true)} // Show on focus
                 onBlur={() => setShowReqs(false)}
                 onKeyUp={checkConfirmPwd}
                 className="input"
@@ -271,11 +275,11 @@ function AccountPageReviewers(): JSX.Element {
                 Already have an account?{" "}
                 <Link to="/login" className="acc-req2" id="link-to">
                   <b>Log in</b>
-                </Link>{" "}
+                </Link>
               </p>
               <button
                 type="submit"
-                className={(
+                className={
                   !firstName ||
                   !lastName ||
                   !affiliation ||
@@ -287,8 +291,12 @@ function AccountPageReviewers(): JSX.Element {
                   !number ||
                   pwdUnmatched ||
                   emailError ||
-                  institutionError) ? "disable-submit" : "signup-btn2"}
-                disabled={(
+                  institutionError
+                    ? "disable-submit"
+                    : "signup-btn2"
+                }
+                onClick={handleSubmit}
+                disabled={
                   !firstName ||
                   !lastName ||
                   !affiliation ||
@@ -300,7 +308,8 @@ function AccountPageReviewers(): JSX.Element {
                   !number ||
                   pwdUnmatched ||
                   emailError ||
-                  institutionError)}
+                  institutionError
+                }
               >
                 Sign Up
               </button>
