@@ -22,6 +22,8 @@ import AccountSettingsPage from "./pages/settings/settings";
 import AdminDashboardViewAllAccounts from "./pages/admin-dashboard/AdminDashboardViewAll";
 import GrantAwards from './pages/grant-awards/GrantAwards';
 
+import AllApplications from './pages/reviewer-all-applications/AllApplications'
+
 function App(): JSX.Element {
   return (
     <BrowserRouter>
@@ -42,6 +44,11 @@ function App(): JSX.Element {
             <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
         }>
         </Route>
+        <Route	
+                  path="/reviewer-dashboard/all-applications"
+                  element={<AllApplications />}
+        	
+                />
         <Route
           path="/applicant-dashboard"
           element={
