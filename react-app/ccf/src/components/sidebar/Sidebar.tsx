@@ -5,10 +5,9 @@ import { SideBarTypes, differentUserRoles } from '../../types/sidebar-types';
 
 interface SidebarProps {
   links: SideBarTypes[];
-  role: differentUserRoles; 
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ links, role }) => {
+const Sidebar: React.FC<SidebarProps> = ({ links }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => {

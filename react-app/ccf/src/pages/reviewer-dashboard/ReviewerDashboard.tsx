@@ -120,7 +120,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     ];
     return (
         <div>
-            <Sidebar links={sidebarItems} role="reviewer"/>
+            <Sidebar links={sidebarItems} />
             <div className="dashboard-container">
 
             <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>

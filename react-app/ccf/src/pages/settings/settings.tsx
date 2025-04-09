@@ -175,7 +175,7 @@ function AccountSettingsPage(): JSX.Element {
 
   return (
       <div>
-      <Sidebar links={sidebarItems} role="applicant" />
+      <Sidebar links={sidebarItems} />
     <div className="dashboard-container">
 
       <div className="AccountSettings">
