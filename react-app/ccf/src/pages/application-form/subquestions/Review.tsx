@@ -25,7 +25,7 @@ function Review({ type, formData }: ReviewProps): JSX.Element {
       <br />
       <p className="text-label">Time Frame: {formData.timeframe}</p>
       <p className="text-label">Signature of Department Head or other person(s) designated to approve grant requests: {formData.signature}</p>
-      <p className="text-label">File: {formData.file}</p>
+      <p className="text-label">File: {formData.file?.name || 'No file uploaded'}</p>
     </div>
   </div>
   );
@@ -54,7 +54,7 @@ function Review({ type, formData }: ReviewProps): JSX.Element {
         <p className="text-label">Amount Requested: {formData.amountRequested}</p>
         <p className="text-label">Dates of Grant Project: {formData.grantProjDates}</p>
         <p className="text-label">Continuation of Current Funding: {formData.contCurrentFunds}</p>
-        <p className="text-label">File: {formData.file}</p>
+        <p className="text-label">File: {formData.file?.name || 'No file uploaded'}</p>
       </div>
     </div>
   );

@@ -10,12 +10,13 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import FAQComponent from "../../components/faq/FaqComp";
 import faqComp from "../../components/faq/FaqComp";
 import { getSidebarbyRole } from "../../types/sidebar-types";
+import ApplicationBox, { type Application } from "../../components/applications/ApplicationBox";
 
-interface Application {
-    applicationType: string;
-    dueDate: string;
-    status?: string;
-}
+// interface Application {
+//     applicationType: string;
+//     dueDate: string;
+//     status?: string;
+// }
 
 interface FAQItem {
     question: string;
@@ -147,19 +148,12 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                                     <>
                                         <h3>NOT STARTED REVIEWS:</h3>
                                         {pendingReviews.map((application, index) => (
-                                            <div key={index} className="single-application-box">
-                                                <div className="application-info">
-                                                    <FaFileAlt className="application-icon" />
-                                                    <p>{application.applicationType}</p>
-                                                </div>
-                                                <button
-                                                    className="due-date-button"
-                                                    onClick={() => handleDueDateClick(application.dueDate)}
-                                                >
-                                                    {application.dueDate}
-                                                    <FaArrowRight className="arrow" />
-                                                </button>
-                                            </div>
+                                          <ApplicationBox 
+                                                key={index} 
+                                                applicationType={application.applicationType} 
+                                                dueDate={application.dueDate} 
+                                                onClick={handleDueDateClick}
+                                              />
                                         ))}
                                         <hr className="red-line" />
                                     </>
@@ -169,19 +163,12 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                                     <>
                                         <h3>IN PROGRESS REVIEWS:</h3>
                                         {inProgressReviews.map((application, index) => (
-                                            <div key={index} className="single-application-box">
-                                                <div className="application-info">
-                                                    <FaFileAlt className="application-icon" />
-                                                    <p>{application.applicationType}</p>
-                                                </div>
-                                                <button
-                                                    className="due-date-button"
-                                                    onClick={() => handleDueDateClick(application.dueDate)}
-                                                >
-                                                    {application.dueDate}
-                                                    <FaArrowRight className="arrow" />
-                                                </button>
-                                            </div>
+                                          <ApplicationBox 
+                                                key={index} 
+                                                applicationType={application.applicationType} 
+                                                dueDate={application.dueDate} 
+                                                onClick={handleDueDateClick}
+                                          />
                                         ))}
                                         <hr className="red-line" />
                                     </>
@@ -191,19 +178,12 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                                     <>
                                         <h3>COMPLETED REVIEWS:</h3>
                                         {completedReviews.map((application, index) => (
-                                            <div key={index} className="single-application-box">
-                                                <div className="application-info">
-                                                    <FaFileAlt className="application-icon" />
-                                                    <p>{application.applicationType}</p>
-                                                </div>
-                                                <button
-                                                    className="due-date-button"
-                                                    onClick={() => handleDueDateClick(application.dueDate)}
-                                                >
-                                                    {application.dueDate}
-                                                    <FaArrowRight className="arrow" />
-                                                </button>
-                                            </div>
+                                          <ApplicationBox 
+                                                key={index} 
+                                                applicationType={application.applicationType} 
+                                                dueDate={application.dueDate} 
+                                                onClick={handleDueDateClick}
+                                          />
                                         ))}
                                     </>
                                 )}

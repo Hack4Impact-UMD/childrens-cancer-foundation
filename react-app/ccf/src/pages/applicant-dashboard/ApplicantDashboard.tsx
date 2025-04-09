@@ -7,6 +7,7 @@ import Button from "../../components/buttons/Button"
 import FAQComponent from "../../components/faq/FaqComp";
 import Sidebar from "../../components/sidebar/Sidebar";
 import ContactUs from "../../components/contact/ContactUs";
+import Banner from "../../components/banner/Banner";
 import { useNavigate } from "react-router-dom";
 import { getSidebarbyRole } from '../../types/sidebar-types';
 
@@ -34,7 +35,7 @@ function ApplicantUsersDashboard(): JSX.Element {
             "status": "FUNDED"
         }, {"applicationType": "Research Grant", "status": "NOT FUNDED"}]);
         setInProgressApplications([{"applicationType": "Research Grant", "status": "SUBMITTED: MAY 5, 2024"}]);
-    });
+    }, []);
 
     const faqData = [
         {question: 'What is React?', answer: 'React is a JavaScript library for building user interfaces.'},
@@ -67,7 +68,7 @@ function ApplicantUsersDashboard(): JSX.Element {
                             Applicant Dashboard
                         </h1>
                     </div>
-
+                    <Banner deadline={new Date('2024-12-31T23:59:59')}></Banner>
                     <div className="ApplicantDashboard-sections-content">
                         <div className="ApplicantDashboard-section">
                             <div className="ApplicantDashboard-section-header">
