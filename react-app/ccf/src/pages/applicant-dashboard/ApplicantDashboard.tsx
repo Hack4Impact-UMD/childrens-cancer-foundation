@@ -1,3 +1,4 @@
+
 import "./ApplicantDashboard.css";
 import {useEffect, useState} from "react";
 import {FaArrowDown, FaArrowUp, FaFileAlt, FaArrowRight} from "react-icons/fa";
@@ -8,9 +9,10 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import ContactUs from "../../components/contact/ContactUs";
 import Banner from "../../components/banner/Banner";
 import { useNavigate } from "react-router-dom";
-import {MDCBanner} from '@material/banner';
+import { getSidebarbyRole } from '../../types/sidebar-types';
 
 function ApplicantUsersDashboard(): JSX.Element {
+    const sidebarItems = getSidebarbyRole('applicant');
 
     const [isApplicationCollapsed, setApplicationCollapsed] = useState(false);
     const [isFAQCollapsed, setFAQCollapsed] = useState(true);
@@ -46,18 +48,18 @@ function ApplicantUsersDashboard(): JSX.Element {
             answer: 'Pass a list of questions and answers as props to the FAQComponent.'
         },
     ];
-    const sidebarItems = [
-        {name: "Home", path: "/"},
-        {name: "Account Settings", path: "/settings"},
-        {name: "Post-Grant Report", path: "/post-grant-report"},
-        {name: "Logout", path: "/login"}
-    ];
+    // const sidebarItems = [
+    //     {name: "Home", path: "/"},
+    //     {name: "Account Settings", path: "/settings"},
+    //     {name: "Post-Grant Report", path: "/post-grant-report"},
+    //     {name: "Logout", path: "/login"}
+    // ];
 
     const navigate = useNavigate();
 
     return (
         <div>
-            <Sidebar links={sidebarItems}/>
+            <Sidebar links={sidebarItems} role="applicant"/>
             <div className={"dashboard-container"} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                 <div className="ApplicantDashboard">
                     <div className="ApplicantDashboard-header-container">

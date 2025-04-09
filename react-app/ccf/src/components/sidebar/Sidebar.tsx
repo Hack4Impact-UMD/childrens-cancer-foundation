@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import "./Sidebar.css";
-import SidebarProps from "../../types/sidebar-types";
 import { Link } from "react-router-dom"
+import { SideBarTypes, differentUserRoles } from '../../types/sidebar-types';
 
-const Sidebar: React.FC<SidebarProps> = ({ links }) => {
+interface SidebarProps {
+  links: SideBarTypes[];
+  role: differentUserRoles; 
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ links, role }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => {
@@ -20,10 +25,10 @@ const Sidebar: React.FC<SidebarProps> = ({ links }) => {
       {!isCollapsed && (
         <ul className="sidebar-menu">
           {links.map((link, index) => (
-            <Link to={link.path}>
-            <li key={index} className="sidebar-item">
-              {link.name}
-            </li>
+            <Link to={link.path} key={index}>
+              <li className="sidebar-item">
+                {link.name}
+              </li>
             </Link>
           ))}
         </ul>
@@ -33,3 +38,4 @@ const Sidebar: React.FC<SidebarProps> = ({ links }) => {
 };
 
 export default Sidebar;
+
