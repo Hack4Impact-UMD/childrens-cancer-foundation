@@ -1,27 +1,82 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./ApplicationReview.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import logo from "../../assets/ccf-logo.png";
 
-function ApplicationReview(): JSX.Element {
+const PencilIcon = () => (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ marginRight: "4px" }}
+  >
+    <path
+      d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM21.41 6.34l-3.75-3.75-2.53 2.54 3.75 3.75 2.53-2.54z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+function ApplicationReviewReadOnly(): JSX.Element {
   const sidebarItems = [
     { name: "Home", path: "/" },
     { name: "Account Settings", path: "/settings" },
     { name: "Logout", path: "/login" },
   ];
 
+  const [editingSections, setEditingSections] = useState<{
+    [key: string]: boolean;
+  }>({});
+
   const [feedback, setFeedback] = useState({
-    significance: "",
-    approach: "",
-    feasibility: "",
-    investigator: "",
-    summary: "",
-    internal: "",
+    significance: "Example feedback for significance...",
+    approach: "Example feedback for approach...",
+    feasibility: "Example feedback for feasibility...",
+    investigator: "Example feedback for investigator...",
+    summary: "Example feedback for summary...",
+    internal: "Example internal comments...",
   });
 
-  const handleChange = (field: string, value: string) => {
-    setFeedback({ ...feedback, [field]: value });
+  const handleEdit = (section: string) => {
+    setEditingSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
   };
+
+  const renderEditButton = (section: string) => (
+    <button
+      onClick={() => handleEdit(section)}
+      className="edit-button"
+      style={{
+        backgroundColor: editingSections[section] ? "#d72626" : "#666666",
+        color: "white",
+        border: "none",
+        padding: "4px 8px",
+        borderRadius: "4px",
+        cursor: "pointer",
+        marginLeft: "auto",
+        fontSize: "12px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "24px",
+        width: "70px",
+        minWidth: "70px",
+      }}
+    >
+      {editingSections[section] ? (
+        "Editing"
+      ) : (
+        <>
+          <PencilIcon />
+          Edit
+        </>
+      )}
+    </button>
+  );
 
   return (
     <div>
@@ -41,22 +96,22 @@ function ApplicationReview(): JSX.Element {
                 Overall score: (1 <em>exceptional</em> - 5{" "}
                 <em>poor quality, unrepairable</em>)
               </p>
-              <select className="score-dropdown">
-                <option value="">Enter score.</option>
-                {[1, 2, 3, 4, 5].map((score) => (
-                  <option key={score} value={score}>
-                    {score}
-                  </option>
-                ))}
-              </select>
+              <div className="score-display">Score</div>
             </div>
 
             <p className="feedback-heading">
               Feedback: <br />
-              <strong className="red-text">
+              <span
+                style={{
+                  color: "#d72626",
+                  fontWeight: 900,
+                  display: "block",
+                  marginTop: "5px",
+                }}
+              >
                 ALL information inputted (unless otherwise noted) WILL be sent
                 to applicant.
-              </strong>
+              </span>
             </p>
 
             {[
@@ -92,19 +147,40 @@ function ApplicationReview(): JSX.Element {
               },
             ].map(({ key, label, question }) => (
               <div key={key} className="feedback-section">
-                <label>
-                  <strong>{label}:</strong> {question}
-                </label>
-                <textarea
-                  value={feedback[key as keyof typeof feedback]}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                  placeholder="Enter feedback."
-                />
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <label style={{ flex: 1 }}>
+                    <strong>{label}:</strong> {question}
+                  </label>
+                  {renderEditButton(key)}
+                </div>
+                <div className="feedback-content">
+                  {editingSections[key] ? (
+                    <textarea
+                      value={feedback[key as keyof typeof feedback]}
+                      onChange={(e) =>
+                        setFeedback((prev) => ({
+                          ...prev,
+                          [key]: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter feedback."
+                    />
+                  ) : (
+                    <div className="feedback-text">
+                      {feedback[key as keyof typeof feedback]}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
 
             <div className="internal-section">
-              <p className="internal-label">Internal Comments/Notes:</p>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <p className="internal-label">Internal Comments/Notes:</p>
+                {renderEditButton("internal")}
+              </div>
               <p className="internal-warning">
                 <strong>
                   Information entered in this textbox will NOT be shared with
@@ -113,17 +189,25 @@ function ApplicationReview(): JSX.Element {
                 <br />
                 It is reserved for reviewer to reference during review call.
               </p>
-              <textarea
-                value={feedback.internal}
-                onChange={(e) => handleChange("internal", e.target.value)}
-                placeholder="Enter Internal Comments."
-              />
+              {editingSections.internal ? (
+                <textarea
+                  value={feedback.internal}
+                  onChange={(e) =>
+                    setFeedback((prev) => ({
+                      ...prev,
+                      internal: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter Internal Comments."
+                />
+              ) : (
+                <div className="feedback-text">{feedback.internal}</div>
+              )}
             </div>
           </div>
 
           <div className="button-group">
-            <button className="save-button">Save Progress</button>
-            <button className="submit-button">Submit</button>
+            <button className="submit-button">Submit Changes</button>
           </div>
         </div>
       </div>
@@ -131,4 +215,4 @@ function ApplicationReview(): JSX.Element {
   );
 }
 
-export default ApplicationReview;
+export default ApplicationReviewReadOnly;

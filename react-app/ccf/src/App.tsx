@@ -5,17 +5,18 @@ import "./App.css";
 import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplicant";
 import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
 import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
+import ApplicationReviewEdit from "./pages/application-review/ApplicationReviewReadOnly";
 
 import Sidebar from "./components/sidebar/Sidebar";
-import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
+import AdminProtectedRoute from "./components/Routing/AdminProtectedRoute";
 import AdminApplicationsDatabase from "./pages/admin-database/AdminDatabase";
-import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
-import ReviewerProtectedRoute from './components/Routing/ReviewerProtectedRoute';
+import ApplicantProtectedRoute from "./components/Routing/ApplicantProtectedRoute";
+import ReviewerProtectedRoute from "./components/Routing/ReviewerProtectedRoute";
 import ApplicationReview from "./pages/application-review/ApplicationReview";
-import CreateAccMenu from './pages/create-acc-menu/CreateAccMenu';
-import ErrorPage from './pages/error/error';
-import PostGrantReport from './post-grant-report/post-grant-report';
-import DefaultRoute from './components/Routing/DefaultRoute'
+import CreateAccMenu from "./pages/create-acc-menu/CreateAccMenu";
+import ErrorPage from "./pages/error/error";
+import PostGrantReport from "./post-grant-report/post-grant-report";
+import DefaultRoute from "./components/Routing/DefaultRoute";
 import ReviewerDashboard from "./pages/reviewer-dashboard/ReviewerDashboard";
 import faq_data from "./StaticData/FAQ-REVIEWER";
 import ApplicationForm from "./pages/application-form/ApplicationForm";
@@ -32,105 +33,83 @@ function App(): JSX.Element {
         <Route path="/forgot-password" element={<></>} />
         <Route path="/create-account-menu" element={<CreateAccMenu />} />
         {/* Need to change path to create-account after authentication */}
+        <Route path="/" element={<DefaultRoute></DefaultRoute>} />
         <Route
-          path="/"
+          path="/reviewer-dashboard"
           element={
-              <DefaultRoute></DefaultRoute>
-          } 
-        />
-        <Route path="/reviewer-dashboard" element={
-            <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
-        }>
-        </Route>
+            <ReviewerDashboard
+              faqData={faq_data}
+              email={"email@testing.org"}
+              hours={"10am - 5pm weekdays"}
+              phone={"111-222-3333"}
+            ></ReviewerDashboard>
+          }
+        ></Route>
         <Route
           path="/applicant-dashboard"
           element={
             <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
           }
         />
+        <Route path="/application-review" element={<ApplicationReview />} />
         <Route
-          path="/application-review"
-          element={<ApplicationReview />}
+          path="/application-review-readonly"
+          element={<ApplicationReviewEdit />}
         />
-        <Route
-          path="*" 
-          element={
-            <ErrorPage type="404"/>
-          }
-        />
+        <Route path="*" element={<ErrorPage type="404" />} />
         <Route
           path="/application-form/nextgen"
-          element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
+          element={
+            <ApplicantProtectedRoute
+              element={<ApplicationForm type="NextGen" />}
+            />
+          }
         />
         <Route
           path="/application-form/nonresearch"
           element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
         />
         {/* Admin dashboard */}
-        <Route 
-          path="/admin" 
-          element={<></>} 
-        />
+        <Route path="/admin" element={<></>} />
         Need to change path to create-account after authentication
-        <Route 
-          path="/admin-database"
-          element={<AdminApplicationsDatabase />}
-        />
+        <Route path="/admin-database" element={<AdminApplicationsDatabase />} />
         <Route
-          path="/applicant-dashboard" 
-          element={
-            <ApplicantUsersDashboard />
-          } 
-        />    
-        {/* Admin dashboard */}   
-        <Route
-          path="/admin" 
-          element={
-            <></>
-          } 
+          path="/applicant-dashboard"
+          element={<ApplicantUsersDashboard />}
         />
+        {/* Admin dashboard */}
+        <Route path="/admin" element={<></>} />
         {/* Need to change path to create-account after authentication */}
         <Route
-          path="/create-account-reviewers" 
-          element={
-            <AccountPageReviewers />
-          } 
+          path="/create-account-reviewers"
+          element={<AccountPageReviewers />}
+        />
+        <Route path="/post-grant-report" element={<PostGrantReport />} />
+        <Route
+          path="/application-form/research"
+          element={<ApplicationForm type="Research" />}
         />
         <Route
-          path="/post-grant-report" 
-          element={
-            <PostGrantReport />
-          }
-        />         
-        <Route
-            path="/application-form/research"
-            element={<ApplicationForm type="Research" />}
+          path="/application-form/nextgen"
+          element={<ApplicationForm type="NextGen" />}
         />
         <Route
-            path="/application-form/nextgen"
-            element={<ApplicationForm type="NextGen" />}
-        />
-        <Route
-            path="/application-form/nonresearch"
-            element={<NRApplicationForm />}
+          path="/application-form/nonresearch"
+          element={<NRApplicationForm />}
         />
         {/* Admin dashboard */}
         <Route path="/admin" element={<></>} />
         Need to change path to create-account after authentication
         <Route
-            path="/create-account-reviewers"
-            element={<AccountPageReviewers />}
+          path="/create-account-reviewers"
+          element={<AccountPageReviewers />}
         />
         <Route
-            path="/create-account-applicants"
-            element={<AccountPageApplicants />}
+          path="/create-account-applicants"
+          element={<AccountPageApplicants />}
         />
-        <Route
-            path={"/settings"}
-            element={<AccountSettingsPage/>}
-        />
+        <Route path={"/settings"} element={<AccountSettingsPage />} />
       </Routes>
-
     </BrowserRouter>
   );
 }
