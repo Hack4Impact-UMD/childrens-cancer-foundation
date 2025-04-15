@@ -11,6 +11,7 @@ import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
 import AdminApplicationsDatabase from "./pages/admin-database/AdminDatabase";
 import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
 import ReviewerProtectedRoute from './components/Routing/ReviewerProtectedRoute';
+import ApplicationReview from "./pages/application-review/ApplicationReview";
 import CreateAccMenu from './pages/create-acc-menu/CreateAccMenu';
 import ErrorPage from './pages/error/error';
 import PostGrantReport from './post-grant-report/post-grant-report';
@@ -46,6 +47,10 @@ function App(): JSX.Element {
           element={
             <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
           }
+        />
+        <Route
+          path="/application-review"
+          element={<ApplicationReview />}
         />
         <Route
           path="*" 
