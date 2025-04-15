@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../index";
+import MailtoLink from "../../components/MailtoLink";
+import sendIcon from "../../assets/email_send-solid.png";
 
 function AdminDashboardViewAll(): JSX.Element {
     const [searchTerm, setSearchTerm] = useState("");
@@ -22,6 +24,7 @@ function AdminDashboardViewAll(): JSX.Element {
     const [uniqueDecisions, setUniqueDecisions] = useState<string[]>([]);
     const [uniqueGrantTypes, setUniqueGrantTypes] = useState<string[]>([]);
     const [uniqueCancerTypes, setUniqueCancerTypes] = useState<string[]>([]);
+    const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
 
     const sidebarItems = [
         { name: "Home", path: "/" },
@@ -223,6 +226,17 @@ function AdminDashboardViewAll(): JSX.Element {
                         <div className="accounts-table-container">
                             <div className="accounts-header">
                                 <h2>ALL ACCOUNTS</h2>
+
+                                <MailtoLink
+                                    to={selectedEmails}                                    
+                                    subject="Important Update from CCF"
+                                    body="Hello, This is a message from the CCF admin team. Please check your account for updates. Thank you!"
+                                >
+                                    <button className="send-email-button">
+                                    <img src={sendIcon} alt="Send Email"></img>
+                                    Send Email
+                                    </button>
+                                </MailtoLink>
                             </div>
                             {loading ? (
                                 <div className="loading-message">Loading accounts...</div>
@@ -275,7 +289,19 @@ function AdminDashboardViewAll(): JSX.Element {
                                             .map((account) => (
                                                 <tr key={account.id}>
                                                     <td>
-                                                        <input type="checkbox" />
+                                                        <input 
+                                                          type="checkbox" 
+                                                          onChange={(e) => {
+                                                            const checked = e.target.checked;
+                                                            const email = account.email;
+
+                                                            setSelectedEmails((prev) =>
+                                                            checked ? [...prev, email] : prev.filter((e) => e !== email)
+                                                            );
+                                                          }}
+
+                                                          checked={selectedEmails.includes(account.email)}
+                                                        />
                                                     </td>
                                                     <td>{account.name}</td>
                                                     <td>{account.affiliation}</td>
