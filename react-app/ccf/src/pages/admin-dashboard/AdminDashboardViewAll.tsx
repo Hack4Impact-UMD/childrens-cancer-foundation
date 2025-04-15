@@ -24,6 +24,7 @@ function AdminDashboardViewAll(): JSX.Element {
     const [uniqueDecisions, setUniqueDecisions] = useState<string[]>([]);
     const [uniqueGrantTypes, setUniqueGrantTypes] = useState<string[]>([]);
     const [uniqueCancerTypes, setUniqueCancerTypes] = useState<string[]>([]);
+    // Stores the emails of accounts selected via checkboxes in the table
     const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
 
     const sidebarItems = [
@@ -227,6 +228,7 @@ function AdminDashboardViewAll(): JSX.Element {
                             <div className="accounts-header">
                                 <h2>ALL ACCOUNTS</h2>
 
+                                {/* Only send email to selected accounts using MailtoLink */}
                                 <MailtoLink
                                     to={selectedEmails}                                    
                                     subject="Important Update from CCF"
@@ -291,6 +293,7 @@ function AdminDashboardViewAll(): JSX.Element {
                                                     <td>
                                                         <input 
                                                           type="checkbox" 
+                                                          // When checkbox is toggled, add/remove the email from selectedEmails
                                                           onChange={(e) => {
                                                             const checked = e.target.checked;
                                                             const email = account.email;
@@ -299,7 +302,7 @@ function AdminDashboardViewAll(): JSX.Element {
                                                             checked ? [...prev, email] : prev.filter((e) => e !== email)
                                                             );
                                                           }}
-
+                                                          // Keeps the checkbox visually in sync with state
                                                           checked={selectedEmails.includes(account.email)}
                                                         />
                                                     </td>
