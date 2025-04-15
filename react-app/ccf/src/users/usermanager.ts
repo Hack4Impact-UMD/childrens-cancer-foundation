@@ -1,5 +1,5 @@
 import { db } from '../index';
-import { collection, doc, setDoc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, updateDoc, getDoc, getDocs, query,where } from 'firebase/firestore';
 import { ApplicantUser, ReviewerUser } from '../types/usertypes';
 
 // Function to add a new applicant user
@@ -121,7 +121,7 @@ export const getReviewerUser = async (userId: string): Promise<ReviewerUser | nu
   }
 };
 
-// Function to assign a reviewer to an application
+// Function to assign a reviewer to an application using userID
 export const assignApplicationToReviewer = async (userId: string, applicationId: string): Promise<void> => {
   try {
     const reviewerRef = doc(collection(db, 'reviewerUsers'), userId);
@@ -136,7 +136,7 @@ export const assignApplicationToReviewer = async (userId: string, applicationId:
     const reviewerData = reviewerSnap.data();
     const assignedApplications = reviewerData.assignedApplications || [];
 
-    // Avoid duplicates
+    // avoid duplicates
     if (!assignedApplications.includes(applicationId)) {
       assignedApplications.push(applicationId);
     }
@@ -163,6 +163,50 @@ export const assignApplicationToReviewer = async (userId: string, applicationId:
     // warning if it didn't work
   } catch (error) {
     console.error('Error assigning application to reviewer:', error);
+    throw error;
+  }
+};
+
+
+//second function for adding by email, mostly for testing
+export const assignApplicationToReviewerByEmail = async (email: string, applicationId: string): Promise<void> => {
+  try {
+    const q = query(collection(db, 'reviewerUsers'), where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      throw new Error(`No reviewer found with email ${email}`);
+    }
+
+    const reviewerDoc = querySnapshot.docs[0]; // assuming only one reviewer per email
+    const userId = reviewerDoc.id;
+    const reviewerData = reviewerDoc.data();
+    const assignedApplications = reviewerData.assignedApplications || [];
+
+    if (!assignedApplications.includes(applicationId)) {
+      assignedApplications.push(applicationId);
+      await updateDoc(reviewerDoc.ref, {
+        assignedApplications,
+      });
+    }
+
+    // update the application to include the reviewer too
+    const appRef = doc(collection(db, 'applications'), applicationId);
+    const appSnap = await getDoc(appRef);
+
+    if (appSnap.exists()) {
+      const appData = appSnap.data();
+      const assignedReviewers = appData.assignedReviewers || [];
+
+      if (!assignedReviewers.includes(userId)) {
+        assignedReviewers.push(userId);
+        await updateDoc(appRef, {
+          assignedReviewers,
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error assigning application to reviewer by email:', error);
     throw error;
   }
 };
