@@ -16,6 +16,7 @@ interface ApplicantUser {
     name: string;                       //required
     email: string;                      //required
     institutionalAffiliation: string;   //required
+    assignedApplications?: string[];
   }
   export { type ApplicantUser, type ReviewerUser };
     
