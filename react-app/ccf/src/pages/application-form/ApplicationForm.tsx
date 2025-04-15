@@ -13,8 +13,8 @@ type ApplicationFormProps = {
 function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
     const pages = type === "Research"
-        ? ["About Grant", "My Information", "Application Questions", "Grant Proposal", "Review"]
-        : ["About Grant", "My Information", "Application Questions", "Grant Proposal", "Review"];
+        ? ["Grant Proposal", "About Grant", "My Information", "Application Questions", "Review"]
+        : ["Grant Proposal", "About Grant", "My Information", "Application Questions", "Review"];
     const totalPages = pages.length;
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -59,13 +59,13 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const renderPage = () => {
         switch (currentPage) {
             case 1:
-                return <AboutGrant type={type} formData={formData} />;
+                return <GrantProposal type={type} formData={formData} setFormData={setFormData} />;
             case 2:
-                return <Information formData={formData} setFormData={setFormData} />;
+                return <AboutGrant type={type} formData={formData} />;
             case 3:
-                return <ApplicationQuestions formData={formData} setFormData={setFormData} />;
+                return <Information formData={formData} setFormData={setFormData} />;
             case 4:
-                return <GrantProposal type={type} />;
+                return <ApplicationQuestions formData={formData} setFormData={setFormData} />;
             case 5:
                 return <Review type={type} formData={formData} />;
             default:

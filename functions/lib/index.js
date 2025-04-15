@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Import function triggers from their respective submodules:
  *
@@ -6,59 +7,54 @@
  *
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
-
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
-
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
-
-exports.helloWorld = functions.https.onRequest((request: any, response: any) => {
-  response.send("Hello from Firebase!");
+exports.helloWorld = functions.https.onRequest((request, response) => {
+    response.send("Hello from Firebase!");
 });
-
-export const addReviewerRole = functions.https.onCall((data: any, context: any) => {
-    return admin.auth().getUserByEmail(data.email).then((user: any) => {
+exports.addReviewerRole = functions.https.onCall((data, context) => {
+    return admin.auth().getUserByEmail(data.email).then((user) => {
         return admin.auth().setCustomUserClaims(user.uid, {
             "role": "reviewer"
         });
-    }
-    ).then(() => {
+    }).then(() => {
         return {
             message: `Success! ${data.email} has been made a reviewer.`
         };
-    }).catch((err: any) => {
+    }).catch((err) => {
         return err;
     });
 });
-
-export const addApplicantRole = functions.https.onCall((data: any, context: any) => {
-    return admin.auth().getUserByEmail(data.email).then((user: any) => {
+exports.addApplicantRole = functions.https.onCall((data, context) => {
+    return admin.auth().getUserByEmail(data.email).then((user) => {
         return admin.auth().setCustomUserClaims(user.uid, {
             "role": "applicant"
         });
-    }
-    ).then(() => {
+    }).then(() => {
         return {
             message: `Success! ${data.email} has been made an applicant.`
         };
-    }).catch((err: any) => {
+    }).catch((err) => {
+        return err;
+    });
+});
+exports.addAdminRole = functions.https.onCall((data, context) => {
+    return admin.auth().getUserByEmail(data.email).then((user) => {
+        return admin.auth().setCustomUserClaims(user.uid, {
+            "role": "admin"
+        });
+    }).then(() => {
+        return {
+            message: `Success! ${data.email} has been made an admin.`
+        };
+    }).catch((err) => {
         return err;
     });
 });
 
-export const addAdminRole = functions.https.onCall((data: any, context: any) => {
-    return admin.auth().getUserByEmail(data.email).then((user: any) => {
-        return admin.auth().setCustomUserClaims(user.uid, {
-            "role": "admin"
-        });
-    }
-    ).then(() => {
-        return {
-            message: `Success! ${data.email} has been made an admin.`
-        };
-    }).catch((err: any) => {
-        return err;
-    });
-});
+//# sourceMappingURL=index.js.map

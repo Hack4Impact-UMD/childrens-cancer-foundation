@@ -22,3 +22,5 @@ react-app/ccf/src/firebase_config/FireConfig.ts
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+../../.DS_Store
+../.DS_Store

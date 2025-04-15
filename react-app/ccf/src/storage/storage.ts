@@ -2,6 +2,20 @@ import { ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
 import { storage } from '../index'
 
 export const uploadFileToStorage = async (file: File): Promise<string> => {
+
+
+    const MAX_PDF_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB in bytes
+
+    console.log("file type:"  + file.type);
+    if (file.size > MAX_PDF_SIZE_BYTES) {
+      throw new Error('PDF file size exceeds the 50MB limit.');
+    }
+
+    if (file.type !== "application/pdf"){
+      throw new Error('File type not supported (ONLY pdf file type accepted).');
+    }
+
+
     if (!file) {
       throw new Error('No file selected');
     }
@@ -14,7 +28,8 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
       
       const downloadURL = await getDownloadURL(snapshot.ref);
       console.log('File available at', downloadURL);
-      
+
+      //TODO change this to return the URL of the file, so we can save it in firestore
       return 'File uploaded successfully!';
     } catch (error) {
       console.error('Upload failed', error);
