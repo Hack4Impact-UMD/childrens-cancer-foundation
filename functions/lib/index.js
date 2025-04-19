@@ -8,7 +8,7 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = void 0;
+exports.getReviewers = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
@@ -57,4 +57,33 @@ exports.addAdminRole = functions.https.onCall((data, context) => {
     });
 });
 
+// Get Reviewers Function
+exports.getReviewers = functions.https.onRequest(async (req, res) => {
+    try {
+      const reviewerUserIds = [];
+  
+      // Recursively list all users in batches of 100
+      const listAllUsers = async (nextPageToken) => {
+        const listUsersResult = await admin.auth().listUsers(1000, nextPageToken);
+        listUsersResult.users.forEach(userRecord => {
+          if (
+            userRecord.customClaims &&
+            userRecord.customClaims["role"] === "reviewer"
+          ) {
+            reviewerUserIds.push(userRecord.uid);
+          }
+        });
+        if (listUsersResult.pageToken) {
+          await listAllUsers(listUsersResult.pageToken);
+        }
+      };
+  
+      await listAllUsers();
+  
+      res.status(200).json({ reviewers: reviewerUserIds });
+    } catch (error) {
+      functions.logger.error("Error retrieving reviewers:", error);
+      res.status(500).send("Failed to retrieve reviewers");
+    }
+  });  
 //# sourceMappingURL=index.js.map
