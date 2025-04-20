@@ -7,7 +7,7 @@
 .edit-info-dashboard-header-container {
     display: flex;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 30px !important;
 }
 
 .edit-info-logo {
@@ -18,7 +18,7 @@
 
 .edit-info-header {
     color: #c41230;
-    font-size: 60px;
+    font-size: 55px !important;
     margin: 0;
 }
 
@@ -32,34 +32,34 @@
 .deadlines-section {
     display: flex;
     flex-direction: column;
-    margin: 20px 20px 0px 20px;
+    margin: 20px 20px 0px 20px !important;
 }
 
 .deadlines-header-container {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 7px;
+    gap: 7px !important;
 }
 
 .deadlines-header-text {
-    font-size: 1.25rem;
+    font-size: 20px !important;
 }
 
 .deadline-interactives {
     display: flex;
     flex-direction: column;
-    margin: 20px;
-    padding: 20px;
+    margin: 20px !important;
+    padding: 20px !important;
     border: 4px solid #c41230;
     border-radius: 8px;
     gap: 10px
 }
 
 .deadline-interactives h2 {
-    font-size: 1.25rem;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    font-size: 20px !important;
+    margin-top: 5px !important;
+    margin-bottom: 5px !important;
 }
 
 .interactive-date-selector {
@@ -71,7 +71,7 @@
 }
 
 .interactive-date-selector h2 {
-    font-size: 1.25rem;
+    font-size: 20px !important;
     color: #003E83;
 }
 
