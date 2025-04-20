@@ -6,7 +6,8 @@ import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
 import toretsky from "../../assets/toretskywithpatient 1.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
 import Button from "../../components/buttons/Button";
-import TextField from '@mui/material/TextField';
+import { TextField, InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 function Login() {
   const [input, setInput] = useState({ email: "", password: "" });
@@ -15,6 +16,12 @@ function Login() {
   const [isWideScreen, setIsWideScreen] = useState<boolean>(
     window.innerWidth > 750
   );
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -97,6 +104,20 @@ function Login() {
 
             <TextField
               id="outlined-basic"
+              type={showPassword ? 'text' : 'password'}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               name="password"
               label="Password"
               variant="outlined"
