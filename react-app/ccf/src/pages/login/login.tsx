@@ -6,6 +6,7 @@ import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
 import toretsky from "../../assets/toretskywithpatient 1.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
 import Button from "../../components/buttons/Button";
+import TextField from '@mui/material/TextField';
 
 function Login() {
   const [input, setInput] = useState({ email: "", password: "" });
@@ -69,8 +70,21 @@ function Login() {
               </Link>
             </p>
           </div>
+            <TextField
+              id="outlined-basic"
+              label="Email"
+              name="email"
+              variant="outlined"
+              onChange={handleChange}
+              value={input.email}
+              required
+              sx={{
+                width: '90%',
+                paddingBottom: '20px'
+              }}
+            />
 
-          <label htmlFor="email">Email</label>
+            {/* <label htmlFor="email">Email</label>
           <input
             name="email"
             placeholder="Enter your email"
@@ -79,8 +93,22 @@ function Login() {
             value={input.email}
             required
             className="input"
-          />
-          <label htmlFor="password">Password</label>
+          /> */}
+
+            <TextField
+              id="outlined-basic"
+              name="password"
+              label="Password"
+              variant="outlined"
+              onChange={handleChange}
+              value={input.password}
+              required
+              sx={{
+                width: '90%',
+                paddingBottom: '20px'
+              }}
+            />
+          {/* <label htmlFor="password">Password</label>
           <input
             name="password"
             placeholder="Enter your password"
@@ -89,13 +117,13 @@ function Login() {
             type="password"
             required
             className="input"
-          />
+          /> */}
 
           {error && <p className="error">{error}</p>}
           <Button variant={"red"} type={"submit"} className={"button"}>
-              <>
-                Login
-              </>
+            <>
+              Login
+            </>
           </Button>
           <div className="loginText">
             <Link to="/forgot-password" className="forgotPasswordLink">
