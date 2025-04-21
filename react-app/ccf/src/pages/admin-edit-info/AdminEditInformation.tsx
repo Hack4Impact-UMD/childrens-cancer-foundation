@@ -2,15 +2,15 @@ import "./AdminEditInformation.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
-import { FaSearch } from "react-icons/fa";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../index";
+// import { FaSearch } from "react-icons/fa";
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { TextField, Button } from '@mui/material';
+
+import { updateCurrentCycleDeadlines } from "../../backend/application-cycle";
 
 function AdminEditInformation(): JSX.Element {
     const [nextGenDate, setNextGenDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
@@ -160,6 +160,18 @@ function AdminEditInformation(): JSX.Element {
                         <div className="save-button">
                             <Button
                                 variant="contained"
+                                onClick={async () => {
+                                    const success = await updateCurrentCycleDeadlines({
+                                      nextGenDate,
+                                      researchDate,
+                                      nonResearchDate
+                                    });
+                                    
+                                    //debug
+                                    if (success) {
+                                      console.log("Application deadlines updated.");
+                                    }
+                                  }}
                                 sx={{
                                     backgroundColor: '#79747E',
                                     fontFamiy: 'Roboto, sans-serif',
@@ -216,6 +228,16 @@ function AdminEditInformation(): JSX.Element {
                         <div className="save-button">
                             <Button
                                 variant="contained"
+                                onClick={async () => {
+                                    const success = await updateCurrentCycleDeadlines({
+                                      reviewerDate
+                                    });
+                                    
+                                    //debug
+                                    if (success) {
+                                      console.log("Reviewer deadline updated.");
+                                    }
+                                  }}
                                 sx={{
                                     backgroundColor: '#79747E',
                                     fontFamiy: 'Roboto, sans-serif',
