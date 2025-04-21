@@ -1,8 +1,10 @@
+
 import { useEffect, useState } from "react";
 import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css"
+import { getSidebarbyRole} from "../../types/sidebar-types";
 import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { doc, getDoc, getFirestore, updateDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +12,7 @@ import { getCurrentUserData, getCurrentUserClaims, UserData } from "../../servic
 import { auth } from "../../index";
 
 function AccountSettingsPage(): JSX.Element {
+  const sidebarItems = getSidebarbyRole('applicant');
   // User information
   const [username, setUsername] = useState<string | null>("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -164,16 +167,15 @@ function AccountSettingsPage(): JSX.Element {
     }
   };
 
-  const sidebarItems = [
-    {name: "Home", path: "/"},
-    {name: "Account Settings", path: "/settings"},
-    {name: "Logout", path: "/login"}
-  ];
+  // const sidebarItems = [
+  //   {name: "Home", path: "/"},
+  //   {name: "Account Settings", path: "/settings"},
+  //   {name: "Logout", path: "/login"}
+  // ];
 
   return (
       <div>
-      <Sidebar links={sidebarItems}
-      />
+      <Sidebar links={sidebarItems} />
     <div className="dashboard-container">
 
       <div className="AccountSettings">

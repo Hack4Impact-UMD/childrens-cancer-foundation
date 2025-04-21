@@ -81,6 +81,28 @@
     border-bottom: 1px solid #eee;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+}
+
+.send-email-button {
+    width: 160px;
+    height: 41px;
+    background-color: #003E83;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 400;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.send-email-button:hover {
+    background-color: #0056b3;
 }
 
 .accounts-header h2 {

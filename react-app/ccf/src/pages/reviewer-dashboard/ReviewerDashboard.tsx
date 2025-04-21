@@ -9,6 +9,7 @@ import "./ReviewerDashboard.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import FAQComponent from "../../components/faq/FaqComp";
 import faqComp from "../../components/faq/FaqComp";
+import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationBox, { type Application } from "../../components/applications/ApplicationBox";
 
 // interface Application {
@@ -30,6 +31,7 @@ interface ReviewerProp {
 }
 
 function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.Element {
+    const sidebarItems = getSidebarbyRole('reviewer');
     // State for expandable sections
     const [isApplicationCollapsed, setApplicationCollapsed] = useState(false);
     const [isFAQCollapsed, setFAQCollapsed] = useState(true);
@@ -99,11 +101,11 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
         ]);
     }, []);
 
-    const sidebarItems = [
-        {name: "Home", path: "/"},
-        {name: "Account Settings", path: "/settings"},
-        {name: "Logout", path: "/login"}
-      ];
+    // const sidebarItems = [
+    //     {name: "Home", path: "/"},
+    //     {name: "Account Settings", path: "/settings"},
+    //     {name: "Logout", path: "/login"}
+    //   ];
 
     const faqData2 = [
         {question: 'What is React?', answer: 'React is a JavaScript library for building user interfaces.'},
@@ -118,7 +120,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     ];
     return (
         <div>
-            <Sidebar links={sidebarItems}/>
+            <Sidebar links={sidebarItems} />
             <div className="dashboard-container">
 
             <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
