@@ -32,8 +32,9 @@ function AdminDashboardViewAll(): JSX.Element {
         { name: "Account Settings", path: "/settings" },
         { name: "All Accounts", path: "/admin-all-accounts" },
         { name: "Logout", path: "/login" },
+        {name: "Edit Information", path: "/admin-edit-information"}
     ];
-
+    
     useEffect(() => {
         const fetchAllAccounts = async () => {
             setLoading(true);
