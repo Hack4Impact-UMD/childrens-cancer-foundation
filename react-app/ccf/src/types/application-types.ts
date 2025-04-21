@@ -11,6 +11,7 @@ export interface ApplicationInfo {
     adminOfficialAddress: string;
     adminPhoneNumber: string;
     adminEmail: string;
+    decision: string;
 };
 
 export interface ApplicationQuestions {
@@ -33,3 +34,5 @@ export interface AssignReviewers {
     status: 'not-started' | 'in-progress' | 'completed';
     expanded: boolean;
   }
+    grantType: string;
+}
