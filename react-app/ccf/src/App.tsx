@@ -21,6 +21,7 @@ import NRApplicationForm from "./pages/application-form/NRApplicationForm";
 import AccountSettingsPage from "./pages/settings/settings";
 import AdminDashboardViewAllAccounts from "./pages/admin-dashboard/AdminDashboardViewAll";
 import GrantAwards from './pages/grant-awards/GrantAwards';
+import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
 
@@ -91,6 +92,13 @@ function App(): JSX.Element {
           path="/admin-all-accounts" 
           element={
             <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
+          } 
+        />
+        {/* Admin Edit Information Page */}
+        <Route
+          path="/admin-edit-information" 
+          element={
+            <AdminProtectedRoute element={<AdminEditInformation />} />
           } 
         />
         {/* Need to change path to create-account after authentication */}
