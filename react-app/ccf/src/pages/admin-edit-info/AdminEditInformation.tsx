@@ -17,6 +17,10 @@ function AdminEditInformation(): JSX.Element {
     const [researchDate, setResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [nonResearchDate, setNonResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [reviewerDate, setReviewerDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
+    
+    
+    const [appDeadlineMessage, setAppDeadlineMessage] = useState<string | null>(null);
+    const [revDeadlineMessage, setRevDeadlineMessage] = useState<string | null>(null);
 
     const handleNextGenChange = (newNextGenDate: Dayjs | null) => {
         setNextGenDate(newNextGenDate);
@@ -170,6 +174,8 @@ function AdminEditInformation(): JSX.Element {
                                     //debug
                                     if (success) {
                                       console.log("Application deadlines updated.");
+                                      setAppDeadlineMessage("Application Deadlines Updated!");
+                                          setTimeout(() => setAppDeadlineMessage(null), 3000); // clear after 3 seconds
                                     }
                                   }}
                                 sx={{
@@ -187,7 +193,7 @@ function AdminEditInformation(): JSX.Element {
                                     marginTop: '10px'
                                 }}
 
-                            >Set Application Deadline</Button>
+                            >{appDeadlineMessage ?? "Set Application Deadline"}</Button>
                         </div>
                     </div>
                     <div className="deadline-interactives">
@@ -236,6 +242,8 @@ function AdminEditInformation(): JSX.Element {
                                     //debug
                                     if (success) {
                                       console.log("Reviewer deadline updated.");
+                                      setRevDeadlineMessage("Reviewer Deadlines Updated!");
+                                          setTimeout(() => setRevDeadlineMessage(null), 3000); // clear after 3 seconds
                                     }
                                   }}
                                 sx={{
@@ -253,7 +261,7 @@ function AdminEditInformation(): JSX.Element {
                                     marginTop: '10px'
                                 }}
 
-                            >Set Reviewer Deadline</Button>
+                            >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
                         </div>
                     </div>
                 </div>
