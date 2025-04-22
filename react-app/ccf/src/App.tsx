@@ -9,7 +9,7 @@ import Sidebar from "./components/sidebar/Sidebar";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
 import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
 import ReviewerProtectedRoute from './components/Routing/ReviewerProtectedRoute';
-
+import PostGrantProtectedRoute from "./components/Routing/PostGrantProtectedRoute";
 import CreateAccMenu from './pages/create-acc-menu/CreateAccMenu';
 import ErrorPage from './pages/error/error';
 import PostGrantReport from './post-grant-report/post-grant-report';
@@ -100,12 +100,13 @@ function App(): JSX.Element {
             <AccountPageReviewers />
           } 
         />
-        <Route
-          path="/post-grant-report" 
-          element={
-            <PostGrantReport />
-          }
-        />         
+       <Route
+        path="/post-grant-report" 
+        element={
+          <PostGrantProtectedRoute element={<PostGrantReport />} />
+        }
+        />    
+           
         <Route
             path="/application-form/research"
             element={<ApplicationForm type="Research" />}
