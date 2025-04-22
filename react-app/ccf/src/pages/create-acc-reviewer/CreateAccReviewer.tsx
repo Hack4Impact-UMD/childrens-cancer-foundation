@@ -8,7 +8,7 @@ import {
   createUserWithEmailAndPassword,
   deleteUser,
 } from "firebase/auth";
-import {doc, setDoc, deleteDoc } from "firebase/firestore";
+import {doc, setDoc, deleteDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
 
 function AccountPageReviewers(): JSX.Element {
@@ -29,6 +29,7 @@ function AccountPageReviewers(): JSX.Element {
 
   //email req
   const [emailError, setEmailError] = useState(false);
+  const [emailWhitelistError, setEmailWhitelistError] = useState(false);
 
   const [institutionError, setInstitutionError] = useState(false);
 
@@ -61,20 +62,47 @@ function AccountPageReviewers(): JSX.Element {
     }
   };
 
+  const checkEmailWhitelist = async (email: string) => {
+    if (!email) return false;
+    
+    try {
+      const whitelistRef = collection(db, "reviewer-whitelist");
+      const q = query(whitelistRef, where("email", "==", email.toLowerCase()));
+      const querySnapshot = await getDocs(q);
+      
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking whitelist:", error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
     e.preventDefault();
+    
+    // Check whitelist before proceeding
+    if (!emailError && email) {
+      const isWhitelisted = await checkEmailWhitelist(email);
+      if (!isWhitelisted) {
+        setEmailWhitelistError(true);
+        return;
+      }
+    }
+    
     const functions = getFunctions();
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
     console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
     if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
-      e.preventDefault();
       return;
     }
     let user = null;
 
     try {
+      // Clear any previous whitelist error
+      setEmailWhitelistError(false);
+      
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -168,6 +196,10 @@ function AccountPageReviewers(): JSX.Element {
 
               {emailError && (
                 <p className="validation">Please enter a valid email address</p>
+              )}
+              
+              {emailWhitelistError && (
+                <p className="validation">Email does not have permission to create reviewer account. Please contact CCF if you believe this to be a mistake.</p>
               )}
 
               <label>Password*</label>
