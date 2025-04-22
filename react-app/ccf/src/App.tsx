@@ -26,7 +26,7 @@ import ReviewerSettings from "./pages/settings/ReviewerSettings";
 
 
 
-// import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
+import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
 
