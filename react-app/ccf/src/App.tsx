@@ -18,11 +18,8 @@ import ReviewerDashboard from "./pages/reviewer-dashboard/ReviewerDashboard";
 import faq_data from "./StaticData/FAQ-REVIEWER";
 import ApplicationForm from "./pages/application-form/ApplicationForm";
 import NRApplicationForm from "./pages/application-form/NRApplicationForm";
-import AccountSettingsPage from "./pages/settings/settings";
 import AdminDashboardViewAllAccounts from "./pages/admin-dashboard/AdminDashboardViewAll";
 import GrantAwards from './pages/grant-awards/GrantAwards';
-
-
 import AdminSettings from "./pages/settings/AdminSettings";
 import ApplicantSettings from "./pages/settings/ApplicantSettings";
 import ReviewerSettings from "./pages/settings/ReviewerSettings";
