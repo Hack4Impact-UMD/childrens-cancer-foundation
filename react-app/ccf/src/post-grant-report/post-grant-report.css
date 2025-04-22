@@ -115,6 +115,11 @@ li {
     background-color: #71000f;
 }
 
+.upload-label-error {
+    background-color: #BE0019;
+    border: 2px solid #f2dede;
+}
+
 #report-pdf {
     display: none;
 }
@@ -139,4 +144,29 @@ li {
     max-height: 50px;
     font-size: 1.2rem;
     padding: 10px;
-  }
+}
+
+.input-error {
+    border: 2px solid #BE0019;
+    background-color: #fff7f7;
+}
+
+.success-message {
+    background-color: #dff0d8;
+    color: #3c763d;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #d6e9c6;
+    border-radius: 4px;
+    font-size: 1.1rem;
+}
+
+.error-message {
+    background-color: #f2dede;
+    color: #BE0019;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ebccd1;
+    border-radius: 4px;
+    font-size: 1.1rem;
+}

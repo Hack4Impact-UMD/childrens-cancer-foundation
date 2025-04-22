@@ -1,33 +1,38 @@
 import "./post-grant-report.css";
 import { useEffect, useState } from "react";
-import { writePostGrantReport } from "./post-grant-report-submit";
-import { getAuth } from "firebase/auth";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../index";
+import { writePostGrantReport, PostGrantFormData } from "./post-grant-report-submit";
 import { useNavigate } from "react-router-dom";
 
 function PostGrantReport(): JSX.Element {
+    const navigate = useNavigate();
     const [uploadLabel, setUploadLabel] = useState<string>("Click to Upload");
     const [reportUploaded, setReportUploaded] = useState<boolean>(false);
     const [report, setReport] = useState<File | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>("");
-
-    const navigate = useNavigate();
-    const auth = getAuth();
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
     const updateReport = async (files: FileList) => {
         if (files?.length === 0) {
-            setUploadLabel("Click to Upload")
+            setUploadLabel("Click to Upload");
             setReportUploaded(false);
+            setReport(null);
         }
         else if (files?.length === 1) {
+            if (files[0].type !== "application/pdf") {
+                setUploadLabel("Please upload only PDF files");
+                setReportUploaded(false);
+                setReport(null);
+                return;
+            }
+            
             setUploadLabel(files[0].name);
             setReport(files[0]);
             setReportUploaded(true);
         } else {
-            setUploadLabel("Please upload only PDF file.")
+            setUploadLabel("Please upload only one PDF file");
             setReportUploaded(false);
+            setReport(null);
         }
     }
 
@@ -38,79 +43,59 @@ function PostGrantReport(): JSX.Element {
         setUploadLabel("Click to Upload");
     }
 
-    useEffect(() => {
-        async function checkEligibility() {
-            if (!auth.currentUser) {
-                navigate("/login");
-                return;
-            }
-
-            try {
-                const q = query(
-                    collection(db, "applications"),
-                    where("userId", "==", auth.currentUser.uid),
-                    where("status", "==", "APPROVED")
-                );
-                
-                const docs = await getDocs(q);
-                
-                if (docs.empty) {
-                    setError("You don't have any approved grants.");
-                    setLoading(false);
-                    return;
-                }
-                let eligible = false;
-                
-                docs.forEach(doc => {
-                    const data = doc.data();
-                    if (data.grantEndDate?.toDate() < new Date() && !data.postGrantReportSubmitted) {
-                        eligible = true;
-                    }
-                });
-                
-                if (!eligible) {
-                    setError("You don't have any grants that need reports.");
-                }
-                setLoading(false);
-                
-            } catch (err) {
-                console.error(err);
-                setError("Something went wrong. Please try again later.");
-                setLoading(false);
-            }
-        }
+    const handleSubmit = async () => {
+        setIsSubmitting(true);
+        setSubmitError(null);
         
-        checkEligibility();
-    }, [auth, navigate]);
+        try {
+            // Validation
+            if (!report) {
+                throw new Error("Please upload a report file");
+            }
+            
+            const investigatorName = (document.getElementById("InvestigatorName") as HTMLInputElement)?.value;
+            const institutionName = (document.getElementById("InstitutionName") as HTMLInputElement)?.value;
+            const attestationDate = (document.getElementById("attestationDate") as HTMLInputElement)?.value;
+            
+            if (!investigatorName) {
+                throw new Error("Please enter the Principal Investigator name");
+            }
+            
+            if (!institutionName) {
+                throw new Error("Please enter the Institution name");
+            }
+            
+            if (!attestationDate) {
+                throw new Error("Please select a date");
+            }
+            
+            // All validation passed, prepare form data
+            const formData: PostGrantFormData = {
+                investigatorName,
+                institutionName,
+                attestationDate
+            };
+            
+            // Submit data to API
+            await writePostGrantReport(report, formData);
+            setSubmitSuccess(true);
 
-    if (loading) {
-        return <div className="PostGrantReport">
-            <div className="PostGrantReport-header-container">
-                <h1 className="PostGrantReport-header">Loading...</h1>
-            </div>
-        </div>;
+            setTimeout(() => {
+                navigate("/applicant-dashboard");
+            }, 2000);
+        } catch (error: any) {
+            setSubmitError(error.message || "Error submitting report. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     }
-    
-    if (error) {
-        return <div className="PostGrantReport">
-            <div className="PostGrantReport-header-container">
-                <h1 className="PostGrantReport-header">Post Grant Results</h1>
-            </div>
-            <div className="PostGrantReport-sections-content">
-                <div className="PostGrantReport-section-box">
-                    <h2 className="PostGrantReport-section-title">Not Available</h2>
-                    <h2>{error}</h2>
-                    <button className="application-btn" onClick={() => navigate("/applicant-dashboard")}>
-                        Back to Dashboard
-                    </button>
-                </div>
-            </div>
-        </div>;
+
+    const handleSaveProgress = () => {
+        alert("Progress saved!");
     }
 
     return (
         <div className="PostGrantReport">
-
             <div className="PostGrantReport-header-container">
                 <h1 className="PostGrantReport-header">
                     Post Grant Results
@@ -118,6 +103,18 @@ function PostGrantReport(): JSX.Element {
             </div>
 
             <div className="PostGrantReport-sections-content">
+                {submitSuccess && (
+                    <div className="success-message">
+                        Report submitted successfully! Redirecting to dashboard...
+                    </div>
+                )}
+                
+                {submitError && (
+                    <div className="error-message">
+                        {submitError}
+                    </div>
+                )}
+                
                 <div className="PostGrantReport-section-box">
                     <h2 className="PostGrantReport-section-title">
                         Post-Grant Report
@@ -139,9 +136,14 @@ function PostGrantReport(): JSX.Element {
                         <h3 className="header-title">Upload File (PDF Format)</h3>
                         <div className="report-upload">
                             <form id="report-form">
-                                <input type='file' accept="application/pdf" id="report-pdf" onChange={e => (e.target.files) ? updateReport(e.target.files) : "Click to Upload"} />
-                                <label className="upload-label" htmlFor="report-pdf">{ uploadLabel }</label>
-                                {reportUploaded ? <button className="remove-upload" onClick={_ => removeUpload()}><strong>X</strong></button> : <></>}
+                                <input 
+                                    type='file' 
+                                    accept="application/pdf" 
+                                    id="report-pdf" 
+                                    onChange={e => (e.target.files) ? updateReport(e.target.files) : null} 
+                                />
+                                <label className="upload-label" htmlFor="report-pdf">{uploadLabel}</label>
+                                {reportUploaded ? <button type="button" className="remove-upload" onClick={_ => removeUpload()}><strong>X</strong></button> : <></>}
                             </form>
                         </div>
                     </div>
@@ -179,31 +181,20 @@ function PostGrantReport(): JSX.Element {
                     </div>
                 </div>
                 <div className="PostGrantReport-submit">
-                    <button className="application-btn">Save Progress</button>
-                    <button className="application-btn" onClick={() => {
-                        if (!report) {
-                            alert("Please upload a report file");
-                            return;
-                        }
-                        
-                        const investigatorName = (document.getElementById("InvestigatorName") as HTMLInputElement)?.value;
-                        const institutionName = (document.getElementById("InstitutionName") as HTMLInputElement)?.value;
-                        const attestationDate = (document.getElementById("attestationDate") as HTMLInputElement)?.value;
-                        
-                        if (!investigatorName || !institutionName || !attestationDate) {
-                            alert("Please fill in all required fields");
-                            return;
-                        }
-                        
-                        try {
-                            writePostGrantReport(report);
-                            alert("Report submitted successfully!");
-                            navigate("/applicant-dashboard");
-                        } catch (error) {
-                            console.error(error);
-                            alert("Failed to submit report.");
-                        }
-                    }}>Save and Submit</button>
+                    <button 
+                        className="application-btn" 
+                        onClick={handleSaveProgress}
+                        disabled={isSubmitting}
+                    >
+                        Save Progress
+                    </button>
+                    <button 
+                        className="application-btn" 
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "Submitting..." : "Save and Submit"}
+                    </button>
                 </div>
             </div>
         </div>

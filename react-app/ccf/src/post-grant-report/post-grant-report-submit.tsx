@@ -3,7 +3,13 @@ import { db } from '../index';
 import { uploadFileToStorage } from "../storage/storage";
 import { getAuth } from "firebase/auth";
 
-const writePostGrantReport = async(file: File) => {
+export interface PostGrantFormData {
+  investigatorName: string;
+  institutionName: string;
+  attestationDate: string;
+}
+
+export const writePostGrantReport = async(file: File, formData: PostGrantFormData) => {
     try {
         const auth = getAuth();
         const user = auth.currentUser;
@@ -12,9 +18,6 @@ const writePostGrantReport = async(file: File) => {
             throw new Error("User not logged in");
         }
         
-        const investigatorName = (document.getElementById("InvestigatorName") as HTMLInputElement)?.value;
-        const institutionName = (document.getElementById("InstitutionName") as HTMLInputElement)?.value;
-        
         const pdfUrl = await uploadFileToStorage(file);
 
         const reportId = Date.now().toString();
@@ -22,11 +25,12 @@ const writePostGrantReport = async(file: File) => {
         await setDoc(newReportRef, {
             pdf: pdfUrl,
             userId: user.uid,
-            investigatorName: investigatorName,
-            institutionName: institutionName,
+            investigatorName: formData.investigatorName,
+            institutionName: formData.institutionName,
+            attestationDate: formData.attestationDate,
             submittedAt: new Date()
         });
-        
+    
         const applicationsRef = collection(db, "applications");
         const q = query(
             applicationsRef, 
@@ -48,9 +52,7 @@ const writePostGrantReport = async(file: File) => {
         
         return reportId;
     } catch (error) {
-        console.error("Error writing application data:", error);
+        console.error("Error writing post grant report data:", error);
         throw error;
     }
 };
-
-export { writePostGrantReport };

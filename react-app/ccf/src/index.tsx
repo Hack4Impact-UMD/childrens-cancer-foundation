@@ -32,8 +32,8 @@ const functions = getFunctions();
 
 
 //flag for local testing
-// change to true to run -+using emulator
-const useEmulator = true
+// change to true to run -+using emaulator
+const useEmulator = false
 
 if (useEmulator) {
   connectFirestoreEmulator(db, '127.0.0.1', 8080);
