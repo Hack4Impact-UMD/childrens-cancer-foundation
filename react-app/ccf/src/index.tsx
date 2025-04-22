@@ -4,6 +4,8 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { initializeApp } from "firebase/app";
 
+import { AuthProvider } from './context/AuthContext';
+
 import { getAnalytics } from "firebase/analytics";
 //If this line says import not found then you need to set up firebase api on your machine
 import firebaseConfig from "./firebase_config/FireConfig";
@@ -49,7 +51,9 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </React.StrictMode>
 );
 

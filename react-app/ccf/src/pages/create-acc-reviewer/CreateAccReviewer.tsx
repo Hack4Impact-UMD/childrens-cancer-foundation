@@ -81,7 +81,7 @@ function AccountPageReviewers(): JSX.Element {
         pwd
       );
       user = userCredential.user;
-      await setDoc(doc(db, "reviewers", user.uid), {
+      await setDoc(doc(db, "reviewerUsers", user.uid), {
         firstName: firstName,
         lastName: lastName,
         email: email,
@@ -99,7 +99,7 @@ function AccountPageReviewers(): JSX.Element {
     } catch (e) {
       if (user !== null) {
         await deleteUser(user);
-        await deleteDoc(doc(db, "reviewers", user.uid));
+        await deleteDoc(doc(db, "reviewerUsers", user.uid));
       }
       console.error(e);
     }

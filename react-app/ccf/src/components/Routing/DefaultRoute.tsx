@@ -1,31 +1,30 @@
-import { getRole } from "../../services/auth_login"
 import { Navigate } from 'react-router-dom';
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const DefaultRoute = () => {
+  const { role, loading } = useAuth();
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
 
-    const getRoute = async () => {
-        getRole().then((role) => {
-            console.log(role)
-            if (!role) {
-                setTo("/login")
-            } else if (role == "applicant") {
-                setTo("/applicant-dashboard")
-            } else if (role == "reviewer") {
-                setTo("/reviewer-dashboard")
-            } else if (role == "admin") {
-                setTo("/admin-dashboard")
-            }
-        })
+  useEffect(() => {
+    if (!loading) {
+      if (!role) {
+        setRedirectPath("/login");
+      } else if (role === "applicant") {
+        setRedirectPath("/applicant-dashboard");
+      } else if (role === "reviewer") {
+        setRedirectPath("/reviewer-dashboard");
+      } else if (role === "admin") {
+        setRedirectPath("/admin-dashboard");
+      }
     }
+  }, [role, loading]);
 
-    const [to, setTo] = useState<String>("/");
+  if (loading || redirectPath === null) {
+    return null; // or a loading spinner
+  }
 
-    useEffect(() => {
-        getRoute()
-    }, []);
+  return <Navigate to={redirectPath} replace />;
+};
 
-    return <Navigate to={String(to)} replace={true}></Navigate>
-}
-
-export default DefaultRoute
+export default DefaultRoute;

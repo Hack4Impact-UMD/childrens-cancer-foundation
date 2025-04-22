@@ -81,7 +81,7 @@ function AccountPageApplicants(): JSX.Element {
         pwd
       );
       user = userCredential.user;
-      await setDoc(doc(db, "applicants", user.uid), {
+      await setDoc(doc(db, "applicantUsers", user.uid), {
         firstName: firstName,
         lastName: lastName,
         email: email,
@@ -99,7 +99,7 @@ function AccountPageApplicants(): JSX.Element {
     } catch (e) {
       if (user !== null) {
         await deleteUser(user);
-        await deleteDoc(doc(db, "applicants", user.uid));
+        await deleteDoc(doc(db, "applicantUsers", user.uid));
       }
       console.error(e);
     }

@@ -7,9 +7,6 @@ import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer"
 import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
 
 import Sidebar from "./components/sidebar/Sidebar";
-import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
-import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
-import ReviewerProtectedRoute from './components/Routing/ReviewerProtectedRoute';
 import CreateAccMenu from './pages/create-acc-menu/CreateAccMenu';
 import ErrorPage from './pages/error/error';
 import PostGrantReport from './post-grant-report/post-grant-report';
@@ -24,6 +21,9 @@ import GrantAwards from './pages/grant-awards/GrantAwards';
 import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
+
+//rolecheck ensures only correct users can access their page via their role
+import {RoleCheck} from './context/RoleCheck'
 
 function App(): JSX.Element {
   return (
@@ -42,18 +42,21 @@ function App(): JSX.Element {
           } 
         />
         <Route path="/reviewer-dashboard" element={
-            <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
-        }>
+            <RoleCheck role = "reviewer">
+              <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
+            </RoleCheck>
+            }>
         </Route>
-        <Route	
-                  path="/reviewer-dashboard/all-applications"
-                  element={<AllApplications />}
-        	
-                />
+        <Route path="/reviewer-dashboard/all-applications" element={
+            <RoleCheck role = "reviewer">
+              <AllApplications />
+            </RoleCheck>}/>
         <Route
           path="/applicant-dashboard"
           element={
-            <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
+            <RoleCheck role = "applicant">
+              <ApplicantUsersDashboard />
+            </RoleCheck>
           }
         />
         <Route
@@ -71,36 +74,45 @@ function App(): JSX.Element {
         />          
 
         <Route
+            path="/application-form/research"
+            element={<RoleCheck role = "applicant"><ApplicationForm type="Research" /></RoleCheck>}
+        />
+        <Route
           path="/application-form/nextgen"
-          element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
+          element={<RoleCheck role = "applicant"><ApplicationForm type="NextGen" /></RoleCheck>}
         />
         <Route
           path="/application-form/nonresearch"
-          element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
+          element={<RoleCheck role = "applicant"><NRApplicationForm /></RoleCheck>}
         />
         {/* Admin dashboard */}
         <Route path="/admin" element={<></>} />
         Need to change path to create-account after authentication
-        <Route
-          path="/applicant-dashboard" 
-          element={
-            <ApplicantUsersDashboard />
-          } 
-        />    
+        
         {/* Admin View All Accounts Page*/}   
         <Route
           path="/admin-all-accounts" 
           element={
-            <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
+            <RoleCheck role = "admin"><AdminDashboardViewAllAccounts /></RoleCheck>
           } 
         />
         {/* Admin Edit Information Page */}
         <Route
           path="/admin-edit-information" 
           element={
-            <AdminProtectedRoute element={<AdminEditInformation />} />
+            <RoleCheck role = "admin">
+              <AdminEditInformation />
+            </RoleCheck>
           } 
         />
+        
+        <Route
+            path="/grant-awards"
+            
+            element={<RoleCheck role = "admin"><GrantAwards /></RoleCheck>}
+        />
+        
+        
         {/* Need to change path to create-account after authentication */}
         <Route
           path="/create-account-reviewers" 
@@ -108,6 +120,13 @@ function App(): JSX.Element {
             <AccountPageReviewers />
           } 
         />
+        
+        <Route
+            path="/create-account-applicants"
+            element={<AccountPageApplicants />}
+        />
+        
+        {/*dont know who gets access */}
         <Route
           path="/post-grant-report" 
           element={
@@ -115,36 +134,10 @@ function App(): JSX.Element {
           }
         />         
         <Route
-            path="/application-form/research"
-            element={<ApplicationForm type="Research" />}
-        />
-        <Route
-            path="/application-form/nextgen"
-            element={<ApplicationForm type="NextGen" />}
-        />
-        <Route
-            path="/application-form/nonresearch"
-            element={<NRApplicationForm />}
-        />
-        {/* Admin dashboard */}
-        <Route path="/admin" element={<></>} />
-        Need to change path to create-account after authentication
-        <Route
-            path="/create-account-reviewers"
-            element={<AccountPageReviewers />}
-        />
-        <Route
-            path="/create-account-applicants"
-            element={<AccountPageApplicants />}
-        />
-        <Route
             path={"/settings"}
             element={<AccountSettingsPage/>}
         />
-        <Route
-            path="/grant-awards"
-            element={<AdminProtectedRoute element={<GrantAwards />} />}
-        />
+        
       </Routes>
 
     </BrowserRouter>
