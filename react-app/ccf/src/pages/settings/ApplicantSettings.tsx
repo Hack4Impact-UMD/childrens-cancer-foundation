@@ -1,5 +1,4 @@
 
-//  NO LONGER NEEDED - CREATED ROLE SPECIFIC SETTINGS PAGES
 import { useEffect, useState } from "react";
 import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
