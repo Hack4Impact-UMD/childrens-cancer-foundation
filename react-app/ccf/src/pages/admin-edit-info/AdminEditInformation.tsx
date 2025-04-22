@@ -76,7 +76,7 @@ function AdminEditInformation(): JSX.Element {
                                         backgroundColor: '#79747E'
                                     }}
                                     slots={{
-                                        textField: (props) => (
+                                        textField: (props: any) => (
                                             <TextField
                                                 {...props}
                                                 sx={{
@@ -108,7 +108,7 @@ function AdminEditInformation(): JSX.Element {
                                         backgroundColor: '#79747E'
                                     }}
                                     slots={{
-                                        textField: (props) => (
+                                        textField: (props: any) => (
                                             <TextField
                                                 {...props}
                                                 sx={{
@@ -140,7 +140,7 @@ function AdminEditInformation(): JSX.Element {
                                         backgroundColor: '#79747E'
                                     }}
                                     slots={{
-                                        textField: (props) => (
+                                        textField: (props: any) => (
                                             <TextField
                                                 {...props}
                                                 sx={{
@@ -209,7 +209,7 @@ function AdminEditInformation(): JSX.Element {
                                         backgroundColor: '#79747E',
                                     }}
                                     slots={{
-                                        textField: (props) => (
+                                        textField: (props: any) => (
                                             <TextField
                                                 {...props}
                                                 sx={{
