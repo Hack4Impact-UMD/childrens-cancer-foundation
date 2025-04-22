@@ -166,9 +166,10 @@ function AccountPageApplicants(): JSX.Element {
                 value={pwd}
                 onChange={(e) => {
                   setPwd(e.target.value);
-                  const requirements = validatePassword(
-                    e.target.value
-                  ).requirements;
+                  const { requirements } = validatePassword(e.target.value);
+                  setSpecialChar(requirements.specialChar);
+                  setCapitalLetter(requirements.capitalLetter);
+                  setNumber(requirements.number);
                 }}
                 onFocus={() => setShowReqs(true)} // Show on focus
                 onBlur={() => setShowReqs(false)}
