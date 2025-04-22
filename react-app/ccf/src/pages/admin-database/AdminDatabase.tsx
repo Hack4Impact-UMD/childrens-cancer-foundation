@@ -1,109 +1,97 @@
 import { useState, useEffect } from "react";
 import "./AdminDatabase.css";
 import Sidebar from "../../components/sidebar/Sidebar";
-import { FaArrowDown, FaArrowUp, FaFileAlt } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaChevronRight } from "react-icons/fa";
 import logo from "../../assets/ccf-logo.png";
 import document from '../../assets/documentIcon.png';
+import yellowDocument from '../../assets/yellowDocumentIcon.png';
+import blueDocument from '../../assets/blueDocumentIcon.png';
 
 interface Application {
     applicationTitle: string;
     applicationType: string;
     decision: string;
+    institution: string;
+    principalInvestigator: string; 
     cancerType: string;
+    amountRequested: string;
+    continuationOfFunding: string;
 }
 
 function AdminApplicationsDatabase(): JSX.Element {
-    const [applicationsData, setApplicationsData] = useState<{ [year: string]: { coverSheets: Application[], proposals: Application[] } }>({});
-    const [collapseState, setCollapseState] = useState<{ [year: string]: { coverSheets: boolean; proposals: boolean; isYearCollapsed: boolean } }>({});
+    const [applicationsData, setApplicationsData] = useState<{ [year: string]: Application[] }>({});
+    const [collapseState, setCollapseState] = useState<{ [year: string]: boolean }>({});
+    const [expandedApplications, setExpandedApplications] = useState<{ [key: string]: boolean }>({});
     const [searchTerm, setSearchTerm] = useState("");
     const [filters, setFilters] = useState({
         applicationCycle: "",
         decision: "",
         grantType: "",
-        cancerType: ""
+        institution: ""
     });
 
     useEffect(() => {
-        const initialData = {
-            "2023": {
-                coverSheets: [
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                ],
-                proposals: [
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                ]
-            }, 
-            "2022": {
-                coverSheets: [
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                ],
-                proposals: [
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                    { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", cancerType: "" },
-                ]
-            }
+        const initialData : { [year: string]: Application[] } = {
+            "2023": [
+                { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" },
+                { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" },
+                { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" }
+            ], 
+            "2022": [
+                { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" },
+                { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" },
+                { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" }
+            ]
         };
 
         setApplicationsData(initialData);
 
-        const initialCollapseState = Object.keys(initialData).reduce((acc, year) => {
-            acc[year] = { coverSheets: false, proposals: false, isYearCollapsed: false };
-            return acc;
-        }, {} as { [year: string]: { coverSheets: boolean; proposals: boolean; isYearCollapsed: boolean } });
+        const initialCollapse: { [year: string]: boolean } = {};
+        for (const year in initialData) {
+            initialCollapse[year] = false;
+        }
 
-        setCollapseState(initialCollapseState);
+        setCollapseState(initialCollapse);
+
+        const initialExpandedState: { [key: string]: boolean } = {};
+        Object.keys(initialData).forEach(year => {
+            initialData[year].forEach((app, index) => {
+                initialExpandedState[${year}-${index}] = false;
+            });
+        });
+        setExpandedApplications(initialExpandedState);
     }, []);
 
-    const toggleSection = (year: string, section: "coverSheets" | "proposals") => {
-        setCollapseState(prevState => ({
-            ...prevState,
-            [year]: {
-                ...prevState[year],
-                [section]: !prevState[year][section]
-            }
+    const toggleYear = (year: string) => {
+        setCollapseState(prev => ({
+            ...prev, 
+            [year]: !prev[year]
         }));
     };
 
-    const toggleYear = (year: string) => {
-        setCollapseState(prevState => ({
-            ...prevState, 
-            [year]: {
-                ...prevState[year],
-                isYearCollapsed: !prevState[year].isYearCollapsed
-            }
+    const toggleApplication = (year: string, index: number) => {
+        const key = ${year}-${index};
+        setExpandedApplications(prev => ({
+            ...prev, 
+            [key]: !prev[key]
         }));
     };
 
     const filteredApplications = Object.keys(applicationsData).reduce((acc, year) => {
-        const filteredYearData = {
-            coverSheets: applicationsData[year].coverSheets.filter(app => 
-                (filters.applicationCycle ? year === filters.applicationCycle : true) &&
-                (filters.decision ? app.decision === filters.decision : true) &&
-                (filters.grantType ? app.applicationType.includes(filters.grantType) : true) && 
-                (filters.cancerType ? app.cancerType === filters.cancerType : true) && 
-                (searchTerm ? app.applicationTitle.toLowerCase().includes(searchTerm.toLowerCase()) : true)
-            ),
-            proposals: applicationsData[year].proposals.filter(app => 
-                (filters.applicationCycle ? year === filters.applicationCycle : true) &&
-                (filters.decision ? app.decision === filters.decision : true) &&
-                (filters.grantType ? app.applicationType.includes(filters.grantType) : true) && 
-                (filters.cancerType ? app.cancerType === filters.cancerType : true) && 
-                (searchTerm ? app.applicationTitle.toLowerCase().includes(searchTerm.toLowerCase()) : true)
-            )
-        };
+        const filtered = applicationsData[year].filter(app => 
+            (filters.applicationCycle ? year === filters.applicationCycle : true) && 
+            (filters.decision ? app.decision === filters.decision : true) && 
+            (filters.grantType ? app.applicationType.includes(filters.grantType) : true) && 
+            (filters.institution ? app.institution === filters.institution : true) && 
+            (searchTerm ? app.applicationTitle.toLowerCase().includes(searchTerm.toLocaleLowerCase()) : true)
+        );
 
-        if (filteredYearData.coverSheets.length || filteredYearData.proposals.length) {
-            acc[year] = filteredYearData;
+        if (filtered.length) {
+            acc[year] = filtered;
         }
+
         return acc;
-    }, {} as typeof applicationsData);
+    }, {} as { [year: string]: Application[] }); 
 
     const sidebarItems = [
         {name: "Home", path: "/"},
@@ -120,7 +108,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                 <div className="dashboard-content">
                     <div className="dashboard-header-container">
                         <img src={logo} alt="Logo" className="dashboard-logo" />
-                        <h1 className="dashboard-header">Application Database</h1>
+                        <h1 className="dashboard-header">Administrator Dashboard</h1>
                     </div>
 
                     <input
@@ -150,10 +138,10 @@ function AdminApplicationsDatabase(): JSX.Element {
                             <option value="Next Gen">Next Gen</option>
                         </select>
 
-                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, cancerType: e.target.value})}>
-                            <option value="">Cancer Type</option>
-                            <option value="Lung Cancer">Lung Cancer</option>
-                            <option value="Breast Cancer">Breast Cancer</option>
+                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, institution: e.target.value})}>
+                            <option value="">Institution</option>
+                            <option value="Institution 1">Institution 1</option>
+                            <option value="Institution 2">Institution 2</option>
                         </select>
                     </div>
 
@@ -166,49 +154,82 @@ function AdminApplicationsDatabase(): JSX.Element {
                                         <h2>{year}</h2>
                                     </div>
                                     <button className="expand-collapse-btn">
-                                        {collapseState[year]?.isYearCollapsed ? <FaArrowDown /> : <FaArrowUp />}
+                                        {collapseState[year] ? <FaArrowDown /> : <FaArrowUp />}
                                     </button>
                                 </div>
 
-                                {!collapseState[year]?.isYearCollapsed && (
+                                {!collapseState[year] && (
                                     <> 
                                         <div className="applications-container">
-                                            <h3 onClick={() => toggleSection(year, "coverSheets")} className="section-toggle">
-                                                Cover Sheets
-                                                <button className="expand-collapse-btn">
-                                                    {collapseState[year]?.coverSheets ? <FaArrowDown /> : <FaArrowUp />}
-                                                </button>
-                                            </h3>
-
-                                            {!collapseState[year]?.coverSheets && applicationsData[year].coverSheets.map((coverSheet, index) => (
-                                                <div key={index} className="single-application-box">
-                                                    <div className="application-info">
-                                                        <FaFileAlt className="application-icon" />
-                                                        <div className="application-info-text">
-                                                            <p>{coverSheet.applicationTitle}</p>
-                                                            <p className="subtext">{coverSheet.applicationType}</p>
+                                            {filteredApplications[year].map((app, index) => {
+                                                const isExpanded = expandedApplications[${year}-${index}];
+                                                const iconColor = isExpanded ? blueDocument : yellowDocument;
+                                                return (
+                                                    <div key={index} className={single-application-box ${isExpanded ? 'expanded' : ''}}>
+                                                        <div className="application-header" onClick={() => toggleApplication(year, index)}>
+                                                            <div className="application-info">
+                                                                <img src={iconColor} alt="Document Icon" className="section-icon" />
+                                                                <div className="application-info-text">
+                                                                    <p className="application-title">{app.applicationTitle}</p>
+                                                                    <p className="subtext">{app.applicationType}</p>
+                                                                </div>
+                                                            </div>
+                                                            <button className="expand-collapse-btn">
+                                                                {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
+                                                            </button>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
 
-                                        <div className="applications-container">
-                                            <h3 onClick={() => toggleSection(year, "proposals")} className="section-toggle">
-                                                Proposals
-                                                <button className="expand-collapse-btn">
-                                                    {collapseState[year]?.proposals ? <FaArrowDown /> : <FaArrowUp />}
-                                                </button>
-                                            </h3>
-
-                                            {!collapseState[year]?.proposals && applicationsData[year].proposals.map((proposal, index) => (
-                                                <div key={index} className="single-application-box">
-                                                    <div className="application-info">
-                                                        <FaFileAlt className="application-icon" />
-                                                        <p>{proposal.applicationType}</p>
+                                                        {isExpanded && (
+                                                            <div className="application-details">
+                                                                <hr className="divider"/>
+                                                                <div className="details-two-columns">
+                                                                    <div className="details-block">
+                                                                        <div className="detail-item">
+                                                                            <span className="detail-label">Application Title: </span>
+                                                                            <span className="detail-value">{ app.applicationTitle || " N/A"}</span>
+                                                                        </div>
+                                                                        <div className="detail-item">
+                                                                            <span className="detail-label">Application Type: </span>
+                                                                            <span className="detail-value">{ app.applicationType || " N/A"}</span>
+                                                                        </div>
+                                                                        <div className="detail-item">
+                                                                            <span className="detail-label">Principal Investigator: </span>
+                                                                            <span className="detail-value">{ app.principalInvestigator || " N/A"}</span>
+                                                                        </div>
+                                                                        <div className="detail-item">
+                                                                            <span className="detail-label">Institution: </span>
+                                                                            <span className="detail-value">{ app.institution || " N/A"}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="details-block">
+                                                                        <div className="detail-item">
+                                                                            <span className="detail-label">Cancer Type: </span>
+                                                                            <span className="detail-value">{ app.cancerType || " N/A"}</span>
+                                                                        </div>
+                                                                        <div className="detail-item">
+                                                                            <span className="detail-label">Amount Requested: </span>
+                                                                            <span className="detail-value">{ app.amountRequested || " N/A"}</span>
+                                                                        </div>
+                                                                        <div className="detail-item">
+                                                                            <span className="detail-label">Continuation of Funding: </span>
+                                                                            <span className="detail-value">{ app.continuationOfFunding || " N/A"}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="action-buttons">
+                                                                    <button className="action-button cover-sheet">
+                                                                        Cover Sheet Information
+                                                                        <FaChevronRight className="button-icon" />
+                                                                    </button>
+                                                                    <button className="action-button completed-app">
+                                                                        Completed Application
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </>
                                 )}
