@@ -16,9 +16,9 @@
 
 .sidebar-header {
   display: flex;
-  justify-content: flex-end;
+  justify-content: start;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 15px;
 }
 
 .toggle-btn {
