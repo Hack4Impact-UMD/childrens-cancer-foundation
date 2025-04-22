@@ -166,13 +166,7 @@ function AccountSettingsPage(): JSX.Element {
       setPersonalInfoError(error.message || "Failed to update personal information");
     }
   };
-
-  // const sidebarItems = [
-  //   {name: "Home", path: "/"},
-  //   {name: "Account Settings", path: "/settings"},
-  //   {name: "Logout", path: "/login"}
-  // ];
-
+  
   return (
       <div>
       <Sidebar links={sidebarItems} />

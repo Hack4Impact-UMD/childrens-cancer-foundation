@@ -164,11 +164,6 @@ function AccountSettingsPage(): JSX.Element {
     }
   };
 
-  // const sidebarItems = [
-  //   {name: "Home", path: "/"},
-  //   {name: "Account Settings", path: "/settings"},
-  //   {name: "Logout", path: "/login"}
-  // ];
 
   return (
       <div>
