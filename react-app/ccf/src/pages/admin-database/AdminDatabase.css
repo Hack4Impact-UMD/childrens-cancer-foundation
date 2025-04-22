@@ -236,6 +236,17 @@
     height: auto;
     overflow: visible;
 }
+.single-application-box.expanded .application-title{
+    color: #1E1E1E;
+}
+
+.single-application-box.expanded .subtext{
+    color: #545454;
+}
+
+.single-application-box.expanded .application-header{
+    margin-top: 0;
+}
 
 .application-header {
     display: flex;
@@ -243,6 +254,7 @@
     align-items: center;
     cursor: pointer;
     width: 100%;
+    margin-top: -20px;
 }
 
 .application-info {
@@ -260,12 +272,14 @@
     font-weight: 600;
     margin: 0;
     font-size: 16px;
+    color: #1E1E1E;
 }
 
 .subtext {
     font-size: 14px;
     margin: 0;
     margin-top: 4px;
+    color: #545454;
 }
 
 .application-icon {
