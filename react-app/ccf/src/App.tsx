@@ -41,17 +41,17 @@ function App(): JSX.Element {
               <DefaultRoute></DefaultRoute>
           } 
         />
-        <Route path="/reviewer-dashboard" element={
+        <Route path="/reviewer/dashboard" element={
             <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
         }>
         </Route>
         <Route	
-                  path="/reviewer-dashboard/all-applications"
+                  path="/reviewer/dashboard/all-applications"
                   element={<AllApplications />}
         	
                 />
         <Route
-          path="/applicant-dashboard"
+          path="/applicant/dashboard"
           element={
             <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
           }
@@ -82,67 +82,67 @@ function App(): JSX.Element {
         <Route path="/admin" element={<></>} />
         Need to change path to create-account after authentication
         <Route
-          path="/applicant-dashboard" 
+          path="/applicant/dashboard" 
           element={
             <ApplicantUsersDashboard />
           } 
         />    
         {/* Admin View All Accounts Page*/}   
         <Route
-          path="/admin-all-accounts" 
+          path="/admin/all-accounts" 
           element={
             <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
           } 
         />
         {/* Admin Edit Information Page */}
         <Route
-          path="/admin-edit-information" 
+          path="/admin/edit-information" 
           element={
             <AdminProtectedRoute element={<AdminEditInformation />} />
           } 
         />
         {/* Need to change path to create-account after authentication */}
         <Route
-          path="/create-account-reviewers" 
+          path="/reviewer/create-account" 
           element={
             <AccountPageReviewers />
           } 
         />
         <Route
-          path="/post-grant-report" 
+          path="/applicant/post-grant-report" 
           element={
             <PostGrantReport />
           }
         />         
         <Route
-            path="/application-form/research"
+            path="/applicant/application-form/research"
             element={<ApplicationForm type="Research" />}
         />
         <Route
-            path="/application-form/nextgen"
+            path="/applicant/application-form/nextgen"
             element={<ApplicationForm type="NextGen" />}
         />
         <Route
-            path="/application-form/nonresearch"
+            path="/applicant/application-form/nonresearch"
             element={<NRApplicationForm />}
         />
         {/* Admin dashboard */}
         <Route path="/admin" element={<></>} />
         Need to change path to create-account after authentication
         <Route
-            path="/create-account-reviewers"
+            path="/reviewer/create-account"
             element={<AccountPageReviewers />}
         />
         <Route
-            path="/create-account-applicants"
+            path="/applicant/create-account"
             element={<AccountPageApplicants />}
         />
         <Route
-            path={"/settings"}
+            path={"/account/settings"}
             element={<AccountSettingsPage/>}
         />
         <Route
-            path="/grant-awards"
+            path="/admin/grant-awards"
             element={<AdminProtectedRoute element={<GrantAwards />} />}
         />
       </Routes>
