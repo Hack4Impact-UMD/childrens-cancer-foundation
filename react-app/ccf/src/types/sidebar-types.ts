@@ -13,7 +13,7 @@ export default interface SidebarProps {
 
 export const adminSidebar: SideBarTypes[] = [
     {name: 'Home', path: '/admin/home'},
-    {name: 'Account Settings', path: '/admin/account-settings'},
+    {name: 'Account Settings', path: '/admin/settings'},
     { name: 'All Accounts', path: '/admin/all-accounts' },
     { name: 'Assign Reviewers', path: '/admin/assign-reviewers' },
     { name: 'Assign Awards', path: '/admin/assign-awards' },
@@ -23,7 +23,7 @@ export const adminSidebar: SideBarTypes[] = [
 
 export const reviewerSidebar: SideBarTypes[] = [
     {name: 'Home', path: '/reviewer/home'},
-    {name: 'Account Settings', path: '/reviewer/account-settings'},
+    {name: 'Account Settings', path: '/reviewer/settings'},
     { name: 'Assigned Applications', path: '/reviewer/assigned-applications' },
     { name: 'All Applications', path: '/reviewer/all-applications' },
     { name: 'Logout', path: '/login'}
@@ -31,7 +31,7 @@ export const reviewerSidebar: SideBarTypes[] = [
 
 export const applicantSidebar: SideBarTypes[] = [
     {name: 'Home', path: '/applicant/home'},
-    {name: 'Account Settings', path: '/applicant/account-settings'},
+    {name: 'Account Settings', path: '/applicant/settings'},
     {name: 'Applications', path: '/applicant/applications'},
     { name: 'Logout', path: '/login'}
 ];

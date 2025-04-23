@@ -18,9 +18,14 @@ import ReviewerDashboard from "./pages/reviewer-dashboard/ReviewerDashboard";
 import faq_data from "./StaticData/FAQ-REVIEWER";
 import ApplicationForm from "./pages/application-form/ApplicationForm";
 import NRApplicationForm from "./pages/application-form/NRApplicationForm";
-import AccountSettingsPage from "./pages/settings/settings";
 import AdminDashboardViewAllAccounts from "./pages/admin-dashboard/AdminDashboardViewAll";
 import GrantAwards from './pages/grant-awards/GrantAwards';
+import AdminSettings from "./pages/settings/AdminSettings";
+import ApplicantSettings from "./pages/settings/ApplicantSettings";
+import ReviewerSettings from "./pages/settings/ReviewerSettings";
+
+
+
 import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
@@ -94,7 +99,7 @@ function App(): JSX.Element {
             <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
           } 
         />
-        {/* Admin Edit Information Page */}
+        Admin Edit Information Page
         <Route
           path="/admin-edit-information" 
           element={
@@ -138,9 +143,22 @@ function App(): JSX.Element {
             element={<AccountPageApplicants />}
         />
         <Route
-            path={"/settings"}
-            element={<AccountSettingsPage/>}
+          path="/admin/settings"
+          element={<AdminProtectedRoute element={<AdminSettings />} />}
         />
+        <Route
+          path="/reviewer/settings"
+          element={<ReviewerProtectedRoute element={<ReviewerSettings />} />}
+        />
+        <Route
+          path="/applicant/settings"
+          element={<ApplicantProtectedRoute element={<ApplicantSettings />} />}
+        />
+        
+        <Route path="/reviewer-dashboard" element={
+            <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
+        }>
+        </Route>
         <Route
             path="/grant-awards"
             element={<AdminProtectedRoute element={<GrantAwards />} />}

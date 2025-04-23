@@ -1,5 +1,4 @@
 
-//  NO LONGER NEEDED - CREATED ROLE SPECIFIC SETTINGS PAGES
 import { useEffect, useState } from "react";
 import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
@@ -31,7 +30,6 @@ function AccountSettingsPage(): JSX.Element {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [title, setTitle] = useState("");
-  const [institution, setInstitution] = useState("");
 
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
@@ -56,7 +54,6 @@ function AccountSettingsPage(): JSX.Element {
             setFirstName(userData.firstName || "");
             setLastName(userData.lastName || "");
             setTitle(userData.title || "");
-            setInstitution(userData.affiliation || "");
           }
 
           // Get user claims
@@ -153,7 +150,6 @@ function AccountSettingsPage(): JSX.Element {
         firstName: firstName,
         lastName: lastName,
         title: title,
-        affiliation: institution
       });
 
       setPersonalInfoSuccess(true);
@@ -168,11 +164,6 @@ function AccountSettingsPage(): JSX.Element {
     }
   };
 
-  // const sidebarItems = [
-  //   {name: "Home", path: "/"},
-  //   {name: "Account Settings", path: "/settings"},
-  //   {name: "Logout", path: "/login"}
-  // ];
 
   return (
       <div>
@@ -185,88 +176,12 @@ function AccountSettingsPage(): JSX.Element {
           <h1 className="AccountSettings-header">Account Settings</h1>
         </div>
 
-        <div className="AccountSettings-sections-content">
-          <div className="AccountSettings-section">
-            <div className="header-title">
-              <h2>Personal Information</h2>
-            </div>
-
-            <div className="AccountSetting-personal-info">
-              <div className="AccountSetting-personal-info-field">
-                <label>First Name</label>
-                <div className="info-row">
-                  <input
-                    type="text"
-                    className="personal-input-text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                  <span className="edit-icon">✎</span>
-                </div>
-              </div>
-              <div className="AccountSetting-personal-info-field">
-                <label>Last Name</label>
-                <div className="info-row">
-                  <input
-                    type="text"
-                    className="personal-input-text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                  <span className="edit-icon">✎</span>
-                </div>
-              </div>
-              <div className="AccountSetting-personal-info-field">
-                <label>Title</label>
-                <div className="info-row">
-                  <input
-                    type="text"
-                    className="personal-input-text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                  <span className="edit-icon">✎</span>
-                </div>
-              </div>
-              <div className="AccountSetting-personal-info-field">
-                <label>Institution</label>
-                <div className="info-row">
-                  <input
-                    type="text"
-                    className="personal-input-text"
-                    value={institution}
-                    onChange={(e) => setInstitution(e.target.value)}
-                  />
-                  <span className="edit-icon">✎</span>
-                </div>
-              </div>
-              {personalInfoError && (
-                <p className="error-message">{personalInfoError}</p>
-              )}
-            </div>
-            <div className="button-container">
-              <div className="button-message-container">
-                <button
-                  type="button"
-                  className="signup-btn2"
-                  onClick={handlePersonalInfoSubmit}
-                  style={{ width: "200px" }}
-                >
-                  Save Personal Information
-                </button>
-                {personalInfoSuccess && (
-                  <p className="success-message inline-message">Personal information updated successfully!</p>
-                )}
-              </div>
-            </div>
-          </div>
-
           <div className="AccountSettings-section">
             <div className="header-title">
               <h2>Account Settings</h2>
             </div>
             <div className="info-row-settings">
-              <label>Username</label>
+              <label>Email</label>
               <span className="username-text">
                 {username ? username : "No username available"}
               </span>
@@ -408,7 +323,6 @@ function AccountSettingsPage(): JSX.Element {
         </div>
       </div>
     </div>
-      </div>
   );
 }
 
