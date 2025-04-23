@@ -7,8 +7,10 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../index";
 import MailtoLink from "../../components/MailtoLink";
 import sendIcon from "../../assets/email_send-solid.png";
+import { getSidebarbyRole } from "../../types/sidebar-types";
 
 function AdminDashboardViewAll(): JSX.Element {
+    const sidebarItems = getSidebarbyRole("admin")
     const [searchTerm, setSearchTerm] = useState("");
     const [affiliationFilter, setAffiliationFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -26,14 +28,6 @@ function AdminDashboardViewAll(): JSX.Element {
     const [uniqueCancerTypes, setUniqueCancerTypes] = useState<string[]>([]);
     // Stores the emails of accounts selected via checkboxes in the table
     const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
-
-    const sidebarItems = [
-        { name: "Home", path: "/" },
-        { name: "Account Settings", path: "/settings" },
-        { name: "All Accounts", path: "/admin-all-accounts" },
-        { name: "Logout", path: "/login" },
-        {name: "Edit Information", path: "/admin-edit-information"}
-    ];
     
     useEffect(() => {
         const fetchAllAccounts = async () => {

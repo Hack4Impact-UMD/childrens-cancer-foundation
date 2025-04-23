@@ -99,6 +99,13 @@ function App(): JSX.Element {
             <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
           } 
         />
+
+<Route
+          path="/admin/dashboard" 
+          element={
+            <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
+          } 
+        />
         Admin Edit Information Page
         <Route
           path="/admin/edit-information" 

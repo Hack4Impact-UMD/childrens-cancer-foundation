@@ -12,7 +12,7 @@ import { getCurrentUserData, getCurrentUserClaims, UserData } from "../../servic
 import { auth } from "../../index";
 
 function AccountSettingsPage(): JSX.Element {
-  const sidebarItems = getSidebarbyRole('applicant');
+  const sidebarItems = getSidebarbyRole('reviewer');
   // User information
   const [username, setUsername] = useState<string | null>("");
   const [currentPassword, setCurrentPassword] = useState("");
