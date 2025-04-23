@@ -15,6 +15,7 @@ function AccountPageReviewers(): JSX.Element {
   //form inputs
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
@@ -37,6 +38,7 @@ function AccountPageReviewers(): JSX.Element {
   useEffect(() => {}, [
     firstName,
     lastName,
+    title,
     email,
     pwd,
     confirmPwd,
@@ -84,6 +86,7 @@ function AccountPageReviewers(): JSX.Element {
       await setDoc(doc(db, "reviewers", user.uid), {
         firstName: firstName,
         lastName: lastName,
+        title: title,
         email: email,
         affiliation: affiliation,
         role: "reviewer",
@@ -152,6 +155,16 @@ function AccountPageReviewers(): JSX.Element {
                   />
                 </div>
               </div>
+
+              <label>Title</label>
+              <input
+                type="text"
+                placeholder="M.D., Ph.D., etc."
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="input"
+              />
 
               <label>Email*</label>
               <input
