@@ -12,25 +12,25 @@ export default interface SidebarProps {
 }
 
 export const adminSidebar: SideBarTypes[] = [
-    {name: 'Home', path: '/admin/home'},
+    {name: 'Home', path: '/admin/dashboard'},
     {name: 'Account Settings', path: '/admin/settings'},
     { name: 'All Accounts', path: '/admin/all-accounts' },
     { name: 'Assign Reviewers', path: '/admin/assign-reviewers' },
-    { name: 'Assign Awards', path: '/admin/assign-awards' },
+    { name: 'Assign Awards', path: '/admin/grant-awards' },
     { name: 'Database', path: '/admin/database' },
     { name: 'Logout', path: '/login'}
 ];
 
 export const reviewerSidebar: SideBarTypes[] = [
-    {name: 'Home', path: '/reviewer/home'},
+    {name: 'Home', path: '/reviewer/dashboard'},
     {name: 'Account Settings', path: '/reviewer/settings'},
     { name: 'Assigned Applications', path: '/reviewer/assigned-applications' },
-    { name: 'All Applications', path: '/reviewer/all-applications' },
+    { name: 'All Applications', path: '/reviewer/dashboard/all-applications' },
     { name: 'Logout', path: '/login'}
 ];
 
 export const applicantSidebar: SideBarTypes[] = [
-    {name: 'Home', path: '/applicant/home'},
+    {name: 'Home', path: '/applicant/dashboard'},
     {name: 'Account Settings', path: '/applicant/settings'},
     {name: 'Applications', path: '/applicant/applications'},
     { name: 'Logout', path: '/login'}
