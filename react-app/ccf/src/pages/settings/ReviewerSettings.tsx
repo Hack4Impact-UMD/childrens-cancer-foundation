@@ -1,5 +1,4 @@
 
-//  NO LONGER NEEDED - CREATED ROLE SPECIFIC SETTINGS PAGES
 import { useEffect, useState } from "react";
 import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
@@ -31,7 +30,6 @@ function AccountSettingsPage(): JSX.Element {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [title, setTitle] = useState("");
-  const [institution, setInstitution] = useState("");
 
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
@@ -56,7 +54,6 @@ function AccountSettingsPage(): JSX.Element {
             setFirstName(userData.firstName || "");
             setLastName(userData.lastName || "");
             setTitle(userData.title || "");
-            setInstitution(userData.affiliation || "");
           }
 
           // Get user claims
@@ -153,7 +150,6 @@ function AccountSettingsPage(): JSX.Element {
         firstName: firstName,
         lastName: lastName,
         title: title,
-        affiliation: institution
       });
 
       setPersonalInfoSuccess(true);
@@ -167,12 +163,6 @@ function AccountSettingsPage(): JSX.Element {
       setPersonalInfoError(error.message || "Failed to update personal information");
     }
   };
-
-  // const sidebarItems = [
-  //   {name: "Home", path: "/"},
-  //   {name: "Account Settings", path: "/settings"},
-  //   {name: "Logout", path: "/login"}
-  // ];
 
   return (
       <div>
@@ -224,18 +214,6 @@ function AccountSettingsPage(): JSX.Element {
                     className="personal-input-text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                  />
-                  <span className="edit-icon">✎</span>
-                </div>
-              </div>
-              <div className="AccountSetting-personal-info-field">
-                <label>Institution</label>
-                <div className="info-row">
-                  <input
-                    type="text"
-                    className="personal-input-text"
-                    value={institution}
-                    onChange={(e) => setInstitution(e.target.value)}
                   />
                   <span className="edit-icon">✎</span>
                 </div>
