@@ -9,9 +9,9 @@ type GrantProposalProps = {
 };
 
 function GrantProposal({ type, formData, setFormData }: GrantProposalProps): JSX.Element {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(formData.file);
   const [uploadStatus, setUploadStatus] = useState<string>("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(formData.file);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -19,26 +19,6 @@ function GrantProposal({ type, formData, setFormData }: GrantProposalProps): JSX
       setSelectedFile(event.target.files[0]);
       setFormData({ ...formData, file: event.target.files[0] });
       setUploadStatus("");
-    }
-  };
-
-  const handleUpload = async () => {
-    console.log("Upload button pressed");
-    if (!selectedFile) {
-      console.log("No file selected for upload");
-      setUploadStatus("Please select a file first");
-      return;
-    }
-
-    try {
-      console.log("Starting file upload:", selectedFile.name);
-      setUploadStatus("Uploading...");
-      await uploadFileToStorage(selectedFile);
-      console.log("File uploaded successfully:", selectedFile.name);
-      setUploadStatus("File uploaded successfully!");
-    } catch (error) {
-      console.error("Upload error:", error);
-      setUploadStatus("Upload failed. Please try again.");
     }
   };
 
@@ -83,11 +63,6 @@ function GrantProposal({ type, formData, setFormData }: GrantProposalProps): JSX
           </button>
         )}
       </div>
-      {selectedFile && (
-        <button className="upload-btn1" onClick={handleUpload}>
-          Upload PDF
-        </button>
-      )}
       {uploadStatus && <p className="upload-status">{uploadStatus}</p>}
     </div>
   );
