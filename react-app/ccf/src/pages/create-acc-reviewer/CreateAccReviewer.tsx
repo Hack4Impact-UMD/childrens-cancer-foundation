@@ -2,14 +2,10 @@ import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccReviewer.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { db, auth } from "../../index"
-import {
-  createUserWithEmailAndPassword,
-  deleteUser,
-} from "firebase/auth";
-import {doc, setDoc, deleteDoc } from "firebase/firestore";
 import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { addReviewerUser } from "../../users/usermanager";
+import {UserData} from "../../types/usertypes"
+import { Password } from "@mui/icons-material";
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
@@ -66,45 +62,24 @@ function AccountPageReviewers(): JSX.Element {
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
     e.preventDefault();
-    const functions = getFunctions();
-    const addReviewerRole = httpsCallable(functions, "addReviewerRole");
-    console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
     if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
       e.preventDefault();
       return;
     }
-    let user = null;
-
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        pwd
-      );
-      user = userCredential.user;
-      await setDoc(doc(db, "reviewers", user.uid), {
+      const userData: UserData = {
+        email: email,
         firstName: firstName,
         lastName: lastName,
-        title: title,
-        email: email,
         affiliation: affiliation,
-        role: "reviewer",
-      });
-      await addReviewerRole({ email: email })
-        .then((result) => {
-          console.log(result.data); // Success message from the function
-        })
-        .catch((error) => {
-          console.log("Error: ", error);
-        });
+        title: title,
+        role: "reviewer"
+      }
+      addReviewerUser(userData, pwd)
       navigate("/");
     } catch (e) {
-      if (user !== null) {
-        await deleteUser(user);
-        await deleteDoc(doc(db, "reviewers", user.uid));
-      }
-      console.error(e);
+      console.log(e)
     }
   };
 
