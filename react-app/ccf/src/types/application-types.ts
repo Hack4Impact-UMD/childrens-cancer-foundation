@@ -25,3 +25,33 @@ export interface ApplicationQuestions {
     continuationYears?: string;
     grantType: string;
 }
+
+export interface ResearchApplication {
+    title: string;
+    principalInvestigator: string;
+    typesOfCancerAddressed: string;
+    namesOfStaff: string;
+    institution: string;
+    institutionAddress: string;
+    institutionPhoneNumber: string;
+    instituionEmail: string;
+    adminOfficialName: string;
+    adminOfficialAddress: string;
+    adminPhoneNumber: string;
+    adminEmail: string;
+    includedPublishedPaper: string;
+    creditAgreement: string;
+    patentApplied: string;
+    includedFundingInfo: string;
+    amountRequested: number;
+    dates: string;
+    continuation: boolean;
+    continuationYears?: string;
+}
+
+export interface ApplicationDetails {
+    decision: "pending" | "accepted" | "rejected";
+    creatorId: string;
+    grantType: string;
+    file: string;
+}

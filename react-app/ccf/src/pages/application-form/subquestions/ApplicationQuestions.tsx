@@ -24,16 +24,16 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
         </p>
         <div className="radio-opts">
           <div className="radio-opt">
-            <input type="radio" name="published" value="Yes" checked={formData.published === "Yes"} onChange={handleChange}/>
+            <input type="radio" name="includedPublishedPaper" value="Yes" checked={formData.includedPublishedPaper === "Yes"} onChange={handleChange}/>
             <label className="radio-label">Yes</label>
           </div>
           <div className="radio-opt">
-            <input type="radio" name="published" value="No" checked={formData.published === "No"} onChange={handleChange}/>
+            <input type="radio" name="includedPublishedPaper" value="No" checked={formData.includedPublishedPaper === "No"} onChange={handleChange}/>
             <label className="radio-label">No</label>
           </div>
 
           <div className="radio-opt">
-            <input type="radio" name="published" value="N/A" checked={formData.published === "N/A"} onChange={handleChange}/>
+            <input type="radio" name="includedPublishedPaper" value="N/A" checked={formData.published === "N/A"} onChange={handleChange}/>
             <label className="radio-label">N/A</label>
           </div>
         </div>
@@ -45,15 +45,15 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
         </p>
         <div className="radio-opts">
           <div className="radio-opt">
-            <input type="radio" name="paperWIP" value="Yes" checked={formData.paperWIP === "Yes"} onChange={handleChange}/>
+            <input type="radio" name="creditAgreement" value="Yes" checked={formData.creditAgreement === "Yes"} onChange={handleChange}/>
             <label className="radio-label">Yes</label>
           </div>
           <div className="radio-opt">
-            <input type="radio" name="paperWIP" value="No" checked={formData.paperWIP === "No"} onChange={handleChange}/>
+            <input type="radio" name="creditAgreement" value="No" checked={formData.creditAgreement === "No"} onChange={handleChange}/>
             <label className="radio-label">No</label>
           </div>
           <div className="radio-opt">
-            <input type="radio" name="paperWIP" value="N/A" checked={formData.paperWIP === "N/A"} onChange={handleChange}/>
+            <input type="radio" name="creditAgreement" value="N/A" checked={formData.creditAgreement === "N/A"} onChange={handleChange}/>
             <label className="radio-label">N/A</label>
           </div>
         </div>
@@ -64,15 +64,15 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
         </p>
         <div className="radio-opts">
           <div className="radio-opt">
-            <input type="radio" name="appliedPatent"  value="Yes" checked={formData.appliedPatent === "Yes"} onChange={handleChange}/>
+            <input type="radio" name="patentApplied"  value="Yes" checked={formData.patentApplied === "Yes"} onChange={handleChange}/>
             <label className="radio-label">Yes</label>
           </div>
           <div className="radio-opt">
-            <input type="radio" name="appliedPatent"  value="No" checked={formData.appliedPatent === "No"} onChange={handleChange}/>
+            <input type="radio" name="patentApplied"  value="No" checked={formData.patentApplied === "No"} onChange={handleChange}/>
             <label className="radio-label">No</label>
           </div>
           <div className="radio-opt">
-            <input type="radio" name="appliedPatent" value="N/A" checked={formData.appliedPatent === "N/A"} onChange={handleChange}/>
+            <input type="radio" name="patentApplied" value="N/A" checked={formData.patentApplied === "N/A"} onChange={handleChange}/>
             <label className="radio-label">N/A</label>
           </div>
         </div>
@@ -84,16 +84,16 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
         </p>
         <div className="radio-opts">
           <div className="radio-opt">
-            <input type="radio" name="includedInfo" value="Yes" checked={formData.includedInfo === "Yes"} onChange={handleChange}/>
+            <input type="radio" name="includedFundingInfo" value="Yes" checked={formData.includedFundingInfo === "Yes"} onChange={handleChange}/>
             <label className="radio-label">Yes</label>
           </div>
 
           <div className="radio-opt">
-            <input type="radio" name="includedInfo" value="No" checked={formData.includedInfo === "No"} onChange={handleChange}/>
+            <input type="radio" name="includedFundingInfo" value="No" checked={formData.includedFundingInfo === "No"} onChange={handleChange}/>
             <label className="radio-label">No</label>
           </div>
           <div className="radio-opt">
-            <input type="radio" name="includedInfo" value="N/A" checked={formData.includedInfo === "N/A"} onChange={handleChange}/>
+            <input type="radio" name="includedFundingInfo" value="N/A" checked={formData.includedFundingInfo === "N/A"} onChange={handleChange}/>
             <label className="radio-label">N/A</label>
           </div>
         </div>
@@ -116,8 +116,8 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
           placeholder="List dates of grant project"
           required
           className="text-input"
-          name="grantProjDates"
-          value={formData.grantProjDates}
+          name="dates"
+          value={formData.dates}
           onChange={handleChange}
         />
 
@@ -125,12 +125,12 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
           <p className="text-label">Continuation of Current Funding: *</p>
           <div className="sub-radio-opts">
             <div className="sub-radio-opt">
-              <input type="radio" name="contCurrentFunds" value="Yes" checked={formData.contCurrentFunds === "Yes"} onChange={handleChange}/>
+              <input type="radio" name="continuation" value="Yes" checked={formData.continuation === "Yes"} onChange={handleChange}/>
               <label>Yes</label>
             </div>
 
             <div className="sub-radio-opt">
-              <input type="radio" name="contCurrentFunds" value="No" checked={formData.contCurrentFunds === "No"} onChange={handleChange}/>
+              <input type="radio" name="continuation" value="No" checked={formData.continuation === "No"} onChange={handleChange}/>
               <label>No</label>
             </div>
           </div>
@@ -140,8 +140,8 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
           placeholder="If yes, list years (ex. 2022)"
           required
           className="text-input"
-          name="contCurrentFundsDates"
-          value={formData.contCurrentFundsDates}
+          name="continuationYears"
+          value={formData.continuationYears}
           onChange={handleChange}
         />
       </div>

@@ -19,32 +19,32 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const totalPages = pages.length;
     const navigate = useNavigate();
     const requiredFields = [
-        'projectTitle', 'investigator', 'cancers', 'staffNames', 'institution', 
-        'institutionAddress', 'institutionPhone', 'institutionEmail', 'adminEmail',
-        'adminName', 'adminPhone', 'adminEmail', 'published', 'paperWIP', 'appliedPatent',
-        'includedInfo', 'amountRequested', 'grantProjDates', 'contCurrentFunds', 'file'
+        'title', 'principleInvestigator', 'typesOfCancerAddressed', 'namesOfStaff', 'institution', 
+        'institutionAddress', 'institutionPhoneNumber', 'institutionEmail', 'adminEmail',
+        'adminOfficialName', 'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement', 'patentApplied',
+        'includedFundingInfo', 'amountRequested', 'dates', 'continuation', 'file'
     ]
     const [formData, setFormData] = useState({
-        projectTitle: '',
-        investigator: '',
-        cancers: '',
+        title: '',
+        principleInvestigator: '', 
+        typesOfCancerAddressed: '',
         institution: '',
-        staffNames: '',
+        namesOfStaff: '',
         institutionAddress: '',
-        institutionPhone: '',
+        institutionPhoneNumber: '',
         institutionEmail: '',
-        adminName: '',
-        adminAddress: '',
-        adminPhone: '',
+        adminOfficialName: '',
+        adminOfficialAddress: '',
+        adminPhoneNumber: '',
         adminEmail: '',
-        published: '',
-        paperWIP: '',
-        appliedPatent: '',
-        includedInfo: '',
+        includedPublishedPaper: '',
+        creditAgreement: '',
+        patentApplied: '',
+        includedFundingInfo: '',
         amountRequested: '',
-        grantProjDates: '',
-        contCurrentFunds: '',
-        contCurrentFundsDates: '',
+        dates: '',
+        continuation: '',
+        continuationYears: '',
         file: null
     });
     const goBack = () => {

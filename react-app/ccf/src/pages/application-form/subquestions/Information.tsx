@@ -19,8 +19,8 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <p className="text-label">Title of Project*</p>
         <input
           type="text"
-          name="projectTitle"
-          value={formData.projectTitle}
+          name="title"
+          value={formData.title}
           onChange={handleChange}
           placeholder="Enter title of project"
           required
@@ -30,19 +30,19 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <p className="text-label">Principal Investigator*</p>
         <input
           type="text"
-          name="investigator"
-          value={formData.investigator}
+          name="principleInvestigator"
+          value={formData.principleInvestigator}
           onChange={handleChange}
           placeholder="Enter principal investigator"
           required
           className="text-input"
         />
 
-        <p className="text-label">Types of Cancers Being Addressed*</p>
+        <p className="text-label">Types of typesOfCancerAddressed Being Addressed*</p>
         <input
           type="text"
-          name="cancers"
-          value={formData.cancers}
+          name="typesOfCancerAddressed"
+          value={formData.typesOfCancerAddressed}
           onChange={handleChange}
           placeholder="Enter types of cancers"
           required
@@ -52,8 +52,8 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <p className="text-label">Name/Titles of Other Staff*</p>
         <input
           type="text"
-          name="staffNames"
-          value={formData.staffNames}
+          name="namesOfStaff"
+          value={formData.namesOfStaff}
           onChange={handleChange}
           placeholder="Enter name/titles of other staff"
           required
@@ -86,8 +86,8 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <p className="text-label">Institution Phone Number*</p>
         <input
           type="text"
-          name="institutionPhone"
-          value={formData.institutionPhone}
+          name="institutionPhoneNumber"
+          value={formData.institutionPhoneNumber}
           onChange={handleChange}
           placeholder="Enter institution phone number"
           required
@@ -108,8 +108,8 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <p className="text-label">Administration Official Name*</p>
         <input
           type="text"
-          name="adminName"
-          value={formData.adminName}
+          name="adminOfficialName"
+          value={formData.adminOfficialName}
           onChange={handleChange}
           placeholder="Enter administration official"
           required
@@ -119,8 +119,8 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <p className="text-label">Address of Administration Official*</p>
         <input
           type="text"
-          name="adminAddress"
-          value={formData.adminAddress}
+          name="adminOfficialAddress"
+          value={formData.adminOfficialAddress}
           onChange={handleChange}
           placeholder="Enter address of administration official"
           required
@@ -130,8 +130,8 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <p className="text-label">Administration Official Phone Number*</p>
         <input
           type="text"
-          name="adminPhone"
-          value={formData.adminPhone}
+          name="adminPhoneNumber"
+          value={formData.adminPhoneNumber}
           onChange={handleChange}
           placeholder="Enter administration official phone number"
           required

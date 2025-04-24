@@ -19,8 +19,8 @@ function NRInformation({ formData, setFormData }: InformationProps): JSX.Element
         <p className="text-label">Title of Project*</p>
         <input
           type="text"
-          name="projectTitle"
-          value={formData.projectTitle}
+          name="title"
+          value={formData.title}
           onChange={handleChange}
           placeholder="Enter title of project"
           required
@@ -52,8 +52,8 @@ function NRInformation({ formData, setFormData }: InformationProps): JSX.Element
 <p className="text-label">Phone Number*</p>
         <input
           type="text"
-          name="institutionPhone"
-          value={formData.institutionPhone}
+          name="institutionPhoneNumber"
+          value={formData.institutionPhoneNumber}
           onChange={handleChange}
           placeholder="Enter institution phone number"
           required
