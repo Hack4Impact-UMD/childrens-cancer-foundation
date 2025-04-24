@@ -7,6 +7,8 @@ import ApplicationQuestions from './subquestions/ApplicationQuestions';
 import Review from './subquestions/Review';
 import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
+import { ResearchApplication } from '../../types/application-types';
+import { uploadResearchApplication } from '../../backend/applicant-form-submit';
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
 };
@@ -26,7 +28,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     ]
     const [formData, setFormData] = useState({
         title: '',
-        principleInvestigator: '', 
+        principalInvestigator: '', 
         typesOfCancerAddressed: '',
         institution: '',
         namesOfStaff: '',
@@ -58,7 +60,17 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
     const handleSubmit = () => {
-        console.log('Form submitted!');
+        try {
+            if (isFormValid()) {
+                const application: ResearchApplication = formData as ResearchApplication
+                if (formData.file)
+                    uploadResearchApplication(application, formData.file, type == "NextGen")
+            }
+        } catch (e) {
+            console.log(e)
+        }
+
+        navigate('applicant/dashboard')
     };
     // Validation function to check if all required fields are filled
     const isFormValid = () => {

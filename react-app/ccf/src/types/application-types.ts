@@ -34,7 +34,7 @@ export interface ResearchApplication {
     institution: string;
     institutionAddress: string;
     institutionPhoneNumber: string;
-    instituionEmail: string;
+    institutionEmail: string;
     adminOfficialName: string;
     adminOfficialAddress: string;
     adminPhoneNumber: string;
@@ -43,15 +43,28 @@ export interface ResearchApplication {
     creditAgreement: string;
     patentApplied: string;
     includedFundingInfo: string;
-    amountRequested: number;
+    amountRequested: string;
     dates: string;
-    continuation: boolean;
+    continuation: string;
     continuationYears?: string;
+}
+
+export interface NonResearchApplication {
+    title: string;
+    requestor: string;
+    institution: string;
+    institutionPhoneNumber: string;
+    institutionEmail: string;
+    explanation?: string;
+    sources?: string;
+    amountRequested: string;
+    timeframe: string;
+    additionalInfo?: string;
 }
 
 export interface ApplicationDetails {
     decision: "pending" | "accepted" | "rejected";
     creatorId: string;
-    grantType: string;
+    grantType: "research" | "nextgen" | "nonresearch";
     file: string;
 }

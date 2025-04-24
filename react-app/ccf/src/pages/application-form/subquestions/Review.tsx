@@ -35,7 +35,7 @@ function Review({ type, formData }: ReviewProps): JSX.Element {
     <div className="review-form-container">
       <div className="proposal-text">
         <p className="text-label">Title of Project: {formData.title}</p>
-        <p className="text-label">Principal Investigator: {formData.principleInvestigator}</p>
+        <p className="text-label">Principal Investigator: {formData.principalInvestigator}</p>
         <p className="text-label">Types of Cancers Being Addressed: {formData.typesOfCancerAddressed}</p>
         <p className="text-label">Institution: {formData.institution}</p>
         <p className="text-label">Address of Institution: {formData.institutionAddress}</p>

@@ -30,8 +30,8 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <p className="text-label">Principal Investigator*</p>
         <input
           type="text"
-          name="principleInvestigator"
-          value={formData.principleInvestigator}
+          name="principalInvestigator"
+          value={formData.principalInvestigator}
           onChange={handleChange}
           placeholder="Enter principal investigator"
           required

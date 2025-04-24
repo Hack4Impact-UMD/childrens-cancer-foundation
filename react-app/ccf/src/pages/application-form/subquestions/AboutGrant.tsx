@@ -5,7 +5,7 @@ type AboutGrantProps = {
     type: "Research" | "NextGen" | "NonResearch";
     formData: {
       title: string;
-      principleInvestigator?: string;
+      principalInvestigator?: string;
       typesOfCancerAddressed?: string;
       institution: string;
       institutionAddress?: string;
