@@ -13,9 +13,14 @@ function NRApplicationForm(): JSX.Element {
     const totalPages = pages.length;
     const navigate = useNavigate();
 
+    const requiredFields = [
+        'projectTitle', 'requestor', 'institution', 'institutionPhone', 'institutionEmail', 
+        'amountRequested', 'timeframe', 'file'
+    ]
+
     const [formData, setFormData] = useState({
         projectTitle: '',
-        requester: '',
+        requestor: '',
         institution: '',
         institutionPhone: '',
         institutionEmail: '',
@@ -31,7 +36,7 @@ function NRApplicationForm(): JSX.Element {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
         } else {
-            navigate('/applicant-dashboard');
+            navigate('/applicant/dashboard');
         }
     };
 
@@ -45,7 +50,7 @@ function NRApplicationForm(): JSX.Element {
 
     // Validation function to check if all fields are filled
     const isFormValid = () => {
-        return Object.values(formData).every(field => field !== '' && field !== null);
+        return requiredFields.reduce((acc, curr) => (formData as any)[curr] !== '' && (formData as any)[curr] !== null && acc, true);
     };
 
     const renderPage = () => {

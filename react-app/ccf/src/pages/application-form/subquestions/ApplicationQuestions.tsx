@@ -105,7 +105,7 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
           placeholder="Enter amount requested"
           required
           className="text-input"
-          name="amountReqquested"
+          name="amountRequested"
           value={formData.amountRequested}
           onChange={handleChange}
         />
@@ -125,12 +125,12 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
           <p className="text-label">Continuation of Current Funding: *</p>
           <div className="sub-radio-opts">
             <div className="sub-radio-opt">
-              <input type="radio" name="contCurrentFunds" checked={formData.contCurrentFunds === "Yes"} onChange={handleChange}/>
+              <input type="radio" name="contCurrentFunds" value="Yes" checked={formData.contCurrentFunds === "Yes"} onChange={handleChange}/>
               <label>Yes</label>
             </div>
 
             <div className="sub-radio-opt">
-              <input type="radio" name="contCurrentFunds" checked={formData.contCurrentFunds === "No"} onChange={handleChange}/>
+              <input type="radio" name="contCurrentFunds" value="No" checked={formData.contCurrentFunds === "No"} onChange={handleChange}/>
               <label>No</label>
             </div>
           </div>
@@ -141,6 +141,7 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
           required
           className="text-input"
           name="contCurrentFundsDates"
+          value={formData.contCurrentFundsDates}
           onChange={handleChange}
         />
       </div>

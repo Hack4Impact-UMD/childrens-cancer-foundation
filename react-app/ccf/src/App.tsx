@@ -75,14 +75,6 @@ function App(): JSX.Element {
         } 
         />          
 
-        <Route
-          path="/application-form/nextgen"
-          element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
-        />
-        <Route
-          path="/application-form/nonresearch"
-          element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
-        />
         {/* Admin dashboard */}
         <Route path="/admin" element={<></>} />
         Need to change path to create-account after authentication

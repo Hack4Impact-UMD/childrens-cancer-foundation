@@ -10,6 +10,7 @@ import AboutGrant from './subquestions/AboutGrant';
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
 };
+
 function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
     const pages = type === "Research"
@@ -17,11 +18,18 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         : ["Grant Proposal", "About Grant", "My Information", "Application Questions", "Review"];
     const totalPages = pages.length;
     const navigate = useNavigate();
+    const requiredFields = [
+        'projectTitle', 'investigator', 'cancers', 'staffNames', 'institution', 
+        'institutionAddress', 'institutionPhone', 'institutionEmail', 'adminEmail',
+        'adminName', 'adminPhone', 'adminEmail', 'published', 'paperWIP', 'appliedPatent',
+        'includedInfo', 'amountRequested', 'grantProjDates', 'contCurrentFunds', 'file'
+    ]
     const [formData, setFormData] = useState({
         projectTitle: '',
         investigator: '',
         cancers: '',
         institution: '',
+        staffNames: '',
         institutionAddress: '',
         institutionPhone: '',
         institutionEmail: '',
@@ -43,7 +51,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
         } else {
-            navigate('/applicant-dashboard');
+            navigate('/applicant/dashboard');
         }
     };
     const handleContinue = () => {
@@ -54,7 +62,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     };
     // Validation function to check if all required fields are filled
     const isFormValid = () => {
-        return Object.values(formData).every(field => field !== '' && field !== null);
+        return requiredFields.reduce((acc, curr) => (formData as any)[curr] !== '' && (formData as any)[curr] !== null && acc, true);
     };
     const renderPage = () => {
         switch (currentPage) {

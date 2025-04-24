@@ -7,19 +7,6 @@ interface InformationProps {
 }
 
 function Information({ formData, setFormData }: InformationProps): JSX.Element {
-  const [projectTitle, setProjectTitle] = useState("");
-  const [investigator, setInvestigator] = useState("");
-  const [cancers, setCancers] = useState("");
-  const [staff, setStaff] = useState("");
-  const [institution, setInstitution] = useState("");
-  const [institutionAddress, setInstitutionAddress] = useState("");
-
-  const [institutionPhone, setInstitutionPhone] = useState("");
-  const [institutionEmail, setInstitutionEmail] = useState("");
-  const [adminName, setAdminName] = useState("");
-  const [adminAddress, setAdminAddress] = useState("");
-  const [adminPhone, setAdminPhone] = useState("");
-  const [adminEmail, setAdminEmail] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,7 +53,8 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <input
           type="text"
           name="staffNames"
-          onChange={(e) => setStaff(e.target.value)}
+          value={formData.staffNames}
+          onChange={handleChange}
           placeholder="Enter name/titles of other staff"
           required
           className="text-input"
@@ -75,8 +63,8 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         <p className="text-label">Institution*</p>
         <input
           type="text"
-          name="institutionName"
-          value={formData.institutionName}
+          name="institution"
+          value={formData.institution}
           onChange={handleChange}
           placeholder="Enter institution"
           required
@@ -95,7 +83,7 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
         />
       </div>
       <div className="right-container">
-        <p className="text-label">Phone Number*</p>
+        <p className="text-label">Institution Phone Number*</p>
         <input
           type="text"
           name="institutionPhone"
@@ -106,7 +94,7 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
           className="text-input"
         />
 
-        <p className="text-label">Email*</p>
+        <p className="text-label">Institution Email*</p>
         <input
           type="text"
           name="institutionEmail"
@@ -139,7 +127,7 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
           className="text-input"
         />
 
-        <p className="text-label">Phone Number*</p>
+        <p className="text-label">Administration Official Phone Number*</p>
         <input
           type="text"
           name="adminPhone"
@@ -150,7 +138,7 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
           className="text-input"
         />
 
-        <p className="text-label">Email*</p>
+        <p className="text-label">Email of Administration Official*</p>
         <input
           type="text"
           name="adminEmail"
