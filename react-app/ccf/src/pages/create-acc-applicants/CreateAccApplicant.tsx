@@ -2,14 +2,9 @@ import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccApplicant.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { db, auth } from "../../index"
-import {
-  createUserWithEmailAndPassword,
-  deleteUser,
-} from "firebase/auth";
-import {doc, setDoc, deleteDoc } from "firebase/firestore";
+import { addApplicantUser } from "../../users/usermanager";
 import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { UserData } from "../../types/usertypes";
 
 function AccountPageApplicants(): JSX.Element {
   //form inputs
@@ -65,47 +60,26 @@ function AccountPageApplicants(): JSX.Element {
 
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
-    e.preventDefault();
-    const functions = getFunctions();
-    const addApplicantRole = httpsCallable(functions, "addApplicantRole");
-    console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
-    if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
-      console.log("Failed to submit. One requirement was not met.");
-      e.preventDefault();
-      return;
-    }
-    let user = null;
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        pwd
-      );
-      user = userCredential.user;
-      await setDoc(doc(db, "applicants", user.uid), {
-        firstName: firstName,
-        lastName: lastName,
-        title: title,
-        email: email,
-        affiliation: affiliation,
-        role: "applicant",
-      });
-      await addApplicantRole({ email: email })
-        .then((result) => {
-          console.log(result.data); // Success message from the function
-        })
-        .catch((error) => {
-          console.log("Error: ", error);
-        });
-      navigate("/");
-    } catch (e) {
-      if (user !== null) {
-        await deleteUser(user);
-        await deleteDoc(doc(db, "applicants", user.uid));
-      }
-      console.error(e);
-    }
+       e.preventDefault();
+        if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
+          console.log("Failed to submit. One requirement was not met.");
+          e.preventDefault();
+          return;
+        }
+        try {
+          const userData: UserData = {
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+            affiliation: affiliation,
+            title: title,
+            role: "applicant"
+          }
+          addApplicantUser(userData, pwd)
+          navigate("/");
+        } catch (e) {
+          console.log(e)
+        }
   };
 
   const checkConfirmPwd = () => {

@@ -134,11 +134,11 @@ function App(): JSX.Element {
         <Route path="/admin" element={<></>} />
         Need to change path to create-account after authentication
         <Route
-            path="/reviewer/create-account"
+            path="/create-account-reviewers"
             element={<AccountPageReviewers />}
         />
         <Route
-            path="/applicant/create-account"
+            path="/create-account-applicants"
             element={<AccountPageApplicants />}
         />
         <Route
