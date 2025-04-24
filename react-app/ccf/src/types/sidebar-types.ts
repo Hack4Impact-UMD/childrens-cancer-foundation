@@ -17,7 +17,7 @@ export const adminSidebar: SideBarTypes[] = [
     { name: 'All Accounts', path: '/admin/all-accounts' },
     { name: 'Assign Reviewers', path: '/admin/assign-reviewers' },
     { name: 'Assign Awards', path: '/admin/grant-awards' },
-    { name: 'Database', path: '/admin/database' },
+    { name: 'Application Cycle', path: '/admin/edit-information' },
     { name: 'Logout', path: '/login'}
 ];
 
