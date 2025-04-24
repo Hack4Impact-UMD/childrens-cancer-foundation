@@ -1,15 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccReviewer.css";
 import logo from '../../assets/ccf-logo.png';
-import { useEffect, useState } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { db, auth } from "../../index"
+import { db, auth, storage } from "../../index"
 import {
   createUserWithEmailAndPassword,
   deleteUser,
 } from "firebase/auth";
 import {doc, setDoc, deleteDoc } from "firebase/firestore";
 import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { ref, getDownloadURL } from "firebase/storage";
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
@@ -19,6 +20,10 @@ function AccountPageReviewers(): JSX.Element {
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
   const [affiliation, setAffiliation] = useState("");
+
+  const [hanleyImage, setHanleyImage] = useState<string | undefined>(undefined);
+  const [toretskyImage, setToretskyImage] = useState<string | undefined>(undefined);
+  const [yellowOverlay, setYellowOverlay] = useState<string | undefined>(undefined);
 
   //password reqs
   const [specialChar, setSpecialChar] = useState(false);
@@ -34,44 +39,58 @@ function AccountPageReviewers(): JSX.Element {
 
   const navigate = useNavigate();
 
-  useEffect(() => {}, [
-    firstName,
-    lastName,
-    email,
-    pwd,
-    confirmPwd,
-    affiliation,
-    pwdUnmatched,
-  ]);
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const hanleyRef = ref(storage, '/images/hanley.png');
+        const toretskyRef = ref(storage, '/images/toretsky.png');
+        const yellowRef = ref(storage, '/images/yellow-background.png');
+
+        const [hanleyUrl, toretskyUrl, yellowUrl] = await Promise.all([
+          getDownloadURL(hanleyRef),
+          getDownloadURL(toretskyRef),
+          getDownloadURL(yellowRef)
+        ]);
+
+        setHanleyImage(hanleyUrl);
+        setToretskyImage(toretskyUrl);
+        setYellowOverlay(yellowUrl);
+
+        console.log(hanleyUrl);
+      } catch (error) {
+        console.error('Error loading images:', error);
+      }
+    };
+
+    loadImages();
+  }, []);
+
+  useEffect(() => {
+    checkConfirmPwd();
+  }, [pwd, confirmPwd]);
 
   /* Check if user input satisfies password requirements */
-  const checkPasswordRequirements = (password: string) => {
+  const checkPasswordRequirements = (password: string): void => {
     setSpecialChar(/[\W_]/.test(password)); // Checks for special character
     setCapitalLetter(/[A-Z]/.test(password)); // Checks for capital letter
     setNumber(/[0-9]/.test(password)); // Checks for number
   };
 
-  const checkEmail = (email: string) => {
+  const checkEmail = (email: string): void => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|edu|org)$/i;
-
-    if (!emailRegex.test(email)) {
-      setEmailError(true);
-    } else {
-      setEmailError(false);
-    }
+    setEmailError(!emailRegex.test(email));
   };
 
-  const handleSubmit = async (e: any) => {
-    // don't let user submit if pwd reqs aren't met
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
     e.preventDefault();
     const functions = getFunctions();
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
-    console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
+    
     if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
-      e.preventDefault();
       return;
     }
+
     let user = null;
 
     try {
@@ -88,26 +107,20 @@ function AccountPageReviewers(): JSX.Element {
         affiliation: affiliation,
         role: "reviewer",
       });
-      await addReviewerRole({ email: email })
-        .then((result) => {
-          console.log(result.data); // Success message from the function
-        })
-        .catch((error) => {
-          console.log("Error: ", error);
-        });
+      await addReviewerRole({ email: email });
       navigate("/");
-    } catch (e) {
+    } catch (error) {
       if (user !== null) {
         await deleteUser(user);
         await deleteDoc(doc(db, "reviewers", user.uid));
       }
-      console.error(e);
+      console.error(error);
     }
   };
 
-  const checkConfirmPwd = () => {
+  const checkConfirmPwd = (): void => {
     if (confirmPwd !== "") {
-      confirmPwd === pwd ? setPwdUnmatched(false) : setPwdUnmatched(true);
+      setPwdUnmatched(confirmPwd !== pwd);
     }
   };
 
@@ -318,8 +331,15 @@ function AccountPageReviewers(): JSX.Element {
         </div>
 
         <div className="right-container2">
-          {/* remove once given image */}
-          <div className="image-placeholder2"></div>
+          <div className="images-container">
+            <div className="stacked-images">
+              <img src={hanleyImage} alt="Lab research" className="research-image" />
+              <img src={toretskyImage} alt="Doctor with patient" className="research-image" />
+            </div>
+            <div className="yellow-overlay">
+              <img src={yellowOverlay} alt="" className="overlay-image" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
