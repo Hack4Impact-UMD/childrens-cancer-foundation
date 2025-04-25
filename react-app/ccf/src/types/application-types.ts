@@ -67,4 +67,5 @@ export interface ApplicationDetails {
     creatorId: string;
     grantType: "research" | "nextgen" | "nonresearch";
     file: string;
+    applicationCycle: string;
 }

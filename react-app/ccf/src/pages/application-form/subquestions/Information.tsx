@@ -38,7 +38,7 @@ function Information({ formData, setFormData }: InformationProps): JSX.Element {
           className="text-input"
         />
 
-        <p className="text-label">Types of typesOfCancerAddressed Being Addressed*</p>
+        <p className="text-label">Types of Cancer Being Addressed*</p>
         <input
           type="text"
           name="typesOfCancerAddressed"
