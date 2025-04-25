@@ -21,7 +21,7 @@ function AllApplications(): JSX.Element {
     grantType: "",
     institution: "",
   });
-  const sidebarItems = getSidebarbyRole("reviewer");
+  const sidebarItems = getSidebarbyRole("reviewer")
 
   /*Make use of application box component instead, also retrieve applications from firebase*/
   useEffect(() => {
