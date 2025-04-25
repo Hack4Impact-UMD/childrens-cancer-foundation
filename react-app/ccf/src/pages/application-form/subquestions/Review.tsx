@@ -5,10 +5,11 @@ import React from "react";
 interface ReviewProps {
   type: any;
   formData: any;
+  hideFile?: boolean;
 }
 
 /* Still need to add useState from information*/
-function Review({ type, formData }: ReviewProps): JSX.Element {
+function Review({ type, formData, hideFile}: ReviewProps): JSX.Element {
   if (type === "NonResearch") return (
     <div className="review-form-container">
     <div className="proposal-text">
@@ -25,7 +26,7 @@ function Review({ type, formData }: ReviewProps): JSX.Element {
       <br />
       <p className="text-label">Time Frame: {formData.timeframe}</p>
       <p className="text-label">Signature of Department Head or other person(s) designated to approve grant requests: {formData.signature}</p>
-      <p className="text-label">File: {formData.file?.name || 'No file uploaded'}</p>
+      {hideFile ? "": <p className="text-label">File: {formData.file?.name || 'No file uploaded'}</p>}
     </div>
   </div>
   );
@@ -54,7 +55,7 @@ function Review({ type, formData }: ReviewProps): JSX.Element {
         <p className="text-label">Amount Requested: {formData.amountRequested}</p>
         <p className="text-label">Dates of Grant Project: {formData.dates}</p>
         <p className="text-label">Continuation of Current Funding: {formData.continuation}</p>
-        <p className="text-label">File: {formData.file?.name || 'No file uploaded'}</p>
+        {hideFile ? "": <p className="text-label">File: {formData.file?.name || 'No file uploaded'}</p>}
       </div>
     </div>
   );
