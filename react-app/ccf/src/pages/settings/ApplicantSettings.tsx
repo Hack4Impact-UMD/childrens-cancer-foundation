@@ -238,7 +238,7 @@ function AccountSettingsPage(): JSX.Element {
                   sx={{
                     width: '30%'
                   }}
-                  label="Title"
+                  label="Institution"
                   variant="outlined"
                   value={institution}
                   onChange={(e) => setInstitution(e.target.value)} />
