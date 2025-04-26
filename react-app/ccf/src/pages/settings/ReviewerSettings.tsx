@@ -9,7 +9,7 @@ import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWi
 import { doc, getDoc, getFirestore, updateDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUserData, getCurrentUserClaims, UserData } from "../../services/auth_login";
-import { auth } from "../../index";
+import { auth, db } from "../../index";
 
 function AccountSettingsPage(): JSX.Element {
   const sidebarItems = getSidebarbyRole('reviewer');
@@ -143,7 +143,6 @@ function AccountSettingsPage(): JSX.Element {
     }
 
     try {
-      const db = getFirestore();
       const userRef = doc(db, `${userCollectionName}s`, user.uid);
       
       await updateDoc(userRef, {
@@ -369,8 +368,6 @@ function AccountSettingsPage(): JSX.Element {
                 }
                 onClick={handleSubmit}
                 disabled={
-                  !firstName ||
-                  !lastName ||
                   !pwd ||
                   (pwd && !confirmPwd) ||
                   !specialChar ||

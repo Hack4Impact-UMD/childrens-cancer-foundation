@@ -6,10 +6,10 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css"
 import { getSidebarbyRole} from "../../types/sidebar-types";
 import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { doc, getDoc, getFirestore, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUserData, getCurrentUserClaims, UserData } from "../../services/auth_login";
-import { auth } from "../../index";
+import { getCurrentUserData, getCurrentUserClaims } from "../../services/auth_login";
+import { auth, db } from "../../index";
 
 function AccountSettingsPage(): JSX.Element {
   const sidebarItems = getSidebarbyRole('applicant');
@@ -145,7 +145,6 @@ function AccountSettingsPage(): JSX.Element {
     }
 
     try {
-      const db = getFirestore();
       const userRef = doc(db, `${userCollectionName}s`, user.uid);
       
       await updateDoc(userRef, {
@@ -384,8 +383,6 @@ function AccountSettingsPage(): JSX.Element {
                 }
                 onClick={handleSubmit}
                 disabled={
-                  !firstName ||
-                  !lastName ||
                   !pwd ||
                   (pwd && !confirmPwd) ||
                   !specialChar ||
