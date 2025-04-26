@@ -276,7 +276,7 @@ function AccountSettingsPage(): JSX.Element {
 
                 <TextField
                   sx={{
-                    width: '30%'
+                    width: '40%'
                   }}
                   label="Current Password"
                   placeholder="Enter current password"
@@ -302,7 +302,7 @@ function AccountSettingsPage(): JSX.Element {
 
                 <TextField
                   sx={{
-                    width: '30%'
+                    width: '40%'
                   }}
                   label="New Password"
                   placeholder="Enter new password"
@@ -378,7 +378,7 @@ function AccountSettingsPage(): JSX.Element {
 
                 <TextField
                   sx={{
-                    width: '30%'
+                    width: '40%'
                   }}
                   label="Confirm New Password"
                   placeholder="Confirm new password"
