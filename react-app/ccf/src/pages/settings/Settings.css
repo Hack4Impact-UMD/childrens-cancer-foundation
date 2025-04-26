@@ -1,5 +1,7 @@
 body {
   font-family: "Lato", sans-serif;
+  background-color: white;
+
 }
 
 .AccountSettings-page {
@@ -10,8 +12,10 @@ body {
   font-family: "Lato", sans-serif;
   color: #333;
   box-sizing: border-box;
-  margin-left: 50px;
   padding: 30px;
+  gap: 40px;
+  display: flex;
+  flex-direction: column;
 }
 
 .AccountSettings-header-container {
@@ -30,14 +34,13 @@ body {
 }
 
 .AccountSettings-sections-content {
-  background-color: #ffffff;
-  padding: 20px;
   border-radius: 8px;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 }
 
 .AccountSettings-section {
-  margin-top: 20px;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -66,25 +69,6 @@ body {
   flex-wrap: wrap;
   position: relative;
   padding-bottom: 10px;
-}
-
-.AccountSetting-personal-info button {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  margin-top: 20px;
-}
-
-.AccountSetting-personal-info-field {
-  flex-direction: column;
-  min-width: 200px;
-  flex: 1;
-}
-
-.info-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
 }
 
@@ -123,6 +107,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  gap: 20px;
 }
 
 ul {
@@ -139,7 +124,6 @@ ul {
 
 label {
   font-size: 17px;
-  margin-left: 5px;
   font-weight: 400;
   line-height: var(--HeadlineLargeLineHeight);
   letter-spacing: var(--HeadlineLargeTracking);
@@ -151,8 +135,14 @@ label {
 
 .username-text {
   color: #000000;
-  margin-left: 5px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.current-username {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .section-icon {
