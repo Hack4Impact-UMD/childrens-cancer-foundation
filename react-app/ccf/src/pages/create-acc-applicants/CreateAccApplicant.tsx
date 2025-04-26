@@ -2,8 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccApplicant.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { db, auth } from "../../index"
+import { httpsCallable } from "firebase/functions";
+import { db, auth, functions } from "../../index"
 import {
   createUserWithEmailAndPassword,
   deleteUser,
@@ -66,7 +66,6 @@ function AccountPageApplicants(): JSX.Element {
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
     e.preventDefault();
-    const functions = getFunctions();
     const addApplicantRole = httpsCallable(functions, "addApplicantRole");
     console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
     if (!specialChar || !capitalLetter || !number || pwdUnmatched) {

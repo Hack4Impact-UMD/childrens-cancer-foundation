@@ -1,4 +1,5 @@
-import { AuthErrorCodes, createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { AuthErrorCodes, createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../index"
 
 type InputState = {
   email: string;
@@ -10,7 +11,6 @@ export const handleSignup = (
   input: InputState,
   setError: (message: string | null) => void
 ) => {
-  const auth = getAuth();
   const email = input.email.toLowerCase().trim();
   const password = input.password;
 

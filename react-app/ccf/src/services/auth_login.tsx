@@ -1,6 +1,6 @@
 import { signInWithEmailAndPassword, AuthErrorCodes } from "firebase/auth";
-import { auth } from "../index"
-import { getFirestore, getDoc, doc } from "firebase/firestore";
+import { auth, db } from "../index"
+import { getDoc, doc } from "firebase/firestore";
 
 export const loginUser = async (email: string, password: string) => {
   try {
@@ -62,7 +62,6 @@ export const getCurrentUserData = async (): Promise<UserData | null> => {
       throw new Error('User role not found');
     }
 
-    const db = getFirestore();
     const userDoc = await getDoc(doc(db, `${role}s`, user.uid));
     
     if (userDoc.exists()) {
