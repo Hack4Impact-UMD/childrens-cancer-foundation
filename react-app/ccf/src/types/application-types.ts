@@ -23,6 +23,17 @@ export interface ApplicationQuestions {
     dates: string;
     continuation: boolean;
     continuationYears?: string;
+}
+
+export interface AssignReviewers {
+    id: string;
+    title: string;
+    applicant: string;
+    primaryReviewer: string | null;
+    secondaryReviewer: string | null;
+    status: 'not-started' | 'in-progress' | 'completed';
+    expanded: boolean;
+  }
     grantType: string;
 }
 

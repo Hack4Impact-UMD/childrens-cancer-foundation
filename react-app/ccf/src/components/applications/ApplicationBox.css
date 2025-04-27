@@ -61,6 +61,7 @@
 .single-application-box {
     align-items: center;
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     padding: 40px;
     border-radius: 20px;
@@ -98,6 +99,7 @@
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s ease;
+    width: 30%;
 }
 
 .due-date-button:hover {

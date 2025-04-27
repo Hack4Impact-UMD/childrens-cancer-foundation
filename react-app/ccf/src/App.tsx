@@ -6,6 +6,8 @@ import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplic
 import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
 import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
 
+import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
+
 import Sidebar from "./components/sidebar/Sidebar";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
 import AdminApplicationsDatabase from "./pages/admin-database/AdminDatabase";
@@ -163,6 +165,11 @@ function App(): JSX.Element {
           path="/admin/settings"
           element={<AdminProtectedRoute element={<AdminSettings />} />}
         />
+        <Route 
+            path={"/assign-reviewers" }
+            element={<AssignReviewers/>}
+         />
+         
         <Route
           path="/reviewer/settings"
           element={<ReviewerProtectedRoute element={<ReviewerSettings />} />}
