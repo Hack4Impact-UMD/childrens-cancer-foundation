@@ -4,6 +4,8 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { initializeApp } from "firebase/app";
 
+
+
 import { getAnalytics } from "firebase/analytics";
 //If this line says import not found then you need to set up firebase api on your machine
 import firebaseConfig from "./firebase_config/FireConfig";
@@ -15,6 +17,10 @@ import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getStorage, connectStorageEmulator } from "firebase/storage";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 import { initializeTestEnvironment } from './initialize-test-environment';
+
+//imported for testing adding application to reviewer
+//import { assignApplicationToReviewer, getReviewerUser, assignApplicationToReviewerByEmail } from './users/usermanager';
+
 
 // firebaseApps previously initialized using initializeApp()
 const cong = initializeApp(firebaseConfig);
@@ -43,6 +49,12 @@ if (useEmulator) {
   initializeTestEnvironment(db, auth, functions);
 }
 
+
+// Testing for adding applications to a reviewer 
+// 
+// (window as any).assignApplicationToReviewer = assignApplicationToReviewer;
+// (window as any).getReviewerUser = getReviewerUser;
+// (window as any).assignApplicationToReviewerByEmail = assignApplicationToReviewerByEmail;
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
