@@ -75,6 +75,7 @@ export const addReviewerUser = async (userData: UserData, password: string): Pro
 // Function to edit an applicant user
 export const editApplicantUser = async (userId: string, updates: Partial<UserData>): Promise<void> => {
   try {
+    var userId = userId.toLowerCase().trim();
     if (updates.email && updates.email.trim() === '') {
       throw new Error('Email cannot be empty');
     }
@@ -95,6 +96,7 @@ export const editApplicantUser = async (userId: string, updates: Partial<UserDat
 // Function to edit a reviewer user
 export const editReviewerUser = async (userId: string, updates: Partial<UserData>): Promise<void> => {
   try {
+    var userId = userId.toLowerCase().trim();
     if (updates.email && updates.email.trim() === '') {
       throw new Error('Email cannot be empty');
     }
@@ -112,6 +114,7 @@ export const editReviewerUser = async (userId: string, updates: Partial<UserData
 // Function to get an applicant user
 export const getApplicantUser = async (userId: string): Promise<UserData | null> => {
   try {
+    var userId = userId.toLowerCase().trim();
     const userRef = doc(collection(db, 'applicants'), userId);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
@@ -128,6 +131,7 @@ export const getApplicantUser = async (userId: string): Promise<UserData | null>
 // Function to get a reviewer user
 export const getReviewerUser = async (userId: string): Promise<UserData | null> => {
   try {
+    var userId = userId.toLowerCase().trim();
     const userRef = doc(collection(db, 'reviewers'), userId);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
