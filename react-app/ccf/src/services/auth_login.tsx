@@ -1,6 +1,7 @@
 import { signInWithEmailAndPassword, AuthErrorCodes } from "firebase/auth";
 import { auth, db } from "../index"
 import { getDoc, doc } from "firebase/firestore";
+import {UserData} from "../types/usertypes"
 
 export const loginUser = async (email: string, password: string) => {
   try {
@@ -73,11 +74,3 @@ export const getCurrentUserData = async (): Promise<UserData | null> => {
     throw error;
   }
 };
-
-
-export interface UserData {
-  firstName?: string;
-  lastName?: string;
-  title?: string;
-  affiliation?: string;
-}
