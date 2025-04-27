@@ -2,18 +2,15 @@ import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccApplicant.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { db, auth } from "../../index"
-import {
-  createUserWithEmailAndPassword,
-  deleteUser,
-} from "firebase/auth";
-import {doc, setDoc, deleteDoc } from "firebase/firestore";
+import { addApplicantUser } from "../../users/usermanager";
+import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { UserData } from "../../types/usertypes";
 
 function AccountPageApplicants(): JSX.Element {
   //form inputs
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
@@ -29,11 +26,14 @@ function AccountPageApplicants(): JSX.Element {
   //email req
   const [emailError, setEmailError] = useState(false);
 
+  const [institutionError, setInstitutionError] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {}, [
     firstName,
     lastName,
+    title,
     email,
     pwd,
     confirmPwd,
@@ -60,46 +60,26 @@ function AccountPageApplicants(): JSX.Element {
 
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
-    e.preventDefault();
-    const functions = getFunctions();
-    const addApplicantRole = httpsCallable(functions, "addApplicantRole");
-    console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
-    if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
-      console.log("Failed to submit. One requirement was not met.");
-      e.preventDefault();
-      return;
-    }
-    let user = null;
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        pwd
-      );
-      user = userCredential.user;
-      await setDoc(doc(db, "applicants", user.uid), {
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        affiliation: affiliation,
-        role: "applicant",
-      });
-      await addApplicantRole({ email: email })
-        .then((result) => {
-          console.log(result.data); // Success message from the function
-        })
-        .catch((error) => {
-          console.log("Error: ", error);
-        });
-      navigate("/");
-    } catch (e) {
-      if (user !== null) {
-        await deleteUser(user);
-        await deleteDoc(doc(db, "applicants", user.uid));
-      }
-      console.error(e);
-    }
+       e.preventDefault();
+        if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
+          console.log("Failed to submit. One requirement was not met.");
+          e.preventDefault();
+          return;
+        }
+        try {
+          const userData: UserData = {
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+            affiliation: affiliation,
+            title: title,
+            role: "applicant"
+          }
+          addApplicantUser(userData, pwd)
+          navigate("/");
+        } catch (e) {
+          console.log(e)
+        }
   };
 
   const checkConfirmPwd = () => {
@@ -149,6 +129,16 @@ function AccountPageApplicants(): JSX.Element {
                   />
                 </div>
               </div>
+
+              <label>Title</label>
+              <input
+                type="text"
+                placeholder="M.D., Ph.D., etc."
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="input"
+              />
 
               <label>Email*</label>
               <input
@@ -248,14 +238,25 @@ function AccountPageApplicants(): JSX.Element {
               )}
 
               <label>Institution/Hospital Affiliation*</label>
-              <input
-                type="text"
-                placeholder="Enter hospital name"
-                required
+              <select
                 value={affiliation}
-                onChange={(e) => setAffiliation(e.target.value)}
+                onChange={(e) => {
+                  setAffiliation(e.target.value);
+                  setInstitutionError(!validateInstitution(e.target.value));
+                }}
+                required
                 className="input"
-              />
+              >
+                <option value="">Select an institution</option>
+                {VALID_INSTITUTIONS.map((institution) => (
+                  <option key={institution} value={institution}>
+                    {institution}
+                  </option>
+                ))}
+              </select>
+              {institutionError && (
+                <p className="validation">Please select a valid institution</p>
+              )}
 
               <p className="acc-req2">
                 Already have an account?{" "}
@@ -276,7 +277,8 @@ function AccountPageApplicants(): JSX.Element {
                   !capitalLetter ||
                   !number ||
                   pwdUnmatched ||
-                  emailError
+                  emailError ||
+                  institutionError
                     ? "disable-submit"
                     : "signup-btn2"
                 }
@@ -292,7 +294,8 @@ function AccountPageApplicants(): JSX.Element {
                   !capitalLetter ||
                   !number ||
                   pwdUnmatched ||
-                  emailError
+                  emailError ||
+                  institutionError
                 }
               >
                 Sign Up
