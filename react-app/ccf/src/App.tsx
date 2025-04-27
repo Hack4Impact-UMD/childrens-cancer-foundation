@@ -103,7 +103,7 @@ function App(): JSX.Element {
 <Route
           path="/admin/dashboard" 
           element={
-            <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
+            <AdminProtectedRoute element={<AdminApplicationsDatabase />} />
           } 
         />
         Admin Edit Information Page

@@ -6,6 +6,7 @@ import logo from "../../assets/ccf-logo.png";
 import document from '../../assets/documentIcon.png';
 import yellowDocument from '../../assets/yellowDocumentIcon.png';
 import blueDocument from '../../assets/blueDocumentIcon.png';
+import { getSidebarbyRole } from "../../types/sidebar-types";
 
 interface Application {
     applicationTitle: string;
@@ -93,12 +94,7 @@ function AdminApplicationsDatabase(): JSX.Element {
         return acc;
     }, {} as { [year: string]: Application[] });
 
-    const sidebarItems = [
-        {name: "Home", path: "/"},
-        {name: "Account Settings", path: "/settings"},
-        {name: "Database", path: "/admin-database"},
-        {name: "Logout", path: "/login"}
-    ];
+    const sidebarItems = getSidebarbyRole("admin")
 
     return (
         <div>
