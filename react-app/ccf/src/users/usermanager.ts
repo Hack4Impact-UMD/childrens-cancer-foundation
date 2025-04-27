@@ -7,12 +7,11 @@ import { httpsCallable } from 'firebase/functions';
 // Function to add a new applicant user
 export const addApplicantUser = async (userData: UserData, password: string): Promise<void> => {
   var user : any = null
+  const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password).catch((e) => {
+    console.log("User could not be created: " + e);
+    throw e;
+  });
   try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      userData.email,
-      password
-    );
     const addApplicantRole = httpsCallable(functions, "addApplicantRole");
     user = userCredential.user;
     await setDoc(doc(db, "applicants", user.uid), {
@@ -41,12 +40,11 @@ export const addApplicantUser = async (userData: UserData, password: string): Pr
 // Function to add a new reviewer user
 export const addReviewerUser = async (userData: UserData, password: string): Promise<void> => {
   var user : any = null
+  const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password).catch((e) => {
+    console.log("User could not be created: " + e);
+    throw e;
+  });
   try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      userData.email,
-      password
-    );
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
     const user = userCredential.user;
     await setDoc(doc(db, "reviewers", user.uid), {
