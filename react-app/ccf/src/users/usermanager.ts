@@ -75,15 +75,6 @@ export const addReviewerUser = async (userData: UserData, password: string): Pro
 // Function to edit an applicant user
 export const editApplicantUser = async (userId: string, updates: Partial<UserData>): Promise<void> => {
   try {
-    if (updates.email && updates.email.trim() === '') {
-      throw new Error('Email cannot be empty');
-    }
-    if (updates.title && updates.title.trim() === '') {
-      throw new Error('Title cannot be empty');
-    }
-    if (updates.affiliation && updates.affiliation.trim() === '') {
-      throw new Error('Institutional Affiliation cannot be empty');
-    }
     const userRef = doc(collection(db, 'applicants'), userId);
     await updateDoc(userRef, updates);
   } catch (error) {
@@ -95,12 +86,6 @@ export const editApplicantUser = async (userId: string, updates: Partial<UserDat
 // Function to edit a reviewer user
 export const editReviewerUser = async (userId: string, updates: Partial<UserData>): Promise<void> => {
   try {
-    if (updates.email && updates.email.trim() === '') {
-      throw new Error('Email cannot be empty');
-    }
-    if (updates.affiliation && updates.affiliation.trim() === '') {
-      throw new Error('Institutional Affiliation cannot be empty');
-    }
     const userRef = doc(collection(db, 'reviewers'), userId);
     await updateDoc(userRef, updates);
   } catch (error) {

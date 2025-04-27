@@ -6,13 +6,13 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css"
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { doc, getFirestore, updateDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUserData, getCurrentUserClaims } from "../../services/auth_login";
-import { auth } from "../../index";
+import { auth, db } from "../../index";
 import TextField from '@mui/material/TextField';
 import { InputAdornment, IconButton } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { editApplicantUser } from "../../users/usermanager";
 
 function AccountSettingsPage(): JSX.Element {
   const sidebarItems = getSidebarbyRole('applicant');
@@ -166,14 +166,13 @@ function AccountSettingsPage(): JSX.Element {
     }
 
     try {
-      const userRef = doc(db, `${userCollectionName}s`, user.uid);
 
-      await updateDoc(userRef, {
+      editApplicantUser(user.uid, {
         firstName: firstName,
         lastName: lastName,
         title: title,
         affiliation: institution
-      });
+      })
 
       setPersonalInfoSuccess(true);
       // Clear success message after 3 seconds
