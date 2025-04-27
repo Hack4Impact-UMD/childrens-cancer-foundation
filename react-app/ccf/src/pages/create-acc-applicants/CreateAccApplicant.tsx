@@ -2,19 +2,15 @@ import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccApplicant.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { db, auth } from "../../index"
-import {
-  createUserWithEmailAndPassword,
-  deleteUser,
-} from "firebase/auth";
-import {doc, setDoc, deleteDoc } from "firebase/firestore";
+import { addApplicantUser } from "../../users/usermanager";
 import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { UserData } from "../../types/usertypes";
 
 function AccountPageApplicants(): JSX.Element {
   //form inputs
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
@@ -37,6 +33,7 @@ function AccountPageApplicants(): JSX.Element {
   useEffect(() => {}, [
     firstName,
     lastName,
+    title,
     email,
     pwd,
     confirmPwd,
@@ -103,6 +100,26 @@ function AccountPageApplicants(): JSX.Element {
       }
       console.error(e);
     }
+       e.preventDefault();
+        if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
+          console.log("Failed to submit. One requirement was not met.");
+          e.preventDefault();
+          return;
+        }
+        try {
+          const userData: UserData = {
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+            affiliation: affiliation,
+            title: title,
+            role: "applicant"
+          }
+          addApplicantUser(userData, pwd)
+          navigate("/");
+        } catch (e) {
+          console.log(e)
+        }
   };
 
   const checkConfirmPwd = () => {
@@ -152,6 +169,16 @@ function AccountPageApplicants(): JSX.Element {
                   />
                 </div>
               </div>
+
+              <label>Title</label>
+              <input
+                type="text"
+                placeholder="M.D., Ph.D., etc."
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="input"
+              />
 
               <label>Email*</label>
               <input

@@ -1,19 +1,21 @@
 
-//  NO LONGER NEEDED - CREATED ROLE SPECIFIC SETTINGS PAGES
 import { useEffect, useState } from "react";
 import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css"
-import { getSidebarbyRole} from "../../types/sidebar-types";
+import { getSidebarbyRole } from "../../types/sidebar-types";
 import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { doc, getFirestore, updateDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUserData, getCurrentUserClaims } from "../../services/auth_login";
 import { auth } from "../../index";
+import TextField from '@mui/material/TextField';
+import { InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 function AccountSettingsPage(): JSX.Element {
-  const sidebarItems = getSidebarbyRole('applicant');
+  const sidebarItems = getSidebarbyRole('admin');
   // User information
   const [username, setUsername] = useState<string | null>("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -31,7 +33,6 @@ function AccountSettingsPage(): JSX.Element {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [title, setTitle] = useState("");
-  const [institution, setInstitution] = useState("");
 
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
@@ -43,6 +44,24 @@ function AccountSettingsPage(): JSX.Element {
   const [userCollectionName, setUserCollectionName] = useState("");
 
   const navigate = useNavigate();
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+
+  const handleClickShowCurrentPassword = () => {
+    setShowCurrentPassword(!showCurrentPassword);
+  };
+
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const handleClickShowNewPassword = () => {
+    setShowNewPassword(!showNewPassword);
+  };
+
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleClickShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -56,7 +75,6 @@ function AccountSettingsPage(): JSX.Element {
             setFirstName(userData.firstName || "");
             setLastName(userData.lastName || "");
             setTitle(userData.title || "");
-            setInstitution(userData.affiliation || "");
           }
 
           // Get user claims
@@ -112,16 +130,16 @@ function AccountSettingsPage(): JSX.Element {
       // First reauthenticate with current password
       const credential = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(user, credential);
-      
+
       // If reauthentication successful, update password
       await updatePassword(user, pwd);
-      
+
       // Clear form and show success message
       setCurrentPassword("");
       setPwd("");
       setConfirmPwd("");
       setUpdateSuccess(true);
-      
+
       console.log("Password updated successfully");
     } catch (error: any) {
       console.error("Error updating password:", error);
@@ -148,12 +166,11 @@ function AccountSettingsPage(): JSX.Element {
     try {
       const db = getFirestore();
       const userRef = doc(db, `${userCollectionName}s`, user.uid);
-      
+
       await updateDoc(userRef, {
         firstName: firstName,
         lastName: lastName,
         title: title,
-        affiliation: institution
       });
 
       setPersonalInfoSuccess(true);
@@ -161,104 +178,23 @@ function AccountSettingsPage(): JSX.Element {
       setTimeout(() => {
         setPersonalInfoSuccess(false);
       }, 3000);
-      
+
     } catch (error: any) {
       console.error("Error updating personal information:", error);
       setPersonalInfoError(error.message || "Failed to update personal information");
     }
   };
 
-  // const sidebarItems = [
-  //   {name: "Home", path: "/"},
-  //   {name: "Account Settings", path: "/settings"},
-  //   {name: "Logout", path: "/login"}
-  // ];
 
   return (
-      <div>
+    <div>
       <Sidebar links={sidebarItems} />
-    <div className="dashboard-container">
+      <div className="dashboard-container">
 
-      <div className="AccountSettings">
-        <div className="AccountSettings-header-container">
-          <img src={logo} className="AccountSettings-logo" alt="logo" />
-          <h1 className="AccountSettings-header">Account Settings</h1>
-        </div>
-
-        <div className="AccountSettings-sections-content">
-          <div className="AccountSettings-section">
-            <div className="header-title">
-              <h2>Personal Information</h2>
-            </div>
-
-            <div className="AccountSetting-personal-info">
-              <div className="AccountSetting-personal-info-field">
-                <label>First Name</label>
-                <div className="info-row">
-                  <input
-                    type="text"
-                    className="personal-input-text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                  <span className="edit-icon">✎</span>
-                </div>
-              </div>
-              <div className="AccountSetting-personal-info-field">
-                <label>Last Name</label>
-                <div className="info-row">
-                  <input
-                    type="text"
-                    className="personal-input-text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                  <span className="edit-icon">✎</span>
-                </div>
-              </div>
-              <div className="AccountSetting-personal-info-field">
-                <label>Title</label>
-                <div className="info-row">
-                  <input
-                    type="text"
-                    className="personal-input-text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                  <span className="edit-icon">✎</span>
-                </div>
-              </div>
-              <div className="AccountSetting-personal-info-field">
-                <label>Institution</label>
-                <div className="info-row">
-                  <input
-                    type="text"
-                    className="personal-input-text"
-                    value={institution}
-                    onChange={(e) => setInstitution(e.target.value)}
-                  />
-                  <span className="edit-icon">✎</span>
-                </div>
-              </div>
-              {personalInfoError && (
-                <p className="error-message">{personalInfoError}</p>
-              )}
-            </div>
-            <div className="button-container">
-              <div className="button-message-container">
-                <button
-                  type="button"
-                  className="signup-btn2"
-                  onClick={handlePersonalInfoSubmit}
-                  style={{ width: "200px" }}
-                >
-                  Save Personal Information
-                </button>
-                {personalInfoSuccess && (
-                  <p className="success-message inline-message">Personal information updated successfully!</p>
-                )}
-              </div>
-            </div>
+        <div className="AccountSettings">
+          <div className="AccountSettings-header-container">
+            <img src={logo} className="AccountSettings-logo" alt="logo" />
+            <h1 className="AccountSettings-header">Account Settings</h1>
           </div>
 
           <div className="AccountSettings-section">
@@ -266,46 +202,71 @@ function AccountSettingsPage(): JSX.Element {
               <h2>Account Settings</h2>
             </div>
             <div className="info-row-settings">
-              <label>Username</label>
+              <label>Email</label>
               <span className="username-text">
                 {username ? username : "No username available"}
               </span>
-            </div>
-            <div className="info-row-settings">
-              <label>Current Password</label>
-              <input
-                type="password"
+
+              <TextField
+                sx={{
+                  width: '40%'
+                }}
+                label="Current Password"
                 placeholder="Enter current password"
+                type={showCurrentPassword ? 'text' : 'password'}
+                variant="outlined"
                 required
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
+                onKeyUp={checkConfirmPwd}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowCurrentPassword}
+                        edge="end"
+                      >
+                        {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }} />
+
+              <TextField
+                sx={{
+                  width: '40%'
+                }}
+                label="New Password"
+                placeholder="Enter new password"
+                type={showNewPassword ? 'text' : 'password'}
+                variant="outlined"
+                required
+                value={pwd}
+                onChange={(e) => {
+                  setPwd(e.target.value);
+                  const newRequirements = checkPasswordRequirements(e.target.value);
+                  setSpecialChar(newRequirements.specialChar);
+                  setCapitalLetter(newRequirements.capitalLetter);
+                  setNumber(newRequirements.number);
+                }}
                 onFocus={() => setShowReqs(true)}
                 onBlur={() => setShowReqs(false)}
                 onKeyUp={checkConfirmPwd}
-                className="account-input-text"
-              />
-            </div>
-            <div className="info-row-settings">
-              <label>New Password</label>
-              <div className="info-row">
-                <input
-                  type="password"
-                  placeholder="Password"
-                  required
-                  value={pwd}
-                  onChange={(e) => {
-                    setPwd(e.target.value);
-                    const newRequirements = checkPasswordRequirements(e.target.value);
-                    setSpecialChar(newRequirements.specialChar);
-                    setCapitalLetter(newRequirements.capitalLetter);
-                    setNumber(newRequirements.number);
-                  }}
-                  onFocus={() => setShowReqs(true)}
-                  onBlur={() => setShowReqs(false)}
-                  onKeyUp={checkConfirmPwd}
-                  className="account-input-text"
-                />
-              </div>
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowNewPassword}
+                        edge="end"
+                      >
+                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }} />
+
               {showReqs && (
                 <div className="pwd-reqs">
                   <p>Password requires:</p>
@@ -348,29 +309,35 @@ function AccountSettingsPage(): JSX.Element {
                 </p>
               )}
 
-              <label>Confirm Password</label>
-              <div
-                className={
-                  !pwdUnmatched
-                    ? "confirm-pwd-container"
-                    : "confirm-pwd-container-exclaim"
-                }
-              >
-                <input
-                  type="password"
-                  placeholder="Confirm New Password"
-                  required
-                  value={confirmPwd}
-                  onChange={(e) => setConfirmPwd(e.target.value)}
-                  onKeyUp={checkConfirmPwd}
-                  className="account-input-text"
-                />
-                {pwdUnmatched && <p id="exclaim">!</p>}
-              </div>
+              <TextField
+                sx={{
+                  width: '40%'
+                }}
+                label="Confirm New Password"
+                placeholder="Confirm new password"
+                type={showConfirmPassword ? 'text' : 'password'}
+                variant="outlined"
+                required
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                onKeyUp={checkConfirmPwd}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowConfirmPassword}
+                        edge="end"
+                      >
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                error={pwdUnmatched}
+                helperText={pwdUnmatched && 'Passwords do not match'}
+              />
 
-              {pwdUnmatched && (
-                <p className="validation">Passwords do not match</p>
-              )}
               {updateError && (
                 <p className="error-message">{updateError}</p>
               )}
@@ -381,11 +348,11 @@ function AccountSettingsPage(): JSX.Element {
                 type="submit"
                 className={
                   !pwd ||
-                  (pwd && !confirmPwd) ||
-                  !specialChar ||
-                  !capitalLetter ||
-                  !number ||
-                  pwdUnmatched
+                    (pwd && !confirmPwd) ||
+                    !specialChar ||
+                    !capitalLetter ||
+                    !number ||
+                    pwdUnmatched
                     ? "disable-submit"
                     : "signup-btn2"
                 }
@@ -408,7 +375,6 @@ function AccountSettingsPage(): JSX.Element {
         </div>
       </div>
     </div>
-      </div>
   );
 }
 

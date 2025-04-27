@@ -17,6 +17,18 @@ const DefaultRoute = () => {
       } else if (role === "admin") {
         setRedirectPath("/admin-dashboard");
       }
+    const getRoute = async () => {
+        getRole().then((role) => {
+            if (!role) {
+                setTo("/login")
+            } else if (role == "applicant") {
+                setTo("/applicant/dashboard")
+            } else if (role == "reviewer") {
+                setTo("/reviewer/dashboard")
+            } else if (role == "admin") {
+                setTo("/admin/dashboard")
+            }
+        })
     }
   }, [role, loading]);
 

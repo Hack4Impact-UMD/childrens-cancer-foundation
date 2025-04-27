@@ -7,9 +7,12 @@ import ApplicationQuestions from './subquestions/ApplicationQuestions';
 import Review from './subquestions/Review';
 import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
+import { ResearchApplication } from '../../types/application-types';
+import { uploadResearchApplication } from '../../backend/applicant-form-submit';
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
 };
+
 function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
     const pages = type === "Research"
@@ -17,44 +20,61 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         : ["Grant Proposal", "About Grant", "My Information", "Application Questions", "Review"];
     const totalPages = pages.length;
     const navigate = useNavigate();
+    const requiredFields = [
+        'title', 'principleInvestigator', 'typesOfCancerAddressed', 'namesOfStaff', 'institution', 
+        'institutionAddress', 'institutionPhoneNumber', 'institutionEmail', 'adminEmail',
+        'adminOfficialName', 'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement', 'patentApplied',
+        'includedFundingInfo', 'amountRequested', 'dates', 'continuation', 'file'
+    ]
     const [formData, setFormData] = useState({
-        projectTitle: '',
-        investigator: '',
-        cancers: '',
+        title: '',
+        principalInvestigator: '', 
+        typesOfCancerAddressed: '',
         institution: '',
+        namesOfStaff: '',
         institutionAddress: '',
-        institutionPhone: '',
+        institutionPhoneNumber: '',
         institutionEmail: '',
-        adminName: '',
-        adminAddress: '',
-        adminPhone: '',
+        adminOfficialName: '',
+        adminOfficialAddress: '',
+        adminPhoneNumber: '',
         adminEmail: '',
-        published: '',
-        paperWIP: '',
-        appliedPatent: '',
-        includedInfo: '',
+        includedPublishedPaper: '',
+        creditAgreement: '',
+        patentApplied: '',
+        includedFundingInfo: '',
         amountRequested: '',
-        grantProjDates: '',
-        contCurrentFunds: '',
-        contCurrentFundsDates: '',
+        dates: '',
+        continuation: '',
+        continuationYears: '',
         file: null
     });
     const goBack = () => {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
         } else {
-            navigate('/applicant-dashboard');
+            navigate('/applicant/dashboard');
         }
     };
     const handleContinue = () => {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
     const handleSubmit = () => {
-        console.log('Form submitted!');
+        try {
+            if (isFormValid()) {
+                const application: ResearchApplication = formData as ResearchApplication
+                if (formData.file)
+                    uploadResearchApplication(application, formData.file, type == "NextGen")
+            }
+        } catch (e) {
+            console.log(e)
+        }
+
+        navigate('applicant/dashboard')
     };
     // Validation function to check if all required fields are filled
     const isFormValid = () => {
-        return Object.values(formData).every(field => field !== '' && field !== null);
+        return requiredFields.reduce((acc, curr) => (formData as any)[curr] !== '' && (formData as any)[curr] !== null && acc, true);
     };
     const renderPage = () => {
         switch (currentPage) {
