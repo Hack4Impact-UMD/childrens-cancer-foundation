@@ -1,6 +1,7 @@
 import { signInWithEmailAndPassword, AuthErrorCodes } from "firebase/auth";
-import { auth } from "../index"
-import { getFirestore, getDoc, doc } from "firebase/firestore";
+import { auth, db } from "../index"
+import { getDoc, doc } from "firebase/firestore";
+import {UserData} from "../types/usertypes"
 
 export const loginUser = async (email: string, password: string) => {
   try {
@@ -8,8 +9,8 @@ export const loginUser = async (email: string, password: string) => {
     console.log("Successfully signed in");
     return { user: userCredential.user, error: null };
   } catch (err: any) {
-    let errorMessage = "An unexpected error occurred";
-    if (err.code === AuthErrorCodes.INVALID_PASSWORD || err.code === AuthErrorCodes.USER_DELETED) {
+    let errorMessage = "Incorrect username or password";
+    if (err.code === AuthErrorCodes.INVALID_PASSWORD || err.code === AuthErrorCodes.USER_DELETED || err.code === AuthErrorCodes.INVALID_EMAIL) {
       errorMessage = "The email address or password is incorrect";
     }
     return { user: null, error: errorMessage };
@@ -62,7 +63,6 @@ export const getCurrentUserData = async (): Promise<UserData | null> => {
       throw new Error('User role not found');
     }
 
-    const db = getFirestore();
     const userDoc = await getDoc(doc(db, `${role}s`, user.uid));
     
     if (userDoc.exists()) {
@@ -74,11 +74,3 @@ export const getCurrentUserData = async (): Promise<UserData | null> => {
     throw error;
   }
 };
-
-
-export interface UserData {
-  firstName?: string;
-  lastName?: string;
-  title?: string;
-  affiliation?: string;
-}

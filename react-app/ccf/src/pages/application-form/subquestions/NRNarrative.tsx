@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import "./SubForm.css";
-import { uploadFileToStorage } from "../../../storage/storage";
 
 interface InformationProps {
   formData: any;
@@ -8,9 +7,9 @@ interface InformationProps {
 }
 
 function NRNarrative({ formData, setFormData }: InformationProps): JSX.Element {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(formData.file);
   const [uploadStatus, setUploadStatus] = useState<string>("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(formData.file);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -18,26 +17,6 @@ function NRNarrative({ formData, setFormData }: InformationProps): JSX.Element {
       setSelectedFile(event.target.files[0]);
       setFormData({ ...formData, file: event.target.files[0] });
       setUploadStatus("");
-    }
-  };
-
-  const handleUpload = async () => {
-    console.log("Upload button pressed");
-    if (!selectedFile) {
-      console.log("No file selected for upload");
-      setUploadStatus("Please select a file first");
-      return;
-    }
-
-    try {
-      console.log("Starting file upload:", selectedFile.name);
-      setUploadStatus("Uploading...");
-      await uploadFileToStorage(selectedFile);
-      console.log("File uploaded successfully:", selectedFile.name);
-      setUploadStatus("File uploaded successfully!");
-    } catch (error) {
-      console.error("Upload error:", error);
-      setUploadStatus("Upload failed. Please try again.");
     }
   };
 
@@ -61,26 +40,29 @@ function NRNarrative({ formData, setFormData }: InformationProps): JSX.Element {
     setFormData((prevData: any) => ({ ...prevData, [name]: value }));
   };
 
+  const handleChangeTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData: any) => ({ ...prevData, [name]: value }));
+  };
+
   return (
     <div className="form-container">
       <div className="left-container">
         <p className="text-label">Explain the Project requested and justify the need for your requested Project.</p>
-        <input
-          type="text"
+        <textarea
           name="explanation"
           value={formData.explanation}
-          onChange={handleChange}
+          onChange={handleChangeTextArea}
           placeholder="Type Here"
           required
           className="text-input2"
         />
 
         <p className="text-label">We ask that you include other sources from which you are seeking to fund the Project and any other funding source, and/or the amount contributed by your Institution/Hospital. </p>
-        <input
-          type="text"
+        <textarea
           name="sources"
           value={formData.sources}
-          onChange={handleChange}
+          onChange={handleChangeTextArea}
           placeholder="Type Here"
           required
           className="text-input2"
@@ -144,11 +126,6 @@ function NRNarrative({ formData, setFormData }: InformationProps): JSX.Element {
               </button>
             )}
           </div>
-          {selectedFile && (
-            <button className="upload-btn1" onClick={handleUpload}>
-              Upload PDF
-            </button>
-          )}
           {uploadStatus && <p className="upload-status">{uploadStatus}</p>}
         </div>
       </div>

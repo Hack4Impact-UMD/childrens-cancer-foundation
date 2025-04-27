@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./Sidebar.css";
 import { Link } from "react-router-dom"
 import { SideBarTypes, differentUserRoles } from '../../types/sidebar-types';
+import MenuIcon from '@mui/icons-material/Menu';
 
 interface SidebarProps {
   links: SideBarTypes[];
@@ -17,9 +18,15 @@ const Sidebar: React.FC<SidebarProps> = ({ links }) => {
   return (
     <div className={isCollapsed ? "sidebar collapsed" : "sidebar"}>
       <div className="sidebar-header">
-        <button onClick={toggleSidebar} className="toggle-btn">
-          {isCollapsed ? ">>>" : "<<<"}
-        </button>
+        <MenuIcon 
+          onClick={toggleSidebar}
+          sx = {{ 
+            display: 'flex',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: 'white'
+          }}
+        />
       </div>
       {!isCollapsed && (
         <ul className="sidebar-menu">

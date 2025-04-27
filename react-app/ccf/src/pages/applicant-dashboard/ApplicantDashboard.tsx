@@ -125,9 +125,9 @@ function ApplicantUsersDashboard(): JSX.Element {
 
                                     <h3>START YOUR APPLICATION:</h3>
                                     <div className="ApplicantDashboard-buttons">
-                                       <Button width="25%" height="46px" onClick={() => {navigate("/application-form/nextgen")}}>NextGen</Button>
-                                        <Button width="25%" height="46px" onClick={() => {navigate("/application-form/research")}}>Research Grant</Button>
-                                        <Button width="25%" height="46px" onClick={() => {navigate("/application-form/nonresearch")}}>Non-Research Grant</Button>
+                                       <Button width="25%" height="46px" onClick={() => {navigate("/applicant/application-form/nextgen")}}>NextGen</Button>
+                                        <Button width="25%" height="46px" onClick={() => {navigate("/applicant/application-form/research")}}>Research Grant</Button>
+                                        <Button width="25%" height="46px" onClick={() => {navigate("/applicant/application-form/nonresearch")}}>Non-Research Grant</Button>
                                     </div>
                                 </div>
                             )}

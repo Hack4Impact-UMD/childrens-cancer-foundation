@@ -9,10 +9,6 @@
     margin-top: 1%;
 }
 
-.clickable {
-    cursor: pointer
-}
-
 .search-input:focus, .filter-dropdown:focus {
     outline: none;
 }
@@ -169,17 +165,16 @@
     font-size: 1.3rem;
     font-weight: 700;
     color: #000000;
-    margin-top: 3rem;
+    margin-top: 1rem;
     margin-bottom: 1rem;
 }
-
-
 
 .applications-container {
     padding: 10px;
     border: 5px solid #BE0019;
     border-radius: 8px;
     background-color: white;
+    margin-bottom: 1%;
 }
 
 .buttons {
@@ -215,6 +210,53 @@
     object-fit: contain;
 }
 
+.single-application-box {
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.single-application-box:not(.expanded) {
+    background-color: #003E83; 
+    color: white;
+}
+
+.single-application-box.expanded {
+    background-color: #A1C5E4;
+    max-height: 2000px;
+    padding: 16px;
+    opacity: 1;
+    color: black;
+    height: auto;
+    overflow: visible;
+}
+.single-application-box.expanded .application-title{
+    color: #1E1E1E;
+}
+
+.single-application-box.expanded .subtext{
+    color: #545454;
+}
+
+.single-application-box.expanded .application-header{
+    margin-top: 0;
+}
+
+.application-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+    margin-top: -20px;
+}
+
 .application-info {
     display: flex;
     align-items: center;
@@ -223,14 +265,24 @@
 .application-info-text {
     display: flex;
     flex-direction: column;
+    margin-left: 8px;
+}
+
+.application-title {
+    font-weight: 600;
+    margin: 0;
+    font-size: 16px;
+    color: #1E1E1E;
 }
 
 .subtext {
     font-size: 14px;
+    margin: 0;
+    margin-top: 4px;
+    color: #545454;
 }
 
 .application-icon {
-    background-color: #F0C567;
     margin-right: 10px;
     color: #003E83;
     padding: 5px;
@@ -255,3 +307,112 @@
     color: white;
 }
 
+.expand-collapse-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #0056b3;
+}
+
+.divider {
+    border: none;
+    height: 2px;
+    background-color: #003E83;
+    margin: 0 0 16px 0;
+}
+
+.detail-item {
+    margin-bottom: 16px;
+    gap: 8px;
+}
+
+.detail-label {
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.detail-value {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.action-button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 20px;
+    border: none;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.cover-sheet {
+    background-color: #003E83;
+}
+
+.completed-app {
+    background-color: #003E83;
+}
+
+.button-icon {
+    margin-left: 8px;
+}
+
+.application-details {
+    padding: 1rem 1.5rem;
+    width: 100%;
+}
+  
+.expanded-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.expanded-subtitle {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.details-two-columns {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.details-block {
+    flex: 1;
+    min-width: 250px;
+}
+
+.detail-item {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: row;
+}
+
+.detail-label {
+    display: block;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.detail-value {
+    color: #555;
+}

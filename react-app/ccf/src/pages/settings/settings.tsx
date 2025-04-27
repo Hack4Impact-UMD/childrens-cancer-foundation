@@ -1,4 +1,5 @@
 
+//  NO LONGER NEEDED - CREATED ROLE SPECIFIC SETTINGS PAGES
 import { useEffect, useState } from "react";
 import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
@@ -6,9 +7,9 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css"
 import { getSidebarbyRole} from "../../types/sidebar-types";
 import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { doc, getDoc, getFirestore, updateDoc } from "firebase/firestore";
+import { doc, getFirestore, updateDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUserData, getCurrentUserClaims, UserData } from "../../services/auth_login";
+import { getCurrentUserData, getCurrentUserClaims } from "../../services/auth_login";
 import { auth } from "../../index";
 
 function AccountSettingsPage(): JSX.Element {
