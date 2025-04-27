@@ -6,7 +6,6 @@ import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplic
 import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
 import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
 
-import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
 
 import Sidebar from "./components/sidebar/Sidebar";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
@@ -34,6 +33,9 @@ import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
 import ApplicationReview from "./pages/application-review/ApplicationReview";
 import ApplicationReviewReadOnly from "./pages/application-review/ApplicationReviewReadOnly";
+import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
+
+// import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
 
 function App(): JSX.Element {
   return (
@@ -167,7 +169,7 @@ function App(): JSX.Element {
         />
         <Route 
             path={"/assign-reviewers" }
-            element={<AssignReviewers/>}
+            element={<AssignReviewersPage/>}
          />
          
         <Route
