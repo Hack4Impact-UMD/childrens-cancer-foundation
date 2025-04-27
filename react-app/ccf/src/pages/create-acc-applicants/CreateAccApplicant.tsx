@@ -60,6 +60,46 @@ function AccountPageApplicants(): JSX.Element {
 
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
+    e.preventDefault();
+    const functions = getFunctions();
+    const addApplicantRole = httpsCallable(functions, "addApplicantRole");
+    console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
+    if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
+      console.log("Failed to submit. One requirement was not met.");
+      e.preventDefault();
+      return;
+    }
+    let user = null;
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        pwd
+      );
+      user = userCredential.user;
+      await setDoc(doc(db, "applicantUsers", user.uid), {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        affiliation: affiliation,
+        role: "applicant",
+      });
+      await addApplicantRole({ email: email })
+        .then((result) => {
+          console.log(result.data); // Success message from the function
+        })
+        .catch((error) => {
+          console.log("Error: ", error);
+        });
+      navigate("/");
+    } catch (e) {
+      if (user !== null) {
+        await deleteUser(user);
+        await deleteDoc(doc(db, "applicantUsers", user.uid));
+      }
+      console.error(e);
+    }
        e.preventDefault();
         if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
           console.log("Failed to submit. One requirement was not met.");

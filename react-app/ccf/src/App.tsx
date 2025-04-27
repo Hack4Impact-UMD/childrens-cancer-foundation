@@ -25,11 +25,12 @@ import AdminSettings from "./pages/settings/AdminSettings";
 import ApplicantSettings from "./pages/settings/ApplicantSettings";
 import ReviewerSettings from "./pages/settings/ReviewerSettings";
 
-
-
 import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
+
+//rolecheck ensures only correct users can access their page via their role
+import {RoleCheck} from './context/RoleCheck'
 
 function App(): JSX.Element {
   return (
@@ -37,7 +38,7 @@ function App(): JSX.Element {
       <Routes>
         <Route path="/Login" element={<Login />} />
         {/* 404 page */}
-        <Route path="*" element={<></>} />
+        <Route path="*" element={<ErrorPage type="404"/>} />
         <Route path="/forgot-password" element={<></>} />
         <Route path="/create-account-menu" element={<CreateAccMenu />} />
         {/* Need to change path to create-account after authentication */}
@@ -47,131 +48,168 @@ function App(): JSX.Element {
               <DefaultRoute></DefaultRoute>
           } 
         />
+        
+        {/* Reviewer Routes */}
         <Route path="/reviewer/dashboard" element={
-            <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
-        }>
-        </Route>
-        <Route	
-                  path="/reviewer/dashboard/all-applications"
-                  element={<AllApplications />}
-        	
-                />
+            <RoleCheck role="reviewer">
+              <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
+            </RoleCheck>
+        }/>
+        
+        <Route path="/reviewer/dashboard/all-applications" element={
+            <RoleCheck role="reviewer">
+              <AllApplications />
+            </RoleCheck>
+        }/>
+        
         <Route
-          path="/applicant/dashboard"
+          path="/reviewer/settings"
           element={
-            <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
+            <RoleCheck role="reviewer">
+              <ReviewerSettings />
+            </RoleCheck>
           }
         />
-        <Route
-          path="*" 
-          element={
-            <ErrorPage type="404"/>
-          }
-        />
-
-        <Route 
-        path="/protected-page" 
-        element={
-          <ErrorPage type="401" />
-        } 
-        />          
-
-        {/* Admin dashboard */}
-        <Route 
-          path="/admin" 
-          element={<AdminApplicationsDatabase></AdminApplicationsDatabase>}
-        />
-        Need to change path to create-account after authentication
-        <Route 
-          path="/admin-database"
-          element={<AdminApplicationsDatabase />}
-        />
-        <Route
-          path="/applicant/dashboard" 
-          element={
-            <ApplicantUsersDashboard />
-          } 
-        />    
-        {/* Admin View All Accounts Page*/}   
-        <Route
-          path="/admin/all-accounts" 
-          element={
-            <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
-          } 
-        />
-
-<Route
-          path="/admin/dashboard" 
-          element={
-            <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
-          } 
-        />
-        Admin Edit Information Page
-        <Route
-          path="/admin/edit-information" 
-          element={
-            <AdminProtectedRoute element={<AdminEditInformation />} />
-          } 
-        />
-        {/* Need to change path to create-account after authentication */}
+        
         <Route
           path="/reviewer/create-account" 
           element={
             <AccountPageReviewers />
           } 
         />
+        
+        {/* Applicant Routes */}
+        <Route
+          path="/applicant/dashboard"
+          element={
+            <RoleCheck role="applicant">
+              <ApplicantUsersDashboard />
+            </RoleCheck>
+          }
+        />
+        
+        <Route
+          path="/applicant/settings"
+          element={
+            <RoleCheck role="applicant">
+              <ApplicantSettings />
+            </RoleCheck>
+          }
+        />
+        
         <Route
           path="/applicant/post-grant-report" 
           element={
-            <PostGrantReport />
+            <RoleCheck role="applicant">
+              <PostGrantReport />
+            </RoleCheck>
           }
-        />         
+        />
+        
         <Route
             path="/applicant/application-form/research"
-            element={<ApplicationForm type="Research" />}
+            element={
+              <RoleCheck role="applicant">
+                <ApplicationForm type="Research" />
+              </RoleCheck>
+            }
         />
+        
         <Route
-            path="/applicant/application-form/nextgen"
-            element={<ApplicationForm type="NextGen" />}
+          path="/applicant/application-form/nextgen"
+          element={
+            <RoleCheck role="applicant">
+              <ApplicationForm type="NextGen" />
+            </RoleCheck>
+          }
         />
+        
         <Route
-            path="/applicant/application-form/nonresearch"
-            element={<NRApplicationForm />}
+          path="/applicant/application-form/nonresearch"
+          element={
+            <RoleCheck role="applicant">
+              <NRApplicationForm />
+            </RoleCheck>
+          }
         />
-        {/* Admin dashboard */}
-        <Route path="/admin" element={<></>} />
-        Need to change path to create-account after authentication
+
+        {/* Admin Routes */}
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <RoleCheck role="admin">
+              <AdminDashboardViewAllAccounts />
+            </RoleCheck>
+          } 
+        />
+        
+        <Route 
+          path="/admin-database"
+          element={
+            <RoleCheck role="admin">
+              <AdminApplicationsDatabase />
+            </RoleCheck>
+          }
+        />
+        
+        <Route 
+          path="/admin" 
+          element={
+            <RoleCheck role="admin">
+              <AdminApplicationsDatabase />
+            </RoleCheck>
+          }
+        />
+        
         <Route
-            path="/create-account-reviewers"
-            element={<AccountPageReviewers />}
+          path="/admin/all-accounts" 
+          element={
+            <RoleCheck role="admin">
+              <AdminDashboardViewAllAccounts />
+            </RoleCheck>
+          } 
         />
+        
+        <Route
+          path="/admin/edit-information" 
+          element={
+            <RoleCheck role="admin">
+              <AdminEditInformation />
+            </RoleCheck>
+          } 
+        />
+        
+        <Route
+          path="/admin/settings"
+          element={
+            <RoleCheck role="admin">
+              <AdminSettings />
+            </RoleCheck>
+          }
+        />
+        
+        <Route
+            path="/grant-awards"
+            element={
+              <RoleCheck role="admin">
+                <GrantAwards />
+              </RoleCheck>
+            }
+        />
+        
+        {/* Authentication Routes */}
         <Route
             path="/create-account-applicants"
             element={<AccountPageApplicants />}
         />
-        <Route
-          path="/admin/settings"
-          element={<AdminProtectedRoute element={<AdminSettings />} />}
-        />
-        <Route
-          path="/reviewer/settings"
-          element={<ReviewerProtectedRoute element={<ReviewerSettings />} />}
-        />
-        <Route
-          path="/applicant/settings"
-          element={<ApplicantProtectedRoute element={<ApplicantSettings />} />}
-        />
         
-        <Route path="/reviewer-dashboard" element={
-            <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
-        }>
-        </Route>
         <Route
-            path="/grant-awards"
-            element={<AdminProtectedRoute element={<GrantAwards />} />}
+          path="/protected-page" 
+          element={
+            <ErrorPage type="401" />
+          } 
         />
       </Routes>
-
     </BrowserRouter>
   );
 }

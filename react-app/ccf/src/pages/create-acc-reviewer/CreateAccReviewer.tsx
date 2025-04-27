@@ -100,6 +100,13 @@ function AccountPageReviewers(): JSX.Element {
     }
 
     try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        pwd
+      );
+      user = userCredential.user;
+      await setDoc(doc(db, "reviewerUsers", user.uid), {
       // Clear any previous whitelist error
       setEmailWhitelistError(false);
 
@@ -116,6 +123,12 @@ function AccountPageReviewers(): JSX.Element {
       await addReviewerUser(userData, pwd);
       navigate("/");
     } catch (e) {
+      if (user !== null) {
+        await deleteUser(user);
+        await deleteDoc(doc(db, "reviewerUsers", user.uid));
+      }
+      console.error(e);
+
       console.log(e);
     }
   };
