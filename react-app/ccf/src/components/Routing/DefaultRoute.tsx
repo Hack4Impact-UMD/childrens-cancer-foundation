@@ -6,15 +6,14 @@ const DefaultRoute = () => {
 
     const getRoute = async () => {
         getRole().then((role) => {
-            console.log(role)
             if (!role) {
                 setTo("/login")
             } else if (role == "applicant") {
-                setTo("/applicant-dashboard")
+                setTo("/applicant/dashboard")
             } else if (role == "reviewer") {
-                setTo("/reviewer-dashboard")
+                setTo("/reviewer/dashboard")
             } else if (role == "admin") {
-                setTo("/admin-dashboard")
+                setTo("/admin/dashboard")
             }
         })
     }

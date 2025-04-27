@@ -8,6 +8,7 @@ import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashbo
 
 import Sidebar from "./components/sidebar/Sidebar";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
+import AdminApplicationsDatabase from "./pages/admin-database/AdminDatabase";
 import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
 import ReviewerProtectedRoute from './components/Routing/ReviewerProtectedRoute';
 import CreateAccMenu from './pages/create-acc-menu/CreateAccMenu';
@@ -18,9 +19,14 @@ import ReviewerDashboard from "./pages/reviewer-dashboard/ReviewerDashboard";
 import faq_data from "./StaticData/FAQ-REVIEWER";
 import ApplicationForm from "./pages/application-form/ApplicationForm";
 import NRApplicationForm from "./pages/application-form/NRApplicationForm";
-import AccountSettingsPage from "./pages/settings/settings";
 import AdminDashboardViewAllAccounts from "./pages/admin-dashboard/AdminDashboardViewAll";
 import GrantAwards from './pages/grant-awards/GrantAwards';
+import AdminSettings from "./pages/settings/AdminSettings";
+import ApplicantSettings from "./pages/settings/ApplicantSettings";
+import ReviewerSettings from "./pages/settings/ReviewerSettings";
+
+
+
 import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
@@ -41,17 +47,17 @@ function App(): JSX.Element {
               <DefaultRoute></DefaultRoute>
           } 
         />
-        <Route path="/reviewer-dashboard" element={
+        <Route path="/reviewer/dashboard" element={
             <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
         }>
         </Route>
         <Route	
-                  path="/reviewer-dashboard/all-applications"
+                  path="/reviewer/dashboard/all-applications"
                   element={<AllApplications />}
         	
                 />
         <Route
-          path="/applicant-dashboard"
+          path="/applicant/dashboard"
           element={
             <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
           }
@@ -70,60 +76,66 @@ function App(): JSX.Element {
         } 
         />          
 
-        <Route
-          path="/application-form/nextgen"
-          element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
-        />
-        <Route
-          path="/application-form/nonresearch"
-          element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
-        />
         {/* Admin dashboard */}
-        <Route path="/admin" element={<></>} />
+        <Route 
+          path="/admin" 
+          element={<AdminApplicationsDatabase></AdminApplicationsDatabase>}
+        />
         Need to change path to create-account after authentication
+        <Route 
+          path="/admin-database"
+          element={<AdminApplicationsDatabase />}
+        />
         <Route
-          path="/applicant-dashboard" 
+          path="/applicant/dashboard" 
           element={
             <ApplicantUsersDashboard />
           } 
         />    
         {/* Admin View All Accounts Page*/}   
         <Route
-          path="/admin-all-accounts" 
+          path="/admin/all-accounts" 
           element={
             <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
           } 
         />
-        {/* Admin Edit Information Page */}
+
+<Route
+          path="/admin/dashboard" 
+          element={
+            <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
+          } 
+        />
+        Admin Edit Information Page
         <Route
-          path="/admin-edit-information" 
+          path="/admin/edit-information" 
           element={
             <AdminProtectedRoute element={<AdminEditInformation />} />
           } 
         />
         {/* Need to change path to create-account after authentication */}
         <Route
-          path="/create-account-reviewers" 
+          path="/reviewer/create-account" 
           element={
             <AccountPageReviewers />
           } 
         />
         <Route
-          path="/post-grant-report" 
+          path="/applicant/post-grant-report" 
           element={
             <PostGrantReport />
           }
         />         
         <Route
-            path="/application-form/research"
+            path="/applicant/application-form/research"
             element={<ApplicationForm type="Research" />}
         />
         <Route
-            path="/application-form/nextgen"
+            path="/applicant/application-form/nextgen"
             element={<ApplicationForm type="NextGen" />}
         />
         <Route
-            path="/application-form/nonresearch"
+            path="/applicant/application-form/nonresearch"
             element={<NRApplicationForm />}
         />
         {/* Admin dashboard */}
@@ -138,9 +150,22 @@ function App(): JSX.Element {
             element={<AccountPageApplicants />}
         />
         <Route
-            path={"/settings"}
-            element={<AccountSettingsPage/>}
+          path="/admin/settings"
+          element={<AdminProtectedRoute element={<AdminSettings />} />}
         />
+        <Route
+          path="/reviewer/settings"
+          element={<ReviewerProtectedRoute element={<ReviewerSettings />} />}
+        />
+        <Route
+          path="/applicant/settings"
+          element={<ApplicantProtectedRoute element={<ApplicantSettings />} />}
+        />
+        
+        <Route path="/reviewer-dashboard" element={
+            <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
+        }>
+        </Route>
         <Route
             path="/grant-awards"
             element={<AdminProtectedRoute element={<GrantAwards />} />}

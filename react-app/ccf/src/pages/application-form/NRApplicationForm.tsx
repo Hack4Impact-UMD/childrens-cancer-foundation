@@ -6,6 +6,8 @@ import NRInformation from './subquestions/NRInformation';
 import NRNarrative from './subquestions/NRNarrative';
 import Review from './subquestions/Review';
 import AboutGrant from './subquestions/AboutGrant';
+import { NonResearchApplication } from '../../types/application-types';
+import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
 
 function NRApplicationForm(): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
@@ -13,11 +15,16 @@ function NRApplicationForm(): JSX.Element {
     const totalPages = pages.length;
     const navigate = useNavigate();
 
+    const requiredFields = [
+        'title', 'requestor', 'institution', 'institutionPhoneNumber', 'institutionEmail', 
+        'amountRequested', 'timeframe', 'file'
+    ]
+
     const [formData, setFormData] = useState({
-        projectTitle: '',
-        requester: '',
+        title: '',
+        requestor: '',
         institution: '',
-        institutionPhone: '',
+        institutionPhoneNumber: '',
         institutionEmail: '',
         explanation: '',
         sources: '',
@@ -31,7 +38,7 @@ function NRApplicationForm(): JSX.Element {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
         } else {
-            navigate('/applicant-dashboard');
+            navigate('/applicant/dashboard');
         }
     };
 
@@ -40,12 +47,21 @@ function NRApplicationForm(): JSX.Element {
     };
 
     const handleSubmit = () => {
-        console.log('Form submitted!');
+        try {
+            const application: NonResearchApplication = formData as NonResearchApplication
+            if (formData.file) {
+                uploadNonResearchApplication(application, formData.file)
+            }
+        } catch (e) {
+            console.log(e)
+        }
+
+        navigate('applicant/dashboard')
     };
 
     // Validation function to check if all fields are filled
     const isFormValid = () => {
-        return Object.values(formData).every(field => field !== '' && field !== null);
+        return requiredFields.reduce((acc, curr) => (formData as any)[curr] !== '' && (formData as any)[curr] !== null && acc, true);
     };
 
     const renderPage = () => {
