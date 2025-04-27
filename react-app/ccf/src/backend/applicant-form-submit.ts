@@ -1,39 +1,37 @@
 import { doc, setDoc } from "firebase/firestore";
 import { db } from '../index';
 import { uploadFileToStorage } from "../storage/storage";
-import { ApplicationInfo, ApplicationQuestions } from '../types/application-types';
+// import { ApplicationInfo, ApplicationQuestions } from '../types/application-types';
 
 export const writeApplicationInfo = async( 
-    applicationInfo: ApplicationInfo, 
-    applicationQuestions: ApplicationQuestions, 
-    file: File 
+    applicationData: any, 
 ) => {
     try {
-        const pdfUrl = await uploadFileToStorage(file);
+        const pdfUrl = await uploadFileToStorage(applicationData.file);
         
         const newApplicationRef = doc(db, 'applications', Date.now().toString());
         await setDoc(newApplicationRef, {
-            title: applicationInfo.title,
-            principalInvestigator: applicationInfo.principalInvestigator,
-            typesOfCancerAddressed: applicationInfo.typesOfCancerAddressed,
-            namesOfStaff: applicationInfo.namesOfStaff,
-            institution: applicationInfo.institution,
-            institutionAddress: applicationInfo.institutionAddress,
-            institutionPhoneNumber: applicationInfo.institutionPhoneNumber,
-            instituionEmail: applicationInfo.instituionEmail,
-            adminOfficialName: applicationInfo.adminOfficialName,
-            adminOfficialAddress: applicationInfo.adminOfficialAddress,
-            adminPhoneNumber: applicationInfo.adminPhoneNumber,
-            adminEmail: applicationInfo.adminEmail,
-    
-            includedPublishedPaper: applicationQuestions.includedPublishedPaper,
-            creditAgreement: applicationQuestions.creditAgreement,
-            patentApplied: applicationQuestions.patentApplied,
-            includedFundingInfo: applicationQuestions.includedFundingInfo,
-            amountRequested: applicationQuestions.amountRequested,
-            dates: applicationQuestions.dates,
-            continuation: applicationQuestions.continuation,
-            ...(applicationQuestions.continuationYears && { continuationYears: applicationQuestions.continuationYears }),
+            title: applicationData.projectTitle,
+            principalInvestigator: applicationData.investigator,
+            typesOfCancerAddressed: applicationData.cancers,
+            namesOfStaff: applicationData.namesOfStaff,
+            institution: applicationData.institution,
+            institutionAddress: applicationData.institutionAddress,
+            institutionPhoneNumber: applicationData.institutionPhone,
+            instituionEmail: applicationData.instituionEmail,
+            adminOfficialName: applicationData.adminName,
+            adminOfficialAddress: applicationData.adminAddress,
+            adminPhoneNumber: applicationData.adminPhone,
+            adminEmail: applicationData.adminEmail,
+            includedPublishedPaper: applicationData.includedPublishedPaper,
+            creditAgreement: applicationData.creditAgreement,
+            patentApplied: applicationData.appliedPatent,
+            includedFundingInfo: applicationData.includedInfo,
+            amountRequested: applicationData.amountRequested,
+            dates: applicationData.grantProjDates,
+            continuation: applicationData.continuation,
+            contCurrentFunds: applicationData.contCurrentFunds,
+            contCurrentFundDates: applicationData.contCurrentFundDates,
             pdf: pdfUrl, 
         });
 

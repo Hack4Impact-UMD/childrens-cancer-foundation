@@ -7,6 +7,7 @@ import ApplicationQuestions from './subquestions/ApplicationQuestions';
 import Review from './subquestions/Review';
 import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
+import { ApplicationInfo, ApplicationQuestions as ApplicationQuestionTypes } from '../types/application-types';
 
 type ApplicationFormProps = {
   type: "Research" | "NextGen";
@@ -38,6 +39,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         includedInfo: '',
         amountRequested: '',
         grantProjDates: '',
+        continuation: '',
         contCurrentFunds: '',
         contCurrentFundsDates: '',
         file: null
