@@ -177,7 +177,7 @@ function App(): JSX.Element {
         }>
         </Route>
         <Route
-            path="/grant-awards"
+            path="/admin/grant-awards"
             element={<AdminProtectedRoute element={<GrantAwards />} />}
         />
       </Routes>
