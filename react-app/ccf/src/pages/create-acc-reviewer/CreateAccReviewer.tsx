@@ -65,20 +65,31 @@ function AccountPageReviewers(): JSX.Element {
     loadImages();
   }, []);
 
-  useEffect(() => {
-    checkConfirmPwd();
-  }, [pwd, confirmPwd]);
+  useEffect(() => {}, [
+    firstName,
+    lastName,
+    title,
+    email,
+    pwd,
+    confirmPwd,
+    affiliation,
+    pwdUnmatched,
+  ]);
 
   /* Check if user input satisfies password requirements */
-  const checkPasswordRequirements = (password: string): void => {
+  const checkPasswordRequirements = (password: string) => {
     setSpecialChar(/[\W_]/.test(password)); // Checks for special character
     setCapitalLetter(/[A-Z]/.test(password)); // Checks for capital letter
     setNumber(/[0-9]/.test(password)); // Checks for number
   };
 
-  const checkEmail = (email: string): void => {
+  const checkEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|edu|org)$/i;
-    setEmailError(!emailRegex.test(email));
+    if (!emailRegex.test(email)) {
+      setEmailError(true);
+    } else {
+      setEmailError(false);
+    }
   };
 
   const checkEmailWhitelist = async (email: string) => {
@@ -110,7 +121,6 @@ function AccountPageReviewers(): JSX.Element {
     }
 
     const functions = getFunctions();
-    const addReviewerRole = httpsCallable(functions, "addReviewerRole");
     console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
 
     if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
@@ -139,9 +149,9 @@ function AccountPageReviewers(): JSX.Element {
     }
   };
 
-  const checkConfirmPwd = (): void => {
+  const checkConfirmPwd = () => {
     if (confirmPwd !== "") {
-      setPwdUnmatched(confirmPwd !== pwd);
+      confirmPwd === pwd ? setPwdUnmatched(false) : setPwdUnmatched(true);
     }
   };
 
