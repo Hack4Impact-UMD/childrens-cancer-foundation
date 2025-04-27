@@ -1,5 +1,4 @@
 export interface ApplicationInfo {
-    applicationId: number;
     title: string;
     principalInvestigator: string;
     typesOfCancerAddressed: string;
@@ -13,7 +12,6 @@ export interface ApplicationInfo {
     adminPhoneNumber: string;
     adminEmail: string;
     decision: string;
-    assignedReviewers?: string[]
 };
 
 export interface ApplicationQuestions {
