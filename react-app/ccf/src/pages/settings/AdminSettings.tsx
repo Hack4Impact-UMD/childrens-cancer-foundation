@@ -29,16 +29,8 @@ function AccountSettingsPage(): JSX.Element {
   const [showReqs, setShowReqs] = useState(false);
   const [pwdUnmatched, setPwdUnmatched] = useState(false);
 
-  // Personal information
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [title, setTitle] = useState("");
-
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
-
-  const [personalInfoSuccess, setPersonalInfoSuccess] = useState(false);
-  const [personalInfoError, setPersonalInfoError] = useState<string | null>(null);
 
   // To store the user collection name to use in saving personal information
   const [userCollectionName, setUserCollectionName] = useState("");
@@ -68,14 +60,6 @@ function AccountSettingsPage(): JSX.Element {
       try {
         if (user) {
           setUsername(user.email || "No email available");
-
-          // Get user data
-          const userData = await getCurrentUserData();
-          if (userData) {
-            setFirstName(userData.firstName || "");
-            setLastName(userData.lastName || "");
-            setTitle(userData.title || "");
-          }
 
           // Get user claims
           const claims = await getCurrentUserClaims();
@@ -149,42 +133,7 @@ function AccountSettingsPage(): JSX.Element {
         setUpdateError(error.message || "Failed to update password");
       }
     }
-  };
-
-  const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPersonalInfoError(null);
-    setPersonalInfoSuccess(false);
-
-    const user = auth.currentUser;
-
-    if (!user) {
-      setPersonalInfoError("No user is currently signed in");
-      return;
-    }
-
-    try {
-      const db = getFirestore();
-      const userRef = doc(db, `${userCollectionName}s`, user.uid);
-
-      await updateDoc(userRef, {
-        firstName: firstName,
-        lastName: lastName,
-        title: title,
-      });
-
-      setPersonalInfoSuccess(true);
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setPersonalInfoSuccess(false);
-      }, 3000);
-
-    } catch (error: any) {
-      console.error("Error updating personal information:", error);
-      setPersonalInfoError(error.message || "Failed to update personal information");
-    }
-  };
-
+  }
 
   return (
     <div>
@@ -358,8 +307,6 @@ function AccountSettingsPage(): JSX.Element {
                 }
                 onClick={handleSubmit}
                 disabled={
-                  !firstName ||
-                  !lastName ||
                   !pwd ||
                   (pwd && !confirmPwd) ||
                   !specialChar ||

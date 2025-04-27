@@ -166,7 +166,6 @@ function AccountSettingsPage(): JSX.Element {
     }
 
     try {
-      const db = getFirestore();
       const userRef = doc(db, `${userCollectionName}s`, user.uid);
 
       await updateDoc(userRef, {
@@ -425,8 +424,6 @@ function AccountSettingsPage(): JSX.Element {
                   }
                   onClick={handleSubmit}
                   disabled={
-                    !firstName ||
-                    !lastName ||
                     !pwd ||
                     (pwd && !confirmPwd) ||
                     !specialChar ||

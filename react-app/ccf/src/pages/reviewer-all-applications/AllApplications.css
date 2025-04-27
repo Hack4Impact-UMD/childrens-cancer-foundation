@@ -9,6 +9,10 @@
     margin-top: 1%;
 }
 
+.clickable {
+    cursor: pointer
+}
+
 .search-input:focus, .filter-dropdown:focus {
     outline: none;
 }
