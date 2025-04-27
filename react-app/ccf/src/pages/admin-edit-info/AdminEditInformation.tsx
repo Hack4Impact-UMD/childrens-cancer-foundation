@@ -11,6 +11,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { TextField, Button } from '@mui/material';
 
 import { updateCurrentCycleDeadlines } from "../../backend/application-cycle";
+import { getSidebarbyRole } from "../../types/sidebar-types";
 
 function AdminEditInformation(): JSX.Element {
     const [nextGenDate, setNextGenDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
@@ -38,13 +39,7 @@ function AdminEditInformation(): JSX.Element {
         setReviewerDate(newReviewerDate);
     }
 
-    const sidebarItems = [
-        { name: "Home", path: "/" },
-        { name: "Account Settings", path: "/settings" },
-        { name: "All Accounts", path: "/admin-all-accounts" },
-        { name: "Logout", path: "/login" },
-        { name: "Edit Information", path: "/admin-edit-information" }
-    ];
+    const sidebarItems = getSidebarbyRole("admin")
 
     return (
         <div>
@@ -76,7 +71,7 @@ function AdminEditInformation(): JSX.Element {
                                         backgroundColor: '#79747E'
                                     }}
                                     slots={{
-                                        textField: (props) => (
+                                        textField: (props: any) => (
                                             <TextField
                                                 {...props}
                                                 sx={{
@@ -108,7 +103,7 @@ function AdminEditInformation(): JSX.Element {
                                         backgroundColor: '#79747E'
                                     }}
                                     slots={{
-                                        textField: (props) => (
+                                        textField: (props: any) => (
                                             <TextField
                                                 {...props}
                                                 sx={{
@@ -140,7 +135,7 @@ function AdminEditInformation(): JSX.Element {
                                         backgroundColor: '#79747E'
                                     }}
                                     slots={{
-                                        textField: (props) => (
+                                        textField: (props: any) => (
                                             <TextField
                                                 {...props}
                                                 sx={{
@@ -209,7 +204,7 @@ function AdminEditInformation(): JSX.Element {
                                         backgroundColor: '#79747E',
                                     }}
                                     slots={{
-                                        textField: (props) => (
+                                        textField: (props: any) => (
                                             <TextField
                                                 {...props}
                                                 sx={{

@@ -1,6 +1,6 @@
 import { collection, query, where, getDocs, orderBy, Query, DocumentData } from 'firebase/firestore';
 import { db } from '../index';
-import { ApplicationInfo, ApplicationQuestions } from '../types/application-types';
+import { ApplicationDetails, ApplicationInfo, ApplicationQuestions, NonResearchApplication, ResearchApplication } from '../types/application-types';
 
 export interface FilterOptions {
     date?: string;
@@ -8,7 +8,7 @@ export interface FilterOptions {
     grantType?: string;
 }
 
-export async function getFilteredApplications(filters: FilterOptions): Promise<Array<ApplicationInfo & ApplicationQuestions>> {
+export async function getFilteredApplications(filters: FilterOptions): Promise<Array<(ResearchApplication | NonResearchApplication) & ApplicationDetails>> {
     try {
         // Start with the base collection reference
         let q: Query<DocumentData> = collection(db, 'applications');
@@ -38,7 +38,7 @@ export async function getFilteredApplications(filters: FilterOptions): Promise<A
         const applications = querySnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
-        })) as unknown as Array<ApplicationInfo & ApplicationQuestions>;
+        })) as unknown as Array<(ResearchApplication | NonResearchApplication) & ApplicationDetails>;
 
         return applications;
     } catch (error) {

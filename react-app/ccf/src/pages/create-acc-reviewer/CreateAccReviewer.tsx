@@ -10,11 +10,15 @@ import {
 } from "firebase/auth";
 import {doc, setDoc, deleteDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { addReviewerUser } from "../../users/usermanager";
+import {UserData} from "../../types/usertypes"
+import { Password } from "@mui/icons-material";
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
@@ -38,6 +42,7 @@ function AccountPageReviewers(): JSX.Element {
   useEffect(() => {}, [
     firstName,
     lastName,
+    title,
     email,
     pwd,
     confirmPwd,
@@ -93,12 +98,11 @@ function AccountPageReviewers(): JSX.Element {
     const functions = getFunctions();
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
     console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
+
     if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
       return;
     }
-    let user = null;
-
     try {
       // Clear any previous whitelist error
       setEmailWhitelistError(false);
@@ -110,26 +114,18 @@ function AccountPageReviewers(): JSX.Element {
       );
       user = userCredential.user;
       await setDoc(doc(db, "reviewers", user.uid), {
+      const userData: UserData = {
+        email: email,
         firstName: firstName,
         lastName: lastName,
-        email: email,
         affiliation: affiliation,
-        role: "reviewer",
-      });
-      await addReviewerRole({ email: email })
-        .then((result) => {
-          console.log(result.data); // Success message from the function
-        })
-        .catch((error) => {
-          console.log("Error: ", error);
-        });
+        title: title,
+        role: "reviewer"
+      }
+      addReviewerUser(userData, pwd)
       navigate("/");
     } catch (e) {
-      if (user !== null) {
-        await deleteUser(user);
-        await deleteDoc(doc(db, "reviewers", user.uid));
-      }
-      console.error(e);
+      console.log(e)
     }
   };
 
@@ -180,6 +176,16 @@ function AccountPageReviewers(): JSX.Element {
                   />
                 </div>
               </div>
+
+              <label>Title</label>
+              <input
+                type="text"
+                placeholder="M.D., Ph.D., etc."
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="input"
+              />
 
               <label>Email*</label>
               <input

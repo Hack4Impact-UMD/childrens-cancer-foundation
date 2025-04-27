@@ -7,19 +7,6 @@ interface InformationProps {
 }
 
 function NRInformation({ formData, setFormData }: InformationProps): JSX.Element {
-  const [projectTitle, setProjectTitle] = useState("");
-  const [investigator, setInvestigator] = useState("");
-  const [cancers, setCancers] = useState("");
-  const [staff, setStaff] = useState("");
-  const [institution, setInstitution] = useState("");
-  const [institutionAddress, setInstitutionAddress] = useState("");
-
-  const [institutionPhone, setInstitutionPhone] = useState("");
-  const [institutionEmail, setInstitutionEmail] = useState("");
-  const [adminName, setAdminName] = useState("");
-  const [adminAddress, setAdminAddress] = useState("");
-  const [adminPhone, setAdminPhone] = useState("");
-  const [adminEmail, setAdminEmail] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,21 +19,21 @@ function NRInformation({ formData, setFormData }: InformationProps): JSX.Element
         <p className="text-label">Title of Project*</p>
         <input
           type="text"
-          name="projectTitle"
-          value={formData.projectTitle}
+          name="title"
+          value={formData.title}
           onChange={handleChange}
           placeholder="Enter title of project"
           required
           className="text-input"
         />
 
-        <p className="text-label">Principal Investigator*</p>
+        <p className="text-label">Principal Requestor*</p>
         <input
           type="text"
-          name="investigator"
-          value={formData.investigator}
+          name="requestor"
+          value={formData.requestor}
           onChange={handleChange}
-          placeholder="Enter principal investigator"
+          placeholder="Enter principal requestor"
           required
           className="text-input"
         />
@@ -54,8 +41,8 @@ function NRInformation({ formData, setFormData }: InformationProps): JSX.Element
 <p className="text-label">Institution*</p>
         <input
           type="text"
-          name="institutionName"
-          value={formData.institutionName}
+          name="institution"
+          value={formData.institution}
           onChange={handleChange}
           placeholder="Enter institution"
           required
@@ -65,8 +52,8 @@ function NRInformation({ formData, setFormData }: InformationProps): JSX.Element
 <p className="text-label">Phone Number*</p>
         <input
           type="text"
-          name="institutionPhone"
-          value={formData.institutionPhone}
+          name="institutionPhoneNumber"
+          value={formData.institutionPhoneNumber}
           onChange={handleChange}
           placeholder="Enter institution phone number"
           required
