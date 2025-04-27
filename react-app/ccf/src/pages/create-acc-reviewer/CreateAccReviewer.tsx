@@ -1,15 +1,19 @@
+import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccReviewer.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { getAuth, createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
-import { getFirestore, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { db } from "../../index"
+import {collection, query, where, getDocs } from "firebase/firestore";
+import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { addReviewerUser } from "../../users/usermanager";
+import {UserData} from "../../types/usertypes"
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
@@ -24,12 +28,16 @@ function AccountPageReviewers(): JSX.Element {
 
   //email req
   const [emailError, setEmailError] = useState(false);
+  const [emailWhitelistError, setEmailWhitelistError] = useState(false);
+
+  const [institutionError, setInstitutionError] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {}, [
     firstName,
     lastName,
+    title,
     email,
     pwd,
     confirmPwd,
@@ -46,7 +54,7 @@ function AccountPageReviewers(): JSX.Element {
 
   const checkEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|edu|org)$/i;
-    
+
     if (!emailRegex.test(email)) {
       setEmailError(true);
     } else {
@@ -54,48 +62,61 @@ function AccountPageReviewers(): JSX.Element {
     }
   };
 
+  const checkEmailWhitelist = async (email: string) => {
+    if (!email) return false;
+
+    try {
+      const whitelistRef = collection(db, "reviewer-whitelist");
+      const q = query(whitelistRef, where("email", "==", email.toLowerCase()));
+      const querySnapshot = await getDocs(q);
+
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking whitelist:", error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: any) => {
+    // don't let user submit if pwd reqs aren't met
     e.preventDefault();
+
+    // Check whitelist before proceeding
+    if (!emailError && email) {
+      const isWhitelisted = await checkEmailWhitelist(email);
+      if (!isWhitelisted) {
+        setEmailWhitelistError(true);
+        return;
+      }
+    }
+
     const functions = getFunctions();
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
-    // don't let user submit if pwd reqs aren't met
     console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
+
     if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
-      e.preventDefault();
       return;
     }
 
-    const auth = getAuth();
-    const db = getFirestore();
-    let user = null
- 
- 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, pwd);
-      user = userCredential.user;
-      await setDoc(doc(db, 'reviewers', user.uid), {
+      // Clear any previous whitelist error
+      setEmailWhitelistError(false);
+
+      const userData: UserData = {
+        email: email,
         firstName: firstName,
         lastName: lastName,
-        email: email,
         affiliation: affiliation,
-        role: 'reviewer',
-      });
-      await addReviewerRole({email: email})
-      .then((result) => {
-        console.log(result.data);  // Success message from the function
-      })
-      .catch((error) => {
-        console.log('Error: ', error);
-      });
-      
+        title: title,
+        role: "reviewer"
+      };
+
+      // Use the addReviewerUser function that handles both authentication and database operations
+      await addReviewerUser(userData, pwd);
       navigate("/");
-    } catch (error) {
-      if(user !== null){
-        await deleteUser(user);
-        await deleteDoc(doc(db, 'reviewers', user.uid));
-      }
-      console.log(error);
+    } catch (e) {
+      console.log(e);
     }
   };
 
@@ -106,200 +127,223 @@ function AccountPageReviewers(): JSX.Element {
   };
 
   return (
-    <div>
-      <div className="box2">
-        <div className="left-container2">
-          <div className="content2">
-            <div className="header-container2">
-              <img
-                src={logo}
-                className="logo2"
-                alt="Circular logo with red borders encompassing 'The children's cancer Foundation, Inc.' and three individuals in the middle"
-              />
-              <h1 className="header2">Create Account</h1>
-            </div>
-
-            <form className="form-container2">
-              <div className="name-container">
-                <div>
-                  <label>First Name*</label>
-                  <input
-                    type="text"
-                    placeholder="Enter your first name"
-                    id="firstName"
-                    className="input"
-                    required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                </div>
-                <div className="lastName-container">
-                  <label>Last Name*</label>
-                  <input
-                    type="text"
-                    placeholder="Enter your last name"
-                    id="lastName"
-                    className="input"
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <label>Email*</label>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                required
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  checkEmail(e.target.value);
-                }}
-                className="input"
-              />
-
-              {emailError && (
-                <p className="validation">Please enter a valid email address</p>
-              )}
-
-              <label>Password*</label>
-              <input
-                type="password"
-                placeholder="Create a password"
-                required
-                value={pwd}
-                onChange={(e) => {
-                  setPwd(e.target.value);
-                  checkPasswordRequirements(e.target.value);
-                }}
-                onFocus={() => setShowReqs(true)} // Show on focus
-                onBlur={() => setShowReqs(false)}
-                onKeyUp={checkConfirmPwd}
-                className="input"
-              />
-
-              {showReqs && (
-                <div className="pwd-reqs">
-                  <p>Password requires:</p>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={specialChar}
-                      readOnly
-                    />
-                    One special character
-                  </label>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={capitalLetter}
-                      readOnly
-                    />
-                    One capital letter
-                  </label>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={number}
-                      readOnly
-                    />
-                    One number
-                  </label>
-                </div>
-              )}
-
-              {((!specialChar || !number || !capitalLetter) && pwd && !showReqs) &&  (
-                <p className="validation">At least one password requirement was not met</p>
-              )}
-
-              <label>Confirm Password*</label>
-              <div
-                className={
-                  !pwdUnmatched
-                    ? "confirm-pwd-container"
-                    : "confirm-pwd-container-exclaim"
-                }
-              >
-                <input
-                  type="password"
-                  placeholder="Enter password again"
-                  required
-                  value={confirmPwd}
-                  onChange={(e) => setConfirmPwd(e.target.value)}
-                  onKeyUp={checkConfirmPwd}
-                  className="input"
+      <div>
+        <div className="box2">
+          <div className="left-container2">
+            <div className="content2">
+              <div className="header-container2">
+                <img
+                    src={logo}
+                    className="logo2"
+                    alt="Circular logo with red borders encompassing 'The children's cancer Foundation, Inc.' and three individuals in the middle"
                 />
-                {pwdUnmatched && <p id="exclaim">!</p>}
+                <h1 className="header2">Create Account</h1>
               </div>
 
-              {pwdUnmatched && (
-                <p className="validation">Passwords do not match</p>
-              )}
+              <form className="form-container2">
+                <div className="name-container">
+                  <div>
+                    <label>First Name*</label>
+                    <input
+                        type="text"
+                        placeholder="Enter your first name"
+                        id="firstName"
+                        className="input"
+                        required
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </div>
+                  <div className="lastName-container">
+                    <label>Last Name*</label>
+                    <input
+                        type="text"
+                        placeholder="Enter your last name"
+                        id="lastName"
+                        className="input"
+                        required
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-              <label>Institution/Hospital Affiliation*</label>
-              <input
-                type="text"
-                placeholder="Enter hospital name"
-                required
-                value={affiliation}
-                onChange={(e) => setAffiliation(e.target.value)}
-                className="input"
-              />
+                <label>Title</label>
+                <input
+                    type="text"
+                    placeholder="M.D., Ph.D., etc."
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="input"
+                />
 
-              <p className="acc-req2">
-                Already have an account?{" "}
-                <Link to="/login" className="acc-req2" id="link-to">
-                  <b>Log in</b>
-                </Link>{" "}
-              </p>
-              <button
-                type="submit"
-                className={(
-                  !firstName ||
-                  !lastName ||
-                  !affiliation ||
-                  !email ||
-                  !pwd ||
-                  (pwd && !confirmPwd) ||
-                  !specialChar ||
-                  !capitalLetter ||
-                  !number ||
-                  pwdUnmatched ||
-                  emailError) ? "disable-submit" : "signup-btn2"}
-                onClick={handleSubmit}
-                disabled={(
-                  !firstName ||
-                  !lastName ||
-                  !affiliation ||
-                  !email ||
-                  !pwd ||
-                  (pwd && !confirmPwd) ||
-                  !specialChar ||
-                  !capitalLetter ||
-                  !number ||
-                  pwdUnmatched ||
-                  emailError)}
-              >
-                Sign Up
-              </button>
-            </form>
+                <label>Email*</label>
+                <input
+                    type="email"
+                    placeholder="Enter your email"
+                    required
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      checkEmail(e.target.value);
+                    }}
+                    className="input"
+                />
+
+                {emailError && (
+                    <p className="validation">Please enter a valid email address</p>
+                )}
+
+                {emailWhitelistError && (
+                    <p className="validation">Email does not have permission to create reviewer account. Please contact CCF if you believe this to be a mistake.</p>
+                )}
+
+                <label>Password*</label>
+                <input
+                    type="password"
+                    placeholder="Create a password"
+                    required
+                    value={pwd}
+                    onChange={(e) => {
+                      setPwd(e.target.value);
+                      checkPasswordRequirements(e.target.value);
+                    }}
+                    onFocus={() => setShowReqs(true)} // Show on focus
+                    onBlur={() => setShowReqs(false)}
+                    onKeyUp={checkConfirmPwd}
+                    className="input"
+                />
+
+                {showReqs && (
+                    <div className="pwd-reqs">
+                      <p>Password requires:</p>
+                      <label id="checkbox">
+                        <input
+                            type="checkbox"
+                            name="options"
+                            value="Yes"
+                            checked={specialChar}
+                            readOnly
+                        />
+                        One special character
+                      </label>
+                      <label id="checkbox">
+                        <input
+                            type="checkbox"
+                            name="options"
+                            value="Yes"
+                            checked={capitalLetter}
+                            readOnly
+                        />
+                        One capital letter
+                      </label>
+                      <label id="checkbox">
+                        <input
+                            type="checkbox"
+                            name="options"
+                            value="Yes"
+                            checked={number}
+                            readOnly
+                        />
+                        One number
+                      </label>
+                    </div>
+                )}
+
+                {((!specialChar || !number || !capitalLetter) && pwd && !showReqs) &&  (
+                    <p className="validation">At least one password requirement was not met</p>
+                )}
+
+                <label>Confirm Password*</label>
+                <input
+                    type="password"
+                    placeholder="Enter password again"
+                    required
+                    value={confirmPwd}
+                    onChange={(e) => setConfirmPwd(e.target.value)}
+                    onKeyUp={checkConfirmPwd}
+                    className="input"
+                />
+                {pwdUnmatched && <p className="validation">Passwords do not match</p>}
+
+                {pwdUnmatched && (
+                    <p className="validation">Passwords do not match</p>
+                )}
+
+                <label>Institution/Hospital Affiliation*</label>
+                <select
+                    value={affiliation}
+                    onChange={(e) => {
+                      setAffiliation(e.target.value);
+                      setInstitutionError(!validateInstitution(e.target.value));
+                    }}
+                    required
+                    className="input"
+                >
+                  <option value="">Select an institution</option>
+                  {VALID_INSTITUTIONS.map((institution) => (
+                      <option key={institution} value={institution}>
+                        {institution}
+                      </option>
+                  ))}
+                </select>
+                {institutionError && (
+                    <p className="validation">Please select a valid institution</p>
+                )}
+
+                <p className="acc-req2">
+                  Already have an account?{" "}
+                  <Link to="/login" className="acc-req2" id="link-to">
+                    <b>Log in</b>
+                  </Link>
+                </p>
+                <button
+                    type="submit"
+                    className={
+                      !firstName ||
+                      !lastName ||
+                      !affiliation ||
+                      !email ||
+                      !pwd ||
+                      (pwd && !confirmPwd) ||
+                      !specialChar ||
+                      !capitalLetter ||
+                      !number ||
+                      pwdUnmatched ||
+                      emailError ||
+                      institutionError
+                          ? "disable-submit"
+                          : "signup-btn2"
+                    }
+                    onClick={handleSubmit}
+                    disabled={
+                        !firstName ||
+                        !lastName ||
+                        !affiliation ||
+                        !email ||
+                        !pwd ||
+                        (pwd && !confirmPwd) ||
+                        !specialChar ||
+                        !capitalLetter ||
+                        !number ||
+                        pwdUnmatched ||
+                        emailError ||
+                        institutionError
+                    }
+                >
+                  Sign Up
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div className="right-container2">
+            {/* remove once given image */}
+            <div className="image-placeholder2"></div>
           </div>
         </div>
-
-        <div className="right-container2">
-          {/* remove once given image */}
-          <div className="image-placeholder2"></div>
-        </div>
       </div>
-    </div>
   );
 }
 
