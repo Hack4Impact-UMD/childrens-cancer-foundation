@@ -30,6 +30,8 @@ import ReviewerSettings from "./pages/settings/ReviewerSettings";
 import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
+import ApplicationReview from "./pages/application-review/ApplicationReview";
+import ApplicationReviewReadOnly from "./pages/application-review/ApplicationReviewReadOnly";
 
 function App(): JSX.Element {
   return (
@@ -56,6 +58,14 @@ function App(): JSX.Element {
                   element={<AllApplications />}
         	
                 />
+        <Route
+          path="/reviewer/review-application"
+          element={<ReviewerProtectedRoute element={<ApplicationReview />} />}
+        />
+        <Route
+          path="/reviewer/review"
+          element={<ReviewerProtectedRoute element={<ApplicationReviewReadOnly />} />}
+        />
         <Route
           path="/applicant/dashboard"
           element={
