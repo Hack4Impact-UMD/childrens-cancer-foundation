@@ -64,7 +64,7 @@ function App(): JSX.Element {
         {/* Admin dashboard */}
         <Route 
           path="/admin" 
-          element={<></>} 
+          element={<AdminApplicationsDatabase></AdminApplicationsDatabase>}
         />
         Need to change path to create-account after authentication
         <Route 

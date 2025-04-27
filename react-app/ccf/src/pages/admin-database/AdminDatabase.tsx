@@ -12,7 +12,7 @@ interface Application {
     applicationType: string;
     decision: string;
     institution: string;
-    principalInvestigator: string; 
+    principalInvestigator: string;
     cancerType: string;
     amountRequested: string;
     continuationOfFunding: string;
@@ -36,7 +36,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                 { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" },
                 { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" },
                 { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" }
-            ], 
+            ],
             "2022": [
                 { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" },
                 { applicationTitle: "Application Title", applicationType: "Application Type (Next Gen/Research)", decision: "", institution: "", principalInvestigator: "", cancerType: "", amountRequested: "", continuationOfFunding: "" },
@@ -56,7 +56,7 @@ function AdminApplicationsDatabase(): JSX.Element {
         const initialExpandedState: { [key: string]: boolean } = {};
         Object.keys(initialData).forEach(year => {
             initialData[year].forEach((app, index) => {
-                initialExpandedState[${year}-${index}] = false;
+                initialExpandedState[`${year}-${index}`] = false;
             });
         });
         setExpandedApplications(initialExpandedState);
@@ -64,25 +64,25 @@ function AdminApplicationsDatabase(): JSX.Element {
 
     const toggleYear = (year: string) => {
         setCollapseState(prev => ({
-            ...prev, 
+            ...prev,
             [year]: !prev[year]
         }));
     };
 
     const toggleApplication = (year: string, index: number) => {
-        const key = ${year}-${index};
+        const key = `${year}-${index}`;
         setExpandedApplications(prev => ({
-            ...prev, 
+            ...prev,
             [key]: !prev[key]
         }));
     };
 
     const filteredApplications = Object.keys(applicationsData).reduce((acc, year) => {
-        const filtered = applicationsData[year].filter(app => 
-            (filters.applicationCycle ? year === filters.applicationCycle : true) && 
-            (filters.decision ? app.decision === filters.decision : true) && 
-            (filters.grantType ? app.applicationType.includes(filters.grantType) : true) && 
-            (filters.institution ? app.institution === filters.institution : true) && 
+        const filtered = applicationsData[year].filter(app =>
+            (filters.applicationCycle ? year === filters.applicationCycle : true) &&
+            (filters.decision ? app.decision === filters.decision : true) &&
+            (filters.grantType ? app.applicationType.includes(filters.grantType) : true) &&
+            (filters.institution ? app.institution === filters.institution : true) &&
             (searchTerm ? app.applicationTitle.toLowerCase().includes(searchTerm.toLocaleLowerCase()) : true)
         );
 
@@ -91,7 +91,7 @@ function AdminApplicationsDatabase(): JSX.Element {
         }
 
         return acc;
-    }, {} as { [year: string]: Application[] }); 
+    }, {} as { [year: string]: Application[] });
 
     const sidebarItems = [
         {name: "Home", path: "/"},
@@ -159,13 +159,13 @@ function AdminApplicationsDatabase(): JSX.Element {
                                 </div>
 
                                 {!collapseState[year] && (
-                                    <> 
+                                    <>
                                         <div className="applications-container">
                                             {filteredApplications[year].map((app, index) => {
-                                                const isExpanded = expandedApplications[${year}-${index}];
+                                                const isExpanded = expandedApplications[`${year}-${index}`];
                                                 const iconColor = isExpanded ? blueDocument : yellowDocument;
                                                 return (
-                                                    <div key={index} className={single-application-box ${isExpanded ? 'expanded' : ''}}>
+                                                    <div key={index} className={`single-application-box ${isExpanded ? 'expanded' : ''}`}>
                                                         <div className="application-header" onClick={() => toggleApplication(year, index)}>
                                                             <div className="application-info">
                                                                 <img src={iconColor} alt="Document Icon" className="section-icon" />
