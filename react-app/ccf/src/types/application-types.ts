@@ -33,8 +33,6 @@ export interface AssignReviewers {
     secondaryReviewer: string | null;
     status: 'not-started' | 'in-progress' | 'completed';
     expanded: boolean;
-  }
-    grantType: string;
 }
 
 export interface ResearchApplication {
