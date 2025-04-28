@@ -3,8 +3,10 @@ import "./CreateAccApplicant.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
 import { addApplicantUser } from "../../users/usermanager";
-import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
 import { UserData } from "../../types/usertypes";
+import { storage } from "../../index"
+import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { ref, getDownloadURL } from "firebase/storage";
 
 function AccountPageApplicants(): JSX.Element {
   //form inputs
@@ -28,6 +30,10 @@ function AccountPageApplicants(): JSX.Element {
 
   const [institutionError, setInstitutionError] = useState(false);
 
+  const [hanleyImage, setHanleyImage] = useState<string | undefined>(undefined);
+  const [toretskyImage, setToretskyImage] = useState<string | undefined>(undefined);
+  const [yellowOverlay, setYellowOverlay] = useState<string | undefined>(undefined);
+
   const navigate = useNavigate();
 
   useEffect(() => {}, [
@@ -40,6 +46,32 @@ function AccountPageApplicants(): JSX.Element {
     affiliation,
     pwdUnmatched,
   ]);
+
+    useEffect(() => {
+      const loadImages = async () => {
+        try {
+          const hanleyRef = ref(storage, '/images/hanley.png');
+          const toretskyRef = ref(storage, '/images/toretsky.png');
+          const yellowRef = ref(storage, '/images/yellow-background.png');
+  
+          const [hanleyUrl, toretskyUrl, yellowUrl] = await Promise.all([
+            getDownloadURL(hanleyRef),
+            getDownloadURL(toretskyRef),
+            getDownloadURL(yellowRef)
+          ]);
+  
+          setHanleyImage(hanleyUrl);
+          setToretskyImage(toretskyUrl);
+          setYellowOverlay(yellowUrl);
+  
+          console.log(hanleyUrl);
+        } catch (error) {
+          console.error('Error loading images:', error);
+        }
+      };
+  
+      loadImages();
+    }, []);
 
   /* Check if user input satisfies password requirements */
   const checkPasswordRequirements = (password: string) => {
@@ -305,8 +337,15 @@ function AccountPageApplicants(): JSX.Element {
         </div>
 
         <div className="right-container2">
-          {/* remove once given image */}
-          <div className="image-placeholder2"></div>
+          <div className="images-container">
+            <div className="stacked-images">
+              <img src={hanleyImage} alt="Lab research" className="research-image" />
+              <img src={toretskyImage} alt="Doctor with patient" className="research-image" />
+            </div>
+            <div className="yellow-overlay">
+              <img src={yellowOverlay} alt="" className="overlay-image" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
