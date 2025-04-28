@@ -26,7 +26,7 @@ export const uploadResearchApplication = async(
             applicationCycle: currentCycle.name
         }
         
-        const newApplicationRef = doc(db, 'applications', Date.now().toString());
+        const newApplicationRef = doc(db, 'applications');
         await setDoc(newApplicationRef, {
             ...application,
             ...appDetails 
