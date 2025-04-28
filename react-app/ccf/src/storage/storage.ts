@@ -19,8 +19,8 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
     if (!file) {
       throw new Error('No file selected');
     }
-  
-    const storageRef = ref(storage, 'pdfs/' + file.name);
+    const name = crypto.randomUUID()
+    const storageRef = ref(storage, 'pdfs/' + name);
   
     try {
       const snapshot = await uploadBytes(storageRef, file);
@@ -30,7 +30,7 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
       console.log('File available at', downloadURL);
 
       //TODO change this to return the URL of the file, so we can save it in firestore
-      return file.name;
+      return name;
     } catch (error) {
       console.error('Upload failed', error);
       throw error;
