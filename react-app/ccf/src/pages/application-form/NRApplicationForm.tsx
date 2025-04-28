@@ -56,7 +56,7 @@ function NRApplicationForm(): JSX.Element {
             console.log(e)
         }
 
-        navigate('applicant/dashboard')
+        navigate('/applicant/dashboard')
     };
 
     // Validation function to check if all fields are filled
