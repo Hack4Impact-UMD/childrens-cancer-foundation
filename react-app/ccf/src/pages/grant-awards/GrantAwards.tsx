@@ -1,8 +1,10 @@
-import { useState, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import "./GrantAwards.css";
-import { FaDownload, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { FaDownload, FaSortUp, FaSortDown, FaComments, FaTimes } from 'react-icons/fa';
 import Sidebar from "../../components/sidebar/Sidebar";
 import logo from "../../assets/ccf-logo.png";
+import { collection, getDocs, doc, updateDoc, setDoc } from "firebase/firestore";
+import { db } from '../..';
 
 type SortField = 'name' | 'programType' | 'institution' | 'finalScore' | 'requested' | 'recommended';
 type SortDirection = 'asc' | 'desc';
@@ -18,30 +20,62 @@ interface Application {
     comments: string;
 }
 
-function GrantAwards(): JSX.Element {
-    const [applications, setApplications] = useState<Application[]>([
-        {
-            id: "app1",
-            name: "Lee, John",
-            programType: "NeoGen",
-            institution: "Holy Cross Hospital",
-            finalScore: 3.5,
-            requested: "$10,000",
-            recommended: "$10,000",
-            comments: ""
-        },
-        {
-            id: "app2",
-            name: "Smith, Jane",
-            programType: "NeoGen",
-            institution: "Holy Cross Hospital",
-            finalScore: 3.8,
-            requested: "$12,000",
-            recommended: "$10,000",
-            comments: ""
-        }
-    ]);
+interface CommentModalProps {
+    isOpen: boolean;
+    application: Application | null;
+    onClose: () => void;
+    onSave: (id: string, comments: string) => void;
+}
 
+function CommentModal({ isOpen, application, onClose, onSave }: CommentModalProps) {
+    const [comment, setComment] = useState("");
+
+    useEffect(() => {
+        if (application) {
+            setComment(application.comments || "");
+        }
+    }, [application]);
+
+    if (!isOpen || !application) return null;
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-container">
+                <div className="modal-header">
+                    <h3>Add Comments for {application.name}</h3>
+                    <button className="close-button" onClick={onClose}>
+                        <FaTimes />
+                    </button>
+                </div>
+                <div className="modal-body">
+                    <textarea
+                        className="comment-textarea"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Enter your comments here..."
+                        rows={6}
+                    />
+                </div>
+                <div className="modal-footer">
+                    <button className="cancel-button" onClick={onClose}>Cancel</button>
+                    <button
+                        className="save-button"
+                        onClick={() => {
+                            onSave(application.id, comment);
+                            onClose();
+                        }}
+                    >
+                        Save Comments
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function GrantAwards(): JSX.Element {
+    const [applications, setApplications] = useState<Application[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
     const [sortConfig, setSortConfig] = useState<{
         field: SortField;
         direction: SortDirection;
@@ -49,6 +83,11 @@ function GrantAwards(): JSX.Element {
         field: 'finalScore',
         direction: 'asc'
     });
+    const [commentModal, setCommentModal] = useState({
+        isOpen: false,
+        application: null as Application | null
+    });
+    const [savingChanges, setSavingChanges] = useState<{[key: string]: boolean}>({});
 
     const sidebarItems = [
         { name: "Home", path: "/" },
@@ -56,6 +95,44 @@ function GrantAwards(): JSX.Element {
         { name: "Grant Awards", path: "/grant-awards" },
         { name: "Logout", path: "/login" }
     ];
+
+    useEffect(() => {
+        fetchApplications();
+    }, []);
+
+    const fetchApplications = async () => {
+        try {
+            setLoading(true);
+            const applicationsRef = collection(db, "applications");
+            const querySnapshot = await getDocs(applicationsRef);
+
+            const applicationsData: Application[] = [];
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+
+                // Map Firestore data to Application interface
+                const application: Application = {
+                    id: doc.id,
+                    name: data.principalInvestigator || "Unknown",
+                    programType: data.grantType || "Unknown",
+                    institution: data.institution|| "Unknown Institution",
+                    finalScore: data.finalScore || 0,
+                    requested: `$${data.amountRequested || "0"}`,
+                    recommended: `$${data.fundingAmount || "0"}`,
+                    comments: data.comments || ""
+                };
+
+                applicationsData.push(application);
+            });
+
+            setApplications(applicationsData);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching applications:", error);
+            setLoading(false);
+        }
+    };
 
     const handleInputChange = (
         e: ChangeEvent<HTMLInputElement>,
@@ -78,6 +155,66 @@ function GrantAwards(): JSX.Element {
         }
 
         setApplications(updatedApplications);
+        // No firebase updates until save button is clicked
+    };
+
+    const saveChangesToFirestore = async (index: number) => {
+        const appToUpdate = applications[index];
+        const appId = appToUpdate.id;
+
+        try {
+            setSavingChanges(prev => ({...prev, [appId]: true}));
+            const applicationRef = doc(db, "applications", appId);
+
+            // Extract numeric value from recommended amount
+            const recommendedAmount = appToUpdate.recommended.replace(/\$|,/g, '');
+
+            // Determine if application is accepted based on recommended amount
+            const isAccepted = recommendedAmount !== "0" && recommendedAmount !== "";
+
+            // Update the document, including all fields even if they're blank
+            await updateDoc(applicationRef, {
+                finalScore: appToUpdate.finalScore || 0,
+                fundingAmount: recommendedAmount,
+                // Set decision field to "accepted" if recommended amount is not 0
+                decision: isAccepted ? "accepted" : "",
+                // Add any existing comments to ensure they're not lost
+                comments: appToUpdate.comments || ""
+            });
+
+            setSavingChanges(prev => ({...prev, [appId]: false}));
+
+            // Show success indication
+            console.log(`Changes saved for ${appToUpdate.name}`);
+        } catch (error) {
+            console.error("Error updating application:", error);
+            setSavingChanges(prev => ({...prev, [appId]: false}));
+        }
+    };
+
+    const handleCommentsChange = (id: string, comments: string) => {
+        // Just update the local state without saving to Firebase immediately
+        setApplications(prevApps =>
+            prevApps.map(app =>
+                app.id === id ? {...app, comments} : app
+            )
+        );
+
+        // The changes will be saved when the save button is clicked
+    };
+
+    const openCommentModal = (app: Application) => {
+        setCommentModal({
+            isOpen: true,
+            application: app
+        });
+    };
+
+    const closeCommentModal = () => {
+        setCommentModal({
+            isOpen: false,
+            application: null
+        });
     };
 
     const handleSort = (field: SortField) => {
@@ -126,9 +263,9 @@ function GrantAwards(): JSX.Element {
                 `"${app.programType.replace(/"/g, '""')}"`,
                 `"${app.institution.replace(/"/g, '""')}"`,
                 app.finalScore,
-                 `"${String(app.requested).replace(/"/g, '""')}"`,
-                 `"${String(app.recommended).replace(/"/g, '""')}"`,
-                 `"${app.comments.replace(/"/g, '""')}"`
+                `"${String(app.requested).replace(/"/g, '""')}"`,
+                `"${String(app.recommended).replace(/"/g, '""')}"`,
+                `"${app.comments.replace(/"/g, '""')}"`
             ].join(','))
         ].join('\n');
 
@@ -141,6 +278,18 @@ function GrantAwards(): JSX.Element {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const saveAllChanges = async () => {
+        try {
+            for (let i = 0; i < applications.length; i++) {
+                await saveChangesToFirestore(i);
+            }
+            alert("All changes saved successfully!");
+        } catch (error) {
+            console.error("Error saving changes:", error);
+            alert("Error saving changes. Please try again.");
+        }
     };
 
     return (
@@ -159,13 +308,19 @@ function GrantAwards(): JSX.Element {
                         <div className="accounts-table-container">
                             <div className="section-header">
                                 <h2>CURRENT APPLICATIONS</h2>
-                                <button className="download-btn" onClick={handleDownloadCSV}>
-                                    <FaDownload />
-                                </button>
+                                <div className="header-actions">
+                                    <span className="download-text">Download as CSV</span>
+                                    <button className="download-btn" onClick={handleDownloadCSV}>
+                                        <FaDownload />
+                                    </button>
+                                </div>
                             </div>
-                            <div className="table-scroll-wrapper">
-                                <table className="applications-table">
-                                    <thead>
+                            {loading ? (
+                                <div className="loading-indicator">Loading applications...</div>
+                            ) : (
+                                <div className="table-scroll-wrapper">
+                                    <table className="applications-table">
+                                        <thead>
                                         <tr>
                                             <th onClick={() => handleSort('name')} className="sortable">
                                                 Name (Last, First) {getSortIcon('name')}
@@ -186,9 +341,10 @@ function GrantAwards(): JSX.Element {
                                                 Recommended {getSortIcon('recommended')}
                                             </th>
                                             <th>Comments</th>
+                                            <th>Save</th>
                                         </tr>
-                                    </thead>
-                                    <tbody>
+                                        </thead>
+                                        <tbody>
                                         {applications.map((app, index) => (
                                             <tr key={app.id}>
                                                 <td>{app.name}</td>
@@ -212,19 +368,50 @@ function GrantAwards(): JSX.Element {
                                                         className="editable-input currency-input"
                                                     />
                                                 </td>
-                                                <td>{/* Comments cell - currently not editable */}</td>
+                                                <td>
+                                                    <button
+                                                        className="comment-btn"
+                                                        onClick={() => openCommentModal(app)}
+                                                    >
+                                                        <FaComments />
+                                                        {app.comments && <span className="comment-indicator"></span>}
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className="save-row-btn"
+                                                        onClick={() => saveChangesToFirestore(index)}
+                                                        disabled={savingChanges[app.id]}
+                                                    >
+                                                        {savingChanges[app.id] ? 'Saving...' : 'Save'}
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                             <div className="table-footer">
-                                <button className="save-progress-btn">Save Progress</button>
+                                <button
+                                    className="save-progress-btn"
+                                    onClick={saveAllChanges}
+                                    disabled={Object.values(savingChanges).some(v => v)}
+                                >
+                                    Save All Changes
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <CommentModal
+                isOpen={commentModal.isOpen}
+                application={commentModal.application}
+                onClose={closeCommentModal}
+                onSave={handleCommentsChange}
+            />
         </div>
     );
 }

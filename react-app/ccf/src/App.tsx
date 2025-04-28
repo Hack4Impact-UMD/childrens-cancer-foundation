@@ -6,6 +6,8 @@ import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplic
 import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
 import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
 
+import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
+
 import Sidebar from "./components/sidebar/Sidebar";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
 import AdminApplicationsDatabase from "./pages/admin-database/AdminDatabase";
@@ -30,6 +32,8 @@ import ReviewerSettings from "./pages/settings/ReviewerSettings";
 import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
+import ApplicationReview from "./pages/application-review/ApplicationReview";
+import ApplicationReviewReadOnly from "./pages/application-review/ApplicationReviewReadOnly";
 
 function App(): JSX.Element {
   return (
@@ -56,6 +60,14 @@ function App(): JSX.Element {
                   element={<AllApplications />}
         	
                 />
+        <Route
+          path="/reviewer/review-application"
+          element={<ReviewerProtectedRoute element={<ApplicationReview />} />}
+        />
+        <Route
+          path="/reviewer/review"
+          element={<ReviewerProtectedRoute element={<ApplicationReviewReadOnly />} />}
+        />
         <Route
           path="/applicant/dashboard"
           element={
@@ -153,6 +165,11 @@ function App(): JSX.Element {
           path="/admin/settings"
           element={<AdminProtectedRoute element={<AdminSettings />} />}
         />
+        <Route 
+            path={"/assign-reviewers" }
+            element={<AssignReviewers/>}
+         />
+         
         <Route
           path="/reviewer/settings"
           element={<ReviewerProtectedRoute element={<ReviewerSettings />} />}
@@ -167,7 +184,7 @@ function App(): JSX.Element {
         }>
         </Route>
         <Route
-            path="/grant-awards"
+            path="/admin/grant-awards"
             element={<AdminProtectedRoute element={<GrantAwards />} />}
         />
       </Routes>
