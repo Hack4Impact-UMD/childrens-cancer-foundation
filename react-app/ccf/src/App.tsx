@@ -41,7 +41,7 @@ function App(): JSX.Element {
       <Routes>
         <Route path="/Login" element={<Login />} />
         {/* 404 page */}
-        <Route path="*" element={<></>} />
+        <Route path="*" element={<ErrorPage type={"404"}></ErrorPage>} />
         <Route path="/forgot-password" element={<></>} />
         <Route path="/create-account-menu" element={<CreateAccMenu />} />
         {/* Need to change path to create-account after authentication */}
