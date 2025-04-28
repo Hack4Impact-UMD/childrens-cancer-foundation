@@ -7,12 +7,11 @@ import { httpsCallable } from 'firebase/functions';
 // Function to add a new applicant user
 export const addApplicantUser = async (userData: UserData, password: string): Promise<void> => {
   var user : any = null
+  const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password).catch((e) => {
+    console.log("User could not be created: " + e);
+    throw e;
+  });
   try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      userData.email,
-      password
-    );
     const addApplicantRole = httpsCallable(functions, "addApplicantRole");
     user = userCredential.user;
     await setDoc(doc(db, "applicants", user.uid), {
@@ -41,12 +40,11 @@ export const addApplicantUser = async (userData: UserData, password: string): Pr
 // Function to add a new reviewer user
 export const addReviewerUser = async (userData: UserData, password: string): Promise<void> => {
   var user : any = null
+  const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password).catch((e) => {
+    console.log("User could not be created: " + e);
+    throw e;
+  });
   try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      userData.email,
-      password
-    );
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
     const user = userCredential.user;
     await setDoc(doc(db, "reviewers", user.uid), {
@@ -122,6 +120,52 @@ export const getReviewerUser = async (userId: string): Promise<UserData | null> 
     }
   } catch (error) {
     console.error('Error getting reviewer user:', error);
+    throw error;
+  }
+};
+
+// Function to assign a reviewer to an application
+export const assignApplicationToReviewer = async (userId: string, applicationId: string): Promise<void> => {
+  try {
+    const reviewerRef = doc(collection(db, 'reviewerUsers'), userId);
+    
+    //snapshot
+    const reviewerSnap = await getDoc(reviewerRef);
+
+    if (!reviewerSnap.exists()) {
+      throw new Error(`Reviewer with ID ${userId} does not exist`);
+    }
+
+    const reviewerData = reviewerSnap.data();
+    const assignedApplications = reviewerData.assignedApplications || [];
+
+    // Avoid duplicates
+    if (!assignedApplications.includes(applicationId)) {
+      assignedApplications.push(applicationId);
+    }
+
+    await updateDoc(reviewerRef, {
+      assignedApplications,
+    });
+
+    // update the application to include the reviewer too
+    const appRef = doc(collection(db, 'applications'), applicationId);
+    const appSnap = await getDoc(appRef);
+    if (appSnap.exists()) {
+      const appData = appSnap.data();
+      const assignedReviewers = appData.assignedReviewers || [];
+
+      if (!assignedReviewers.includes(userId)) {
+        assignedReviewers.push(userId);
+        await updateDoc(appRef, {
+          assignedReviewers,
+        });
+      }
+    }
+
+    // warning if it didn't work
+  } catch (error) {
+    console.error('Error assigning application to reviewer:', error);
     throw error;
   }
 };
