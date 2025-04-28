@@ -364,7 +364,7 @@ const AssignReviewersPage: React.FC = () => {
 
   const viewReview = (applicationId: string) => {
     // Navigate to a review summary page with the application ID
-    navigate(`/admin/review-application?id=${applicationId}`);
+    navigate(`/reviewer/review-application?id=${applicationId}`);
   };
 
   const confirmReviewers = async (applicationId: string) => {

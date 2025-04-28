@@ -68,7 +68,7 @@ function App(): JSX.Element {
         />
         <Route
           path="/reviewer/review-application"
-          element={<ReviewerProtectedRoute element={<ApplicationReviewReadOnly />} />}
+          element={ <ApplicationReviewReadOnly />}
         />
         <Route
           path="/applicant/dashboard"
@@ -168,7 +168,7 @@ function App(): JSX.Element {
           element={<AdminProtectedRoute element={<AdminSettings />} />}
         />
         <Route 
-            path={"/assign-reviewers" }
+            path={"/admin/assign-reviewers" }
             element={<AssignReviewersPage/>}
          />
          
