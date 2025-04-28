@@ -215,12 +215,14 @@
 
 .ar-remove-reviewer {
   background-color: transparent;
-  color: #a0a0a0;
+  color: #ff0000;
   border: none;
   font-size: 13px;
   font-weight: bold;
   cursor: pointer;
-  margin-left: 6px;
+  white-space: nowrap;
+  width: 20px;
+  border-radius: 20px ;
 }
 
 .ar-reviewer-completed {
@@ -348,4 +350,80 @@
   padding: 2rem;
   text-align: center;
   color: #64748b;
+}
+
+/* Add these styles to your AssignReviewers.css file */
+
+.ar-status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.ar-status-badge.not-started {
+  background-color: #e5e7eb;
+  color: #4b5563;
+}
+
+.ar-status-badge.in-progress {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.ar-status-badge.completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.ar-reviewer-assigned {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ar-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ar-view-reviews-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ar-view-reviews-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.ar-eye-icon {
+  margin-right: 8px;
+}
+
+/* Add styles for the review status within the modal */
+.ar-review-info {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f9fafb;
+  border-radius: 4px;
+}
+
+.ar-review-status-label {
+  font-weight: 600;
+  margin-bottom: 4px;
 }

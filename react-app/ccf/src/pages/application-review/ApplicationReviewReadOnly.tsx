@@ -1,218 +1,403 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "./ApplicationReview.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import logo from "../../assets/ccf-logo.png";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../..";
 
 const PencilIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ marginRight: "4px" }}
-  >
-    <path
-      d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM21.41 6.34l-3.75-3.75-2.53 2.54 3.75 3.75 2.53-2.54z"
-      fill="currentColor"
-    />
-  </svg>
+    <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ marginRight: "4px" }}
+    >
+        <path
+            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM21.41 6.34l-3.75-3.75-2.53 2.54 3.75 3.75 2.53-2.54z"
+            fill="currentColor"
+        />
+    </svg>
 );
 
+interface ReviewerInfo {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    affiliation: string;
+}
+
+interface FeedbackData {
+    significance: string;
+    approach: string;
+    feasibility: string;
+    investigator: string;
+    summary: string;
+    internal: string;
+}
+
+interface ApplicationData {
+    title: string;
+    principalInvestigator: string;
+    grantType: string;
+    pdf?: string;
+    primaryReviewer?: string;
+    secondaryReviewer?: string;
+    primaryReviewFeedback?: FeedbackData;
+    secondaryReviewFeedback?: FeedbackData;
+    primaryReviewScore?: string | number;
+    secondaryReviewScore?: string | number;
+    primaryReviewStatus?: string;
+    secondaryReviewStatus?: string;
+    finalScore?: number;
+}
+
 function ApplicationReviewReadOnly(): JSX.Element {
-  const sidebarItems = [
-    { name: "Home", path: "/" },
-    { name: "Account Settings", path: "/settings" },
-    { name: "Logout", path: "/login" },
-  ];
+    const sidebarItems = [
+        { name: "Home", path: "/" },
+        { name: "Account Settings", path: "/settings" },
+        { name: "Logout", path: "/login" },
+    ];
 
-  const [editingSections, setEditingSections] = useState<{
-    [key: string]: boolean;
-  }>({});
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const applicationId = searchParams.get("id");
 
-  const [feedback, setFeedback] = useState({
-    significance: "Example feedback for significance...",
-    approach: "Example feedback for approach...",
-    feasibility: "Example feedback for feasibility...",
-    investigator: "Example feedback for investigator...",
-    summary: "Example feedback for summary...",
-    internal: "Example internal comments...",
-  });
+    // Log the URL and extracted ID for debugging
+    useEffect(() => {
+        console.log("Current URL:", location.pathname + location.search);
+        console.log("Extracted Application ID:", applicationId);
+    }, [location, applicationId]);
 
-  const handleEdit = (section: string) => {
-    setEditingSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [application, setApplication] = useState<ApplicationData | null>(null);
+    const [currentReviewType, setCurrentReviewType] = useState<'primary' | 'secondary'>('primary');
+    const [primaryReviewer, setPrimaryReviewer] = useState<ReviewerInfo | null>(null);
+    const [secondaryReviewer, setSecondaryReviewer] = useState<ReviewerInfo | null>(null);
 
-  const renderEditButton = (section: string) => (
-    <button
-      onClick={() => handleEdit(section)}
-      className="edit-button"
-      style={{
-        backgroundColor: editingSections[section] ? "#d72626" : "#666666",
-        color: "white",
-        border: "none",
-        padding: "4px 8px",
-        borderRadius: "4px",
-        cursor: "pointer",
-        marginLeft: "auto",
-        fontSize: "12px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "24px",
-        width: "70px",
-        minWidth: "70px",
-      }}
-    >
-      {editingSections[section] ? (
-        "Editing"
-      ) : (
-        <>
-          <PencilIcon />
-          Edit
-        </>
-      )}
-    </button>
-  );
+    // Fetch application and reviewer data
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!applicationId) {
+                setError("No application ID provided");
+                setLoading(false);
+                return;
+            }
 
-  return (
-    <div>
-      <Sidebar links={sidebarItems} />
+            console.log("Fetching data for application ID:", applicationId);
 
-      <div className="dashboard-container">
-        <div className="dashboard-content">
-          <div className="dashboard-header-container">
-            <img src={logo} alt="Logo" className="dashboard-logo" />
-            <h1 className="dashboard-header">Application Review</h1>
-          </div>
+            try {
+                setLoading(true);
 
-          <div className="applications-container">
-            <p className="view-app-link">VIEW APPLICATION</p>
-            <div className="score-section">
-              <p className="score-label">
-                Overall score: (1 <em>exceptional</em> - 5{" "}
-                <em>poor quality, unrepairable</em>)
-              </p>
-              <div className="score-display">Score</div>
+                // Fetch application data
+                const applicationRef = doc(db, "applications", applicationId);
+                const applicationDoc = await getDoc(applicationRef);
+
+                if (!applicationDoc.exists()) {
+                    setError("Application not found");
+                    setLoading(false);
+                    return;
+                }
+
+                const applicationData = applicationDoc.data() as ApplicationData;
+                setApplication({
+                    ...applicationData,
+                    // Ensure feedback objects exist to prevent errors
+                    primaryReviewFeedback: applicationData.primaryReviewFeedback || {
+                        significance: "",
+                        approach: "",
+                        feasibility: "",
+                        investigator: "",
+                        summary: "",
+                        internal: ""
+                    },
+                    secondaryReviewFeedback: applicationData.secondaryReviewFeedback || {
+                        significance: "",
+                        approach: "",
+                        feasibility: "",
+                        investigator: "",
+                        summary: "",
+                        internal: ""
+                    }
+                });
+
+                // Fetch primary reviewer info if exists
+                if (applicationData.primaryReviewer) {
+                    const reviewerDoc = await getDoc(doc(db, "reviewers", applicationData.primaryReviewer));
+                    if (reviewerDoc.exists()) {
+                        const reviewerData = reviewerDoc.data();
+                        setPrimaryReviewer({
+                            id: reviewerDoc.id,
+                            firstName: reviewerData.firstName || "",
+                            lastName: reviewerData.lastName || "",
+                            email: reviewerData.email || "",
+                            affiliation: reviewerData.affiliation || ""
+                        });
+                    }
+                }
+
+                // Fetch secondary reviewer info if exists
+                if (applicationData.secondaryReviewer) {
+                    const reviewerDoc = await getDoc(doc(db, "reviewers", applicationData.secondaryReviewer));
+                    if (reviewerDoc.exists()) {
+                        const reviewerData = reviewerDoc.data();
+                        setSecondaryReviewer({
+                            id: reviewerDoc.id,
+                            firstName: reviewerData.firstName || "",
+                            lastName: reviewerData.lastName || "",
+                            email: reviewerData.email || "",
+                            affiliation: reviewerData.affiliation || ""
+                        });
+                    }
+                }
+
+                setLoading(false);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                setError("Failed to load application data");
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [applicationId]);
+
+    const handleSwitchReviewer = (type: 'primary' | 'secondary') => {
+        setCurrentReviewType(type);
+    };
+
+    const getCurrentFeedback = () => {
+        if (!application) return null;
+
+        return currentReviewType === 'primary'
+            ? application.primaryReviewFeedback
+            : application.secondaryReviewFeedback;
+    };
+
+    const getCurrentScore = () => {
+        if (!application) return "N/A";
+
+        const score = currentReviewType === 'primary'
+            ? application.primaryReviewScore
+            : application.secondaryReviewScore;
+
+        return score !== undefined ? score : "Not scored";
+    };
+
+    const getCurrentReviewer = () => {
+        return currentReviewType === 'primary' ? primaryReviewer : secondaryReviewer;
+    };
+
+    const getCurrentReviewStatus = () => {
+        if (!application) return "unknown";
+
+        return currentReviewType === 'primary'
+            ? application.primaryReviewStatus
+            : application.secondaryReviewStatus;
+    };
+
+    const openApplicationViewer = () => {
+        if (application?.pdf) {
+            window.open(application.pdf, '_blank');
+        } else {
+            alert("Application PDF not available");
+        }
+    };
+
+    if (loading) {
+        return (
+            <div>
+                <Sidebar links={sidebarItems} />
+                <div className="dashboard-container">
+                    <div className="dashboard-content">
+                        <div className="dashboard-header-container">
+                            <img src={logo} alt="Logo" className="dashboard-logo" />
+                            <h1 className="dashboard-header">Review Summary</h1>
+                        </div>
+                        <div className="applications-container">
+                            <p>Loading application data...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
+        );
+    }
 
-            <p className="feedback-heading">
-              Feedback: <br />
-              <span
-                style={{
-                  color: "#d72626",
-                  fontWeight: 900,
-                  display: "block",
-                  marginTop: "5px",
-                }}
-              >
+    if (error) {
+        return (
+            <div>
+                <Sidebar links={sidebarItems} />
+                <div className="dashboard-container">
+                    <div className="dashboard-content">
+                        <div className="dashboard-header-container">
+                            <img src={logo} alt="Logo" className="dashboard-logo" />
+                            <h1 className="dashboard-header">Review Summary</h1>
+                        </div>
+                        <div className="applications-container">
+                            <p className="error-message">{error}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const feedback = getCurrentFeedback();
+    const currentReviewer = getCurrentReviewer();
+    const reviewStatus = getCurrentReviewStatus();
+
+    return (
+        <div>
+            <Sidebar links={sidebarItems} />
+
+            <div className="dashboard-container">
+                <div className="dashboard-content">
+                    <div className="dashboard-header-container">
+                        <img src={logo} alt="Logo" className="dashboard-logo" />
+                        <h1 className="dashboard-header">Review Summary</h1>
+                    </div>
+
+                    <div className="applications-container">
+                        {application && (
+                            <div className="application-info">
+                                <h2>Title: {application.title}</h2>
+                                <p>{"\u00A0"} Applicant: {application.principalInvestigator}</p>
+                                <p>{"\u00A0"} Type: {application.grantType}</p>
+                                {application.finalScore && (
+                                    <p className="final-score">Final Score: {application.finalScore.toFixed(1)}</p>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="reviewer-toggle">
+                            <button
+                                className={`reviewer-toggle-btn ${currentReviewType === 'primary' ? 'active' : ''}`}
+                                onClick={() => handleSwitchReviewer('primary')}
+                                disabled={!primaryReviewer}
+                            >
+                                Primary Reviewer
+                                {primaryReviewer && (
+                                    <span className="reviewer-name">
+                    ({primaryReviewer.firstName} {primaryReviewer.lastName})
+                  </span>
+                                )}
+                            </button>
+                            <button
+                                className={`reviewer-toggle-btn ${currentReviewType === 'secondary' ? 'active' : ''}`}
+                                onClick={() => handleSwitchReviewer('secondary')}
+                                disabled={!secondaryReviewer}
+                            >
+                                Secondary Reviewer
+                                {secondaryReviewer && (
+                                    <span className="reviewer-name">
+                    ({secondaryReviewer.firstName} {secondaryReviewer.lastName})
+                  </span>
+                                )}
+                            </button>
+                        </div>
+
+                        <div className={`review-status-indicator ${reviewStatus}`}>
+                            Review Status: {reviewStatus === 'completed' ? 'Completed' : reviewStatus === 'in-progress' ? 'In Progress' : 'Not Started'}
+                        </div>
+
+                        <p className="view-app-link" onClick={openApplicationViewer}>VIEW APPLICATION</p>
+
+                        <div className="score-section">
+                            <p className="score-label">
+                                Overall score: (1 <em>exceptional</em> - 5{" "}
+                                <em>poor quality, unrepairable</em>)
+                            </p>
+                            <div className="score-display">{getCurrentScore()}</div>
+                        </div>
+
+                        <p className="feedback-heading">
+                            Feedback: <br />
+                            <span className="red-text">
                 ALL information inputted (unless otherwise noted) WILL be sent
                 to applicant.
               </span>
-            </p>
+                        </p>
 
-            {[
-              {
-                key: "significance",
-                label: "SIGNIFICANCE",
-                question:
-                  "How significant is the childhood cancer problem addressed by this proposal? How will the proposed study add to or enhance the currently available methods to prevent, treat or manage childhood cancer?",
-              },
-              {
-                key: "approach",
-                label: "APPROACH",
-                question:
-                  "Is the study hypothesis-driven? Is this a novel hypothesis or research question? How well do existing data support the current hypothesis? Are the aims and objectives appropriate for the hypothesis being tested? Are the methodology and evaluation component adequate to provide a convincing test of the hypothesis? Have the applicants adequately accounted for potential confounders? Are there any methodological weaknesses? If there are methodological weaknesses, how may they be corrected? Is the statistical analysis adequate?",
-              },
-              {
-                key: "feasibility",
-                label: "FEASIBILITY",
-                question:
-                  "Comment on how well the research team is to carry out the study. Is it feasible to carry out the project in the proposed location(s)? Can the project be accomplished within the proposed time period?",
-              },
-              {
-                key: "investigator",
-                label: "INVESTIGATOR",
-                question:
-                  "What has the productivity of the PI been over the past 3 years? If successful, does the track record of the PI indicate that future peer-reviewed funding will allow the project to continue? Are there adequate collaborations for work outside the PI's expertise?",
-              },
-              {
-                key: "summary",
-                label: "SUMMARY",
-                question:
-                  "Please provide any additional comments that would be helpful to the applicant, such as readability, grantsponsorship, etc., especially if the application does not score well.",
-              },
-            ].map(({ key, label, question }) => (
-              <div key={key} className="feedback-section">
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
-                >
-                  <label style={{ flex: 1 }}>
-                    <strong>{label}:</strong> {question}
-                  </label>
-                  {renderEditButton(key)}
-                </div>
-                <div className="feedback-content">
-                  {editingSections[key] ? (
-                    <textarea
-                      value={feedback[key as keyof typeof feedback]}
-                      onChange={(e) =>
-                        setFeedback((prev) => ({
-                          ...prev,
-                          [key]: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter feedback."
-                    />
-                  ) : (
-                    <div className="feedback-text">
-                      {feedback[key as keyof typeof feedback]}
+                        {feedback && [
+                            {
+                                key: "significance",
+                                label: "SIGNIFICANCE",
+                                question:
+                                    "How significant is the childhood cancer problem addressed by this proposal? How will the proposed study add to or enhance the currently available methods to prevent, treat or manage childhood cancer?",
+                            },
+                            {
+                                key: "approach",
+                                label: "APPROACH",
+                                question:
+                                    "Is the study hypothesis-driven? Is this a novel hypothesis or research question? How well do existing data support the current hypothesis? Are the aims and objectives appropriate for the hypothesis being tested? Are the methodology and evaluation component adequate to provide a convincing test of the hypothesis? Have the applicants adequately accounted for potential confounders? Are there any methodological weaknesses? If there are methodological weaknesses, how may they be corrected? Is the statistical analysis adequate?",
+                            },
+                            {
+                                key: "feasibility",
+                                label: "FEASIBILITY",
+                                question:
+                                    "Comment on how well the research team is to carry out the study. Is it feasible to carry out the project in the proposed location(s)? Can the project be accomplished within the proposed time period?",
+                            },
+                            {
+                                key: "investigator",
+                                label: "INVESTIGATOR",
+                                question:
+                                    "What has the productivity of the PI been over the past 3 years? If successful, does the track record of the PI indicate that future peer-reviewed funding will allow the project to continue? Are there adequate collaborations for work outside the PI's expertise?",
+                            },
+                            {
+                                key: "summary",
+                                label: "SUMMARY",
+                                question:
+                                    "Please provide any additional comments that would be helpful to the applicant, such as readability, grantsponsorship, etc., especially if the application does not score well.",
+                            },
+                        ].map(({ key, label, question }) => (
+                            <div key={key} className="feedback-section">
+                                <div className="feedback-header">
+                                    <label>
+                                        <strong>{label}:</strong> {question}
+                                    </label>
+                                </div>
+                                <div className="feedback-content">
+                                    <div className="feedback-text">
+                                        {feedback[key as keyof FeedbackData] || "No feedback provided."}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                        {feedback && (
+                            <div className="internal-section">
+                                <div className="internal-header">
+                                    <p className="internal-label">Internal Comments/Notes:</p>
+                                </div>
+                                <p className="internal-warning">
+                                    <strong>
+                                        Information entered in this textbox was NOT shared with
+                                        the applicant.
+                                    </strong>
+                                    <br />
+                                    It was reserved for reviewer to reference during review call.
+                                </p>
+                                <div className="feedback-text">{feedback.internal || "No internal comments provided."}</div>
+                            </div>
+                        )}
                     </div>
-                  )}
+
+                    <div className="button-group">
+                        <button
+                            className="back-button"
+                            onClick={() => window.history.back()}
+                        >
+                            Back to Applications
+                        </button>
+                    </div>
                 </div>
-              </div>
-            ))}
-
-            <div className="internal-section">
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <p className="internal-label">Internal Comments/Notes:</p>
-                {renderEditButton("internal")}
-              </div>
-              <p className="internal-warning">
-                <strong>
-                  Information entered in this textbox will NOT be shared with
-                  the applicant.
-                </strong>
-                <br />
-                It is reserved for reviewer to reference during review call.
-              </p>
-              {editingSections.internal ? (
-                <textarea
-                  value={feedback.internal}
-                  onChange={(e) =>
-                    setFeedback((prev) => ({
-                      ...prev,
-                      internal: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter Internal Comments."
-                />
-              ) : (
-                <div className="feedback-text">{feedback.internal}</div>
-              )}
             </div>
-          </div>
-
-          <div className="button-group">
-            <button className="submit-button">Submit Changes</button>
-          </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }
 
 export default ApplicationReviewReadOnly;

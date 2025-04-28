@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowDown, FaArrowUp, FaFileAlt, FaSearch, FaTimes } from 'react-icons/fa';
+import { FaArrowDown, FaArrowUp, FaFileAlt, FaSearch, FaTimes, FaEye } from 'react-icons/fa';
 import Sidebar from '../../components/sidebar/Sidebar';
 import Button from '../../components/buttons/Button';
 import logo from "../../assets/ccf-logo.png";
 import './AssignReviewers.css';
 import { collection, getDocs, doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
 import { db } from "../.."; // Assuming you have a firebase config file
+import { useNavigate } from 'react-router-dom';
 
 // Interface definitions
 interface Reviewer {
@@ -26,6 +27,8 @@ interface GrantApplication {
   principalInvestigator: string;
   primaryReviewer?: string;
   secondaryReviewer?: string;
+  primaryReviewStatus?: 'not-started' | 'in-progress' | 'completed';
+  secondaryReviewStatus?: 'not-started' | 'in-progress' | 'completed';
   status: 'not-started' | 'in-progress' | 'completed';
   expanded: boolean;
 }
@@ -105,6 +108,7 @@ const ReviewerSelectionModal: React.FC<{
 };
 
 const AssignReviewersPage: React.FC = () => {
+  const navigate = useNavigate();
   const sidebarLinks = [
     { name: 'Home', path: '/Login' },
     { name: 'Account Settings', path: '/account' },
@@ -135,10 +139,16 @@ const AssignReviewersPage: React.FC = () => {
         applicationsSnapshot.forEach((doc) => {
           const data = doc.data();
 
-          // Determine application status based on reviewers
+          // Determine application status based on reviewers and their review status
           let status: 'not-started' | 'in-progress' | 'completed' = 'not-started';
-          if (data.primaryReviewer && data.secondaryReviewer) {
-            status = data.decision ? 'completed' : 'in-progress';
+
+          const primaryReviewStatus = data.primaryReviewStatus || 'not-started';
+          const secondaryReviewStatus = data.secondaryReviewStatus || 'not-started';
+
+          // Application is completed when both reviewers have completed their reviews
+          if (data.primaryReviewer && data.secondaryReviewer &&
+              primaryReviewStatus === 'completed' && secondaryReviewStatus === 'completed') {
+            status = 'completed';
           } else if (data.primaryReviewer || data.secondaryReviewer) {
             status = 'in-progress';
           }
@@ -150,6 +160,8 @@ const AssignReviewersPage: React.FC = () => {
             principalInvestigator: data.principalInvestigator || 'Unknown',
             primaryReviewer: data.primaryReviewer || undefined,
             secondaryReviewer: data.secondaryReviewer || undefined,
+            primaryReviewStatus: data.primaryReviewStatus || 'not-started',
+            secondaryReviewStatus: data.secondaryReviewStatus || 'not-started',
             status,
             expanded: false
           });
@@ -229,6 +241,7 @@ const AssignReviewersPage: React.FC = () => {
 
       const updateData: { [key: string]: string } = {};
       updateData[`${reviewerType}Reviewer`] = reviewer.document_id;
+      updateData[`${reviewerType}ReviewStatus`] = 'not-started';
 
       await updateDoc(applicationRef, updateData);
 
@@ -257,8 +270,10 @@ const AssignReviewersPage: React.FC = () => {
           const updatedApp = { ...app };
           if (reviewerType === 'primary') {
             updatedApp.primaryReviewer = reviewer.document_id;
+            updatedApp.primaryReviewStatus = 'not-started';
           } else {
             updatedApp.secondaryReviewer = reviewer.document_id;
+            updatedApp.secondaryReviewStatus = 'not-started';
           }
 
           // Update status if needed
@@ -292,10 +307,12 @@ const AssignReviewersPage: React.FC = () => {
       if (!reviewerId) return;
 
       // Update application in Firestore
-      const applicationRef = doc(db, 'grantApplications', applicationId);
+      const applicationRef = doc(db, 'applications', applicationId);
 
-      const updateData: { [key: string]: null } = {};
-      updateData[`${type}Reviewer`] = null;
+      const updateData: { [key: string]: any } = {
+        [`${type}Reviewer`]: null,
+        [`${type}ReviewStatus`]: null
+      };
 
       await updateDoc(applicationRef, updateData);
 
@@ -323,8 +340,10 @@ const AssignReviewersPage: React.FC = () => {
           const updatedApp = { ...app };
           if (type === 'primary') {
             updatedApp.primaryReviewer = undefined;
+            updatedApp.primaryReviewStatus = undefined;
           } else {
             updatedApp.secondaryReviewer = undefined;
+            updatedApp.secondaryReviewStatus = undefined;
           }
 
           // Update status if needed
@@ -341,6 +360,11 @@ const AssignReviewersPage: React.FC = () => {
       console.error('Error removing reviewer:', err);
       setError('Failed to remove reviewer. Please try again.');
     }
+  };
+
+  const viewReview = (applicationId: string) => {
+    // Navigate to a review summary page with the application ID
+    navigate(`/admin/review-application?id=${applicationId}`);
   };
 
   const confirmReviewers = async (applicationId: string) => {
@@ -371,6 +395,23 @@ const AssignReviewersPage: React.FC = () => {
     return reviewer ? `${reviewer.firstName} ${reviewer.lastName}` : 'Unknown Reviewer';
   };
 
+  // Function to check if at least one review is completed
+  const hasCompletedReview = (app: GrantApplication) => {
+    return app.primaryReviewStatus === 'completed' || app.secondaryReviewStatus === 'completed';
+  };
+
+  // Function to render the review status badge
+  const renderReviewStatusBadge = (status?: string) => {
+    if (!status || status === 'not-started') {
+      return <span className="ar-status-badge not-started">Not Started</span>;
+    } else if (status === 'in-progress') {
+      return <span className="ar-status-badge in-progress">In Progress</span>;
+    } else if (status === 'completed') {
+      return <span className="ar-status-badge completed">Completed</span>;
+    }
+    return null;
+  };
+
   const renderApplications = (status: GrantApplication['status']) => {
     const filteredApps = applications.filter(app => app.status === status);
 
@@ -396,8 +437,8 @@ const AssignReviewersPage: React.FC = () => {
               </div>
             </div>
             <span className="ar-expand-icon">
-            {app.expanded ? <FaArrowUp color="#1e3a8a" /> : <FaArrowDown color="white" />}
-          </span>
+              {app.expanded ? <FaArrowUp color="#1e3a8a" /> : <FaArrowDown color="white" />}
+            </span>
           </div>
 
           {app.expanded && (
@@ -429,19 +470,22 @@ const AssignReviewersPage: React.FC = () => {
                           </div>
                         </div>
                       </>
-                  ) : status === 'in-progress' ? (
+                  ) : (
                       <>
                         <div className="ar-reviewer-field">
                           <label>Primary Reviewer:</label>
                           {app.primaryReviewer ? (
                               <div className="ar-reviewer-assigned">
                                 <span className='ar-reviewer'>{getReviewerName(app.primaryReviewer)}</span>
-                                <button
-                                    className="ar-remove-reviewer"
-                                    onClick={() => removeReviewer(app.document_id, 'primary')}
-                                >
-                                  ×
-                                </button>
+                                {renderReviewStatusBadge(app.primaryReviewStatus)}
+                                {status === 'in-progress' && (
+                                    <button
+                                        className="ar-remove-reviewer"
+                                        onClick={() => removeReviewer(app.document_id, 'primary')}
+                                    >
+                                      ×
+                                    </button>
+                                )}
                               </div>
                           ) : (
                               <div className="ar-reviewer-input-container">
@@ -459,12 +503,15 @@ const AssignReviewersPage: React.FC = () => {
                           {app.secondaryReviewer ? (
                               <div className="ar-reviewer-assigned">
                                 <span className='ar-reviewer'>{getReviewerName(app.secondaryReviewer)}</span>
-                                <button
-                                    className="ar-remove-reviewer"
-                                    onClick={() => removeReviewer(app.document_id, 'secondary')}
-                                >
-                                  ×
-                                </button>
+                                {renderReviewStatusBadge(app.secondaryReviewStatus)}
+                                {status === 'in-progress' && (
+                                    <button
+                                        className="ar-remove-reviewer"
+                                        onClick={() => removeReviewer(app.document_id, 'secondary')}
+                                    >
+                                      ×
+                                    </button>
+                                )}
                               </div>
                           ) : (
                               <div className="ar-reviewer-input-container">
@@ -478,33 +525,34 @@ const AssignReviewersPage: React.FC = () => {
                           )}
                         </div>
                       </>
-                  ) : (
-                      <>
-                        <div className="ar-reviewer-field">
-                          <label>Primary Reviewer:</label>
-                          <span className="ar-reviewer-completed">{getReviewerName(app.primaryReviewer)}</span>
-                        </div>
-                        <div className="ar-reviewer-field">
-                          <label>Secondary Reviewer:</label>
-                          <span className="ar-reviewer-completed">{getReviewerName(app.secondaryReviewer)}</span>
-                        </div>
-                      </>
                   )}
                 </div>
 
-                {(status === 'not-started' || status === 'in-progress') && (
-                    <div className="ar-confirm-btn-container">
+                <div className="ar-action-buttons">
+                  {/* View Reviews button - show if at least one review is completed */}
+                  {hasCompletedReview(app) && (
+                      <button
+                          className="ar-view-reviews-btn"
+                          onClick={() => viewReview(app.document_id)}
+                      >
+                        <FaEye className="ar-eye-icon" /> View Reviews
+                      </button>
+                  )}
+
+                  {/* Confirm Reviewers button - only for not-started and in-progress */}
+                  {(status === 'not-started' || status === 'in-progress') && (
                       <Button
                           variant="blue"
                           width="100%"
                           height="40px"
                           borderRadius="8px"
                           onClick={() => confirmReviewers(app.document_id)}
+                          disabled={!app.primaryReviewer || !app.secondaryReviewer}
                       >
                         Confirm Reviewers
                       </Button>
-                    </div>
-                )}
+                  )}
+                </div>
               </div>
           )}
         </div>

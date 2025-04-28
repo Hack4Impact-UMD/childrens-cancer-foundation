@@ -63,11 +63,11 @@ function App(): JSX.Element {
         	
                 />
         <Route
-          path="/reviewer/review-application"
+          path="/reviewer/review"
           element={<ReviewerProtectedRoute element={<ApplicationReview />} />}
         />
         <Route
-          path="/reviewer/review"
+          path="/reviewer/review-application"
           element={<ReviewerProtectedRoute element={<ApplicationReviewReadOnly />} />}
         />
         <Route
