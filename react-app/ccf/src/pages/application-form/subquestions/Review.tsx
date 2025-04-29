@@ -9,7 +9,7 @@ interface ReviewProps {
 }
 
 /* Still need to add useState from information*/
-function Review({ type, formData, hideFile}: ReviewProps): JSX.Element {
+function ReviewApplication({ type, formData, hideFile}: ReviewProps): JSX.Element {
   if (type === "NonResearch") return (
     <div className="review-form-container">
     <div className="proposal-text">
@@ -61,4 +61,4 @@ function Review({ type, formData, hideFile}: ReviewProps): JSX.Element {
   );
 }
 
-export default Review;
+export default ReviewApplication;

@@ -2,7 +2,7 @@ import { ApplicationDetails, ResearchApplication, NonResearchApplication } from 
 import { Modal } from "../modal/modal";
 import './CoverPageModal.css'
 import '../../pages/application-form/subquestions/SubForm.css'
-import Review from "../../pages/application-form/subquestions/Review";
+import ReviewApplication from "../../pages/application-form/subquestions/Review";
 
 interface CoverPageModalProps {
     application: ResearchApplication & ApplicationDetails;
@@ -14,7 +14,7 @@ const CoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps) => 
 
     const researchCoverPage = (
       <div>
-        <Review type={application.grantType} formData={application} hideFile={true}></Review>
+        <ReviewApplication type={application.grantType} formData={application} hideFile={true}></ReviewApplication>
       </div>
     )
 

@@ -37,6 +37,18 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
     }
   };
 
+  export const downloadPDFByName = async (name: string): Promise<{ name: string, url: string}> => {
+    try {
+      const files: Array<{ name: string, url: string }> = [];
+      const fileRef = ref(storage, `pdfs/${name}`);
+      const downloadURL = await getDownloadURL(fileRef);
+      return { name, url: downloadURL }
+    } catch (error) {
+      console.error("Error retrieving file:", error);
+      throw error;
+    }
+  }
+
 export const downloadPDFsByName = async (names: string[]): Promise<Array<{ name: string, url: string }>> => {
   try {
     const files: Array<{ name: string, url: string }> = [];
@@ -51,7 +63,6 @@ export const downloadPDFsByName = async (names: string[]): Promise<Array<{ name:
     console.error("Error listing files:", error);
     throw error;
   }
-  
 }
 
   export const listAndDownloadAllPDFs = async (): Promise<Array<{ name: string, url: string }>> => {

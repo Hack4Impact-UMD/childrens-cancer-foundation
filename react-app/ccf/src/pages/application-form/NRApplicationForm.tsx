@@ -4,7 +4,7 @@ import Breadcrumb from './Components/Breadcrumbs';
 import { useNavigate } from 'react-router-dom';
 import NRInformation from './subquestions/NRInformation';
 import NRNarrative from './subquestions/NRNarrative';
-import Review from './subquestions/Review';
+import ReviewApplication from './subquestions/Review';
 import AboutGrant from './subquestions/AboutGrant';
 import { NonResearchApplication } from '../../types/application-types';
 import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
@@ -73,7 +73,7 @@ function NRApplicationForm(): JSX.Element {
             case 3:
                 return <NRNarrative formData={formData} setFormData={setFormData} />;
             case 4:
-                return <Review type={"NonResearch"} formData={formData} />;
+                return <ReviewApplication type={"NonResearch"} formData={formData} />;
             default:
                 return null;
         }
