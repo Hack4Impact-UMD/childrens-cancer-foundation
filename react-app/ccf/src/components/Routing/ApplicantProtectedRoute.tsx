@@ -29,7 +29,7 @@ const ApplicantProtectedRoute: React.FC<ApplicantProtectedRouteProps> = ({ eleme
     return <div>Loading...</div>; 
   }
 
-  return isApplicant ? <>{element}</> : <Navigate to="/login" replace />;
+  return isApplicant ? <>{element}</> : <Navigate to="/protected-page" replace />;
 };
 
 export default ApplicantProtectedRoute;

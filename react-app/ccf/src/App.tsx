@@ -52,12 +52,14 @@ function App(): JSX.Element {
           } 
         />
         <Route path="/reviewer/dashboard" element={
-            <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
+            <ReviewerProtectedRoute element = {<ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>} />
         }>
         </Route>
         <Route	
                   path="/reviewer/dashboard/all-applications"
-                  element={<AllApplications />}
+                  element={
+                    <ReviewerProtectedRoute element={<AllApplications />} />
+                  }
         	
                 />
         <Route
@@ -90,18 +92,18 @@ function App(): JSX.Element {
 
         {/* Admin dashboard */}
         <Route 
-          path="/admin" 
-          element={<AdminApplicationsDatabase></AdminApplicationsDatabase>}
+          path="/admin"
+          element={<AdminProtectedRoute element={<AdminApplicationsDatabase></AdminApplicationsDatabase>} />}
         />
         Need to change path to create-account after authentication
         <Route 
           path="/admin-database"
-          element={<AdminApplicationsDatabase />}
+          element={<AdminProtectedRoute element={<AdminApplicationsDatabase />} />}
         />
         <Route
           path="/applicant/dashboard" 
           element={
-            <ApplicantUsersDashboard />
+            <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
           } 
         />    
         {/* Admin View All Accounts Page*/}   
@@ -129,26 +131,26 @@ function App(): JSX.Element {
         <Route
           path="/reviewer/create-account" 
           element={
-            <AccountPageReviewers />
+            <ReviewerProtectedRoute element={<AccountPageReviewers />} />
           } 
         />
         <Route
           path="/applicant/post-grant-report" 
           element={
-            <PostGrantReport />
+            <ApplicantProtectedRoute element={<PostGrantReport />} />
           }
         />         
         <Route
             path="/applicant/application-form/research"
-            element={<ApplicationForm type="Research" />}
+            element={<ApplicantProtectedRoute element={<ApplicationForm type="Research" />} />}
         />
         <Route
             path="/applicant/application-form/nextgen"
-            element={<ApplicationForm type="NextGen" />}
+            element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
         />
         <Route
             path="/applicant/application-form/nonresearch"
-            element={<NRApplicationForm />}
+            element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
         />
         {/* Admin dashboard */}
         <Route path="/admin" element={<></>} />
@@ -167,7 +169,7 @@ function App(): JSX.Element {
         />
         <Route 
             path={"/assign-reviewers" }
-            element={<AssignReviewers/>}
+            element={<AdminProtectedRoute element={<AssignReviewers />} />}
          />
          
         <Route
