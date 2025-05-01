@@ -5,6 +5,7 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import logo from "../../assets/ccf-logo.png";
 import { collection, getDocs, doc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from '../..';
+import { getSidebarbyRole } from '../../types/sidebar-types';
 
 type SortField = 'name' | 'programType' | 'institution' | 'finalScore' | 'requested' | 'recommended';
 type SortDirection = 'asc' | 'desc';
@@ -89,12 +90,7 @@ function GrantAwards(): JSX.Element {
     });
     const [savingChanges, setSavingChanges] = useState<{[key: string]: boolean}>({});
 
-    const sidebarItems = [
-        { name: "Home", path: "/" },
-        { name: "Account Settings", path: "/settings" },
-        { name: "Grant Awards", path: "/grant-awards" },
-        { name: "Logout", path: "/login" }
-    ];
+    const sidebarItems = getSidebarbyRole("admin");
 
     useEffect(() => {
         fetchApplications();

@@ -48,12 +48,6 @@ function ApplicantUsersDashboard(): JSX.Element {
             answer: 'Pass a list of questions and answers as props to the FAQComponent.'
         },
     ];
-    // const sidebarItems = [
-    //     {name: "Home", path: "/"},
-    //     {name: "Account Settings", path: "/settings"},
-    //     {name: "Post-Grant Report", path: "/post-grant-report"},
-    //     {name: "Logout", path: "/login"}
-    // ];
 
     const navigate = useNavigate();
 
