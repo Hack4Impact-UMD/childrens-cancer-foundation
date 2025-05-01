@@ -1,6 +1,7 @@
 import { collection, query, where, getDocs, orderBy, Query, DocumentData } from 'firebase/firestore';
-import { db } from '../index';
-import { ApplicationDetails, ApplicationInfo, ApplicationQuestions, NonResearchApplication, ResearchApplication } from '../types/application-types';
+import { auth, db } from '../index';
+import { Application, ApplicationDetails, ApplicationInfo, ApplicationQuestions, NonResearchApplication, ResearchApplication } from '../types/application-types';
+import { getCurrentCycle } from './application-cycle';
 
 export interface FilterOptions {
     date?: string;
@@ -45,4 +46,19 @@ export async function getFilteredApplications(filters: FilterOptions): Promise<A
         console.error('Error fetching filtered applications:', error);
         throw error;
     }
-} 
+}
+
+export async function getUsersCurrentCycleAppplications(): Promise<Array<Application>> {
+    const user = auth.currentUser
+    const uid = user?.uid
+    const currentCycle = await getCurrentCycle()
+    let q: Query<DocumentData> = collection(db, 'applications');
+    console.log(currentCycle)
+    q = query(q, where("creatorId", "==", uid), where("applicationCycle", "==", currentCycle.name))
+    const querySnapshot = await getDocs(q)
+    const applications = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    })) as unknown as Array<Application>;
+    return applications;
+}
