@@ -168,8 +168,8 @@ function App(): JSX.Element {
           element={<AdminProtectedRoute element={<AdminSettings />} />}
         />
         <Route 
-            path={"/assign-reviewers" }
-            element={<AdminProtectedRoute element={<AssignReviewers />} />}
+            path={"/admin/assign-reviewers" }
+            element={<AssignReviewers/>}
          />
          
         <Route
