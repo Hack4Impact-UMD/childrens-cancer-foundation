@@ -156,38 +156,40 @@ function AdminEditInformation(): JSX.Element {
                                 />
                             </LocalizationProvider>
                         </div>
-                        <Button
-                            variant="contained"
-                            onClick={async () => {
-                                const success = await updateCurrentCycleDeadlines({
-                                    nextGenDate,
-                                    researchDate,
-                                    nonResearchDate
-                                });
+                        
+                            <Button
+                                variant="contained"
+                                onClick={async () => {
+                                    const success = await updateCurrentCycleDeadlines({
+                                      nextGenDate,
+                                      researchDate,
+                                      nonResearchDate
+                                    });
+                                    
+                                    //debug
+                                    if (success) {
+                                      console.log("Application deadlines updated.");
+                                      setAppDeadlineMessage("Application Deadlines Updated!");
+                                          setTimeout(() => setAppDeadlineMessage(null), 3000); // clear after 3 seconds
+                                    }
+                                  }}
+                                sx={{
+                                    backgroundColor: '#79747E',
+                                    fontFamiy: 'Roboto, sans-serif',
+                                    textTransform: 'none',
+                                    height: '40px',
+                                    fontSize: '1.25rem',
+                                    fontWeight: 'normal',
+                                    borderRadius: '10px',
+                                    '&:hover': {
+                                        backgroundColor: '#003E83'
+                                    },
+                                    marginBottom: '10px',
+                                    marginTop: '10px'
+                                }}
 
-                                //debug
-                                if (success) {
-                                    console.log("Application deadlines updated.");
-                                    setAppDeadlineMessage("Application Deadlines Updated!");
-                                    setTimeout(() => setAppDeadlineMessage(null), 3000); // clear after 3 seconds
-                                }
-                            }}
-                            sx={{
-                                backgroundColor: '#79747E',
-                                fontFamiy: 'Roboto, sans-serif',
-                                textTransform: 'none',
-                                height: '40px',
-                                fontSize: '1.25rem',
-                                fontWeight: 'normal',
-                                borderRadius: '10px',
-                                '&:hover': {
-                                    backgroundColor: '#003E83'
-                                },
-                                marginBottom: '10px',
-                                marginTop: '10px'
-                            }}
-
-                        >{appDeadlineMessage ?? "Set Application Deadline"}</Button>
+                            >{appDeadlineMessage ?? "Set Application Deadline"}</Button>
+                        
                     </div>
                     <div className="deadline-interactives">
                         <h2>Reviews:</h2>
@@ -224,36 +226,36 @@ function AdminEditInformation(): JSX.Element {
                                 />
                             </LocalizationProvider>
                         </div>
-                        <Button
-                            variant="contained"
-                            onClick={async () => {
-                                const success = await updateCurrentCycleDeadlines({
-                                    reviewerDate
-                                });
+                            <Button
+                                variant="contained"
+                                onClick={async () => {
+                                    const success = await updateCurrentCycleDeadlines({
+                                      reviewerDate
+                                    });
+                                    
+                                    //debug
+                                    if (success) {
+                                      console.log("Reviewer deadline updated.");
+                                      setRevDeadlineMessage("Reviewer Deadlines Updated!");
+                                          setTimeout(() => setRevDeadlineMessage(null), 3000); // clear after 3 seconds
+                                    }
+                                  }}
+                                sx={{
+                                    backgroundColor: '#79747E',
+                                    fontFamiy: 'Roboto, sans-serif',
+                                    textTransform: 'none',
+                                    height: '40px',
+                                    fontSize: '1.25rem',
+                                    fontWeight: 'normal',
+                                    borderRadius: '10px',
+                                    '&:hover': {
+                                        backgroundColor: '#003E83'
+                                    },
+                                    marginBottom: '10px',
+                                    marginTop: '10px'
+                                }}
 
-                                //debug
-                                if (success) {
-                                    console.log("Reviewer deadline updated.");
-                                    setRevDeadlineMessage("Reviewer Deadlines Updated!");
-                                    setTimeout(() => setRevDeadlineMessage(null), 3000); // clear after 3 seconds
-                                }
-                            }}
-                            sx={{
-                                backgroundColor: '#79747E',
-                                fontFamiy: 'Roboto, sans-serif',
-                                textTransform: 'none',
-                                height: '40px',
-                                fontSize: '1.25rem',
-                                fontWeight: 'normal',
-                                borderRadius: '10px',
-                                '&:hover': {
-                                    backgroundColor: '#003E83'
-                                },
-                                marginBottom: '10px',
-                                marginTop: '10px'
-                            }}
-
-                        >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
+                            >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
                     </div>
                 </div>
             </div>
