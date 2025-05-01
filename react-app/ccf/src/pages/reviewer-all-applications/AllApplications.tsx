@@ -120,7 +120,7 @@ function AllApplications(): JSX.Element {
                     </div>
                   </div>
                   </div>
-                  <CoverPageModal onClose={() => {setOpenModal(null)}} isOpen={coverSheet == openModal} application={coverSheet as ResearchApplication & ApplicationDetails}></CoverPageModal>
+                  <CoverPageModal onClose={() => {setOpenModal(null)}} isOpen={coverSheet == openModal} application={coverSheet}></CoverPageModal>
                 </div>
               )
             )}

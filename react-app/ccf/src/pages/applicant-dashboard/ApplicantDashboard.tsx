@@ -13,6 +13,7 @@ import { getSidebarbyRole } from '../../types/sidebar-types';
 import { getUsersCurrentCycleAppplications } from "../../backend/application-filters";
 import { Application } from "../../types/application-types";
 import {firstLetterCap} from "../../utils/stringfuncs"
+import CoverPageModal from "../../components/applications/CoverPageModal";
 
 function ApplicantUsersDashboard(): JSX.Element {
     const sidebarItems = getSidebarbyRole('applicant');
@@ -27,6 +28,7 @@ function ApplicantUsersDashboard(): JSX.Element {
 
     const [completedApplications, setCompletedApplications] = useState<Application[]>();
     const [inProgressApplications, setInProgressApplications] = useState<Application[]>([]);
+    const [openModal, setOpenModal] = useState<Application | null>();
 
     useEffect(() => {
         getUsersCurrentCycleAppplications().then((apps) => {
@@ -47,6 +49,10 @@ function ApplicantUsersDashboard(): JSX.Element {
             answer: 'Pass a list of questions and answers as props to the FAQComponent.'
         },
     ];
+
+    const closeModal = () => {
+        setOpenModal(null)
+    }
 
     const navigate = useNavigate();
 
@@ -102,14 +108,15 @@ function ApplicantUsersDashboard(): JSX.Element {
                                             <h3>COMPLETED APPLICATIONS:</h3>
                                             {completedApplications.map((application, index) => (
                                                 <div key={index} className="ApplicantDashboard-single-application-box">
-                                                    <div className="application-info">
+                                                    <div className="application-info" >
                                                         <FaFileAlt className="application-icon"/>
                                                         <p>{firstLetterCap(application.grantType)}</p>
                                                     </div>
-                                                    <div className="ApplicantDashboard-application-status">
+                                                    <div className="ApplicantDashboard-application-status" onClick={() => {setOpenModal(application)}}>
                                                         <p>{firstLetterCap(application.decision)}</p>
                                                         <FaArrowRight className="application-status-icon"/>
                                                     </div>
+                                                    <CoverPageModal application={application} isOpen={openModal == application} onClose={closeModal}></CoverPageModal>
                                                 </div>
                                             ))}
                                             <hr className="red-line"/>
