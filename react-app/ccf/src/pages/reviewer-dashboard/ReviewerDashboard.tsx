@@ -16,6 +16,7 @@ interface FAQItem {
     question: string;
     answer: string;
 }
+//TODO alter this to use Revies collection
 
 interface ReviewerProp {
     faqData: FAQItem[];
