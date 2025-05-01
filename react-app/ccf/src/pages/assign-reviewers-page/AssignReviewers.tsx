@@ -5,16 +5,10 @@ import Button from '../../components/buttons/Button';
 import logo from "../../assets/ccf-logo.png";
 import { AssignReviewers } from '../../types/application-types';  
 import './AssignReviewers.css';
+import { getSidebarbyRole } from '../../types/sidebar-types';
 
 const AssignReviewersPage: React.FC = () => {
-  const sidebarLinks = [
-    { name: 'Home', path: '/Login' },
-    { name: 'Account Settings', path: '/account' },
-    { name: 'All Accounts', path: '/all' },
-    { name: 'Assign Reviewers', path: '/assign-reviewers' },
-    { name: 'Assign Awards', path: '/assign-awards' },
-    { name: 'Database', path: '/database' },
-  ];
+  const sidebarLinks = getSidebarbyRole("admin")
 
   const [applications, setApplications] = useState<AssignReviewers[]>([
     { 
