@@ -60,6 +60,8 @@ export interface ResearchApplication {
     continuationYears?: string;
 }
 
+export type Application = (ResearchApplication | NonResearchApplication) & ApplicationDetails
+
 export interface NonResearchApplication {
     title: string;
     requestor: string;
@@ -79,4 +81,5 @@ export interface ApplicationDetails {
     grantType: "research" | "nextgen" | "nonresearch";
     file: string;
     applicationCycle: string;
+    submitTime: Date;
 }
