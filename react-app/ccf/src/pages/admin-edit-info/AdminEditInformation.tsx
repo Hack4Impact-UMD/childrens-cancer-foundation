@@ -156,7 +156,7 @@ function AdminEditInformation(): JSX.Element {
                                 />
                             </LocalizationProvider>
                         </div>
-                        <div className="save-button">
+                        
                             <Button
                                 variant="contained"
                                 onClick={async () => {
@@ -189,7 +189,7 @@ function AdminEditInformation(): JSX.Element {
                                 }}
 
                             >{appDeadlineMessage ?? "Set Application Deadline"}</Button>
-                        </div>
+                        
                     </div>
                     <div className="deadline-interactives">
                         <h2>Reviews:</h2>
@@ -226,7 +226,6 @@ function AdminEditInformation(): JSX.Element {
                                 />
                             </LocalizationProvider>
                         </div>
-                        <div className="save-button">
                             <Button
                                 variant="contained"
                                 onClick={async () => {
@@ -257,7 +256,6 @@ function AdminEditInformation(): JSX.Element {
                                 }}
 
                             >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
-                        </div>
                     </div>
                 </div>
             </div>
