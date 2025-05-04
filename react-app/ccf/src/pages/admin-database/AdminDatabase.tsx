@@ -11,6 +11,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../..";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
+import { getFilteredApplications } from "../../backend/application-filters";
 
 function AdminApplicationsDatabase(): JSX.Element {
     const [applicationsData, setApplicationsData] = useState<{ [year: string]: Application[] }>({});
@@ -29,20 +30,15 @@ function AdminApplicationsDatabase(): JSX.Element {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const applicationsRef = collection(db, "applications");
-                const querySnapshot = await getDocs(applicationsRef);
-                console.log(querySnapshot.docs);
+                const apps = await getFilteredApplications({})
                 // Group applications by year
                 const applications: { [year: string]: Application[] } = {};
                 const institutions = new Set<string>();
                 const years = new Set<string>();
 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
+                apps.forEach((data) => {
                     // Extract the year from timestamp or application cycle field
-                    const timestamp = Number(doc.id);
-                    const date = new Date(timestamp);
-                    const year = data.applicationCycle?.split('-')[0] || date.getFullYear().toString();
+                    const year = data.applicationCycle
 
                     // Map Firestore data to Application interface
                     const application: Application = data as Application
@@ -178,6 +174,8 @@ function AdminApplicationsDatabase(): JSX.Element {
                             ))}
                         </select>
                     </div>
+                    
+                    {Object.keys(filteredApplications).length == 0 ? "No applications matching filters" : 
 
                     <div className="dashboard-sections-content">
                         {Object.keys(filteredApplications).sort((a, b) => Number(b) - Number(a)).map((year) => (
@@ -277,6 +275,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                             </div>
                         ))}
                     </div>
+                }
                 </div>
             </div>
         </div>
