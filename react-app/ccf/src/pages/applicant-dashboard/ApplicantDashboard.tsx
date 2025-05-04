@@ -14,6 +14,8 @@ import { getUsersCurrentCycleAppplications } from "../../backend/application-fil
 import { Application } from "../../types/application-types";
 import {firstLetterCap} from "../../utils/stringfuncs"
 import CoverPageModal from "../../components/applications/CoverPageModal";
+import { FAQItem } from "../../types/faqTypes";
+import { getFAQs } from "../../backend/faq-handler";
 
 function ApplicantUsersDashboard(): JSX.Element {
     const sidebarItems = getSidebarbyRole('applicant');
@@ -29,26 +31,18 @@ function ApplicantUsersDashboard(): JSX.Element {
     const [completedApplications, setCompletedApplications] = useState<Application[]>();
     const [inProgressApplications, setInProgressApplications] = useState<Application[]>([]);
     const [openModal, setOpenModal] = useState<Application | null>();
+    const [faqData, setFAQData] = useState<FAQItem[]>([]);
 
     useEffect(() => {
         getUsersCurrentCycleAppplications().then((apps) => {
             setCompletedApplications(apps)
         }).catch((e) => {
             console.error(e)
+        });
+        getFAQs().then(faqs => {
+            setFAQData(faqs)
         })
     }, []);
-
-    const faqData = [
-        {question: 'What is React?', answer: 'React is a JavaScript library for building user interfaces.'},
-        {
-            question: 'What is TypeScript?',
-            answer: 'TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.'
-        },
-        {
-            question: 'How do I use this component?',
-            answer: 'Pass a list of questions and answers as props to the FAQComponent.'
-        },
-    ];
 
     const closeModal = () => {
         setOpenModal(null)
