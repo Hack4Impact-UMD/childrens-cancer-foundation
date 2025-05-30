@@ -24,7 +24,6 @@ export const adminSidebar: SideBarTypes[] = [
 export const reviewerSidebar: SideBarTypes[] = [
     {name: 'Home', path: '/reviewer/dashboard'},
     {name: 'Account Settings', path: '/reviewer/settings'},
-    { name: 'Assigned Applications', path: '/reviewer/assigned-applications' },
     { name: 'All Applications', path: '/reviewer/dashboard/all-applications' },
     { name: 'Logout', path: '/login'}
 ];
@@ -32,7 +31,6 @@ export const reviewerSidebar: SideBarTypes[] = [
 export const applicantSidebar: SideBarTypes[] = [
     {name: 'Home', path: '/applicant/dashboard'},
     {name: 'Account Settings', path: '/applicant/settings'},
-    {name: 'Applications', path: '/applicant/applications'},
     { name: 'Logout', path: '/login'}
 ];
 

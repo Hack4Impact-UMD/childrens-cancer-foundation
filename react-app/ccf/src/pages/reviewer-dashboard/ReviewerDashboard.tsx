@@ -101,12 +101,6 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
         ]);
     }, []);
 
-    // const sidebarItems = [
-    //     {name: "Home", path: "/"},
-    //     {name: "Account Settings", path: "/settings"},
-    //     {name: "Logout", path: "/login"}
-    //   ];
-
     const faqData2 = [
         {question: 'What is React?', answer: 'React is a JavaScript library for building user interfaces.'},
         {

@@ -4,20 +4,21 @@ import dayjs from "dayjs";
 import ApplicationCycle from "../types/applicationCycle-types"
 
 export const getCurrentCycle = async (): Promise<ApplicationCycle> => {
-    const q = query(collection(db, "applicationCycles"), where("current", "==", true), limit(1))
+  const q = query(collection(db, "applicationCycles"), where("current", "==", true), limit(1))
 
-    const snap = await getDocs(q);
-    
-    return snap.docs[0].data() as ApplicationCycle
+  const snap = await getDocs(q);
+
+  return snap.docs[0].data() as ApplicationCycle
 }
 
-export const getAllCycles = async () : Promise<Array<ApplicationCycle>> => {
-    const q = query(collection(db, "applicationCycles"))
 
-    const snap = await getDocs(q);
-    return snap.docs.map((d) => {
-        return d.data() as ApplicationCycle
-    })
+export const getAllCycles = async (): Promise<Array<ApplicationCycle>> => {
+  const q = query(collection(db, "applicationCycles"))
+
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => {
+    return d.data() as ApplicationCycle
+  })
 }
 
 // update application cycle deadlines
@@ -30,7 +31,7 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
   try {
     const querySnapshot = await getDocs(collection(db, "applicationCycles"));
     let currentDocId = "";
-    
+
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
       if (data.current === true) {
@@ -40,11 +41,11 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
 
     //catch error
     if (!currentDocId) throw new Error("No current application cycle found.");
-    
-    
+
+
     //make applications due at 11:59
     const toTimestampAt1159PM = (date: dayjs.Dayjs) =>
-         Timestamp.fromDate(date.hour(23).minute(59).second(0).millisecond(0).toDate());
+      Timestamp.fromDate(date.hour(23).minute(59).second(0).millisecond(0).toDate());
 
 
     const updateData: any = {};

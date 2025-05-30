@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./ApplicationReview.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import logo from "../../assets/ccf-logo.png";
+import { getSidebarbyRole } from "../../types/sidebar-types";
 
 const PencilIcon = () => (
   <svg
@@ -20,11 +21,7 @@ const PencilIcon = () => (
 );
 
 function ApplicationReviewReadOnly(): JSX.Element {
-  const sidebarItems = [
-    { name: "Home", path: "/" },
-    { name: "Account Settings", path: "/settings" },
-    { name: "Logout", path: "/login" },
-  ];
+  const sidebarItems = getSidebarbyRole("reviewer");
 
   const [editingSections, setEditingSections] = useState<{
     [key: string]: boolean;

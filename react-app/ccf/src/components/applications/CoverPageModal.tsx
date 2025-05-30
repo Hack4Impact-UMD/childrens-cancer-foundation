@@ -1,28 +1,42 @@
-import { ApplicationDetails, ResearchApplication, NonResearchApplication } from "../../types/application-types";
+import { ApplicationDetails, ResearchApplication, NonResearchApplication, Application } from "../../types/application-types";
 import { Modal } from "../modal/modal";
 import './CoverPageModal.css'
 import '../../pages/application-form/subquestions/SubForm.css'
-import ReviewApplication from "../../pages/application-form/subquestions/Review";
+import Review from "../../pages/application-form/subquestions/Review";
+import { useEffect, useState } from "react";
+import { getDownloadURL } from "firebase/storage";
+import { downloadPDFsByName } from "../../storage/storage";
 
 interface CoverPageModalProps {
-    application: ResearchApplication & ApplicationDetails;
+    application: Application;
     isOpen: boolean;
     onClose: () => void;
 }
 
 const CoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps) => {
 
+  const [pdfLink, setPdfLink] = useState<any>();
+
+    useEffect(() => {
+      downloadPDFsByName([application.file]).then((links) => {
+        if (links && links[0]) {
+          setPdfLink(links[0])
+        }
+      }).catch((e) => {
+        console.error(e)
+      })
+    },[])
+
     const researchCoverPage = (
       <div>
-        <ReviewApplication type={application.grantType} formData={application} hideFile={true}></ReviewApplication>
+        {pdfLink ? <a target="_blank" href={pdfLink.url}>{pdfLink.name}</a>: ""}
+        <Review type={application.grantType} formData={application} hideFile={true}></Review>
       </div>
     )
 
     
     return (
-        <div>
-            <Modal isOpen={isOpen} onClose={onClose} children={researchCoverPage}></Modal>
-        </div>
+      <Modal isOpen={isOpen} onClose={onClose} children={researchCoverPage}></Modal>
     );
 }
 

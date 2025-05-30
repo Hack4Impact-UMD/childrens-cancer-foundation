@@ -10,6 +10,12 @@ import ContactUs from "../../components/contact/ContactUs";
 import Banner from "../../components/banner/Banner";
 import { useNavigate } from "react-router-dom";
 import { getSidebarbyRole } from '../../types/sidebar-types';
+import { getUsersCurrentCycleAppplications } from "../../backend/application-filters";
+import { Application } from "../../types/application-types";
+import {firstLetterCap} from "../../utils/stringfuncs"
+import CoverPageModal from "../../components/applications/CoverPageModal";
+import { FAQItem } from "../../types/faqTypes";
+import { getFAQs } from "../../backend/faq-handler";
 
 function ApplicantUsersDashboard(): JSX.Element {
     const sidebarItems = getSidebarbyRole('applicant');
@@ -22,38 +28,25 @@ function ApplicantUsersDashboard(): JSX.Element {
     const toggleFAQ = () => setFAQCollapsed(!isFAQCollapsed);
     const toggleContact = () => setContactCollapsed(!isContactCollapsed);
 
-    const [completedApplications, setCompletedApplications] = useState<any>([]);
-    const [inProgressApplications, setInProgressApplications] = useState<any>([]);
+    const [completedApplications, setCompletedApplications] = useState<Application[]>();
+    const [inProgressApplications, setInProgressApplications] = useState<Application[]>([]);
+    const [openModal, setOpenModal] = useState<Application | null>();
+    const [faqData, setFAQData] = useState<FAQItem[]>([]);
 
     useEffect(() => {
-        // Fetch data from the backend
-        //setCompletedApplications(data);
-        //setinProgressApplications(data);
-
-        setCompletedApplications([{
-            "applicationType": "NextGen",
-            "status": "FUNDED"
-        }, {"applicationType": "Research Grant", "status": "NOT FUNDED"}]);
-        setInProgressApplications([{"applicationType": "Research Grant", "status": "SUBMITTED: MAY 5, 2024"}]);
+        getUsersCurrentCycleAppplications().then((apps) => {
+            setCompletedApplications(apps)
+        }).catch((e) => {
+            console.error(e)
+        });
+        getFAQs().then(faqs => {
+            setFAQData(faqs)
+        })
     }, []);
 
-    const faqData = [
-        {question: 'What is React?', answer: 'React is a JavaScript library for building user interfaces.'},
-        {
-            question: 'What is TypeScript?',
-            answer: 'TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.'
-        },
-        {
-            question: 'How do I use this component?',
-            answer: 'Pass a list of questions and answers as props to the FAQComponent.'
-        },
-    ];
-    // const sidebarItems = [
-    //     {name: "Home", path: "/"},
-    //     {name: "Account Settings", path: "/settings"},
-    //     {name: "Post-Grant Report", path: "/post-grant-report"},
-    //     {name: "Logout", path: "/login"}
-    // ];
+    const closeModal = () => {
+        setOpenModal(null)
+    }
 
     const navigate = useNavigate();
 
@@ -107,16 +100,17 @@ function ApplicantUsersDashboard(): JSX.Element {
                                     {completedApplications && Object.keys(completedApplications).length > 0 && (
                                         <>
                                             <h3>COMPLETED APPLICATIONS:</h3>
-                                            {completedApplications.map((application: any, index: number) => (
+                                            {completedApplications.map((application, index) => (
                                                 <div key={index} className="ApplicantDashboard-single-application-box">
-                                                    <div className="application-info">
+                                                    <div className="application-info" >
                                                         <FaFileAlt className="application-icon"/>
-                                                        <p>{application.applicationType}</p>
+                                                        <p>{firstLetterCap(application.grantType)}</p>
                                                     </div>
-                                                    <div className="ApplicantDashboard-application-status">
-                                                        <p>{application.status}</p>
+                                                    <div className="ApplicantDashboard-application-status" onClick={() => {setOpenModal(application)}}>
+                                                        <p>{firstLetterCap(application.decision)}</p>
                                                         <FaArrowRight className="application-status-icon"/>
                                                     </div>
+                                                    <CoverPageModal application={application} isOpen={openModal == application} onClose={closeModal}></CoverPageModal>
                                                 </div>
                                             ))}
                                             <hr className="red-line"/>
