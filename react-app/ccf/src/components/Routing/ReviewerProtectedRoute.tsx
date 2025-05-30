@@ -29,7 +29,7 @@ const ReviewerProtectedRoute: React.FC<ReviewerProtectedRouteProps> = ({ element
     return <div>Loading...</div>; // Replace with a spinner if needed
   }
 
-  return isReviewer ? <>{element}</> : <Navigate to="/login" replace />;
+  return isReviewer ? <>{element}</> : <Navigate to="/protected-page" replace />;
 };
 
 export default ReviewerProtectedRoute;

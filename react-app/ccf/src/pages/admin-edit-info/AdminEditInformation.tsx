@@ -18,8 +18,8 @@ function AdminEditInformation(): JSX.Element {
     const [researchDate, setResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [nonResearchDate, setNonResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [reviewerDate, setReviewerDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
-    
-    
+
+
     const [appDeadlineMessage, setAppDeadlineMessage] = useState<string | null>(null);
     const [revDeadlineMessage, setRevDeadlineMessage] = useState<string | null>(null);
 
@@ -156,7 +156,7 @@ function AdminEditInformation(): JSX.Element {
                                 />
                             </LocalizationProvider>
                         </div>
-                        <div className="save-button">
+                        
                             <Button
                                 variant="contained"
                                 onClick={async () => {
@@ -189,7 +189,7 @@ function AdminEditInformation(): JSX.Element {
                                 }}
 
                             >{appDeadlineMessage ?? "Set Application Deadline"}</Button>
-                        </div>
+                        
                     </div>
                     <div className="deadline-interactives">
                         <h2>Reviews:</h2>
@@ -222,11 +222,10 @@ function AdminEditInformation(): JSX.Element {
                                             />
                                         ),
                                     }}
-                                    
+
                                 />
                             </LocalizationProvider>
                         </div>
-                        <div className="save-button">
                             <Button
                                 variant="contained"
                                 onClick={async () => {
@@ -257,7 +256,6 @@ function AdminEditInformation(): JSX.Element {
                                 }}
 
                             >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
-                        </div>
                     </div>
                 </div>
             </div>

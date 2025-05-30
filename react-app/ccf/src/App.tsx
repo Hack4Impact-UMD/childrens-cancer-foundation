@@ -33,7 +33,7 @@ import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
 import AllApplications from './pages/reviewer-all-applications/AllApplications'
 import ApplicationReview from "./pages/application-review/ApplicationReview";
 import ApplicationReviewReadOnly from "./pages/application-review/ApplicationReviewReadOnly";
-import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
+import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
 
 // import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
 
@@ -43,32 +43,34 @@ function App(): JSX.Element {
       <Routes>
         <Route path="/Login" element={<Login />} />
         {/* 404 page */}
-        <Route path="*" element={<></>} />
+        <Route path="*" element={<ErrorPage type={"404"}></ErrorPage>} />
         <Route path="/forgot-password" element={<></>} />
         <Route path="/create-account-menu" element={<CreateAccMenu />} />
         {/* Need to change path to create-account after authentication */}
         <Route
           path="/"
           element={
-              <DefaultRoute></DefaultRoute>
-          } 
+            <DefaultRoute></DefaultRoute>
+          }
         />
         <Route path="/reviewer/dashboard" element={
-            <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
+          <ReviewerProtectedRoute element={<ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>} />
         }>
         </Route>
-        <Route	
-                  path="/reviewer/dashboard/all-applications"
-                  element={<AllApplications />}
-        	
-                />
+        <Route
+          path="/reviewer/dashboard/all-applications"
+          element={
+            <ReviewerProtectedRoute element={<AllApplications />} />
+          }
+
+        />
         <Route
           path="/reviewer/review"
           element={<ReviewerProtectedRoute element={<ApplicationReview />} />}
         />
         <Route
           path="/reviewer/review-application"
-          element={ <ApplicationReviewReadOnly />}
+          element={<ApplicationReviewReadOnly />}
         />
         <Route
           path="/applicant/dashboard"
@@ -77,102 +79,102 @@ function App(): JSX.Element {
           }
         />
         <Route
-          path="*" 
+          path="*"
           element={
-            <ErrorPage type="404"/>
+            <ErrorPage type="404" />
           }
         />
 
 
-        <Route 
-        path="/protected-page" 
-        element={
-          <ErrorPage type="401" />
-        } 
-        />          
+        <Route
+          path="/protected-page"
+          element={
+            <ErrorPage type="401" />
+          }
+        />
 
         {/* Admin dashboard */}
-        <Route 
-          path="/admin" 
-          element={<AdminApplicationsDatabase></AdminApplicationsDatabase>}
+        <Route
+          path="/admin"
+          element={<AdminProtectedRoute element={<AdminApplicationsDatabase></AdminApplicationsDatabase>} />}
         />
         Need to change path to create-account after authentication
-        <Route 
+        <Route
           path="/admin-database"
-          element={<AdminApplicationsDatabase />}
+          element={<AdminProtectedRoute element={<AdminApplicationsDatabase />} />}
         />
         <Route
-          path="/applicant/dashboard" 
+          path="/applicant/dashboard"
           element={
-            <ApplicantUsersDashboard />
-          } 
-        />    
-        {/* Admin View All Accounts Page*/}   
+            <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
+          }
+        />
+        {/* Admin View All Accounts Page*/}
         <Route
-          path="/admin/all-accounts" 
+          path="/admin/all-accounts"
           element={
             <AdminProtectedRoute element={<AdminDashboardViewAllAccounts />} />
-          } 
+          }
         />
 
-<Route
-          path="/admin/dashboard" 
+        <Route
+          path="/admin/dashboard"
           element={
             <AdminProtectedRoute element={<AdminApplicationsDatabase />} />
-          } 
+          }
         />
         Admin Edit Information Page
         <Route
-          path="/admin/edit-information" 
+          path="/admin/edit-information"
           element={
             <AdminProtectedRoute element={<AdminEditInformation />} />
-          } 
+          }
         />
         {/* Need to change path to create-account after authentication */}
         <Route
-          path="/reviewer/create-account" 
+          path="/reviewer/create-account"
           element={
-            <AccountPageReviewers />
-          } 
-        />
-        <Route
-          path="/applicant/post-grant-report" 
-          element={
-            <PostGrantReport />
+            <ReviewerProtectedRoute element={<AccountPageReviewers />} />
           }
-        />         
-        <Route
-            path="/applicant/application-form/research"
-            element={<ApplicationForm type="Research" />}
         />
         <Route
-            path="/applicant/application-form/nextgen"
-            element={<ApplicationForm type="NextGen" />}
+          path="/applicant/post-grant-report"
+          element={
+            <ApplicantProtectedRoute element={<PostGrantReport />} />
+          }
         />
         <Route
-            path="/applicant/application-form/nonresearch"
-            element={<NRApplicationForm />}
+          path="/applicant/application-form/research"
+          element={<ApplicantProtectedRoute element={<ApplicationForm type="Research" />} />}
+        />
+        <Route
+          path="/applicant/application-form/nextgen"
+          element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
+        />
+        <Route
+          path="/applicant/application-form/nonresearch"
+          element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
         />
         {/* Admin dashboard */}
         <Route path="/admin" element={<></>} />
         Need to change path to create-account after authentication
         <Route
-            path="/create-account-reviewers"
-            element={<AccountPageReviewers />}
+          path="/create-account-reviewers"
+          element={<AccountPageReviewers />}
         />
         <Route
-            path="/create-account-applicants"
-            element={<AccountPageApplicants />}
+          path="/create-account-applicants"
+          element={<AccountPageApplicants />}
         />
         <Route
           path="/admin/settings"
           element={<AdminProtectedRoute element={<AdminSettings />} />}
         />
-        <Route 
-            path={"/admin/assign-reviewers" }
-            element={<AssignReviewersPage/>}
-         />
-         
+        <Route
+          path={"/admin/assign-reviewers"}
+          element={<AssignReviewers />}
+        />
+
         <Route
           path="/reviewer/settings"
           element={<ReviewerProtectedRoute element={<ReviewerSettings />} />}
@@ -181,14 +183,14 @@ function App(): JSX.Element {
           path="/applicant/settings"
           element={<ApplicantProtectedRoute element={<ApplicantSettings />} />}
         />
-        
+
         <Route path="/reviewer-dashboard" element={
-            <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
+          <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
         }>
         </Route>
         <Route
-            path="/admin/grant-awards"
-            element={<AdminProtectedRoute element={<GrantAwards />} />}
+          path="/admin/grant-awards"
+          element={<AdminProtectedRoute element={<GrantAwards />} />}
         />
       </Routes>
 

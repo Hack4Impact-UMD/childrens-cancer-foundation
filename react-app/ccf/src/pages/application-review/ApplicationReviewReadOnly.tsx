@@ -5,6 +5,7 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import logo from "../../assets/ccf-logo.png";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../..";
+import { getSidebarbyRole } from "../../types/sidebar-types";
 
 const PencilIcon = () => (
     <svg
@@ -56,11 +57,7 @@ interface ApplicationData {
 }
 
 function ApplicationReviewReadOnly(): JSX.Element {
-    const sidebarItems = [
-        { name: "Home", path: "/" },
-        { name: "Account Settings", path: "/settings" },
-        { name: "Logout", path: "/login" },
-    ];
+    const sidebarItems = getSidebarbyRole("reviewer");
 
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -72,28 +69,26 @@ function ApplicationReviewReadOnly(): JSX.Element {
         console.log("Extracted Application ID:", applicationId);
     }, [location, applicationId]);
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [application, setApplication] = useState<ApplicationData | null>(null);
-    const [currentReviewType, setCurrentReviewType] = useState<'primary' | 'secondary'>('primary');
     const [primaryReviewer, setPrimaryReviewer] = useState<ReviewerInfo | null>(null);
     const [secondaryReviewer, setSecondaryReviewer] = useState<ReviewerInfo | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [activeReviewer, setActiveReviewer] = useState<'primary' | 'secondary'>('primary');
 
-    // Fetch application and reviewer data
+    // Fetch application data and reviewer information
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchApplicationData = async () => {
             if (!applicationId) {
                 setError("No application ID provided");
                 setLoading(false);
                 return;
             }
 
-            console.log("Fetching data for application ID:", applicationId);
-
             try {
-                setLoading(true);
+                console.log("Fetching application data for ID:", applicationId);
 
-                // Fetch application data
+                // Get application document
                 const applicationRef = doc(db, "applications", applicationId);
                 const applicationDoc = await getDoc(applicationRef);
 
@@ -104,101 +99,43 @@ function ApplicationReviewReadOnly(): JSX.Element {
                 }
 
                 const applicationData = applicationDoc.data() as ApplicationData;
-                setApplication({
-                    ...applicationData,
-                    // Ensure feedback objects exist to prevent errors
-                    primaryReviewFeedback: applicationData.primaryReviewFeedback || {
-                        significance: "",
-                        approach: "",
-                        feasibility: "",
-                        investigator: "",
-                        summary: "",
-                        internal: ""
-                    },
-                    secondaryReviewFeedback: applicationData.secondaryReviewFeedback || {
-                        significance: "",
-                        approach: "",
-                        feasibility: "",
-                        investigator: "",
-                        summary: "",
-                        internal: ""
-                    }
-                });
+                console.log("Application data:", applicationData);
+                setApplication(applicationData);
 
-                // Fetch primary reviewer info if exists
+                // Fetch primary reviewer info if available
                 if (applicationData.primaryReviewer) {
-                    const reviewerDoc = await getDoc(doc(db, "reviewers", applicationData.primaryReviewer));
-                    if (reviewerDoc.exists()) {
-                        const reviewerData = reviewerDoc.data();
+                    const primaryReviewerRef = doc(db, "reviewers", applicationData.primaryReviewer);
+                    const primaryReviewerDoc = await getDoc(primaryReviewerRef);
+                    if (primaryReviewerDoc.exists()) {
                         setPrimaryReviewer({
-                            id: reviewerDoc.id,
-                            firstName: reviewerData.firstName || "",
-                            lastName: reviewerData.lastName || "",
-                            email: reviewerData.email || "",
-                            affiliation: reviewerData.affiliation || ""
-                        });
+                            id: primaryReviewerDoc.id,
+                            ...primaryReviewerDoc.data()
+                        } as ReviewerInfo);
                     }
                 }
 
-                // Fetch secondary reviewer info if exists
+                // Fetch secondary reviewer info if available
                 if (applicationData.secondaryReviewer) {
-                    const reviewerDoc = await getDoc(doc(db, "reviewers", applicationData.secondaryReviewer));
-                    if (reviewerDoc.exists()) {
-                        const reviewerData = reviewerDoc.data();
+                    const secondaryReviewerRef = doc(db, "reviewers", applicationData.secondaryReviewer);
+                    const secondaryReviewerDoc = await getDoc(secondaryReviewerRef);
+                    if (secondaryReviewerDoc.exists()) {
                         setSecondaryReviewer({
-                            id: reviewerDoc.id,
-                            firstName: reviewerData.firstName || "",
-                            lastName: reviewerData.lastName || "",
-                            email: reviewerData.email || "",
-                            affiliation: reviewerData.affiliation || ""
-                        });
+                            id: secondaryReviewerDoc.id,
+                            ...secondaryReviewerDoc.data()
+                        } as ReviewerInfo);
                     }
                 }
 
                 setLoading(false);
             } catch (err) {
-                console.error("Error fetching data:", err);
+                console.error("Error fetching application data:", err);
                 setError("Failed to load application data");
                 setLoading(false);
             }
         };
 
-        fetchData();
+        fetchApplicationData();
     }, [applicationId]);
-
-    const handleSwitchReviewer = (type: 'primary' | 'secondary') => {
-        setCurrentReviewType(type);
-    };
-
-    const getCurrentFeedback = () => {
-        if (!application) return null;
-
-        return currentReviewType === 'primary'
-            ? application.primaryReviewFeedback
-            : application.secondaryReviewFeedback;
-    };
-
-    const getCurrentScore = () => {
-        if (!application) return "N/A";
-
-        const score = currentReviewType === 'primary'
-            ? application.primaryReviewScore
-            : application.secondaryReviewScore;
-
-        return score !== undefined ? score : "Not scored";
-    };
-
-    const getCurrentReviewer = () => {
-        return currentReviewType === 'primary' ? primaryReviewer : secondaryReviewer;
-    };
-
-    const getCurrentReviewStatus = () => {
-        if (!application) return "unknown";
-
-        return currentReviewType === 'primary'
-            ? application.primaryReviewStatus
-            : application.secondaryReviewStatus;
-    };
 
     const openApplicationViewer = () => {
         if (application?.pdf) {
@@ -206,6 +143,43 @@ function ApplicationReviewReadOnly(): JSX.Element {
         } else {
             alert("Application PDF not available");
         }
+    };
+
+    const getCurrentFeedback = (): FeedbackData | null => {
+        if (activeReviewer === 'primary') {
+            return application?.primaryReviewFeedback || null;
+        } else {
+            return application?.secondaryReviewFeedback || null;
+        }
+    };
+
+    const getCurrentScore = (): string | number | null => {
+        if (activeReviewer === 'primary') {
+            return application?.primaryReviewScore || null;
+        } else {
+            return application?.secondaryReviewScore || null;
+        }
+    };
+
+    const getCurrentStatus = (): string => {
+        if (activeReviewer === 'primary') {
+            return application?.primaryReviewStatus || 'not-started';
+        } else {
+            return application?.secondaryReviewStatus || 'not-started';
+        }
+    };
+
+    const getReviewerName = (reviewer: ReviewerInfo | null): string => {
+        if (!reviewer) return 'Not Assigned';
+        return `${reviewer.firstName} ${reviewer.lastName}`;
+    };
+
+    const feedbackLabels = {
+        significance: 'Significance',
+        approach: 'Approach',
+        feasibility: 'Feasibility',
+        investigator: 'Investigator(s)',
+        summary: 'Summary',
     };
 
     if (loading) {
@@ -216,7 +190,7 @@ function ApplicationReviewReadOnly(): JSX.Element {
                     <div className="dashboard-content">
                         <div className="dashboard-header-container">
                             <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Review Summary</h1>
+                            <h1 className="dashboard-header">Application Review</h1>
                         </div>
                         <div className="applications-container">
                             <p>Loading application data...</p>
@@ -235,7 +209,7 @@ function ApplicationReviewReadOnly(): JSX.Element {
                     <div className="dashboard-content">
                         <div className="dashboard-header-container">
                             <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Review Summary</h1>
+                            <h1 className="dashboard-header">Application Review</h1>
                         </div>
                         <div className="applications-container">
                             <p className="error-message">{error}</p>
@@ -246,153 +220,142 @@ function ApplicationReviewReadOnly(): JSX.Element {
         );
     }
 
-    const feedback = getCurrentFeedback();
-    const currentReviewer = getCurrentReviewer();
-    const reviewStatus = getCurrentReviewStatus();
+    if (!application) {
+        return (
+            <div>
+                <Sidebar links={sidebarItems} />
+                <div className="dashboard-container">
+                    <div className="dashboard-content">
+                        <div className="dashboard-header-container">
+                            <img src={logo} alt="Logo" className="dashboard-logo" />
+                            <h1 className="dashboard-header">Application Review</h1>
+                        </div>
+                        <div className="applications-container">
+                            <p>No application data available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const currentFeedback = getCurrentFeedback();
+    const currentScore = getCurrentScore();
+    const currentStatus = getCurrentStatus();
 
     return (
         <div>
             <Sidebar links={sidebarItems} />
-
             <div className="dashboard-container">
                 <div className="dashboard-content">
-                    <div className="dashboard-header-container">
-                        <img src={logo} alt="Logo" className="dashboard-logo" />
-                        <h1 className="dashboard-header">Review Summary</h1>
+                    <div className="internal-header">
+                        <div className="dashboard-header-container">
+                            <img src={logo} alt="Logo" className="dashboard-logo" />
+                            <h1 className="dashboard-header">Application Review - Read Only</h1>
+                        </div>
+                        <button
+                            className="back-button"
+                            onClick={() => window.history.back()}
+                        >
+                            Back
+                        </button>
                     </div>
 
                     <div className="applications-container">
                         {application && (
                             <div className="application-info">
                                 <h2>Title: {application.title}</h2>
-                                <p>{"\u00A0"} Applicant: {application.principalInvestigator}</p>
-                                <p>{"\u00A0"} Type: {application.grantType}</p>
-                                {application.finalScore && (
-                                    <p className="final-score">Final Score: {application.finalScore.toFixed(1)}</p>
-                                )}
+                                <p>Applicant: {application.principalInvestigator}</p>
+                                <p>Type: {application.grantType}</p>
                             </div>
                         )}
-
-                        <div className="reviewer-toggle">
-                            <button
-                                className={`reviewer-toggle-btn ${currentReviewType === 'primary' ? 'active' : ''}`}
-                                onClick={() => handleSwitchReviewer('primary')}
-                                disabled={!primaryReviewer}
-                            >
-                                Primary Reviewer
-                                {primaryReviewer && (
-                                    <span className="reviewer-name">
-                    ({primaryReviewer.firstName} {primaryReviewer.lastName})
-                  </span>
-                                )}
-                            </button>
-                            <button
-                                className={`reviewer-toggle-btn ${currentReviewType === 'secondary' ? 'active' : ''}`}
-                                onClick={() => handleSwitchReviewer('secondary')}
-                                disabled={!secondaryReviewer}
-                            >
-                                Secondary Reviewer
-                                {secondaryReviewer && (
-                                    <span className="reviewer-name">
-                    ({secondaryReviewer.firstName} {secondaryReviewer.lastName})
-                  </span>
-                                )}
-                            </button>
-                        </div>
-
-                        <div className={`review-status-indicator ${reviewStatus}`}>
-                            Review Status: {reviewStatus === 'completed' ? 'Completed' : reviewStatus === 'in-progress' ? 'In Progress' : 'Not Started'}
-                        </div>
 
                         <p className="view-app-link" onClick={openApplicationViewer}>VIEW APPLICATION</p>
 
-                        <div className="score-section">
-                            <p className="score-label">
-                                Overall score: (1 <em>exceptional</em> - 5{" "}
-                                <em>poor quality, unrepairable</em>)
-                            </p>
-                            <div className="score-display">{getCurrentScore()}</div>
+                        {/* Reviewer Toggle */}
+                        <div className="reviewer-toggle">
+                            <button
+                                className={`reviewer-toggle-btn ${activeReviewer === 'primary' ? 'active' : ''}`}
+                                onClick={() => setActiveReviewer('primary')}
+                                disabled={!application?.primaryReviewer}
+                            >
+                                <div>Primary Reviewer</div>
+                                <div className="reviewer-name">
+                                    {getReviewerName(primaryReviewer)}
+                                </div>
+                            </button>
+                            <button
+                                className={`reviewer-toggle-btn ${activeReviewer === 'secondary' ? 'active' : ''}`}
+                                onClick={() => setActiveReviewer('secondary')}
+                                disabled={!application?.secondaryReviewer}
+                            >
+                                <div>Secondary Reviewer</div>
+                                <div className="reviewer-name">
+                                    {getReviewerName(secondaryReviewer)}
+                                </div>
+                            </button>
                         </div>
 
-                        <p className="feedback-heading">
-                            Feedback: <br />
-                            <span className="red-text">
-                ALL information inputted (unless otherwise noted) WILL be sent
-                to applicant.
-              </span>
-                        </p>
+                        {/* Review Status Indicator */}
+                        <div className={`review-status-indicator ${currentStatus}`}>
+                            {currentStatus === 'completed' && 'Review Completed'}
+                            {currentStatus === 'in-progress' && 'Review In Progress'}
+                            {currentStatus === 'not-started' && 'Review Not Started'}
+                        </div>
 
-                        {feedback && [
-                            {
-                                key: "significance",
-                                label: "SIGNIFICANCE",
-                                question:
-                                    "How significant is the childhood cancer problem addressed by this proposal? How will the proposed study add to or enhance the currently available methods to prevent, treat or manage childhood cancer?",
-                            },
-                            {
-                                key: "approach",
-                                label: "APPROACH",
-                                question:
-                                    "Is the study hypothesis-driven? Is this a novel hypothesis or research question? How well do existing data support the current hypothesis? Are the aims and objectives appropriate for the hypothesis being tested? Are the methodology and evaluation component adequate to provide a convincing test of the hypothesis? Have the applicants adequately accounted for potential confounders? Are there any methodological weaknesses? If there are methodological weaknesses, how may they be corrected? Is the statistical analysis adequate?",
-                            },
-                            {
-                                key: "feasibility",
-                                label: "FEASIBILITY",
-                                question:
-                                    "Comment on how well the research team is to carry out the study. Is it feasible to carry out the project in the proposed location(s)? Can the project be accomplished within the proposed time period?",
-                            },
-                            {
-                                key: "investigator",
-                                label: "INVESTIGATOR",
-                                question:
-                                    "What has the productivity of the PI been over the past 3 years? If successful, does the track record of the PI indicate that future peer-reviewed funding will allow the project to continue? Are there adequate collaborations for work outside the PI's expertise?",
-                            },
-                            {
-                                key: "summary",
-                                label: "SUMMARY",
-                                question:
-                                    "Please provide any additional comments that would be helpful to the applicant, such as readability, grantsponsorship, etc., especially if the application does not score well.",
-                            },
-                        ].map(({ key, label, question }) => (
-                            <div key={key} className="feedback-section">
-                                <div className="feedback-header">
-                                    <label>
-                                        <strong>{label}:</strong> {question}
-                                    </label>
-                                </div>
-                                <div className="feedback-content">
+                        {/* Overall Score */}
+                        {currentScore && (
+                            <div className="score-section">
+                                <p className="score-label">
+                                    Overall score: (1 <em>exceptional</em> - 5{" "}
+                                    <em>poor quality, unrepairable</em>)
+                                </p>
+                                <div className="score-display">{currentScore}</div>
+                            </div>
+                        )}
+
+                        {/* Feedback Display */}
+                        {currentFeedback && (
+                            <div className="feedback-container">
+                                {Object.entries(feedbackLabels).map(([key, label]) => (
+                                    <div key={key} className="feedback-section">
+                                        <div className="feedback-header">
+                                            <PencilIcon />
+                                            <strong>{label}:</strong>
+                                        </div>
+                                        <div className="feedback-text">
+                                            {currentFeedback[key as keyof FeedbackData] || 'No feedback provided'}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <div className="feedback-section">
+                                    <div className="feedback-header">
+                                        <PencilIcon />
+                                        <strong>Internal Comments:</strong>
+                                    </div>
                                     <div className="feedback-text">
-                                        {feedback[key as keyof FeedbackData] || "No feedback provided."}
+                                        {currentFeedback.internal || 'No internal comments provided'}
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )}
 
-                        {feedback && (
-                            <div className="internal-section">
-                                <div className="internal-header">
-                                    <p className="internal-label">Internal Comments/Notes:</p>
-                                </div>
-                                <p className="internal-warning">
-                                    <strong>
-                                        Information entered in this textbox was NOT shared with
-                                        the applicant.
-                                    </strong>
-                                    <br />
-                                    It was reserved for reviewer to reference during review call.
-                                </p>
-                                <div className="feedback-text">{feedback.internal || "No internal comments provided."}</div>
+                        {!currentFeedback && currentStatus === 'not-started' && (
+                            <div className="no-review-message">
+                                <p>No review has been submitted yet by this reviewer.</p>
                             </div>
                         )}
-                    </div>
 
-                    <div className="button-group">
-                        <button
-                            className="back-button"
-                            onClick={() => window.history.back()}
-                        >
-                            Back to Applications
-                        </button>
+                        {/* Final Score if both reviews are completed */}
+                        {application?.finalScore && (
+                            <div className="final-score">
+                                Final Score: <span className="score-display">{application.finalScore}</span>
+                                <span className="red-text">
+                                    (Average of both reviewer scores)
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

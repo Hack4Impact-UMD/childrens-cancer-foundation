@@ -1,4 +1,5 @@
 export interface ApplicationInfo {
+    applicationId: number;
     title: string;
     principalInvestigator: string;
     typesOfCancerAddressed: string;
@@ -12,6 +13,7 @@ export interface ApplicationInfo {
     adminPhoneNumber: string;
     adminEmail: string;
     decision: string;
+    assignedReviewers?: string[]
 };
 
 export interface ApplicationQuestions {
@@ -58,6 +60,8 @@ export interface ResearchApplication {
     continuationYears?: string;
 }
 
+export type Application = (ResearchApplication | NonResearchApplication) & ApplicationDetails
+
 export interface NonResearchApplication {
     title: string;
     requestor: string;
@@ -77,6 +81,7 @@ export interface ApplicationDetails {
     grantType: "research" | "nextgen" | "nonresearch";
     file: string;
     applicationCycle: string;
+    submitTime: Date;
 }
 // application-types.ts
 

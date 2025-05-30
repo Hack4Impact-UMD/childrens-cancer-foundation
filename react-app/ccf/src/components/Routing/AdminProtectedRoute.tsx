@@ -29,7 +29,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ element }) =>
     return <div>Loading...</div>; // can replace
   }
 
-  return isAdmin ? <>{element}</> : <Navigate to="/login" replace />;
+  return isAdmin ? <>{element}</> : <Navigate to="/protected-page" replace />;
 };
 
 export default AdminProtectedRoute;

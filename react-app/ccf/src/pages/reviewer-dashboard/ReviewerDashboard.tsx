@@ -11,7 +11,7 @@ import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationBox, { type Application } from "../../components/applications/ApplicationBox";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { auth } from "../.."; // Adjust path as needed
-import {db} from "../.."
+import { db } from "../.."
 interface FAQItem {
     question: string;
     answer: string;
@@ -187,7 +187,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                         <h1 className="dashboard-header">Reviewer Dashboard</h1>
                     </div>
 
-                    <div className="dashboard-sections-content" style={{flexGrow: 1}}>
+                    <div className="dashboard-sections-content" style={{ flexGrow: 1 }}>
                         <div className="dashboard-section">
                             <div className="section-header">
                                 <div className="header-content">
@@ -282,7 +282,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                             </div>
                             {!isFAQCollapsed && (
                                 <div className="faq-content-wrapper">
-                                    <FAQComponent faqs={faqData}/>
+                                    <FAQComponent faqs={faqData} />
                                 </div>
                             )}
                         </div>

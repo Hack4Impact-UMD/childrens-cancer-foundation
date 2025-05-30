@@ -4,7 +4,7 @@ import Breadcrumb from './Components/Breadcrumbs';
 import {useNavigate} from 'react-router-dom';
 import Information from './subquestions/Information';
 import ApplicationQuestions from './subquestions/ApplicationQuestions';
-import Review from './subquestions/Review';
+import ReviewApplication from './subquestions/Review';
 import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
 import {ResearchApplication} from '../../types/application-types';
@@ -71,7 +71,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             console.log(e)
         }
 
-        navigate('applicant/dashboard')
+        navigate('/applicant/dashboard')
     };
     // Validation function to check if all required fields are filled
     const isFormValid = () => {
@@ -88,7 +88,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             case 4:
                 return <ApplicationQuestions formData={formData} setFormData={setFormData} />;
             case 5:
-                return <Review type={type} formData={formData} />;
+                return <ReviewApplication type={type} formData={formData} />;
             default:
                 return null;
         }

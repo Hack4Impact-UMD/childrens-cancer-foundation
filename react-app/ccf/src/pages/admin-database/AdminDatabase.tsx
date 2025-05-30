@@ -9,20 +9,9 @@ import blueDocument from '../../assets/blueDocumentIcon.png';
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../..";
-
-interface Application {
-    id: string;
-    applicationTitle: string;
-    applicationType: string;
-    decision: string;
-    institution: string;
-    principalInvestigator: string;
-    cancerType: string;
-    amountRequested: string;
-    continuationOfFunding: string;
-    applicationYear: string; // Added to store the year
-    documentUrl: string; // Added to store the document URL
-}
+import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
+import { firstLetterCap } from "../../utils/stringfuncs";
+import { getFilteredApplications } from "../../backend/application-filters";
 
 function AdminApplicationsDatabase(): JSX.Element {
     const [applicationsData, setApplicationsData] = useState<{ [year: string]: Application[] }>({});
@@ -41,35 +30,18 @@ function AdminApplicationsDatabase(): JSX.Element {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const applicationsRef = collection(db, "applications");
-                const querySnapshot = await getDocs(applicationsRef);
-                console.log(querySnapshot.docs);
+                const apps = await getFilteredApplications({})
                 // Group applications by year
                 const applications: { [year: string]: Application[] } = {};
                 const institutions = new Set<string>();
                 const years = new Set<string>();
 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
+                apps.forEach((data) => {
                     // Extract the year from timestamp or application cycle field
-                    const timestamp = Number(doc.id);
-                    const date = new Date(timestamp);
-                    const year = data.applicationCycle?.split('-')[0] || date.getFullYear().toString();
+                    const year = data.applicationCycle
 
                     // Map Firestore data to Application interface
-                    const application: Application = {
-                        id: doc.id,
-                        applicationTitle: data.title + " | " + data.principalInvestigator + " - " + data.institution || "No Title",
-                        applicationType: data.grantType || "Unknown",
-                        decision: data.decision || "pending",
-                        institution: data.institution || "Unknown Institution",
-                        principalInvestigator: data.principalInvestigator || "Unknown PI",
-                        cancerType: data.typesOfCancerAddressed || "Not Specified",
-                        amountRequested: data.amountRequested || "0",
-                        continuationOfFunding: data.continuation || "No",
-                        applicationYear: data.applicationYear,
-                        documentUrl: data.pdf || ""
-                    };
+                    const application: Application = data as Application
 
                     console.log(application);
 
@@ -132,9 +104,9 @@ function AdminApplicationsDatabase(): JSX.Element {
         const filtered = applicationsData[year].filter(app =>
             (filters.applicationCycle ? year === filters.applicationCycle : true) &&
             (filters.decision ? app.decision === filters.decision : true) &&
-            (filters.grantType ? app.applicationType.toLowerCase().includes(filters.grantType.toLowerCase()) : true) &&
+            (filters.grantType ? app.grantType.toLowerCase().includes(filters.grantType.toLowerCase()) : true) &&
             (filters.institution ? app.institution === filters.institution : true) &&
-            (searchTerm ? app.applicationTitle.toLowerCase().includes(searchTerm.toLowerCase()) : true)
+            (searchTerm ? app.title.toLowerCase().includes(searchTerm.toLowerCase()) : true)
         );
 
         if (filtered.length) {
@@ -202,6 +174,8 @@ function AdminApplicationsDatabase(): JSX.Element {
                             ))}
                         </select>
                     </div>
+                    
+                    {Object.keys(filteredApplications).length == 0 ? "No applications matching filters" : 
 
                     <div className="dashboard-sections-content">
                         {Object.keys(filteredApplications).sort((a, b) => Number(b) - Number(a)).map((year) => (
@@ -228,8 +202,8 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                             <div className="application-info">
                                                                 <img src={iconColor} alt="Document Icon" className="section-icon" />
                                                                 <div className="application-info-text">
-                                                                    <p className="application-title">{app.applicationTitle}</p>
-                                                                    <p className="subtext">{app.applicationType} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
+                                                                    <p className="application-title">{app.title}</p>
+                                                                    <p className="subtext">{app.grantType} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
                                                                 </div>
                                                             </div>
                                                             <button className="expand-collapse-btn">
@@ -244,15 +218,15 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                     <div className="details-block">
                                                                         <div className="detail-item">
                                                                             <span className="detail-label">Application Title: </span>
-                                                                            <span className="detail-value">{app.applicationTitle || " N/A"}</span>
+                                                                            <span className="detail-value">{app.title || " N/A"}</span>
                                                                         </div>
                                                                         <div className="detail-item">
                                                                             <span className="detail-label">Application Type: </span>
-                                                                            <span className="detail-value">{app.applicationType || " N/A"}</span>
+                                                                            <span className="detail-value">{app.grantType || " N/A"}</span>
                                                                         </div>
                                                                         <div className="detail-item">
-                                                                            <span className="detail-label">Principal Investigator: </span>
-                                                                            <span className="detail-value">{app.principalInvestigator || " N/A"}</span>
+                                                                            <span className="detail-label">Principal Investigator/Requestor: </span>
+                                                                            <span className="detail-value">{app.grantType == "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
                                                                         </div>
                                                                         <div className="detail-item">
                                                                             <span className="detail-label">Institution: </span>
@@ -262,7 +236,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                     <div className="details-block">
                                                                         <div className="detail-item">
                                                                             <span className="detail-label">Cancer Type: </span>
-                                                                            <span className="detail-value">{app.cancerType || " N/A"}</span>
+                                                                            <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
                                                                         </div>
                                                                         <div className="detail-item">
                                                                             <span className="detail-label">Amount Requested: </span>
@@ -270,11 +244,11 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                         </div>
                                                                         <div className="detail-item">
                                                                             <span className="detail-label">Continuation of Funding: </span>
-                                                                            <span className="detail-value">{app.continuationOfFunding || " N/A"}</span>
+                                                                            <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
                                                                         </div>
                                                                         <div className="detail-item">
                                                                             <span className="detail-label">Status: </span>
-                                                                            <span className="detail-value">{app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</span>
+                                                                            <span className="detail-value">{firstLetterCap(app.decision)}</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -285,7 +259,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                     </button>
                                                                     <button
                                                                         className="action-button completed-app"
-                                                                        onClick={() => openApplicationDocument(app.documentUrl)}
+                                                                        onClick={() => openApplicationDocument(app.file)}
                                                                     >
                                                                         Completed Application
                                                                     </button>
@@ -301,6 +275,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                             </div>
                         ))}
                     </div>
+                }
                 </div>
             </div>
         </div>

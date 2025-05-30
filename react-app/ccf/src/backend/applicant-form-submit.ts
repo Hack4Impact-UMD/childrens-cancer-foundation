@@ -23,10 +23,11 @@ export const uploadResearchApplication = async(
             decision: 'pending',
             creatorId: user.uid,
             grantType: nextGen ? 'nextgen' : 'research',
-            applicationCycle: currentCycle.name
+            applicationCycle: currentCycle.name,
+            submitTime: new Date()
         }
         
-        const newApplicationRef = doc(db, 'applications', Date.now().toString());
+        const newApplicationRef = doc(db, 'applications');
         await setDoc(newApplicationRef, {
             ...application,
             ...appDetails 
@@ -56,7 +57,8 @@ export const uploadNonResearchApplication = async(
             decision: 'pending',
             creatorId: user.uid,
             grantType: 'nextgen',
-            applicationCycle: currentCycle.name
+            applicationCycle: currentCycle.name,
+            submitTime: new Date(),
         }
         
         const newApplicationRef = doc(db, 'applications', Date.now().toString());
