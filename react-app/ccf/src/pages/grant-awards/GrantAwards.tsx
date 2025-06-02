@@ -3,9 +3,16 @@ import "./GrantAwards.css";
 import { FaDownload, FaSortUp, FaSortDown, FaComments, FaTimes } from 'react-icons/fa';
 import Sidebar from "../../components/sidebar/Sidebar";
 import logo from "../../assets/ccf-logo.png";
-import { collection, getDocs, doc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from '../..';
 import { getSidebarbyRole } from '../../types/sidebar-types';
+import { getReviewsForApplication } from '../../services/review-service';
+import {
+    getMultipleAdminData,
+    updateAdminComments,
+    updateFundingDecision,
+    AdminData
+} from '../../services/admin-data-service';
 
 type SortField = 'name' | 'programType' | 'institution' | 'finalScore' | 'requested' | 'recommended';
 type SortDirection = 'asc' | 'desc';
@@ -44,7 +51,7 @@ function CommentModal({ isOpen, application, onClose, onSave }: CommentModalProp
             <div className="modal-container">
                 <div className="modal-header">
                     <h3>Add Comments for {application.name}</h3>
-                    <button className="close-button" onClick={onClose}>
+                    <button className="close-button" onClick={onClose} title="Close modal" aria-label="Close comment modal">
                         <FaTimes />
                     </button>
                 </div>
@@ -88,7 +95,7 @@ function GrantAwards(): JSX.Element {
         isOpen: false,
         application: null as Application | null
     });
-    const [savingChanges, setSavingChanges] = useState<{[key: string]: boolean}>({});
+    const [savingChanges, setSavingChanges] = useState<{ [key: string]: boolean }>({});
 
     const sidebarItems = getSidebarbyRole("admin");
 
@@ -103,26 +110,51 @@ function GrantAwards(): JSX.Element {
             const querySnapshot = await getDocs(applicationsRef);
 
             const applicationsData: Application[] = [];
+            const applicationIds: string[] = [];
 
-            querySnapshot.forEach((doc) => {
+            // First, collect all application data and IDs
+            for (const doc of querySnapshot.docs) {
                 const data = doc.data();
+                applicationIds.push(doc.id);
 
-                // Map Firestore data to Application interface
+                // Get final score from reviews collection
+                let finalScore = 0;
+                try {
+                    const reviewSummary = await getReviewsForApplication(doc.id);
+                    if (reviewSummary.primaryReview?.status === 'completed' &&
+                        reviewSummary.secondaryReview?.status === 'completed') {
+                        finalScore = ((reviewSummary.primaryReview.score || 0) + (reviewSummary.secondaryReview.score || 0)) / 2;
+                    }
+                } catch (error) {
+                    console.log(`No reviews found for application ${doc.id}`);
+                }
+
+                // Map Firestore data to Application interface (without admin data)
                 const application: Application = {
                     id: doc.id,
                     name: data.principalInvestigator || "Unknown",
                     programType: data.grantType || "Unknown",
-                    institution: data.institution|| "Unknown Institution",
-                    finalScore: data.finalScore || 0,
+                    institution: data.institution || "Unknown Institution",
+                    finalScore,
                     requested: `$${data.amountRequested || "0"}`,
-                    recommended: `$${data.fundingAmount || "0"}`,
-                    comments: data.comments || ""
+                    recommended: "$0", // Will be populated from admin data
+                    comments: "" // Will be populated from admin data
                 };
 
                 applicationsData.push(application);
-            });
+            }
 
-            setApplications(applicationsData);
+            // Get admin data for all applications
+            const adminDataMap = await getMultipleAdminData(applicationIds);
+
+            // Merge admin data with application data
+            const finalApplicationsData = applicationsData.map(app => ({
+                ...app,
+                recommended: `$${adminDataMap[app.id]?.fundingAmount || "0"}`,
+                comments: adminDataMap[app.id]?.comments || ""
+            }));
+
+            setApplications(finalApplicationsData);
             setLoading(false);
         } catch (error) {
             console.error("Error fetching applications:", error);
@@ -133,20 +165,13 @@ function GrantAwards(): JSX.Element {
     const handleInputChange = (
         e: ChangeEvent<HTMLInputElement>,
         index: number,
-        field: 'finalScore' | 'recommended'
+        field: 'recommended'
     ) => {
         const { value } = e.target;
         const updatedApplications = [...applications];
         const appToUpdate = updatedApplications[index];
 
-        if (field === 'finalScore') {
-            const score = parseFloat(value);
-            if (!isNaN(score)) {
-                appToUpdate.finalScore = score;
-            } else if (value === "") {
-                appToUpdate.finalScore = 0;
-            }
-        } else if (field === 'recommended') {
+        if (field === 'recommended') {
             appToUpdate.recommended = value;
         }
 
@@ -159,44 +184,50 @@ function GrantAwards(): JSX.Element {
         const appId = appToUpdate.id;
 
         try {
-            setSavingChanges(prev => ({...prev, [appId]: true}));
-            const applicationRef = doc(db, "applications", appId);
+            setSavingChanges(prev => ({ ...prev, [appId]: true }));
 
             // Extract numeric value from recommended amount
-            const recommendedAmount = appToUpdate.recommended.replace(/\$|,/g, '');
+            const recommendedAmount = parseFloat(appToUpdate.recommended.replace(/\$|,/g, '')) || 0;
 
             // Determine if application is accepted based on recommended amount
-            const isAccepted = recommendedAmount !== "0" && recommendedAmount !== "";
+            const decision = recommendedAmount > 0 ? "accepted" : "pending";
 
-            // Update the document, including all fields even if they're blank
+            // Update admin data (comments and funding decision) in separate collection
+            await updateFundingDecision(appId, recommendedAmount, decision);
+
+            // Update only the decision field in the applications collection (no sensitive data)
+            const applicationRef = doc(db, "applications", appId);
             await updateDoc(applicationRef, {
-                finalScore: appToUpdate.finalScore || 0,
-                fundingAmount: recommendedAmount,
-                // Set decision field to "accepted" if recommended amount is not 0
-                decision: isAccepted ? "accepted" : "",
-                // Add any existing comments to ensure they're not lost
-                comments: appToUpdate.comments || ""
+                decision: decision
             });
 
-            setSavingChanges(prev => ({...prev, [appId]: false}));
+            setSavingChanges(prev => ({ ...prev, [appId]: false }));
 
             // Show success indication
             console.log(`Changes saved for ${appToUpdate.name}`);
         } catch (error) {
             console.error("Error updating application:", error);
-            setSavingChanges(prev => ({...prev, [appId]: false}));
+            setSavingChanges(prev => ({ ...prev, [appId]: false }));
         }
     };
 
-    const handleCommentsChange = (id: string, comments: string) => {
-        // Just update the local state without saving to Firebase immediately
-        setApplications(prevApps =>
-            prevApps.map(app =>
-                app.id === id ? {...app, comments} : app
-            )
-        );
+    const handleCommentsChange = async (id: string, comments: string) => {
+        try {
+            // Save comments to admin data collection
+            await updateAdminComments(id, comments);
 
-        // The changes will be saved when the save button is clicked
+            // Update local state
+            setApplications(prevApps =>
+                prevApps.map(app =>
+                    app.id === id ? { ...app, comments } : app
+                )
+            );
+
+            console.log("Comments saved successfully");
+        } catch (error) {
+            console.error("Error saving comments:", error);
+            alert("Error saving comments. Please try again.");
+        }
     };
 
     const openCommentModal = (app: Application) => {
@@ -306,7 +337,7 @@ function GrantAwards(): JSX.Element {
                                 <h2>CURRENT APPLICATIONS</h2>
                                 <div className="header-actions">
                                     <span className="download-text">Download as CSV</span>
-                                    <button className="download-btn" onClick={handleDownloadCSV}>
+                                    <button className="download-btn" onClick={handleDownloadCSV} title="Download CSV" aria-label="Download applications as CSV">
                                         <FaDownload />
                                     </button>
                                 </div>
@@ -317,73 +348,77 @@ function GrantAwards(): JSX.Element {
                                 <div className="table-scroll-wrapper">
                                     <table className="applications-table">
                                         <thead>
-                                        <tr>
-                                            <th onClick={() => handleSort('name')} className="sortable">
-                                                Name (Last, First) {getSortIcon('name')}
-                                            </th>
-                                            <th onClick={() => handleSort('programType')} className="sortable">
-                                                Program Type {getSortIcon('programType')}
-                                            </th>
-                                            <th onClick={() => handleSort('institution')} className="sortable">
-                                                Institution {getSortIcon('institution')}
-                                            </th>
-                                            <th onClick={() => handleSort('finalScore')} className="sortable">
-                                                Final Avg. Score {getSortIcon('finalScore')}
-                                            </th>
-                                            <th onClick={() => handleSort('requested')} className="sortable">
-                                                Requested {getSortIcon('requested')}
-                                            </th>
-                                            <th onClick={() => handleSort('recommended')} className="sortable">
-                                                Recommended {getSortIcon('recommended')}
-                                            </th>
-                                            <th>Comments</th>
-                                            <th>Save</th>
-                                        </tr>
+                                            <tr>
+                                                <th onClick={() => handleSort('name')} className="sortable">
+                                                    Name (Last, First) {getSortIcon('name')}
+                                                </th>
+                                                <th onClick={() => handleSort('programType')} className="sortable">
+                                                    Program Type {getSortIcon('programType')}
+                                                </th>
+                                                <th onClick={() => handleSort('institution')} className="sortable">
+                                                    Institution {getSortIcon('institution')}
+                                                </th>
+                                                <th onClick={() => handleSort('finalScore')} className="sortable">
+                                                    Final Avg. Score {getSortIcon('finalScore')}
+                                                </th>
+                                                <th onClick={() => handleSort('requested')} className="sortable">
+                                                    Requested {getSortIcon('requested')}
+                                                </th>
+                                                <th onClick={() => handleSort('recommended')} className="sortable">
+                                                    Recommended {getSortIcon('recommended')}
+                                                </th>
+                                                <th>Comments</th>
+                                                <th>Save</th>
+                                            </tr>
                                         </thead>
                                         <tbody>
-                                        {applications.map((app, index) => (
-                                            <tr key={app.id}>
-                                                <td>{app.name}</td>
-                                                <td>{app.programType}</td>
-                                                <td>{app.institution}</td>
-                                                <td>
-                                                    <input
-                                                        type="number"
-                                                        step="0.1"
-                                                        value={app.finalScore}
-                                                        onChange={(e) => handleInputChange(e, index, 'finalScore')}
-                                                        className="editable-input score-input"
-                                                    />
-                                                </td>
-                                                <td>{app.requested}</td>
-                                                <td>
-                                                    <input
-                                                        type="text"
-                                                        value={app.recommended}
-                                                        onChange={(e) => handleInputChange(e, index, 'recommended')}
-                                                        className="editable-input currency-input"
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        className="comment-btn"
-                                                        onClick={() => openCommentModal(app)}
-                                                    >
-                                                        <FaComments />
-                                                        {app.comments && <span className="comment-indicator"></span>}
-                                                    </button>
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        className="save-row-btn"
-                                                        onClick={() => saveChangesToFirestore(index)}
-                                                        disabled={savingChanges[app.id]}
-                                                    >
-                                                        {savingChanges[app.id] ? 'Saving...' : 'Save'}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                            {applications.map((app, index) => (
+                                                <tr key={app.id}>
+                                                    <td>{app.name}</td>
+                                                    <td>{app.programType}</td>
+                                                    <td>{app.institution}</td>
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            step="0.1"
+                                                            value={app.finalScore}
+                                                            readOnly
+                                                            className="editable-input score-input readonly"
+                                                            title="Final Average Score"
+                                                            aria-label={`Final average score for ${app.name}`}
+                                                        />
+                                                    </td>
+                                                    <td>{app.requested}</td>
+                                                    <td>
+                                                        <input
+                                                            type="text"
+                                                            value={app.recommended}
+                                                            onChange={(e) => handleInputChange(e, index, 'recommended')}
+                                                            className="editable-input currency-input"
+                                                            title="Recommended Amount"
+                                                            aria-label={`Recommended funding amount for ${app.name}`}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            className="comment-btn"
+                                                            onClick={() => openCommentModal(app)}
+                                                        >
+                                                            <FaComments />
+                                                            {app.comments && <span className="comment-indicator"></span>}
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            className="save-row-btn"
+                                                            onClick={() => saveChangesToFirestore(index)}
+                                                            disabled={savingChanges[app.id]}
+                                                        >
+                                                            {savingChanges[app.id] ? 'Saving...' : 'Save'}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>

@@ -1,9 +1,9 @@
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore"
 import Review from "../types/review-types"
-import {db} from "../index"
+import { db } from "../index"
 import { getCurrentCycle } from "./application-cycle";
 
-export const submitReview = async (review: Review) => { 
+export const submitReview = async (review: Review) => {
     try {
         const reviewsRef = doc(db, 'reviews');
         await setDoc(reviewsRef, review)
@@ -12,7 +12,7 @@ export const submitReview = async (review: Review) => {
     }
 }
 
-export const getReviewByID = async (id: string): Promise<Review> => { 
+export const getReviewByID = async (id: string): Promise<Review> => {
     try {
         const reviewsRef = doc(db, 'reviews', id);
         const querySnapshot = await getDoc(reviewsRef);
@@ -22,7 +22,7 @@ export const getReviewByID = async (id: string): Promise<Review> => {
     }
 }
 
-export const getCurrentCycleReviewsByReviewer = async (uid: string): Promise<Review[]> => { 
+export const getCurrentCycleReviewsByReviewer = async (uid: string): Promise<Review[]> => {
     try {
         const currentCycle = await getCurrentCycle()
         const reviewsRef = collection(db, 'reviews');

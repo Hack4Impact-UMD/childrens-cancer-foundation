@@ -6,6 +6,8 @@ import logo from "../../assets/ccf-logo.png";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../..";
 import { getSidebarbyRole } from "../../types/sidebar-types";
+import { getReviewsForApplication } from "../../services/review-service";
+import Review, { ReviewSummary } from "../../types/review-types";
 
 const PencilIcon = () => (
     <svg
@@ -31,64 +33,50 @@ interface ReviewerInfo {
     affiliation: string;
 }
 
+interface ApplicationData {
+    title: string;
+    principalInvestigator: string;
+    grantType: string;
+    pdf?: string;
+}
+
 interface FeedbackData {
     significance: string;
     approach: string;
     feasibility: string;
     investigator: string;
     summary: string;
-    internal: string;
-}
-
-interface ApplicationData {
-    title: string;
-    principalInvestigator: string;
-    grantType: string;
-    pdf?: string;
-    primaryReviewer?: string;
-    secondaryReviewer?: string;
-    primaryReviewFeedback?: FeedbackData;
-    secondaryReviewFeedback?: FeedbackData;
-    primaryReviewScore?: string | number;
-    secondaryReviewScore?: string | number;
-    primaryReviewStatus?: string;
-    secondaryReviewStatus?: string;
-    finalScore?: number;
+    internal?: string;
 }
 
 function ApplicationReviewReadOnly(): JSX.Element {
-    const sidebarItems = getSidebarbyRole("reviewer");
-
+    const sidebarItems = getSidebarbyRole("admin");
     const location = useLocation();
+
+    // Extract application ID from URL query params
     const searchParams = new URLSearchParams(location.search);
     const applicationId = searchParams.get("id");
 
-    // Log the URL and extracted ID for debugging
-    useEffect(() => {
-        console.log("Current URL:", location.pathname + location.search);
-        console.log("Extracted Application ID:", applicationId);
-    }, [location, applicationId]);
-
     const [application, setApplication] = useState<ApplicationData | null>(null);
+    const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
     const [primaryReviewer, setPrimaryReviewer] = useState<ReviewerInfo | null>(null);
     const [secondaryReviewer, setSecondaryReviewer] = useState<ReviewerInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeReviewer, setActiveReviewer] = useState<'primary' | 'secondary'>('primary');
 
-    // Fetch application data and reviewer information
     useEffect(() => {
         const fetchApplicationData = async () => {
             if (!applicationId) {
-                setError("No application ID provided");
+                setError("Application ID not provided");
                 setLoading(false);
                 return;
             }
 
             try {
-                console.log("Fetching application data for ID:", applicationId);
+                setLoading(true);
 
-                // Get application document
+                // Fetch application data
                 const applicationRef = doc(db, "applications", applicationId);
                 const applicationDoc = await getDoc(applicationRef);
 
@@ -99,12 +87,15 @@ function ApplicationReviewReadOnly(): JSX.Element {
                 }
 
                 const applicationData = applicationDoc.data() as ApplicationData;
-                console.log("Application data:", applicationData);
                 setApplication(applicationData);
 
-                // Fetch primary reviewer info if available
-                if (applicationData.primaryReviewer) {
-                    const primaryReviewerRef = doc(db, "reviewers", applicationData.primaryReviewer);
+                // Fetch review data using the new service
+                const reviews = await getReviewsForApplication(applicationId);
+                setReviewSummary(reviews);
+
+                // Fetch reviewer information
+                if (reviews.primaryReview?.reviewerId) {
+                    const primaryReviewerRef = doc(db, "reviewers", reviews.primaryReview.reviewerId);
                     const primaryReviewerDoc = await getDoc(primaryReviewerRef);
                     if (primaryReviewerDoc.exists()) {
                         setPrimaryReviewer({
@@ -114,9 +105,8 @@ function ApplicationReviewReadOnly(): JSX.Element {
                     }
                 }
 
-                // Fetch secondary reviewer info if available
-                if (applicationData.secondaryReviewer) {
-                    const secondaryReviewerRef = doc(db, "reviewers", applicationData.secondaryReviewer);
+                if (reviews.secondaryReview?.reviewerId) {
+                    const secondaryReviewerRef = doc(db, "reviewers", reviews.secondaryReview.reviewerId);
                     const secondaryReviewerDoc = await getDoc(secondaryReviewerRef);
                     if (secondaryReviewerDoc.exists()) {
                         setSecondaryReviewer({
@@ -147,25 +137,25 @@ function ApplicationReviewReadOnly(): JSX.Element {
 
     const getCurrentFeedback = (): FeedbackData | null => {
         if (activeReviewer === 'primary') {
-            return application?.primaryReviewFeedback || null;
+            return reviewSummary?.primaryReview?.feedback || null;
         } else {
-            return application?.secondaryReviewFeedback || null;
+            return reviewSummary?.secondaryReview?.feedback || null;
         }
     };
 
     const getCurrentScore = (): string | number | null => {
         if (activeReviewer === 'primary') {
-            return application?.primaryReviewScore || null;
+            return reviewSummary?.primaryReview?.score || null;
         } else {
-            return application?.secondaryReviewScore || null;
+            return reviewSummary?.secondaryReview?.score || null;
         }
     };
 
     const getCurrentStatus = (): string => {
         if (activeReviewer === 'primary') {
-            return application?.primaryReviewStatus || 'not-started';
+            return reviewSummary?.primaryReview?.status || 'not-started';
         } else {
-            return application?.secondaryReviewStatus || 'not-started';
+            return reviewSummary?.secondaryReview?.status || 'not-started';
         }
     };
 
@@ -277,7 +267,7 @@ function ApplicationReviewReadOnly(): JSX.Element {
                             <button
                                 className={`reviewer-toggle-btn ${activeReviewer === 'primary' ? 'active' : ''}`}
                                 onClick={() => setActiveReviewer('primary')}
-                                disabled={!application?.primaryReviewer}
+                                disabled={!reviewSummary?.primaryReview}
                             >
                                 <div>Primary Reviewer</div>
                                 <div className="reviewer-name">
@@ -287,7 +277,7 @@ function ApplicationReviewReadOnly(): JSX.Element {
                             <button
                                 className={`reviewer-toggle-btn ${activeReviewer === 'secondary' ? 'active' : ''}`}
                                 onClick={() => setActiveReviewer('secondary')}
-                                disabled={!application?.secondaryReviewer}
+                                disabled={!reviewSummary?.secondaryReview}
                             >
                                 <div>Secondary Reviewer</div>
                                 <div className="reviewer-name">
@@ -348,14 +338,17 @@ function ApplicationReviewReadOnly(): JSX.Element {
                         )}
 
                         {/* Final Score if both reviews are completed */}
-                        {application?.finalScore && (
-                            <div className="final-score">
-                                Final Score: <span className="score-display">{application.finalScore}</span>
-                                <span className="red-text">
-                                    (Average of both reviewer scores)
-                                </span>
-                            </div>
-                        )}
+                        {reviewSummary?.primaryReview?.status === 'completed' &&
+                            reviewSummary?.secondaryReview?.status === 'completed' && (
+                                <div className="final-score">
+                                    Final Score: <span className="score-display">
+                                        {((reviewSummary.primaryReview.score || 0) + (reviewSummary.secondaryReview.score || 0)) / 2}
+                                    </span>
+                                    <span className="red-text">
+                                        (Average of both reviewer scores)
+                                    </span>
+                                </div>
+                            )}
                     </div>
                 </div>
             </div>

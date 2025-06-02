@@ -31,8 +31,6 @@ export interface AssignReviewers {
     id: string;
     title: string;
     applicant: string;
-    primaryReviewer: string | null;
-    secondaryReviewer: string | null;
     status: 'not-started' | 'in-progress' | 'completed';
     expanded: boolean;
 }
@@ -85,16 +83,6 @@ export interface ApplicationDetails {
 }
 // application-types.ts
 
-export interface AssignReviewers {
-    id: string;
-    title: string;
-    applicant: string;
-    primaryReviewer: string | null;
-    secondaryReviewer: string | null;
-    status: 'not-started' | 'in-progress' | 'completed';
-    expanded: boolean;
-}
-
 export interface Reviewer {
     document_id: string;
     affiliation: string;
@@ -118,7 +106,6 @@ export interface GrantApplication {
     adminOfficialName?: string;
     adminPhoneNumber?: string;
     amountRequested?: number;
-    comments?: string;
     continuation?: boolean;
     continuationYears?: string;
     creatorId?: string;
@@ -127,8 +114,6 @@ export interface GrantApplication {
     decision?: string;
     explanation?: string;
     file?: string;
-    finalScore?: number;
-    fundingAmount?: number;
     includedFundingInfo?: string;
     includedPublishedPaper?: string;
     instituionEmail?: string;
@@ -144,8 +129,6 @@ export interface GrantApplication {
     sources?: string;
     timeframe?: string;
     typesOfCancerAddressed?: string;
-    primaryReviewer?: string;
-    secondaryReviewer?: string;
     status: 'not-started' | 'in-progress' | 'completed';
     expanded: boolean;
 }

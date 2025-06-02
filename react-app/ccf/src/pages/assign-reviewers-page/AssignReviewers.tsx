@@ -4,33 +4,30 @@ import Sidebar from '../../components/sidebar/Sidebar';
 import Button from '../../components/buttons/Button';
 import logo from "../../assets/ccf-logo.png";
 import './AssignReviewers.css';
-import { collection, getDocs, doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, getDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from "../.."; // Assuming you have a firebase config file
 import { useNavigate } from 'react-router-dom';
 import { getSidebarbyRole } from '../../types/sidebar-types';
+import {
+  assignReviewersToApplication,
+  getReviewsForApplication,
+  findReviewForReviewerAndApplication
+} from '../../services/review-service';
+import { GrantApplication, Reviewer } from '../../types/application-types';
 
 // Interface definitions
-interface Reviewer {
-  document_id: string;
-  affiliation: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  name?: string;
-  role: string;
-  title?: string;
-}
-
-interface GrantApplication {
+interface ExtendedGrantApplication extends GrantApplication {
   document_id: string;
   title: string;
-  grantType: string;
   principalInvestigator: string;
-  primaryReviewer?: string;
-  secondaryReviewer?: string;
-  primaryReviewStatus?: 'not-started' | 'in-progress' | 'completed';
-  secondaryReviewStatus?: 'not-started' | 'in-progress' | 'completed';
+  grantType: string;
+  institution: string;
   status: 'not-started' | 'in-progress' | 'completed';
+  primaryReviewerId?: string;
+  secondaryReviewerId?: string;
+  primaryReviewStatus?: string;
+  secondaryReviewStatus?: string;
+  submittedDate?: string;
   expanded: boolean;
 }
 
@@ -40,13 +37,28 @@ const ReviewerSelectionModal: React.FC<{
   onClose: () => void;
   reviewers: Reviewer[];
   onSelectReviewer: (reviewer: Reviewer) => void;
-}> = ({ isOpen, onClose, reviewers, onSelectReviewer }) => {
+  currentApplication?: ExtendedGrantApplication;
+  reviewerType?: 'primary' | 'secondary';
+}> = ({ isOpen, onClose, reviewers, onSelectReviewer, currentApplication, reviewerType }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredReviewers, setFilteredReviewers] = useState<Reviewer[]>(reviewers);
 
   useEffect(() => {
+    let availableReviewers = reviewers;
+
+    // Filter out reviewer already assigned to the other role
+    if (currentApplication && reviewerType) {
+      const otherReviewerId = reviewerType === 'primary'
+        ? currentApplication.secondaryReviewerId
+        : currentApplication.primaryReviewerId;
+
+      if (otherReviewerId) {
+        availableReviewers = reviewers.filter(reviewer => reviewer.document_id !== otherReviewerId);
+      }
+    }
+
     if (searchTerm) {
-      const filtered = reviewers.filter(reviewer =>
+      const filtered = availableReviewers.filter(reviewer =>
         reviewer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reviewer.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reviewer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -54,9 +66,9 @@ const ReviewerSelectionModal: React.FC<{
       );
       setFilteredReviewers(filtered);
     } else {
-      setFilteredReviewers(reviewers);
+      setFilteredReviewers(availableReviewers);
     }
-  }, [searchTerm, reviewers]);
+  }, [searchTerm, reviewers, currentApplication, reviewerType]);
 
   if (!isOpen) return null;
 
@@ -112,7 +124,7 @@ const AssignReviewersPage: React.FC = () => {
   const navigate = useNavigate();
   const sidebarLinks = getSidebarbyRole("admin");
 
-  const [applications, setApplications] = useState<GrantApplication[]>([]);
+  const [applications, setApplications] = useState<ExtendedGrantApplication[]>([]);
   const [reviewers, setReviewers] = useState<Reviewer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,29 +134,46 @@ const AssignReviewersPage: React.FC = () => {
 
   // Fetch applications and reviewers from Firebase
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchApplications = async () => {
       try {
         setLoading(true);
 
         // Fetch applications
         const applicationsSnapshot = await getDocs(collection(db, 'applications'));
-        const applicationsData: GrantApplication[] = [];
+        const applicationsData: ExtendedGrantApplication[] = [];
 
-        applicationsSnapshot.forEach((doc) => {
+        for (const doc of applicationsSnapshot.docs) {
           const data = doc.data();
 
-          // Determine application status based on reviewers and their review status
+          // Get review information from the reviews collection
+          let primaryReviewerId: string | undefined;
+          let secondaryReviewerId: string | undefined;
+          let primaryReviewStatus = 'not-started';
+          let secondaryReviewStatus = 'not-started';
           let status: 'not-started' | 'in-progress' | 'completed' = 'not-started';
 
-          const primaryReviewStatus = data.primaryReviewStatus || 'not-started';
-          const secondaryReviewStatus = data.secondaryReviewStatus || 'not-started';
+          try {
+            const reviewSummary = await getReviewsForApplication(doc.id);
 
-          // Application is completed when both reviewers have completed their reviews
-          if (data.primaryReviewer && data.secondaryReviewer &&
-            primaryReviewStatus === 'completed' && secondaryReviewStatus === 'completed') {
-            status = 'completed';
-          } else if (data.primaryReviewer || data.secondaryReviewer) {
-            status = 'in-progress';
+            if (reviewSummary.primaryReview) {
+              primaryReviewerId = reviewSummary.primaryReview.reviewerId;
+              primaryReviewStatus = reviewSummary.primaryReview.status;
+            }
+
+            if (reviewSummary.secondaryReview) {
+              secondaryReviewerId = reviewSummary.secondaryReview.reviewerId;
+              secondaryReviewStatus = reviewSummary.secondaryReview.status;
+            }
+
+            // Determine application status based on reviews
+            if (primaryReviewStatus === 'completed' && secondaryReviewStatus === 'completed') {
+              status = 'completed';
+            } else if (primaryReviewerId || secondaryReviewerId) {
+              status = 'in-progress';
+            }
+          } catch (error) {
+            // No reviews exist yet, keep default values
+            console.log(`No reviews found for application ${doc.id}`);
           }
 
           applicationsData.push({
@@ -152,14 +181,16 @@ const AssignReviewersPage: React.FC = () => {
             title: data.title || 'Untitled Application',
             grantType: data.grantType || 'Unknown Type',
             principalInvestigator: data.principalInvestigator || 'Unknown',
-            primaryReviewer: data.primaryReviewer || undefined,
-            secondaryReviewer: data.secondaryReviewer || undefined,
-            primaryReviewStatus: data.primaryReviewStatus || 'not-started',
-            secondaryReviewStatus: data.secondaryReviewStatus || 'not-started',
+            institution: data.institution || 'Unknown Institution',
+            primaryReviewerId,
+            secondaryReviewerId,
+            primaryReviewStatus,
+            secondaryReviewStatus,
             status,
+            submittedDate: data.submittedDate || '',
             expanded: false
           });
-        });
+        }
 
         // Sort and group applications by status
         const sortedApplications = [
@@ -176,7 +207,7 @@ const AssignReviewersPage: React.FC = () => {
           }
           acc.push(app);
           return acc;
-        }, [] as GrantApplication[]);
+        }, [] as ExtendedGrantApplication[]);
 
         setApplications(groupedApplications);
 
@@ -192,22 +223,23 @@ const AssignReviewersPage: React.FC = () => {
             email: data.email || '',
             firstName: data.firstName || '',
             lastName: data.lastName || '',
-            name: data.name || '',
+            name: data.name || `${data.firstName} ${data.lastName}`,
             role: data.role || 'reviewer',
-            title: data.title || ''
+            title: data.title || '',
+            assignedApplications: data.assignedApplications || []
           });
         });
 
         setReviewers(reviewersData);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load data. Please refresh the page.');
-      } finally {
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching applications:', error);
+        setError('Failed to load applications. Please try again.');
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchApplications();
   }, []);
 
   const toggleExpand = (id: string) => {
@@ -226,59 +258,36 @@ const AssignReviewersPage: React.FC = () => {
     if (!currentApplicationId || !reviewerType) return;
 
     try {
-      // Get current application
       const application = applications.find(app => app.document_id === currentApplicationId);
       if (!application) return;
 
-      // Update application in Firestore
-      const applicationRef = doc(db, 'applications', currentApplicationId);
-
-      const updateData: { [key: string]: string } = {};
-      updateData[`${reviewerType}Reviewer`] = reviewer.document_id;
-      updateData[`${reviewerType}ReviewStatus`] = 'not-started';
-
-      await updateDoc(applicationRef, updateData);
-
-      // Update reviewer in Firestore - add application to their assignments
-      const reviewerRef = doc(db, 'reviewers', reviewer.document_id);
-
-      // First check if the reviewer has an "assignedApplications" field
-      const reviewerDoc = await getDoc(reviewerRef);
-      const reviewerData = reviewerDoc.data();
-
-      if (reviewerData && !reviewerData.assignedApplications) {
-        // If the field doesn't exist, create it with the new assignment
-        await updateDoc(reviewerRef, {
-          assignedApplications: [currentApplicationId]
-        });
-      } else {
-        // If the field exists, use arrayUnion to add the new assignment
-        await updateDoc(reviewerRef, {
-          assignedApplications: arrayUnion(currentApplicationId)
-        });
+      // Check if this reviewer is already assigned to the other role
+      const otherReviewerId = reviewerType === 'primary' ? application.secondaryReviewerId : application.primaryReviewerId;
+      if (otherReviewerId === reviewer.document_id) {
+        setError('This reviewer is already assigned to the other role for this application. Please select a different reviewer.');
+        return;
       }
 
-      // Update UI
-      setApplications(applications.map(app => {
-        if (app.document_id === currentApplicationId) {
-          const updatedApp = { ...app };
-          if (reviewerType === 'primary') {
-            updatedApp.primaryReviewer = reviewer.document_id;
-            updatedApp.primaryReviewStatus = 'not-started';
-          } else {
-            updatedApp.secondaryReviewer = reviewer.document_id;
-            updatedApp.secondaryReviewStatus = 'not-started';
+      // Update local state only - don't create reviews yet
+      setApplications(prevApps => {
+        const updatedApps = prevApps.map(app => {
+          if (app.document_id === currentApplicationId) {
+            const updatedApp = { ...app };
+            if (reviewerType === 'primary') {
+              updatedApp.primaryReviewerId = reviewer.document_id;
+              updatedApp.primaryReviewStatus = 'not-started';
+            } else {
+              updatedApp.secondaryReviewerId = reviewer.document_id;
+              updatedApp.secondaryReviewStatus = 'not-started';
+            }
+            // Keep status as 'not-started' until both are assigned and confirmed
+            return updatedApp;
           }
+          return app;
+        });
 
-          // Update status if needed
-          if (updatedApp.status === 'not-started') {
-            updatedApp.status = 'in-progress';
-          }
-
-          return updatedApp;
-        }
-        return app;
-      }));
+        return updatedApps;
+      });
 
       // Close modal
       setModalOpen(false);
@@ -286,62 +295,120 @@ const AssignReviewersPage: React.FC = () => {
       setReviewerType(null);
 
     } catch (err) {
-      console.error('Error assigning reviewer:', err);
-      setError('Failed to assign reviewer. Please try again.');
+      console.error('Error selecting reviewer:', err);
+      setError('Failed to select reviewer. Please try again.');
+    }
+  };
+
+  const confirmReviewers = async (applicationId: string) => {
+    try {
+      const application = applications.find(app => app.document_id === applicationId);
+      if (!application) return;
+
+      if (!application.primaryReviewerId || !application.secondaryReviewerId) {
+        setError('Both primary and secondary reviewers must be assigned before confirming.');
+        return;
+      }
+
+      // Check if same reviewer is assigned to both roles (additional safety check)
+      if (application.primaryReviewerId === application.secondaryReviewerId) {
+        setError('The same reviewer cannot be assigned to both primary and secondary roles.');
+        return;
+      }
+
+      setLoading(true);
+
+      // Now actually create the reviews in Firebase
+      await assignReviewersToApplication(
+        applicationId,
+        application.primaryReviewerId,
+        application.secondaryReviewerId
+      );
+
+      // Update reviewer assignments in their documents
+      const reviewerUpdates = [
+        { id: application.primaryReviewerId, applicationId },
+        { id: application.secondaryReviewerId, applicationId }
+      ];
+
+      for (const reviewerUpdate of reviewerUpdates) {
+        const reviewerRef = doc(db, 'reviewers', reviewerUpdate.id);
+        const reviewerDoc = await getDoc(reviewerRef);
+        const reviewerData = reviewerDoc.data();
+
+        if (reviewerData && !reviewerData.assignedApplications) {
+          await updateDoc(reviewerRef, {
+            assignedApplications: [reviewerUpdate.applicationId]
+          });
+        } else {
+          await updateDoc(reviewerRef, {
+            assignedApplications: arrayUnion(reviewerUpdate.applicationId)
+          });
+        }
+      }
+
+      // Update local state to show confirmed status
+      setApplications(prevApps =>
+        prevApps.map(app =>
+          app.document_id === applicationId
+            ? {
+              ...app,
+              status: 'in-progress', // Now move to in-progress since both are assigned and confirmed
+              primaryReviewStatus: 'not-started',
+              secondaryReviewStatus: 'not-started'
+            }
+            : app
+        )
+      );
+
+      setLoading(false);
+      alert('Reviewers assigned successfully!');
+
+    } catch (err) {
+      console.error('Error confirming reviewers:', err);
+      setError('Failed to assign reviewers. Please try again.');
+      setLoading(false);
     }
   };
 
   const removeReviewer = async (applicationId: string, type: 'primary' | 'secondary') => {
     try {
-      // Get current application
       const application = applications.find(app => app.document_id === applicationId);
       if (!application) return;
 
-      const reviewerId = type === 'primary' ? application.primaryReviewer : application.secondaryReviewer;
+      const reviewerId = type === 'primary' ? application.primaryReviewerId : application.secondaryReviewerId;
       if (!reviewerId) return;
 
-      // Update application in Firestore
-      const applicationRef = doc(db, 'applications', applicationId);
-
-      const updateData: { [key: string]: any } = {
-        [`${type}Reviewer`]: null,
-        [`${type}ReviewStatus`]: null
-      };
-
-      await updateDoc(applicationRef, updateData);
-
-      // Update reviewer in Firestore - remove application from their assignments
-      // Note: This is more complex as we need to read the array, filter it, and write it back
-      const reviewerRef = doc(db, 'reviewers', reviewerId);
-      const reviewerDoc = await getDoc(reviewerRef);
-
-      if (reviewerDoc.exists()) {
-        const reviewerData = reviewerDoc.data();
-        if (reviewerData.assignedApplications && Array.isArray(reviewerData.assignedApplications)) {
-          const updatedAssignments = reviewerData.assignedApplications.filter(
-            (id: string) => id !== applicationId
-          );
-
-          await updateDoc(reviewerRef, {
-            assignedApplications: updatedAssignments
-          });
+      // If application is in-progress, it means reviews have been created and confirmed
+      if (application.status === 'in-progress') {
+        // Check if review has been started - if so, warn user
+        const review = await findReviewForReviewerAndApplication(applicationId, reviewerId);
+        if (review && review.status !== 'not-started') {
+          if (!window.confirm('This reviewer has already started their review. Removing them will delete their progress. Are you sure?')) {
+            return;
+          }
         }
+
+        // TODO: Implement review deletion from reviews/{applicationId}/reviewers/{reviewId}
+        // For now, we'll just warn the user that this functionality is limited
+        alert('Reviewer removal from active review processes is currently limited. Please contact system administrator.');
+        return;
       }
 
-      // Update UI
+      // For not-started applications, just remove from local state (no reviews created yet)
       setApplications(applications.map(app => {
         if (app.document_id === applicationId) {
           const updatedApp = { ...app };
           if (type === 'primary') {
-            updatedApp.primaryReviewer = undefined;
+            updatedApp.primaryReviewerId = undefined;
             updatedApp.primaryReviewStatus = undefined;
           } else {
-            updatedApp.secondaryReviewer = undefined;
+            updatedApp.secondaryReviewerId = undefined;
             updatedApp.secondaryReviewStatus = undefined;
           }
 
-          // Update status if needed
-          if (!updatedApp.primaryReviewer && !updatedApp.secondaryReviewer) {
+          // Keep status as not-started if no reviewers assigned
+          if (!updatedApp.primaryReviewerId && !updatedApp.secondaryReviewerId) {
             updatedApp.status = 'not-started';
           }
 
@@ -361,26 +428,6 @@ const AssignReviewersPage: React.FC = () => {
     navigate(`/reviewer/review-application?id=${applicationId}`);
   };
 
-  const confirmReviewers = async (applicationId: string) => {
-    try {
-      const application = applications.find(app => app.document_id === applicationId);
-      if (!application) return;
-
-      if (!application.primaryReviewer || !application.secondaryReviewer) {
-        setError('Both primary and secondary reviewers must be assigned before confirming.');
-        return;
-      }
-
-      // In a real application, you might want to update some fields to indicate confirmation
-      // For now, we'll just update the UI to show a confirmation message
-      alert('Reviewers confirmed successfully!');
-
-    } catch (err) {
-      console.error('Error confirming reviewers:', err);
-      setError('Failed to confirm reviewers. Please try again.');
-    }
-  };
-
   // Function to get reviewer name from ID
   const getReviewerName = (reviewerId?: string) => {
     if (!reviewerId) return '';
@@ -390,7 +437,7 @@ const AssignReviewersPage: React.FC = () => {
   };
 
   // Function to check if at least one review is completed
-  const hasCompletedReview = (app: GrantApplication) => {
+  const hasCompletedReview = (app: ExtendedGrantApplication) => {
     return app.primaryReviewStatus === 'completed' || app.secondaryReviewStatus === 'completed';
   };
 
@@ -406,7 +453,7 @@ const AssignReviewersPage: React.FC = () => {
     return null;
   };
 
-  const renderApplications = (status: GrantApplication['status']) => {
+  const renderApplications = (status: ExtendedGrantApplication['status']) => {
     const filteredApps = applications.filter(app => app.status === status);
 
     if (loading) {
@@ -439,87 +486,58 @@ const AssignReviewersPage: React.FC = () => {
           <div className="ar-application-details">
             <div className="ar-application-divider"></div>
             <div className="ar-reviewer-fields">
-              {status === 'not-started' ? (
-                <>
-                  <div className="ar-reviewer-field">
-                    <label>Primary Reviewer:</label>
-                    <div className="ar-reviewer-input-container">
+              <div className="ar-reviewer-field">
+                <label>Primary Reviewer:</label>
+                {app.primaryReviewerId ? (
+                  <div className="ar-reviewer-assigned">
+                    <span className='ar-reviewer'>{getReviewerName(app.primaryReviewerId)}</span>
+                    {renderReviewStatusBadge(app.primaryReviewStatus)}
+                    {(app.status === 'not-started' || app.status === 'in-progress') && (
                       <button
-                        className="ar-add-reviewer"
-                        onClick={() => openReviewerModal(app.document_id, 'primary')}
+                        className="ar-remove-reviewer"
+                        onClick={() => removeReviewer(app.document_id, 'primary')}
                       >
-                        +
+                        ×
                       </button>
-                    </div>
-                  </div>
-                  <div className="ar-reviewer-field">
-                    <label>Secondary Reviewer:</label>
-                    <div className="ar-reviewer-input-container">
-                      <button
-                        className="ar-add-reviewer"
-                        onClick={() => openReviewerModal(app.document_id, 'secondary')}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="ar-reviewer-field">
-                    <label>Primary Reviewer:</label>
-                    {app.primaryReviewer ? (
-                      <div className="ar-reviewer-assigned">
-                        <span className='ar-reviewer'>{getReviewerName(app.primaryReviewer)}</span>
-                        {renderReviewStatusBadge(app.primaryReviewStatus)}
-                        {status === 'in-progress' && (
-                          <button
-                            className="ar-remove-reviewer"
-                            onClick={() => removeReviewer(app.document_id, 'primary')}
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="ar-reviewer-input-container">
-                        <button
-                          className="ar-add-reviewer"
-                          onClick={() => openReviewerModal(app.document_id, 'primary')}
-                        >
-                          +
-                        </button>
-                      </div>
                     )}
                   </div>
-                  <div className="ar-reviewer-field">
-                    <label>Secondary Reviewer:</label>
-                    {app.secondaryReviewer ? (
-                      <div className="ar-reviewer-assigned">
-                        <span className='ar-reviewer'>{getReviewerName(app.secondaryReviewer)}</span>
-                        {renderReviewStatusBadge(app.secondaryReviewStatus)}
-                        {status === 'in-progress' && (
-                          <button
-                            className="ar-remove-reviewer"
-                            onClick={() => removeReviewer(app.document_id, 'secondary')}
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="ar-reviewer-input-container">
-                        <button
-                          className="ar-add-reviewer"
-                          onClick={() => openReviewerModal(app.document_id, 'secondary')}
-                        >
-                          +
-                        </button>
-                      </div>
+                ) : (
+                  <div className="ar-reviewer-input-container">
+                    <button
+                      className="ar-add-reviewer"
+                      onClick={() => openReviewerModal(app.document_id, 'primary')}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="ar-reviewer-field">
+                <label>Secondary Reviewer:</label>
+                {app.secondaryReviewerId ? (
+                  <div className="ar-reviewer-assigned">
+                    <span className='ar-reviewer'>{getReviewerName(app.secondaryReviewerId)}</span>
+                    {renderReviewStatusBadge(app.secondaryReviewStatus)}
+                    {(app.status === 'not-started' || app.status === 'in-progress') && (
+                      <button
+                        className="ar-remove-reviewer"
+                        onClick={() => removeReviewer(app.document_id, 'secondary')}
+                      >
+                        ×
+                      </button>
                     )}
                   </div>
-                </>
-              )}
+                ) : (
+                  <div className="ar-reviewer-input-container">
+                    <button
+                      className="ar-add-reviewer"
+                      onClick={() => openReviewerModal(app.document_id, 'secondary')}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="ar-action-buttons">
@@ -533,18 +551,25 @@ const AssignReviewersPage: React.FC = () => {
                 </button>
               )}
 
-              {/* Confirm Reviewers button - only for not-started and in-progress */}
-              {(status === 'not-started' || status === 'in-progress') && (
+              {/* Assign/Confirm Reviewers button */}
+              {(status === 'not-started') && (
                 <Button
                   variant="blue"
                   width="100%"
                   height="40px"
                   borderRadius="8px"
                   onClick={() => confirmReviewers(app.document_id)}
-                  disabled={!app.primaryReviewer || !app.secondaryReviewer}
+                  disabled={!app.primaryReviewerId || !app.secondaryReviewerId || loading}
                 >
-                  Confirm Reviewers
+                  {loading ? 'Assigning...' : 'Assign Reviewers'}
                 </Button>
+              )}
+
+              {/* Show assigned status for in-progress */}
+              {status === 'in-progress' && (
+                <div className="ar-assigned-status">
+                  Reviewers Assigned
+                </div>
               )}
             </div>
           </div>
@@ -611,6 +636,8 @@ const AssignReviewersPage: React.FC = () => {
         }}
         reviewers={reviewers}
         onSelectReviewer={handleSelectReviewer}
+        currentApplication={applications.find(app => app.document_id === currentApplicationId)}
+        reviewerType={reviewerType || undefined}
       />
     </div>
   );

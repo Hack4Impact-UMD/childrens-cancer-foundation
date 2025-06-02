@@ -12,11 +12,12 @@ import ApplicationBox, { type Application } from "../../components/applications/
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { auth } from "../.."; // Adjust path as needed
 import { db } from "../.."
+import { getReviewsForReviewer } from "../../services/review-service";
+
 interface FAQItem {
     question: string;
     answer: string;
 }
-//TODO alter this to use Revies collection
 
 interface ReviewerProp {
     faqData: FAQItem[];
@@ -58,7 +59,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
         window.location.href = `/reviewer/review?id=${applicationId}`;
     };
 
-    // Fetch reviewer's assigned applications from Firebase
+    // Fetch reviewer's assigned applications from Firebase using the new review service
     useEffect(() => {
         const fetchAssignedApplications = async () => {
             if (!currentUser) {
@@ -70,7 +71,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
             try {
                 setLoading(true);
 
-                // First, get the reviewer document to find assigned applications
+                // First, get the reviewer document
                 const reviewersRef = collection(db, "reviewers");
                 const reviewerQuery = query(
                     reviewersRef,
@@ -86,76 +87,61 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                 }
 
                 const reviewerDoc = reviewerSnapshot.docs[0];
-                const reviewerData = reviewerDoc.data();
-                const assignedApplications = reviewerData.assignedApplications || [];
+                const reviewerId = reviewerDoc.id;
+
+                // Get all reviews assigned to this reviewer
+                const reviews = await getReviewsForReviewer(reviewerId);
 
                 // Arrays for different application status
                 const notStarted: Application[] = [];
                 const inProgress: Application[] = [];
                 const completed: Application[] = [];
 
-                // Fetch each assigned application
-                for (const appId of assignedApplications) {
-                    const appDoc = await getDoc(doc(db, "applications", appId));
+                // Process each review
+                for (const review of reviews) {
+                    // Fetch application data for each review
+                    const appDoc = await getDoc(doc(db, "applications", review.applicationId));
 
                     if (appDoc.exists()) {
                         const appData = appDoc.data();
 
-                        // Create application object
+                        // Format date for display
+                        const dueDateStr = appData.dueDate
+                            ? new Date(appData.dueDate).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })
+                            : "No deadline";
+
                         const application: Application = {
-                            id: appDoc.id,
+                            id: review.applicationId,
                             applicationType: appData.grantType || "Application",
-                            dueDate: appData.dueDate || "No due date specified",
-                            status: appData.reviewStatus || "not-started",
                             title: appData.title || "Untitled Application",
-                            principalInvestigator: appData.principalInvestigator || "Unknown"
+                            principalInvestigator: appData.principalInvestigator || "Unknown",
+                            status: review.status,
+                            dueDate: `DUE ${dueDateStr.toUpperCase()}`
                         };
 
-                        // Determine which array to add to based on review status
-                        const isPrimaryReviewer = appData.primaryReviewer === reviewerDoc.id;
-                        const isSecondaryReviewer = appData.secondaryReviewer === reviewerDoc.id;
-
-                        // Only include applications where this reviewer is assigned
-                        if (isPrimaryReviewer || isSecondaryReviewer) {
-                            // Track review progress for this specific reviewer
-                            const reviewerSpecificStatus = isPrimaryReviewer
-                                ? appData.primaryReviewStatus
-                                : appData.secondaryReviewStatus;
-
-                            // Format date for display
-                            const dueDateStr = appData.dueDate
-                                ? new Date(appData.dueDate).toLocaleDateString('en-US', {
+                        // Categorize based on review status
+                        if (review.status === "completed") {
+                            // Format submission date
+                            const submittedDate = review.submittedDate
+                                ? new Date(review.submittedDate.toDate()).toLocaleDateString('en-US', {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric'
                                 })
-                                : "No deadline";
+                                : "Recently";
 
-                            if (reviewerSpecificStatus === "completed") {
-                                // Format submission date
-                                const submittedDate = appData.reviewSubmittedDate
-                                    ? new Date(appData.reviewSubmittedDate).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })
-                                    : "Recently";
-
-                                completed.push({
-                                    ...application,
-                                    dueDate: `SUBMITTED: ${submittedDate}`
-                                });
-                            } else if (reviewerSpecificStatus === "in-progress") {
-                                inProgress.push({
-                                    ...application,
-                                    dueDate: `DUE ${dueDateStr.toUpperCase()}`
-                                });
-                            } else {
-                                notStarted.push({
-                                    ...application,
-                                    dueDate: `DUE ${dueDateStr.toUpperCase()}`
-                                });
-                            }
+                            completed.push({
+                                ...application,
+                                dueDate: `SUBMITTED: ${submittedDate}`
+                            });
+                        } else if (review.status === "in-progress") {
+                            inProgress.push(application);
+                        } else {
+                            notStarted.push(application);
                         }
                     }
                 }
@@ -164,10 +150,11 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                 setPendingReviews(notStarted);
                 setInProgressReviews(inProgress);
                 setCompletedReviews(completed);
+
                 setLoading(false);
             } catch (err) {
                 console.error("Error fetching assigned applications:", err);
-                setError("Failed to load applications. Please try again later.");
+                setError("Failed to load assigned applications");
                 setLoading(false);
             }
         };
