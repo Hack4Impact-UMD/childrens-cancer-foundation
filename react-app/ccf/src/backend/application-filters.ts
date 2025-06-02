@@ -34,7 +34,7 @@ export async function getFilteredApplications(filters: FilterOptions): Promise<A
 
         // Execute the query
         const querySnapshot = await getDocs(q);
-        
+
         // Map the results to the expected type
         const applications = querySnapshot.docs.map(doc => ({
             id: doc.id,

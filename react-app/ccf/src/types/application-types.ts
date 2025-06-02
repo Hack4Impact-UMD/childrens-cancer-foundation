@@ -31,8 +31,6 @@ export interface AssignReviewers {
     id: string;
     title: string;
     applicant: string;
-    primaryReviewer: string | null;
-    secondaryReviewer: string | null;
     status: 'not-started' | 'in-progress' | 'completed';
     expanded: boolean;
 }
@@ -82,4 +80,55 @@ export interface ApplicationDetails {
     file: string;
     applicationCycle: string;
     submitTime: Date;
+}
+// application-types.ts
+
+export interface Reviewer {
+    document_id: string;
+    affiliation: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    name?: string;
+    role: string;
+    title?: string;
+    assignedApplications?: string[];
+}
+
+export interface GrantApplication {
+    document_id: string;
+    title: string;
+    grantType: string;
+    principalInvestigator: string;
+    additionalInfo?: string;
+    adminEmail?: string;
+    adminOfficialAddress?: string;
+    adminOfficialName?: string;
+    adminPhoneNumber?: string;
+    amountRequested?: number;
+    continuation?: boolean;
+    continuationYears?: string;
+    creatorId?: string;
+    creditAgreement?: string;
+    dates?: string;
+    decision?: string;
+    explanation?: string;
+    file?: string;
+    includedFundingInfo?: string;
+    includedPublishedPaper?: string;
+    instituionEmail?: string;
+    institution?: string;
+    institutionAddress?: string;
+    institutionEmail?: string;
+    institutionPhoneNumber?: string;
+    namesOfStaff?: string;
+    patentApplied?: string;
+    pdf?: string;
+    recommendedAmount?: number;
+    requestor?: string;
+    sources?: string;
+    timeframe?: string;
+    typesOfCancerAddressed?: string;
+    status: 'not-started' | 'in-progress' | 'completed';
+    expanded: boolean;
 }

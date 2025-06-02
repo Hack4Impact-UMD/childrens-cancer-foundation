@@ -3,38 +3,56 @@ import { FaFileAlt, FaArrowRight } from "react-icons/fa";
 import './ApplicationBox.css';
 
 export interface Application {
-  applicationType: string;
-  dueDate: string;
-  status?: string;
+    id?: string;
+    applicationType: string;
+    dueDate: string;
+    status?: string;
+    title?: string;
+    principalInvestigator?: string;
 }
 
 interface ApplicationBoxProps {
-  applicationType: string;
-  dueDate: string;
-  status?: string;
-  onClick?: (dueDate: string) => void;
+    id?: string;
+    applicationType: string;
+    dueDate: string;
+    status?: string;
+    title?: string;
+    principalInvestigator?: string;
+    onClick?: (dueDate: string, applicationId?: string) => void;
 }
 
-const ApplicationBox = ({ 
-  applicationType, 
-  dueDate, 
-  status,
-  onClick = () => {} 
-}: ApplicationBoxProps) => {
-  return (
-    <div className="single-application-box">
-      <div className="application-info">
-        <FaFileAlt className="application-icon" />
-        <p>{applicationType}</p>
-      </div>
-      <button
-        className="due-date-button"
-        onClick={() => onClick(dueDate)}
-      >
-        {dueDate}
-        <FaArrowRight className="arrow" />
-      </button>
-    </div>
-  );
-};
+const ApplicationBox = ({
+                            id = "",
+                            applicationType,
+                            dueDate,
+                            status,
+                            title,
+                            principalInvestigator,
+                            onClick = () => {}
+                        }: ApplicationBoxProps): JSX.Element => {
+    // Handle click with optional applicationId
+    const handleClick = () => {
+        onClick(dueDate, id);
+    };
+
+    return (
+        <div className="single-application-box">
+            <div className="application-info">
+                <FaFileAlt className="application-icon" />
+                <div className="application-text">
+                    {title && <p className="application-title">{title}</p>}
+                    <p>{applicationType}{principalInvestigator ? ` - ${principalInvestigator}` : ''}</p>
+                </div>
+            </div>
+            <button
+                className="due-date-button"
+                onClick={handleClick}
+            >
+                {dueDate}
+                <FaArrowRight className="arrow" />
+            </button>
+        </div>
+    );
+}
+
 export default ApplicationBox;

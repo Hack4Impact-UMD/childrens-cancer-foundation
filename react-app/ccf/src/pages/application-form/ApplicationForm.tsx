@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import './ApplicationForm.css';
 import Breadcrumb from './Components/Breadcrumbs';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import Information from './subquestions/Information';
 import ApplicationQuestions from './subquestions/ApplicationQuestions';
 import ReviewApplication from './subquestions/Review';
 import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
-import { ResearchApplication } from '../../types/application-types';
-import { uploadResearchApplication } from '../../backend/applicant-form-submit';
+import {ResearchApplication} from '../../types/application-types';
+import {uploadResearchApplication} from '../../backend/applicant-form-submit';
+
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
 };

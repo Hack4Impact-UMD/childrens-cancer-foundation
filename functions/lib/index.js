@@ -60,30 +60,30 @@ exports.addAdminRole = functions.https.onCall((data, context) => {
 // Get Reviewers Function
 exports.getReviewers = functions.https.onRequest(async (req, res) => {
     try {
-      const reviewerUserIds = [];
-  
-      // Recursively list all users in batches of 100
-      const listAllUsers = async (nextPageToken) => {
-        const listUsersResult = await admin.auth().listUsers(1000, nextPageToken);
-        listUsersResult.users.forEach(userRecord => {
-          if (
-            userRecord.customClaims &&
-            userRecord.customClaims["role"] === "reviewer"
-          ) {
-            reviewerUserIds.push(userRecord.uid);
-          }
-        });
-        if (listUsersResult.pageToken) {
-          await listAllUsers(listUsersResult.pageToken);
-        }
-      };
-  
-      await listAllUsers();
-  
-      res.status(200).json({ reviewers: reviewerUserIds });
+        const reviewerUserIds = [];
+
+        // Recursively list all users in batches of 100
+        const listAllUsers = async (nextPageToken) => {
+            const listUsersResult = await admin.auth().listUsers(1000, nextPageToken);
+            listUsersResult.users.forEach(userRecord => {
+                if (
+                    userRecord.customClaims &&
+                    userRecord.customClaims["role"] === "reviewer"
+                ) {
+                    reviewerUserIds.push(userRecord.uid);
+                }
+            });
+            if (listUsersResult.pageToken) {
+                await listAllUsers(listUsersResult.pageToken);
+            }
+        };
+
+        await listAllUsers();
+
+        res.status(200).json({ reviewers: reviewerUserIds });
     } catch (error) {
-      functions.logger.error("Error retrieving reviewers:", error);
-      res.status(500).send("Failed to retrieve reviewers");
+        functions.logger.error("Error retrieving reviewers:", error);
+        res.status(500).send("Failed to retrieve reviewers");
     }
-  });  
+});
 //# sourceMappingURL=index.js.map

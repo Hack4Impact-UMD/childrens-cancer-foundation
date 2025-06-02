@@ -12,7 +12,7 @@
   transition: margin-left 0.3s ease;
 }
 
-.sidebar.collapsed + .ar-assign-reviewers-container {
+.sidebar.collapsed+.ar-assign-reviewers-container {
   margin-left: 70px;
 }
 
@@ -45,12 +45,12 @@
 }
 
 .ar-applications-section {
-  margin-bottom: 20px; 
+  margin-bottom: 20px;
   background-color: white;
   border-radius: 8px;
-  padding: 15px; 
+  padding: 15px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  
+
 }
 
 .ar-applications-section h2 {
@@ -150,7 +150,7 @@
 }
 
 .ar-application-details {
-  padding: 15px; 
+  padding: 15px;
   background-color: #b8d0f7;
 }
 
@@ -164,8 +164,8 @@
 .ar-reviewer-fields {
   display: flex;
   flex-direction: column;
-  gap: 12px; 
-  margin-bottom: 5px; 
+  gap: 12px;
+  margin-bottom: 5px;
 }
 
 .ar-reviewer-field {
@@ -215,12 +215,14 @@
 
 .ar-remove-reviewer {
   background-color: transparent;
-  color: #a0a0a0;
+  color: #ff0000;
   border: none;
   font-size: 13px;
   font-weight: bold;
   cursor: pointer;
-  margin-left: 6px;
+  white-space: nowrap;
+  width: 20px;
+  border-radius: 20px;
 }
 
 .ar-reviewer-completed {
@@ -233,4 +235,207 @@
 .ar-confirm-btn-container {
   display: flex;
   justify-content: center;
+}
+
+/* Modal Styles */
+.ar-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.ar-modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 600px;
+  max-width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ar-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #1e3a8a;
+  color: white;
+}
+
+.ar-modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.ar-modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.ar-modal-search {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ar-search-input-container {
+  position: relative;
+}
+
+.ar-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+}
+
+.ar-search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.ar-reviewers-list {
+  overflow-y: auto;
+  max-height: 400px;
+  padding: 0.5rem;
+}
+
+.ar-reviewer-item {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ar-reviewer-item:hover {
+  background-color: #f1f5f9;
+}
+
+.ar-reviewer-item:last-child {
+  border-bottom: none;
+}
+
+.ar-reviewer-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.ar-reviewer-title {
+  font-weight: normal;
+  color: #64748b;
+}
+
+.ar-reviewer-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.ar-no-reviewers {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Add these styles to your AssignReviewers.css file */
+
+.ar-status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.ar-status-badge.not-started {
+  background-color: #e5e7eb;
+  color: #4b5563;
+}
+
+.ar-status-badge.in-progress {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.ar-status-badge.completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.ar-reviewer-assigned {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ar-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ar-view-reviews-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ar-view-reviews-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.ar-eye-icon {
+  margin-right: 8px;
+}
+
+/* Add styles for the review status within the modal */
+.ar-review-info {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f9fafb;
+  border-radius: 4px;
+}
+
+.ar-review-status-label {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.ar-assigned-status {
+  text-align: center;
+  padding: 10px;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  color: #155724;
+  font-weight: bold;
+  font-size: 14px;
 }
