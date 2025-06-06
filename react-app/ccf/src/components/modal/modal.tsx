@@ -16,6 +16,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }
   // Close modal when clicking outside
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
+      event.stopPropagation()
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
         onClose()
       }
@@ -42,16 +43,21 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }
     }
   }, [isOpen, onClose])
 
+  const close = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    event.stopPropagation()
+    onClose()
+  }
+
   // Don't render anything if the modal is closed
   if (!isOpen) return null
 
   // Use createPortal to render the modal at the end of the document body
   return createPortal(
-    <div className="modal-overlay" role="dialog" aria-modal="true">
+    <div className="modal-overlay" role="dialog" aria-modal="true" onClick={(e) => {e.stopPropagation()}}>
       <div className="modal-container" ref={modalRef}>
         <div className="modal-header">
           {title && <h2 className="modal-title">{title}</h2>}
-          <button className="modal-close-button" onClick={onClose} aria-label="Close">
+          <button className="modal-close-button" onClick={close} aria-label="Close">
             ×
           </button>
         </div>

@@ -9,6 +9,7 @@ import blueDocument from '../../assets/blueDocumentIcon.png';
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../..";
+import CoverPageModal from "../../components/applications/CoverPageModal";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
@@ -26,6 +27,11 @@ function AdminApplicationsDatabase(): JSX.Element {
     });
     const [availableYears, setAvailableYears] = useState<string[]>([]);
     const [availableInstitutions, setAvailableInstitutions] = useState<string[]>([]);
+    const [openModal, setOpenModal] = useState<Application | null>();
+
+    const closeModal = () => {
+        setOpenModal(null)
+    }
 
     useEffect(() => {
         const fetchApplications = async () => {
@@ -192,13 +198,13 @@ function AdminApplicationsDatabase(): JSX.Element {
 
                                 {!collapseState[year] && (
                                     <>
-                                        <div className="applications-container">
+                                        <div className="applications-container" >
                                             {filteredApplications[year].map((app, index) => {
                                                 const isExpanded = expandedApplications[`${year}-${index}`];
                                                 const iconColor = isExpanded ? blueDocument : yellowDocument;
                                                 return (
                                                     <div key={index} className={`single-application-box ${isExpanded ? 'expanded' : ''}`}>
-                                                        <div className="application-header" onClick={() => toggleApplication(year, index)}>
+                                                        <div className="application-header">
                                                             <div className="application-info">
                                                                 <img src={iconColor} alt="Document Icon" className="section-icon" />
                                                                 <div className="application-info-text">
@@ -206,9 +212,6 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                     <p className="subtext">{app.grantType} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
                                                                 </div>
                                                             </div>
-                                                            <button className="expand-collapse-btn">
-                                                                {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
-                                                            </button>
                                                         </div>
 
                                                         {isExpanded && (
@@ -253,19 +256,23 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                     </div>
                                                                 </div>
                                                                 <div className="action-buttons">
-                                                                    <button className="action-button cover-sheet">
+                                                                    <button className="action-button cover-sheet" onClick={(event) => {event.stopPropagation(); setOpenModal(app)}}>
                                                                         Cover Sheet Information
                                                                         <FaChevronRight className="button-icon" />
                                                                     </button>
-                                                                    <button
+                                                                    {/* <button
                                                                         className="action-button completed-app"
                                                                         onClick={() => openApplicationDocument(app.file)}
                                                                     >
                                                                         Completed Application
-                                                                    </button>
+                                                                    </button> */}
                                                                 </div>
+                                                                <CoverPageModal application={app} isOpen={openModal == app} onClose={closeModal}></CoverPageModal>
                                                             </div>
                                                         )}
+                                                        <button className="expand-collapse-btn" onClick={() => toggleApplication(year, index)}>
+                                                            {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
+                                                        </button>
                                                     </div>
                                                 );
                                             })}
