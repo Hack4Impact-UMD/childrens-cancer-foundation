@@ -8,9 +8,10 @@ interface ModalProps {
   onClose: () => void
   children: React.ReactNode
   title?: string
+  fullscreen?: boolean
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, fullscreen }) => {
   const modalRef = useRef<HTMLDivElement>(null)
 
   // Close modal when clicking outside
@@ -54,7 +55,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }
   // Use createPortal to render the modal at the end of the document body
   return createPortal(
     <div className="modal-overlay" role="dialog" aria-modal="true" onClick={(e) => {e.stopPropagation()}}>
-      <div className="modal-container" ref={modalRef}>
+      <div className={"modal-container"+(fullscreen ? " fullscreen" : "")} ref={modalRef}>
         <div className="modal-header">
           {title && <h2 className="modal-title">{title}</h2>}
           <button className="modal-close-button" onClick={close} aria-label="Close">
