@@ -20,6 +20,10 @@ import {
   updateReview,
   submitReview
 } from "../../services/review-service";
+import Button from "../../components/buttons/Button";
+import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
+import { Modal } from "../../components/modal/modal";
+import CoverPageModal from "../../components/applications/CoverPageModal";
 
 function ApplicationReview(): JSX.Element {
   const sidebarItems = getSidebarbyRole("reviewer");
@@ -31,7 +35,8 @@ function ApplicationReview(): JSX.Element {
   const searchParams = new URLSearchParams(location.search);
   const applicationId = searchParams.get("id");
 
-  const [application, setApplication] = useState<any>(null);
+  const [application, setApplication] = useState<Application>();
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -70,7 +75,7 @@ function ApplicationReview(): JSX.Element {
           return;
         }
 
-        const applicationData = applicationDoc.data();
+        const applicationData = applicationDoc.data() as Application;
         setApplication(applicationData);
 
         // Find reviewer info
@@ -181,13 +186,9 @@ function ApplicationReview(): JSX.Element {
     }
   };
 
-  const openApplicationViewer = () => {
-    if (application?.pdf) {
-      window.open(application.pdf, '_blank');
-    } else {
-      alert("Application PDF not available");
-    }
-  };
+  const closeModal = () => {
+    setModalOpen(false)
+  }
 
   if (loading) {
     return (
@@ -246,14 +247,14 @@ function ApplicationReview(): JSX.Element {
 
           <div className="applications-container">
             {application && (
-              <div className="application-info">
+              <div>
                 <h2>Title: {application.title}</h2>
-                <p>Applicant: {application.principalInvestigator}</p>
+                <p>Applicant: {application.grantType == "nonresearch" ? (application as NonResearchApplication).requestor : (application as ResearchApplication).principalInvestigator}</p>
                 <p>Type: {application.grantType}</p>
               </div>
             )}
 
-            <p className="view-app-link" onClick={openApplicationViewer}>VIEW APPLICATION</p>
+            <p className="view-app-link" onClick={() => setModalOpen(true)}>VIEW APPLICATION</p>
             <div className="score-section">
               <p className="score-label">
                 Overall score: (1 <em>exceptional</em> - 5{" "}
@@ -345,22 +346,15 @@ function ApplicationReview(): JSX.Element {
           </div>
 
           <div className="button-group">
-            <button
-              className="save-button"
-              onClick={saveProgress}
-              disabled={saveStatus === 'saving'}
-            >
-              {saveStatus === 'saving' ? 'Saving...' :
+            <Button onClick={saveProgress} disabled={saveStatus === 'saving'}>
+              <div>{saveStatus === 'saving' ? 'Saving...' :
                 saveStatus === 'saved' ? 'Saved!' :
-                  saveStatus === 'error' ? 'Error Saving' : 'Save Progress'}
-            </button>
-            <button
-              className="submit-button"
-              onClick={submitReviewHandler}
-              disabled={saveStatus === 'saving'}
-            >
-              Submit
-            </button>
+                  saveStatus === 'error' ? 'Error Saving' : 'Save Progress'}</div>
+            </Button>
+            <Button onClick={submitReviewHandler} disabled={saveStatus === 'saving'} height="40px">
+                Submit
+            </Button>
+            {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}
           </div>
         </div>
       </div>

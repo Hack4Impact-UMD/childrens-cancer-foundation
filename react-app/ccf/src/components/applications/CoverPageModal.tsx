@@ -4,7 +4,6 @@ import './CoverPageModal.css'
 import '../../pages/application-form/subquestions/SubForm.css'
 import Review from "../../pages/application-form/subquestions/Review";
 import { useEffect, useState } from "react";
-import { getDownloadURL } from "firebase/storage";
 import { downloadPDFsByName } from "../../storage/storage";
 
 interface CoverPageModalProps {
@@ -28,7 +27,7 @@ const CoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps) => 
     },[])
 
     const researchCoverPage = (
-      <div>
+      <div className="cover-page-modal-child">
         {pdfLink ? <a target="_blank" href={pdfLink.url}>{pdfLink.name}</a>: ""}
         <Review type={application.grantType} formData={application} hideFile={true}></Review>
       </div>
@@ -36,7 +35,7 @@ const CoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps) => 
 
     
     return (
-      <Modal isOpen={isOpen} onClose={onClose} children={researchCoverPage}></Modal>
+      <Modal isOpen={isOpen} onClose={onClose} children={researchCoverPage} fullscreen={true}></Modal>
     );
 }
 
