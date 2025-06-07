@@ -143,7 +143,13 @@ ul {
     justify-content: center;
     text-align: center;
     align-items: center;
+    cursor: pointer;
 }
+
+.ApplicantDashboard-application-status:hover {
+    background-color: rgba(217, 217, 217, 0.7);
+}
+
 .application-status-icon {
     margin-left: 10px;
     color: white;
