@@ -285,16 +285,19 @@ function AccountPageReviewers(): JSX.Element {
                 )}
 
                 <label>Confirm Password*</label>
-                <input
+                <div className="confirm-password-container">
+                  <input
                     type="password"
                     placeholder="Enter password again"
                     required
                     value={confirmPwd}
                     onChange={(e) => setConfirmPwd(e.target.value)}
                     onKeyUp={checkConfirmPwd}
-                    className="input"
-                />
-                {pwdUnmatched && <p className="validation">Passwords do not match</p>}
+                    className={pwdUnmatched ? "input input-error" : "input"}
+                  />
+                  {pwdUnmatched && <span className="exclaim-mark">!</span>}
+                </div>
+              
 
                 {pwdUnmatched && (
                     <p className="validation">Passwords do not match</p>
@@ -368,12 +371,6 @@ function AccountPageReviewers(): JSX.Element {
           </div>
 
           <div className="right-container2">
-            {/* remove once given image */}
-            <div className="image-placeholder2"></div>
-          </div>
-        </div>
-
-        <div className="right-container2">
           <div className="images-container">
             <div className="stacked-images">
               <img src={hanleyImage} alt="Lab research" className="research-image" />
@@ -385,6 +382,9 @@ function AccountPageReviewers(): JSX.Element {
           </div>
         </div>
       </div>
+
+        
+    </div>
   );
 }
 

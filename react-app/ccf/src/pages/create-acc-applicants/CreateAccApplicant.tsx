@@ -246,13 +246,7 @@ function AccountPageApplicants(): JSX.Element {
               )}
 
               <label>Confirm Password*</label>
-              <div
-                className={
-                  !pwdUnmatched
-                    ? "confirm-pwd-container"
-                    : "confirm-pwd-container-exclaim"
-                }
-              >
+              <div className="confirm-password-container">
                 <input
                   type="password"
                   placeholder="Enter password again"
@@ -260,9 +254,9 @@ function AccountPageApplicants(): JSX.Element {
                   value={confirmPwd}
                   onChange={(e) => setConfirmPwd(e.target.value)}
                   onKeyUp={checkConfirmPwd}
-                  className="input"
+                  className={pwdUnmatched ? "input input-error" : "input"}
                 />
-                {pwdUnmatched && <p id="exclaim">!</p>}
+                {pwdUnmatched && <span className="exclaim-mark">!</span>}
               </div>
 
               {pwdUnmatched && (
