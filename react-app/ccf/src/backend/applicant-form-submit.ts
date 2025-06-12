@@ -61,7 +61,7 @@ export const uploadNonResearchApplication = async(
             submitTime: new Date(),
         }
         
-        const newApplicationRef = doc(db, 'applications', Date.now().toString());
+        const newApplicationRef = doc(db, 'applications');
         await setDoc(newApplicationRef, {
             ...application,
             ...appDetails
