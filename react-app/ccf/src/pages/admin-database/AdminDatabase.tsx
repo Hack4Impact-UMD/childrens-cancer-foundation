@@ -13,6 +13,7 @@ import CoverPageModal from "../../components/applications/CoverPageModal";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
+import Button from "../../components/buttons/Button";
 
 function AdminApplicationsDatabase(): JSX.Element {
     const [applicationsData, setApplicationsData] = useState<{ [year: string]: Application[] }>({});
@@ -256,10 +257,10 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                     </div>
                                                                 </div>
                                                                 <div className="action-buttons">
-                                                                    <button className="action-button cover-sheet" onClick={(event) => {event.stopPropagation(); setOpenModal(app)}}>
+                                                                    <Button className="action-button cover-sheet" onClick={(event) => {event.stopPropagation(); setOpenModal(app)}}>
                                                                         Cover Sheet Information
                                                                         <FaChevronRight className="button-icon" />
-                                                                    </button>
+                                                                    </Button>
                                                                     {/* <button
                                                                         className="action-button completed-app"
                                                                         onClick={() => openApplicationDocument(app.file)}
