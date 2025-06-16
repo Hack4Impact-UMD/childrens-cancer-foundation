@@ -8,6 +8,8 @@ import { db } from "../..";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { getReviewsForApplication } from "../../services/review-service";
 import Review, { ReviewSummary } from "../../types/review-types";
+import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
+import CoverPageModal from "../../components/applications/CoverPageModal";
 
 const PencilIcon = () => (
     <svg
@@ -33,13 +35,6 @@ interface ReviewerInfo {
     affiliation: string;
 }
 
-interface ApplicationData {
-    title: string;
-    principalInvestigator: string;
-    grantType: string;
-    pdf?: string;
-}
-
 interface FeedbackData {
     significance: string;
     approach: string;
@@ -57,8 +52,9 @@ function ApplicationReviewReadOnly(): JSX.Element {
     const searchParams = new URLSearchParams(location.search);
     const applicationId = searchParams.get("id");
 
-    const [application, setApplication] = useState<ApplicationData | null>(null);
+    const [application, setApplication] = useState<Application | null>(null);
     const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [primaryReviewer, setPrimaryReviewer] = useState<ReviewerInfo | null>(null);
     const [secondaryReviewer, setSecondaryReviewer] = useState<ReviewerInfo | null>(null);
     const [loading, setLoading] = useState(true);
@@ -86,7 +82,7 @@ function ApplicationReviewReadOnly(): JSX.Element {
                     return;
                 }
 
-                const applicationData = applicationDoc.data() as ApplicationData;
+                const applicationData = applicationDoc.data() as Application;
                 setApplication(applicationData);
 
                 // Fetch review data using the new service
@@ -128,8 +124,8 @@ function ApplicationReviewReadOnly(): JSX.Element {
     }, [applicationId]);
 
     const openApplicationViewer = () => {
-        if (application?.pdf) {
-            window.open(application.pdf, '_blank');
+        if (application?.file) {
+            window.open(application.file, '_blank');
         } else {
             alert("Application PDF not available");
         }
@@ -163,6 +159,10 @@ function ApplicationReviewReadOnly(): JSX.Element {
         if (!reviewer) return 'Not Assigned';
         return `${reviewer.firstName} ${reviewer.lastName}`;
     };
+
+    const closeModal = () => {
+        setModalOpen(false)
+    }
 
     const feedbackLabels = {
         significance: 'Significance',
@@ -255,12 +255,12 @@ function ApplicationReviewReadOnly(): JSX.Element {
                         {application && (
                             <div className="application-info">
                                 <h2>Title: {application.title}</h2>
-                                <p>Applicant: {application.principalInvestigator}</p>
+                                <p>Applicant: {application.grantType == "nonresearch" ? (application as NonResearchApplication).requestor : (application as ResearchApplication).principalInvestigator}</p>
                                 <p>Type: {application.grantType}</p>
                             </div>
                         )}
 
-                        <p className="view-app-link" onClick={openApplicationViewer}>VIEW APPLICATION</p>
+                        <p className="view-app-link" onClick={() => setModalOpen(true)}>VIEW APPLICATION</p>
 
                         {/* Reviewer Toggle */}
                         <div className="reviewer-toggle">
@@ -351,6 +351,7 @@ function ApplicationReviewReadOnly(): JSX.Element {
                             )}
                     </div>
                 </div>
+                {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}
             </div>
         </div>
     );
