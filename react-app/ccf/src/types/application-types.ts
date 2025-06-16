@@ -76,6 +76,7 @@ export interface NonResearchApplication {
 export interface ApplicationDetails {
     decision: "pending" | "accepted" | "rejected";
     creatorId: string;
+    applicationId?: string;
     grantType: "research" | "nextgen" | "nonresearch";
     file: string;
     applicationCycle: string;

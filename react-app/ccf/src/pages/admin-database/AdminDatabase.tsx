@@ -14,6 +14,7 @@ import { Application, NonResearchApplication, ResearchApplication } from "../../
 import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
 import Button from "../../components/buttons/Button";
+import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
 
 function AdminApplicationsDatabase(): JSX.Element {
     const [applicationsData, setApplicationsData] = useState<{ [year: string]: Application[] }>({});
@@ -49,9 +50,6 @@ function AdminApplicationsDatabase(): JSX.Element {
 
                     // Map Firestore data to Application interface
                     const application: Application = data as Application
-
-                    console.log(application);
-
                     // Add to applications by year
                     if (!applications[year]) {
                         applications[year] = [];
@@ -64,7 +62,6 @@ function AdminApplicationsDatabase(): JSX.Element {
                 });
 
                 setApplicationsData(applications);
-                console.log(applications);
                 setAvailableYears(Array.from(years).sort((a, b) => Number(b) - Number(a)));
                 setAvailableInstitutions(Array.from(institutions).sort());
 
@@ -268,7 +265,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                         Completed Application
                                                                     </button> */}
                                                                 </div>
-                                                                <CoverPageModal application={app} isOpen={openModal == app} onClose={closeModal}></CoverPageModal>
+                                                                <AdminCoverPageModal application={app} isOpen={openModal == app} onClose={closeModal}></AdminCoverPageModal>
                                                             </div>
                                                         )}
                                                         <button className="expand-collapse-btn" onClick={() => toggleApplication(year, index)}>
