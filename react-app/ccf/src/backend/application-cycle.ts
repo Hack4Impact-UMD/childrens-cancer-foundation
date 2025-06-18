@@ -21,6 +21,29 @@ export const getAllCycles = async (): Promise<Array<ApplicationCycle>> => {
   })
 }
 
+export const updateCycleStage = async (newStage: ApplicationCycle["stage"]): Promise<boolean> => {
+  try {
+    const q = query(collection(db, "applicationCycles"), where("current", "==", true), limit(1));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      console.error("No current application cycle found.");
+      return false;
+    }
+
+    const docRef = snapshot.docs[0].ref;
+
+    await updateDoc(docRef, {
+      stage: newStage
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error updating cycle stage:", error);
+    return false;
+  }
+};
+
 // update application cycle deadlines
 export const updateCurrentCycleDeadlines = async (deadlines: {
   nextGenDate?: dayjs.Dayjs | null;
