@@ -60,9 +60,7 @@ function AdminEditInformation(): JSX.Element {
     useEffect(() => {
       const loadCycle = async () => {
       const data = await getCurrentCycle();
-      console.log("Fetched Cycle:", data);
         if (data?.stage) {
-          console.log("Setting current stage to:", data.stage);
           setCurrentStage(data.stage);
         }
       };
@@ -87,7 +85,6 @@ function AdminEditInformation(): JSX.Element {
 
     const handleNewCycle = () => {
         // Logic to create new application cycle?
-        console.log("New Cycle Confirmed");
         setShowConfirmModal(false);
     }
 
