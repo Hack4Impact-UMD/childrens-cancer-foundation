@@ -7,4 +7,5 @@ export default interface ApplicationCycle {
     researchDeadline: Date;
     reviewerDeadline: Date;
     startDate: Date;
+    stage: "Applications Open" | "Reviewing Applications" | "Reviews Closed" | "Final Decisions"
 }
