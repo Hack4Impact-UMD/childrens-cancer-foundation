@@ -38,7 +38,7 @@ function NRInformation({ formData, setFormData }: InformationProps): JSX.Element
           className="text-input"
         />
 
-<p className="text-label">Institution*</p>
+        <p className="text-label">Institution*</p>
         <input
           type="text"
           name="institution"
@@ -49,7 +49,7 @@ function NRInformation({ formData, setFormData }: InformationProps): JSX.Element
           className="text-input"
         />
 
-<p className="text-label">Phone Number*</p>
+        <p className="text-label">Phone Number*</p>
         <input
           type="text"
           name="institutionPhoneNumber"
@@ -61,7 +61,7 @@ function NRInformation({ formData, setFormData }: InformationProps): JSX.Element
         />
 
 
-<p className="text-label">Email*</p>
+        <p className="text-label">Email*</p>
         <input
           type="text"
           name="institutionEmail"
@@ -75,7 +75,7 @@ function NRInformation({ formData, setFormData }: InformationProps): JSX.Element
 
       </div>
       <div className="right-container">
-        
+
       </div>
     </div>
   );
