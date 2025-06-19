@@ -1,14 +1,15 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import './ApplicationForm.css';
 import Breadcrumb from './Components/Breadcrumbs';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Information from './subquestions/Information';
 import ApplicationQuestions from './subquestions/ApplicationQuestions';
 import ReviewApplication from './subquestions/Review';
 import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
-import {ResearchApplication} from '../../types/application-types';
-import {uploadResearchApplication} from '../../backend/applicant-form-submit';
+import { ResearchApplication } from '../../types/application-types';
+import { uploadResearchApplication } from '../../backend/applicant-form-submit';
+import { validateEmail, validatePhoneNumber } from '../../utils/validation';
 
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
@@ -22,14 +23,14 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const totalPages = pages.length;
     const navigate = useNavigate();
     const requiredFields = [
-        'title', 'principleInvestigator', 'typesOfCancerAddressed', 'namesOfStaff', 'institution', 
+        'title', 'principleInvestigator', 'typesOfCancerAddressed', 'namesOfStaff', 'institution',
         'institutionAddress', 'institutionPhoneNumber', 'institutionEmail', 'adminEmail',
         'adminOfficialName', 'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement', 'patentApplied',
         'includedFundingInfo', 'amountRequested', 'dates', 'continuation', 'file'
     ]
     const [formData, setFormData] = useState({
         title: '',
-        principalInvestigator: '', 
+        principalInvestigator: '',
         typesOfCancerAddressed: '',
         institution: '',
         namesOfStaff: '',
@@ -50,6 +51,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         continuationYears: '',
         file: null
     });
+    const [errors, setErrors] = useState<any>({});
     const goBack = () => {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
@@ -61,21 +63,31 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
     const handleSubmit = () => {
+        if (!isFormValid(true)) {
+            alert("Please fill all required fields and correct the errors before submitting.");
+            return;
+        }
         try {
-            if (isFormValid()) {
-                const application: ResearchApplication = formData as ResearchApplication
-                if (formData.file)
-                    uploadResearchApplication(application, formData.file, type == "NextGen")
-            }
+            const application: ResearchApplication = formData as ResearchApplication
+            if (formData.file)
+                uploadResearchApplication(application, formData.file, type == "NextGen")
         } catch (e) {
             console.log(e)
         }
 
         navigate('/applicant/dashboard')
     };
-    // Validation function to check if all required fields are filled
-    const isFormValid = () => {
-        return requiredFields.reduce((acc, curr) => (formData as any)[curr] !== '' && (formData as any)[curr] !== null && acc, true);
+    const isFormValid = (checkAll = false) => {
+        const hasRequiredFields = requiredFields.reduce((acc, curr) => {
+            const value = (formData as any)[curr];
+            const result = value !== '' && value !== null;
+            if (checkAll && !result) {
+                setErrors((prev: any) => ({ ...prev, [curr]: "This field cannot be empty." }));
+            }
+            return acc && result;
+        }, true);
+        const hasNoErrors = Object.values(errors).every(error => error === null || error === '' || error === undefined);
+        return hasRequiredFields && hasNoErrors;
     };
     const renderPage = () => {
         switch (currentPage) {
@@ -84,7 +96,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             case 2:
                 return <AboutGrant type={type} formData={formData} />;
             case 3:
-                return <Information formData={formData} setFormData={setFormData} />;
+                return <Information formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} />;
             case 4:
                 return <ApplicationQuestions formData={formData} setFormData={setFormData} />;
             case 5:

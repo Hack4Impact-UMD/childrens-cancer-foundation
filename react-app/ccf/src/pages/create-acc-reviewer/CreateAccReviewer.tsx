@@ -3,10 +3,10 @@ import "./CreateAccReviewer.css";
 import logo from '../../assets/ccf-logo.png';
 import { useEffect, useState } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import {collection, query, where, getDocs } from "firebase/firestore";
-import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { VALID_INSTITUTIONS, validateInstitution, checkEmailCreateAcc, checkPasswordRequirements as checkPasswordRequirementsUtil } from "../../utils/validation";
 import { addReviewerUser } from "../../users/usermanager";
-import {UserData} from "../../types/usertypes"
+import { UserData } from "../../types/usertypes"
 import { db, storage } from "../../index"
 import { ref, getDownloadURL } from "firebase/storage";
 
@@ -65,7 +65,7 @@ function AccountPageReviewers(): JSX.Element {
     loadImages();
   }, []);
 
-  useEffect(() => {}, [
+  useEffect(() => { }, [
     firstName,
     lastName,
     title,
@@ -76,20 +76,15 @@ function AccountPageReviewers(): JSX.Element {
     pwdUnmatched,
   ]);
 
-  /* Check if user input satisfies password requirements */
   const checkPasswordRequirements = (password: string) => {
-    setSpecialChar(/[\W_]/.test(password)); // Checks for special character
-    setCapitalLetter(/[A-Z]/.test(password)); // Checks for capital letter
-    setNumber(/[0-9]/.test(password)); // Checks for number
+    const { specialChar, capitalLetter, number } = checkPasswordRequirementsUtil(password);
+    setSpecialChar(specialChar);
+    setCapitalLetter(capitalLetter);
+    setNumber(number);
   };
 
   const checkEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.(com|edu|org)$/i;
-    if (!emailRegex.test(email)) {
-      setEmailError(true);
-    } else {
-      setEmailError(false);
-    }
+    setEmailError(!checkEmailCreateAcc(email));
   };
 
   const checkEmailWhitelist = async (email: string) => {
@@ -156,235 +151,232 @@ function AccountPageReviewers(): JSX.Element {
   };
 
   return (
-      <div>
-        <div className="box2">
-          <div className="left-container2">
-            <div className="content2">
-              <div className="header-container2">
-                <img
-                    src={logo}
-                    className="logo2"
-                    alt="Circular logo with red borders encompassing 'The children's cancer Foundation, Inc.' and three individuals in the middle"
-                />
-                <h1 className="header2">Create Account</h1>
+    <div>
+      <div className="box2">
+        <div className="left-container2">
+          <div className="content2">
+            <div className="header-container2">
+              <img
+                src={logo}
+                className="logo2"
+                alt="Circular logo with red borders encompassing 'The children's cancer Foundation, Inc.' and three individuals in the middle"
+              />
+              <h1 className="header2">Create Account</h1>
+            </div>
+
+            <form className="form-container2">
+              <div className="name-container">
+                <div>
+                  <label>First Name*</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your first name"
+                    id="firstName"
+                    className="input"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                </div>
+                <div className="lastName-container">
+                  <label>Last Name*</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your last name"
+                    id="lastName"
+                    className="input"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                </div>
               </div>
 
-              <form className="form-container2">
-                <div className="name-container">
-                  <div>
-                    <label>First Name*</label>
+              <label>Title</label>
+              <input
+                type="text"
+                placeholder="M.D., Ph.D., etc."
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="input"
+              />
+
+              <label>Email*</label>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                required
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  checkEmail(e.target.value);
+                }}
+                className="input"
+              />
+
+              {emailError && (
+                <p className="validation">Please enter a valid email address</p>
+              )}
+
+              {emailWhitelistError && (
+                <p className="validation">Email does not have permission to create reviewer account. Please contact CCF if you believe this to be a mistake.</p>
+              )}
+
+              <label>Password*</label>
+              <input
+                type="password"
+                placeholder="Create a password"
+                required
+                value={pwd}
+                onChange={(e) => {
+                  setPwd(e.target.value);
+                  checkPasswordRequirements(e.target.value);
+                }}
+                onFocus={() => setShowReqs(true)} // Show on focus
+                onBlur={() => setShowReqs(false)}
+                onKeyUp={checkConfirmPwd}
+                className="input"
+              />
+
+              {showReqs && (
+                <div className="pwd-reqs">
+                  <p>Password requires:</p>
+                  <label id="checkbox">
                     <input
-                        type="text"
-                        placeholder="Enter your first name"
-                        id="firstName"
-                        className="input"
-                        required
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                      type="checkbox"
+                      name="options"
+                      value="Yes"
+                      checked={specialChar}
+                      readOnly
                     />
-                  </div>
-                  <div className="lastName-container">
-                    <label>Last Name*</label>
+                    One special character
+                  </label>
+                  <label id="checkbox">
                     <input
-                        type="text"
-                        placeholder="Enter your last name"
-                        id="lastName"
-                        className="input"
-                        required
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                      type="checkbox"
+                      name="options"
+                      value="Yes"
+                      checked={capitalLetter}
+                      readOnly
                     />
-                  </div>
+                    One capital letter
+                  </label>
+                  <label id="checkbox">
+                    <input
+                      type="checkbox"
+                      name="options"
+                      value="Yes"
+                      checked={number}
+                      readOnly
+                    />
+                    One number
+                  </label>
                 </div>
+              )}
 
-                <label>Title</label>
-                <input
-                    type="text"
-                    placeholder="M.D., Ph.D., etc."
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="input"
-                />
+              {((!specialChar || !number || !capitalLetter) && pwd && !showReqs) && (
+                <p className="validation">At least one password requirement was not met</p>
+              )}
 
-                <label>Email*</label>
-                <input
-                    type="email"
-                    placeholder="Enter your email"
-                    required
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      checkEmail(e.target.value);
-                    }}
-                    className="input"
-                />
+              <label>Confirm Password*</label>
+              <input
+                type="password"
+                placeholder="Enter password again"
+                required
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                onKeyUp={checkConfirmPwd}
+                className="input"
+              />
+              {pwdUnmatched && <p className="validation">Passwords do not match</p>}
 
-                {emailError && (
-                    <p className="validation">Please enter a valid email address</p>
-                )}
+              <label htmlFor="affiliation">Institution/Hospital Affiliation*</label>
+              <select
+                id="affiliation"
+                value={affiliation}
+                onChange={(e) => {
+                  setAffiliation(e.target.value);
+                  setInstitutionError(!validateInstitution(e.target.value));
+                }}
+                required
+                className="input"
+              >
+                <option value="">Select an institution</option>
+                {VALID_INSTITUTIONS.map((institution) => (
+                  <option key={institution} value={institution}>
+                    {institution}
+                  </option>
+                ))}
+              </select>
+              {institutionError && (
+                <p className="validation">Please select a valid institution</p>
+              )}
 
-                {emailWhitelistError && (
-                    <p className="validation">Email does not have permission to create reviewer account. Please contact CCF if you believe this to be a mistake.</p>
-                )}
-
-                <label>Password*</label>
-                <input
-                    type="password"
-                    placeholder="Create a password"
-                    required
-                    value={pwd}
-                    onChange={(e) => {
-                      setPwd(e.target.value);
-                      checkPasswordRequirements(e.target.value);
-                    }}
-                    onFocus={() => setShowReqs(true)} // Show on focus
-                    onBlur={() => setShowReqs(false)}
-                    onKeyUp={checkConfirmPwd}
-                    className="input"
-                />
-
-                {showReqs && (
-                    <div className="pwd-reqs">
-                      <p>Password requires:</p>
-                      <label id="checkbox">
-                        <input
-                            type="checkbox"
-                            name="options"
-                            value="Yes"
-                            checked={specialChar}
-                            readOnly
-                        />
-                        One special character
-                      </label>
-                      <label id="checkbox">
-                        <input
-                            type="checkbox"
-                            name="options"
-                            value="Yes"
-                            checked={capitalLetter}
-                            readOnly
-                        />
-                        One capital letter
-                      </label>
-                      <label id="checkbox">
-                        <input
-                            type="checkbox"
-                            name="options"
-                            value="Yes"
-                            checked={number}
-                            readOnly
-                        />
-                        One number
-                      </label>
-                    </div>
-                )}
-
-                {((!specialChar || !number || !capitalLetter) && pwd && !showReqs) &&  (
-                    <p className="validation">At least one password requirement was not met</p>
-                )}
-
-                <label>Confirm Password*</label>
-                <input
-                    type="password"
-                    placeholder="Enter password again"
-                    required
-                    value={confirmPwd}
-                    onChange={(e) => setConfirmPwd(e.target.value)}
-                    onKeyUp={checkConfirmPwd}
-                    className="input"
-                />
-                {pwdUnmatched && <p className="validation">Passwords do not match</p>}
-
-                {pwdUnmatched && (
-                    <p className="validation">Passwords do not match</p>
-                )}
-
-                <label>Institution/Hospital Affiliation*</label>
-                <select
-                    value={affiliation}
-                    onChange={(e) => {
-                      setAffiliation(e.target.value);
-                      setInstitutionError(!validateInstitution(e.target.value));
-                    }}
-                    required
-                    className="input"
-                >
-                  <option value="">Select an institution</option>
-                  {VALID_INSTITUTIONS.map((institution) => (
-                      <option key={institution} value={institution}>
-                        {institution}
-                      </option>
-                  ))}
-                </select>
-                {institutionError && (
-                    <p className="validation">Please select a valid institution</p>
-                )}
-
-                <p className="acc-req2">
-                  Already have an account?{" "}
-                  <Link to="/login" className="acc-req2" id="link-to">
-                    <b>Log in</b>
-                  </Link>
-                </p>
-                <button
-                    type="submit"
-                    className={
-                      !firstName ||
-                      !lastName ||
-                      !affiliation ||
-                      !email ||
-                      !pwd ||
-                      (pwd && !confirmPwd) ||
-                      !specialChar ||
-                      !capitalLetter ||
-                      !number ||
-                      pwdUnmatched ||
-                      emailError ||
-                      institutionError
-                          ? "disable-submit"
-                          : "signup-btn2"
-                    }
-                    onClick={handleSubmit}
-                    disabled={
-                        !firstName ||
-                        !lastName ||
-                        !affiliation ||
-                        !email ||
-                        !pwd ||
-                        (pwd && !confirmPwd) ||
-                        !specialChar ||
-                        !capitalLetter ||
-                        !number ||
-                        pwdUnmatched ||
-                        emailError ||
-                        institutionError
-                    }
-                >
-                  Sign Up
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <div className="right-container2">
-            {/* remove once given image */}
-            <div className="image-placeholder2"></div>
+              <p className="acc-req2">
+                Already have an account?{" "}
+                <Link to="/login" className="acc-req2" id="link-to">
+                  <b>Log in</b>
+                </Link>
+              </p>
+              <button
+                type="submit"
+                className={
+                  !firstName ||
+                    !lastName ||
+                    !affiliation ||
+                    !email ||
+                    !pwd ||
+                    (pwd && !confirmPwd) ||
+                    !specialChar ||
+                    !capitalLetter ||
+                    !number ||
+                    pwdUnmatched ||
+                    emailError ||
+                    institutionError
+                    ? "disable-submit"
+                    : "signup-btn2"
+                }
+                onClick={handleSubmit}
+                disabled={
+                  !firstName ||
+                  !lastName ||
+                  !affiliation ||
+                  !email ||
+                  !pwd ||
+                  (pwd && !confirmPwd) ||
+                  !specialChar ||
+                  !capitalLetter ||
+                  !number ||
+                  pwdUnmatched ||
+                  emailError ||
+                  institutionError
+                }
+              >
+                Sign Up
+              </button>
+            </form>
           </div>
         </div>
 
         <div className="right-container2">
-          <div className="images-container">
-            <div className="stacked-images">
-              <img src={hanleyImage} alt="Lab research" className="research-image" />
-              <img src={toretskyImage} alt="Doctor with patient" className="research-image" />
-            </div>
-            <div className="yellow-overlay">
-              <img src={yellowOverlay} alt="" className="overlay-image" />
-            </div>
+          {/* remove once given image */}
+          <div className="image-placeholder2"></div>
+        </div>
+      </div>
+
+      <div className="right-container2">
+        <div className="images-container">
+          <div className="stacked-images">
+            <img src={hanleyImage} alt="Lab research" className="research-image" />
+            <img src={toretskyImage} alt="Doctor with patient" className="research-image" />
+          </div>
+          <div className="yellow-overlay">
+            <img src={yellowOverlay} alt="" className="overlay-image" />
           </div>
         </div>
       </div>
+    </div>
   );
 }
 
