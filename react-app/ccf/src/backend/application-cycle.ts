@@ -1,4 +1,4 @@
-import { collection, getDocs, updateDoc, doc, Timestamp, where, limit, query } from "firebase/firestore";
+import { collection, getDocs, updateDoc, doc, Timestamp, where, limit, query, addDoc } from "firebase/firestore";
 import { db } from "../index";
 import dayjs from "dayjs";
 import ApplicationCycle from "../types/applicationCycle-types"
@@ -20,6 +20,29 @@ export const getAllCycles = async (): Promise<Array<ApplicationCycle>> => {
     return d.data() as ApplicationCycle
   })
 }
+
+export const updateCycleStage = async (newStage: ApplicationCycle["stage"]): Promise<boolean> => {
+  try {
+    const q = query(collection(db, "applicationCycles"), where("current", "==", true), limit(1));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      console.error("No current application cycle found.");
+      return false;
+    }
+
+    const docRef = snapshot.docs[0].ref;
+
+    await updateDoc(docRef, {
+      stage: newStage
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error updating cycle stage:", error);
+    return false;
+  }
+};
 
 // update application cycle deadlines
 export const updateCurrentCycleDeadlines = async (deadlines: {
@@ -62,3 +85,37 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
     return false;
   }
 };
+
+export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
+  try {
+    const q = query(collection(db, "applicationCycles"), where("current", "==", true), limit(1));
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      const currentCycleDocRef = snapshot.docs[0].ref;
+      await updateDoc(currentCycleDocRef, {
+        current: false,
+        endDate: Timestamp.now(),
+      });
+    }
+
+    const oneYearFromNow = dayjs().add(1, 'year').toDate();
+
+    await addDoc(collection(db, "applicationCycles"), {
+      name: newCycleName,
+      current: true,
+      startDate: Timestamp.now(),
+      endDate: Timestamp.fromDate(oneYearFromNow),
+      stage: 'Application Period',
+      nextGenDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
+      researchDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
+      nonResearchDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
+      reviewerDeadline: Timestamp.fromDate(dayjs().add(8, 'month').hour(23).minute(59).toDate()),
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error starting new cycle", error);
+    return false;
+  }
+}
