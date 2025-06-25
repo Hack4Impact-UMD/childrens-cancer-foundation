@@ -16,7 +16,7 @@ function NRApplicationForm(): JSX.Element {
     const navigate = useNavigate();
 
     const requiredFields = [
-        'title', 'requestor', 'institution', 'institutionPhoneNumber', 'institutionEmail', 
+        'title', 'requestor', 'institution', 'institutionPhoneNumber', 'institutionEmail',
         'amountRequested', 'timeframe', 'file'
     ]
 

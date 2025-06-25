@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { addApplicantUser } from "../../users/usermanager";
 import { UserData } from "../../types/usertypes";
 import { storage } from "../../index"
-import { VALID_INSTITUTIONS, validateInstitution } from "../../utils/validation";
+import { VALID_INSTITUTIONS, validateInstitution, checkEmailCreateAcc, checkPasswordRequirements as checkPasswordRequirementsUtil } from "../../utils/validation";
 import { ref, getDownloadURL } from "firebase/storage";
 
 function AccountPageApplicants(): JSX.Element {
@@ -17,6 +17,7 @@ function AccountPageApplicants(): JSX.Element {
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
   const [affiliation, setAffiliation] = useState("");
+
 
   //password reqs
   const [specialChar, setSpecialChar] = useState(false);
@@ -36,7 +37,7 @@ function AccountPageApplicants(): JSX.Element {
 
   const navigate = useNavigate();
 
-  useEffect(() => {}, [
+  useEffect(() => { }, [
     firstName,
     lastName,
     title,
@@ -47,71 +48,65 @@ function AccountPageApplicants(): JSX.Element {
     pwdUnmatched,
   ]);
 
-    useEffect(() => {
-      const loadImages = async () => {
-        try {
-          const hanleyRef = ref(storage, '/images/hanley.png');
-          const toretskyRef = ref(storage, '/images/toretsky.png');
-          const yellowRef = ref(storage, '/images/yellow-background.png');
-  
-          const [hanleyUrl, toretskyUrl, yellowUrl] = await Promise.all([
-            getDownloadURL(hanleyRef),
-            getDownloadURL(toretskyRef),
-            getDownloadURL(yellowRef)
-          ]);
-  
-          setHanleyImage(hanleyUrl);
-          setToretskyImage(toretskyUrl);
-          setYellowOverlay(yellowUrl);
-  
-          console.log(hanleyUrl);
-        } catch (error) {
-          console.error('Error loading images:', error);
-        }
-      };
-  
-      loadImages();
-    }, []);
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const hanleyRef = ref(storage, '/images/hanley.png');
+        const toretskyRef = ref(storage, '/images/toretsky.png');
+        const yellowRef = ref(storage, '/images/yellow-background.png');
 
-  /* Check if user input satisfies password requirements */
+        const [hanleyUrl, toretskyUrl, yellowUrl] = await Promise.all([
+          getDownloadURL(hanleyRef),
+          getDownloadURL(toretskyRef),
+          getDownloadURL(yellowRef)
+        ]);
+
+        setHanleyImage(hanleyUrl);
+        setToretskyImage(toretskyUrl);
+        setYellowOverlay(yellowUrl);
+
+        console.log(hanleyUrl);
+      } catch (error) {
+        console.error('Error loading images:', error);
+      }
+    };
+
+    loadImages();
+  }, []);
+
   const checkPasswordRequirements = (password: string) => {
-    setSpecialChar(/[\W_]/.test(password)); // Checks for special character
-    setCapitalLetter(/[A-Z]/.test(password)); // Checks for capital letter
-    setNumber(/[0-9]/.test(password)); // Checks for number
+    const { specialChar, capitalLetter, number } = checkPasswordRequirementsUtil(password);
+    setSpecialChar(specialChar);
+    setCapitalLetter(capitalLetter);
+    setNumber(number);
   };
 
   const checkEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.(com|edu|org)$/i;
-
-    if (!emailRegex.test(email)) {
-      setEmailError(true);
-    } else {
-      setEmailError(false);
-    }
+    setEmailError(!checkEmailCreateAcc(email));
   };
 
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
-       e.preventDefault();
-        if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
-          console.log("Failed to submit. One requirement was not met.");
-          e.preventDefault();
-          return;
-        }
-        try {
-          const userData: UserData = {
-            email: email,
-            firstName: firstName,
-            lastName: lastName,
-            affiliation: affiliation,
-            title: title,
-            role: "applicant"
-          }
-          addApplicantUser(userData, pwd)
-          navigate("/");
-        } catch (e) {
-          console.log(e)
-        }
+    e.preventDefault();
+    if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
+      console.log("Failed to submit. One requirement was not met.");
+      e.preventDefault();
+      return;
+    }
+    try {
+      const userData: UserData = {
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        affiliation: affiliation,
+        title: title,
+        role: "applicant"
+      }
+      addApplicantUser(userData, pwd)
+      navigate("/");
+    } catch (e) {
+      console.log(e)
+    }
   };
 
   const checkConfirmPwd = () => {
@@ -241,7 +236,7 @@ function AccountPageApplicants(): JSX.Element {
                 </div>
               )}
 
-              {((!specialChar || !number || !capitalLetter) && pwd && !showReqs) &&  (
+              {((!specialChar || !number || !capitalLetter) && pwd && !showReqs) && (
                 <p className="validation">At least one password requirement was not met</p>
               )}
 
@@ -269,8 +264,9 @@ function AccountPageApplicants(): JSX.Element {
                 <p className="validation">Passwords do not match</p>
               )}
 
-              <label>Institution/Hospital Affiliation*</label>
+              <label htmlFor="affiliation">Institution/Hospital Affiliation*</label>
               <select
+                id="affiliation"
                 value={affiliation}
                 onChange={(e) => {
                   setAffiliation(e.target.value);
@@ -300,17 +296,17 @@ function AccountPageApplicants(): JSX.Element {
                 type="submit"
                 className={
                   !firstName ||
-                  !lastName ||
-                  !affiliation ||
-                  !email ||
-                  !pwd ||
-                  (pwd && !confirmPwd) ||
-                  !specialChar ||
-                  !capitalLetter ||
-                  !number ||
-                  pwdUnmatched ||
-                  emailError ||
-                  institutionError
+                    !lastName ||
+                    !affiliation ||
+                    !email ||
+                    !pwd ||
+                    (pwd && !confirmPwd) ||
+                    !specialChar ||
+                    !capitalLetter ||
+                    !number ||
+                    pwdUnmatched ||
+                    emailError ||
+                    institutionError
                     ? "disable-submit"
                     : "signup-btn2"
                 }
