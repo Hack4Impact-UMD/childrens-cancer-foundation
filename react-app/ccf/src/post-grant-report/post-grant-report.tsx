@@ -59,13 +59,13 @@ function PostGrantReport(): JSX.Element {
                             <li>Ongoing/Additional Plans, such as intent for future research using said findings and intent to submit abstracts on funded research to any research publications (crediting funding from CCF)</li>
                         </ol>
                     </div>
-                    
+
                     <div className="PostGrantReport-subsection">
                         <h3 className="header-title">Upload File (PDF Format)</h3>
                         <div className="report-upload">
                             <form id="report-form">
                                 <input type='file' accept="application/pdf" id="report-pdf" onChange={e => (e.target.files) ? updateReport(e.target.files) : "Click to Upload"} />
-                                <label className="upload-label" htmlFor="report-pdf">{ uploadLabel }</label>
+                                <label className="upload-label" htmlFor="report-pdf">{uploadLabel}</label>
                                 {reportUploaded ? <button className="remove-upload" onClick={_ => removeUpload()}><strong>X</strong></button> : <></>}
                             </form>
                         </div>

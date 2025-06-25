@@ -1,14 +1,17 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import './ApplicationForm.css';
 import Breadcrumb from './Components/Breadcrumbs';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Information from './subquestions/Information';
 import ApplicationQuestions from './subquestions/ApplicationQuestions';
 import ReviewApplication from './subquestions/Review';
 import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
-import {ResearchApplication} from '../../types/application-types';
-import {uploadResearchApplication} from '../../backend/applicant-form-submit';
+import { ResearchApplication } from '../../types/application-types';
+import { uploadResearchApplication } from '../../backend/applicant-form-submit';
+import { validateEmail, validatePhoneNumber } from '../../utils/validation';
+import { toast } from 'react-toastify';
+import { Modal } from '../../components/modal/modal';
 
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
@@ -22,14 +25,22 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const totalPages = pages.length;
     const navigate = useNavigate();
     const requiredFields = [
-        'title', 'principleInvestigator', 'typesOfCancerAddressed', 'namesOfStaff', 'institution', 
-        'institutionAddress', 'institutionPhoneNumber', 'institutionEmail', 'adminEmail',
-        'adminOfficialName', 'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement', 'patentApplied',
+        'title', 'principalInvestigator', 'typesOfCancerAddressed', 'namesOfStaff', 'institution',
+        'institutionAddress', 'institutionPhoneNumber', 'institutionEmail', 'adminOfficialName',
+        'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement', 'patentApplied',
         'includedFundingInfo', 'amountRequested', 'dates', 'continuation', 'file'
     ]
+    const pageFields: { [key: number]: string[] } = {
+        1: ['file'],
+        3: ['title', 'principalInvestigator', 'typesOfCancerAddressed', 'namesOfStaff', 'institution',
+            'institutionAddress', 'institutionPhoneNumber', 'institutionEmail', 'adminOfficialName',
+            'adminPhoneNumber', 'adminEmail'],
+        4: ['includedPublishedPaper', 'creditAgreement', 'patentApplied', 'includedFundingInfo',
+            'amountRequested', 'dates', 'continuation'],
+    };
     const [formData, setFormData] = useState({
         title: '',
-        principalInvestigator: '', 
+        principalInvestigator: '',
         typesOfCancerAddressed: '',
         institution: '',
         namesOfStaff: '',
@@ -50,6 +61,9 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         continuationYears: '',
         file: null
     });
+    const [errors, setErrors] = useState<any>({});
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalContent, setModalContent] = useState<React.ReactNode>(null);
     const goBack = () => {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
@@ -58,24 +72,95 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         }
     };
     const handleContinue = () => {
+        const fieldsForCurrentPage = pageFields[currentPage] || [];
+        const isPageValid = fieldsForCurrentPage.every(field => {
+            const value = (formData as any)[field];
+            return value && value.toString().trim() !== '';
+        });
+
+        if (!isPageValid) {
+            toast.warn("Please fill out all required fields. You will not be able to submit until all fields are complete.");
+        }
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
     const handleSubmit = () => {
-        try {
-            if (isFormValid()) {
-                const application: ResearchApplication = formData as ResearchApplication
-                if (formData.file)
-                    uploadResearchApplication(application, formData.file, type == "NextGen")
+        const invalidSections: { [key: string]: string[] } = {};
+
+        // Check required fields page by page
+        for (const pageNum in pageFields) {
+            const pageIndex = parseInt(pageNum) - 1;
+            if (pageIndex < 0 || pageIndex >= pages.length) continue;
+
+            const pageName = pages[pageIndex];
+            const fieldsOnPage = pageFields[parseInt(pageNum)];
+            const invalidFieldsOnPage = [];
+
+            for (const field of fieldsOnPage) {
+                const value = (formData as any)[field];
+                if (!value || (typeof value === 'string' && value.trim() === '')) {
+                    const fieldName = field === 'file' ? 'PDF Upload' : field.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+                    invalidFieldsOnPage.push(fieldName);
+                }
             }
+
+            if (invalidFieldsOnPage.length > 0) {
+                invalidSections[pageName] = invalidFieldsOnPage;
+            }
+        }
+
+        // Check for validation errors from the 'errors' state
+        const validationErrors = Object.entries(errors)
+            .filter(([, value]) => value)
+            .map(([key]) => key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase()));
+
+        if (validationErrors.length > 0) {
+            if (!invalidSections["My Information"]) {
+                invalidSections["My Information"] = [];
+            }
+            validationErrors.forEach(fieldName => {
+                if (!invalidSections["My Information"].includes(fieldName)) {
+                    invalidSections["My Information"].push(`${fieldName} (Invalid format)`);
+                }
+            });
+        }
+
+        if (Object.keys(invalidSections).length > 0) {
+            const formattedContent = (
+                <div style={{ whiteSpace: 'pre-line' }}>
+                    {Object.entries(invalidSections).map(([section, fields]) => (
+                        <div key={section} style={{ marginBottom: '10px' }}>
+                            <strong>{section}</strong>
+                            {fields.map(f => `\n- ${f}`).join('')}
+                        </div>
+                    ))}
+                </div>
+            );
+            setModalContent(formattedContent);
+            setIsModalOpen(true);
+            return;
+        }
+
+        try {
+            const application: ResearchApplication = formData as ResearchApplication
+            if (formData.file)
+                uploadResearchApplication(application, formData.file, type == "NextGen")
         } catch (e) {
             console.log(e)
         }
 
         navigate('/applicant/dashboard')
     };
-    // Validation function to check if all required fields are filled
-    const isFormValid = () => {
-        return requiredFields.reduce((acc, curr) => (formData as any)[curr] !== '' && (formData as any)[curr] !== null && acc, true);
+    const isFormValid = (checkAll = false) => {
+        const hasRequiredFields = requiredFields.reduce((acc, curr) => {
+            const value = (formData as any)[curr];
+            const result = value !== '' && value !== null;
+            if (checkAll && !result) {
+                setErrors((prev: any) => ({ ...prev, [curr]: "This field cannot be empty." }));
+            }
+            return acc && result;
+        }, true);
+        const hasNoErrors = Object.values(errors).every(error => error === null || error === '' || error === undefined);
+        return hasRequiredFields && hasNoErrors;
     };
     const renderPage = () => {
         switch (currentPage) {
@@ -84,7 +169,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             case 2:
                 return <AboutGrant type={type} formData={formData} />;
             case 3:
-                return <Information formData={formData} setFormData={setFormData} />;
+                return <Information formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} />;
             case 4:
                 return <ApplicationQuestions formData={formData} setFormData={setFormData} />;
             case 5:
@@ -95,6 +180,13 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     };
     return (
         <div className="main-container">
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Please Fill Out All Missing Fields Before Submitting"
+            >
+                {modalContent}
+            </Modal>
             <h1 className="main-header">
                 {type === "Research" ? "Research Grant Application" : "NextGen Grant Application"}
             </h1>
@@ -110,8 +202,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                 ) : (
                     <button
                         onClick={handleSubmit}
-                        className={`save-btn ${!isFormValid() ? 'disabled' : ''}`}
-                        disabled={!isFormValid()}
+                        className={`save-btn ${!isFormValid() ? 'warning' : ''}`}
                     >
                         Save and Submit
                     </button>
