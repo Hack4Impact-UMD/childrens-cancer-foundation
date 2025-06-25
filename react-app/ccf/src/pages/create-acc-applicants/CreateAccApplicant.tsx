@@ -18,6 +18,7 @@ function AccountPageApplicants(): JSX.Element {
   const [confirmPwd, setConfirmPwd] = useState("");
   const [affiliation, setAffiliation] = useState("");
 
+
   //password reqs
   const [specialChar, setSpecialChar] = useState(false);
   const [capitalLetter, setCapitalLetter] = useState(false);
