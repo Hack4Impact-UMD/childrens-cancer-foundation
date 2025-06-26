@@ -477,6 +477,13 @@
     background-color: #155db9;
 }
 
+.unsaved-changes-indicator {
+    margin-left: 15px;
+    color: #BE0019; /* Or a color that stands out */
+    font-style: italic;
+    font-size: 0.9em;
+}
+
 @media (max-width: 768px) {
     .modal-container {
         width: 95%;

@@ -96,6 +96,7 @@ function GrantAwards(): JSX.Element {
         application: null as Application | null
     });
     const [savingChanges, setSavingChanges] = useState<{ [key: string]: boolean }>({});
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
     const sidebarItems = getSidebarbyRole("admin");
 
@@ -176,6 +177,7 @@ function GrantAwards(): JSX.Element {
         }
 
         setApplications(updatedApplications);
+        setHasUnsavedChanges(true); // Indicate that there are unsaved changes
         // No firebase updates until save button is clicked
     };
 
@@ -312,9 +314,12 @@ function GrantAwards(): JSX.Element {
             for (let i = 0; i < applications.length; i++) {
                 await saveChangesToFirestore(i);
             }
+            setHasUnsavedChanges(false); // Reset after all changes are saved
             alert("All changes saved successfully!");
         } catch (error) {
             console.error("Error saving changes:", error);
+            // If there's an error, we keep hasUnsavedChanges as true,
+            // because some changes might not have been saved.
             alert("Error saving changes. Please try again.");
         }
     };
@@ -431,6 +436,11 @@ function GrantAwards(): JSX.Element {
                                 >
                                     Save All Changes
                                 </button>
+                                {hasUnsavedChanges && (
+                                    <span className="unsaved-changes-indicator">
+                                        You have unsaved changes.
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
