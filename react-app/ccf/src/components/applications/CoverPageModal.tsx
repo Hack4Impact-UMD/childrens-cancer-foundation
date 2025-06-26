@@ -17,6 +17,7 @@ const CoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps) => 
   const [pdfLink, setPdfLink] = useState<any>();
 
     useEffect(() => {
+      if (isOpen) {
       downloadPDFsByName([application.file]).then((links) => {
         if (links && links[0]) {
           setPdfLink(links[0])
@@ -24,11 +25,12 @@ const CoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps) => 
       }).catch((e) => {
         console.error(e)
       })
-    },[])
+    }
+    },[isOpen])
 
     const researchCoverPage = (
       <div className="cover-page-modal-child">
-        {pdfLink ? <a target="_blank" href={pdfLink.url}>{pdfLink.name}</a>: ""}
+        {pdfLink ? <a target="_blank" href={pdfLink.url}>Application PDF</a>: ""}
         <Review type={application.grantType} formData={application} hideFile={true}></Review>
       </div>
     )

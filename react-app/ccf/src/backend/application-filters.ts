@@ -37,9 +37,9 @@ export async function getFilteredApplications(filters: FilterOptions): Promise<A
 
         // Map the results to the expected type
         const applications = querySnapshot.docs.map(doc => ({
-            id: doc.id,
+            applicationId: doc.id,
             ...doc.data()
-        })) as unknown as Array<(ResearchApplication | NonResearchApplication) & ApplicationDetails>;
+        })) as unknown as Array<Application>;
 
         return applications;
     } catch (error) {
@@ -53,7 +53,6 @@ export async function getUsersCurrentCycleAppplications(): Promise<Array<Applica
     const uid = user?.uid
     const currentCycle = await getCurrentCycle()
     let q: Query<DocumentData> = collection(db, 'applications');
-    console.log(currentCycle)
     q = query(q, where("creatorId", "==", uid), where("applicationCycle", "==", currentCycle.name))
     const querySnapshot = await getDocs(q)
     const applications = querySnapshot.docs.map(doc => ({

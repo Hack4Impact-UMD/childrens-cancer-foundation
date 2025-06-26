@@ -3,11 +3,11 @@ import { db } from '../index';
 import { uploadFileToStorage } from "../storage/storage";
 
 const writePostGrantReport = async( 
-    file: File 
+    file: File
 ) => {
     try {
         const pdfUrl = await uploadFileToStorage(file);
-        const newApplicationRef = doc(db, 'post-grant-reports', Date.now().toString());
+        const newApplicationRef = doc(db, 'post-grant-reports');
         await setDoc(newApplicationRef, {
             pdf: pdfUrl,
 
