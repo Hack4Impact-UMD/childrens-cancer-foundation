@@ -31,7 +31,7 @@ const AdminCoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps
             }).catch((e) => {
                 console.error(e)
             })
-            const reportDue = (currentAppCycle.name != application.applicationCycle) || currentAppCycle.stage == "Final Decision"
+            const reportDue = (currentAppCycle.name != application.applicationCycle) || currentAppCycle.stage == "Final Decisions"
             if (application.applicationId && reportDue) {
                 getReportByApplicationID(application.applicationId).then(report => {
                     console.log(report)
