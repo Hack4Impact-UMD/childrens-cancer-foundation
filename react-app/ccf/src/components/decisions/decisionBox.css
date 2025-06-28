@@ -1,0 +1,19 @@
+.decision-box-border {
+    padding: 10px;
+    border: 5px solid #BE0019;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.decision-title {
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.decision-text,
+.funding-text,
+.comments {
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+}

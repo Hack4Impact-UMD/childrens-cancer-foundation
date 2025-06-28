@@ -28,11 +28,11 @@
 }
 
 .review-form-container {
-    overflow-y: scroll;
+    overflow-y: visible;
     border: solid var(--color-red);
     border-width: 5px;
     max-width: 100%;
-    max-height: 100vh;
+    /* max-height: 100vh; */
     display: flex;
     justify-content: space-between;
     padding-top: 10px;

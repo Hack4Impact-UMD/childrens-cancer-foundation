@@ -8,6 +8,9 @@ import { downloadPDFsByName } from "../../storage/storage";
 import { PostGrantReport } from "../../types/post-grant-report-types";
 import { getReportByApplicationID } from "../../backend/post-grant-reports";
 import { getCurrentCycle } from "../../backend/application-cycle";
+import { Decision } from "../../types/decision-types";
+import { getDecisionData } from "../../services/decision-data-service";
+import { DecisionBox } from "../decisions/decisionBox";
 
 interface CoverPageModalProps {
     application: Application;
@@ -20,6 +23,7 @@ const AdminCoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps
   const [pdfLink, setPdfLink] = useState<any>();
   const [reportLink, setReportLink] = useState<any>();
   const [reportMsg, setReportMsg] = useState<string>("");
+  const [decision, setDecision] = useState<Decision>();
 
     useEffect(() => {
       if (isOpen) {
@@ -42,6 +46,13 @@ const AdminCoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps
                     }).catch(e => {
                         console.error(e)
                     })
+                    getDecisionData(application.applicationId ? application.applicationId : "").then((decision) => {
+                        if (decision) {
+                            setDecision(decision)
+                        }
+                    }).catch((e) => {
+                        console.error(e)
+                    })
                 }).catch(err => {
                     if (err.message == "Not Found") {
                         setReportMsg("Post-Grant Report Not Submitted")
@@ -56,7 +67,7 @@ const AdminCoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps
 
     const researchCoverPage = (
       <div className="cover-page-modal-child">
-        <div className="funding-info">{application.decision}</div>
+        {decision ? <DecisionBox decision={decision}></DecisionBox> : ""}
             <div className="application-pdf-link">{pdfLink ? <a target="_blank" href={pdfLink.url}>Application PDF</a>: ""}</div>
             <div className="post-grant-report-pdf-link">{reportLink ? <a target="_blank" href={reportLink.url}>Post Grant Report</a>: reportMsg}</div>
         <Review type={application.grantType} formData={application} hideFile={true}></Review>
