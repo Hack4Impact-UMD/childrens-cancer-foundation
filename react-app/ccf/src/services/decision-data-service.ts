@@ -8,20 +8,12 @@ import {
     serverTimestamp
 } from "firebase/firestore";
 import { db } from "../index";
-
-export interface AdminData {
-    applicationId: string;
-    comments?: string;
-    fundingAmount?: number;
-    decision?: string;
-    lastUpdated?: any; // Firebase Timestamp
-    createdAt?: any; // Firebase Timestamp
-}
+import {Decision} from "../types/decision-types"
 
 // Create or update admin data for an application
-export const updateAdminData = async (applicationId: string, adminData: Partial<AdminData>): Promise<void> => {
+export const updateDecisionData = async (applicationId: string, adminData: Partial<Decision>): Promise<void> => {
     try {
-        const adminDataRef = doc(db, "admin_data", applicationId);
+        const adminDataRef = doc(db, "decision-data", applicationId);
         await setDoc(adminDataRef, {
             applicationId,
             ...adminData,
@@ -34,13 +26,13 @@ export const updateAdminData = async (applicationId: string, adminData: Partial<
 };
 
 // Get admin data for an application
-export const getAdminData = async (applicationId: string): Promise<AdminData | null> => {
+export const getDecisionData = async (applicationId: string): Promise<Decision | null> => {
     try {
-        const adminDataRef = doc(db, "admin_data", applicationId);
+        const adminDataRef = doc(db, "decision-data", applicationId);
         const adminDataDoc = await getDoc(adminDataRef);
 
         if (adminDataDoc.exists()) {
-            return adminDataDoc.data() as AdminData;
+            return adminDataDoc.data() as Decision;
         }
         return null;
     } catch (error) {
@@ -50,16 +42,16 @@ export const getAdminData = async (applicationId: string): Promise<AdminData | n
 };
 
 // Get admin data for multiple applications
-export const getMultipleAdminData = async (applicationIds: string[]): Promise<{ [applicationId: string]: AdminData }> => {
+export const getMultipleDecisionData = async (applicationIds: string[]): Promise<{ [applicationId: string]: Decision }> => {
     try {
-        const adminDataMap: { [applicationId: string]: AdminData } = {};
+        const adminDataMap: { [applicationId: string]: Decision } = {};
 
         // Get all admin data documents
-        const adminDataRef = collection(db, "admin_data");
+        const adminDataRef = collection(db, "decision-data");
         const adminDataSnapshot = await getDocs(adminDataRef);
 
         adminDataSnapshot.forEach((doc) => {
-            const data = doc.data() as AdminData;
+            const data = doc.data() as Decision;
             if (applicationIds.includes(data.applicationId)) {
                 adminDataMap[data.applicationId] = data;
             }
@@ -73,9 +65,9 @@ export const getMultipleAdminData = async (applicationIds: string[]): Promise<{ 
 };
 
 // Update only comments for an application
-export const updateAdminComments = async (applicationId: string, comments: string): Promise<void> => {
+export const updateDecisionComments = async (applicationId: string, comments: string): Promise<void> => {
     try {
-        await updateAdminData(applicationId, { comments });
+        await updateDecisionData(applicationId, { comments });
     } catch (error) {
         console.error("Error updating admin comments:", error);
         throw error;
@@ -89,7 +81,7 @@ export const updateFundingDecision = async (
     decision: string
 ): Promise<void> => {
     try {
-        await updateAdminData(applicationId, { fundingAmount, decision });
+        await updateDecisionData(applicationId, { fundingAmount, decision });
     } catch (error) {
         console.error("Error updating funding decision:", error);
         throw error;

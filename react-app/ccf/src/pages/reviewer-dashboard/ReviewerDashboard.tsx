@@ -127,7 +127,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                         if (review.status === "completed") {
                             // Format submission date
                             const submittedDate = review.submittedDate
-                                ? new Date(review.submittedDate.toDate()).toLocaleDateString('en-US', {
+                                ? new Date(review.submittedDate).toLocaleDateString('en-US', {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric'

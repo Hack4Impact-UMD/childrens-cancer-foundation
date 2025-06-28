@@ -13,8 +13,8 @@ export default interface Review {
         summary: string;
         internal?: string;
     };
-    submittedDate?: any; // Firebase Timestamp
-    lastUpdated?: any; // Firebase Timestamp
+    submittedDate?: Date;
+    lastUpdated?: Date;
     cycle?: string;
 }
 
