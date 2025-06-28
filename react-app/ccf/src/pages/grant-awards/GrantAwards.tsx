@@ -8,11 +8,11 @@ import { db } from '../..';
 import { getSidebarbyRole } from '../../types/sidebar-types';
 import { getReviewsForApplication } from '../../services/review-service';
 import {
-    getMultipleAdminData,
-    updateAdminComments,
+    getMultipleDecisionData,
+    updateDecisionComments,
     updateFundingDecision,
-    AdminData
-} from '../../services/admin-data-service';
+    getDecisionData
+} from '../../services/decision-data-service';
 
 type SortField = 'name' | 'programType' | 'institution' | 'finalScore' | 'requested' | 'recommended';
 type SortDirection = 'asc' | 'desc';
@@ -145,7 +145,7 @@ function GrantAwards(): JSX.Element {
             }
 
             // Get admin data for all applications
-            const adminDataMap = await getMultipleAdminData(applicationIds);
+            const adminDataMap = await getMultipleDecisionData(applicationIds);
 
             // Merge admin data with application data
             const finalApplicationsData = applicationsData.map(app => ({
@@ -214,7 +214,7 @@ function GrantAwards(): JSX.Element {
     const handleCommentsChange = async (id: string, comments: string) => {
         try {
             // Save comments to admin data collection
-            await updateAdminComments(id, comments);
+            await updateDecisionComments(id, comments);
 
             // Update local state
             setApplications(prevApps =>

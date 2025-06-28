@@ -139,7 +139,7 @@ export const getReviewsForReviewer = async (reviewerId: string): Promise<Review[
         // Sort by last updated date
         return allReviews.sort((a, b) => {
             if (a.lastUpdated && b.lastUpdated) {
-                return b.lastUpdated.toDate() - a.lastUpdated.toDate();
+                return b.lastUpdated.getTime() - a.lastUpdated.getTime();
             }
             return 0;
         });
