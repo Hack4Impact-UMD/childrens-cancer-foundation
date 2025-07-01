@@ -8,7 +8,22 @@ export const getCurrentCycle = async (): Promise<ApplicationCycle> => {
 
   const snap = await getDocs(q);
 
-  return snap.docs[0].data() as ApplicationCycle
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    throw new Error("No current application cycle found");
+  }
+
+  const cycle = snap.docs[0].data()
+  return {
+    ...cycle,
+    researchDeadline: (cycle.researchDeadline as Timestamp).toDate(),
+    nonResearchDeadline: (cycle.nonResearchDeadline as Timestamp).toDate(),
+    nextGenDeadline: (cycle.nextGenDeadline as Timestamp).toDate(),
+    reviewerDeadline: (cycle.reviewerDeadline as Timestamp).toDate(),
+    startDate: (cycle.startDate as Timestamp).toDate(),
+    endDate: (cycle.endDate as Timestamp).toDate()
+  } as ApplicationCycle
 }
 
 
@@ -17,7 +32,16 @@ export const getAllCycles = async (): Promise<Array<ApplicationCycle>> => {
 
   const snap = await getDocs(q);
   return snap.docs.map((d) => {
-    return d.data() as ApplicationCycle
+    const cycle = d.data()
+    return {
+      ...cycle,
+      researchDeadline: (cycle.researchDeadline as Timestamp).toDate(),
+      nonResearchDeadline: (cycle.nonResearchDeadline as Timestamp).toDate(),
+      nextGenDeadline: (cycle.nextGenDeadline as Timestamp).toDate(),
+      reviewerDeadline: (cycle.reviewerDeadline as Timestamp).toDate(),
+      startDate: (cycle.startDate as Timestamp).toDate(),
+      endDate: (cycle.endDate as Timestamp).toDate()
+    } as ApplicationCycle
   })
 }
 

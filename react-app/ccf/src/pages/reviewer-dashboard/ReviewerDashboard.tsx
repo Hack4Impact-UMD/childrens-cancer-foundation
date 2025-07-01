@@ -13,6 +13,9 @@ import { collection, getDocs, query, where, doc, getDoc } from "firebase/firesto
 import { auth } from "../.."; // Adjust path as needed
 import { db } from "../.."
 import { getReviewsForReviewer } from "../../services/review-service";
+import ApplicationCycle from "../../types/applicationCycle-types";
+import { getCurrentCycle } from "../../backend/application-cycle";
+import Banner from "../../components/banner/Banner";
 
 interface FAQItem {
     question: string;
@@ -39,6 +42,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     const [completedReviews, setCompletedReviews] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [appCycle, setAppCycle] = useState<ApplicationCycle>();
 
     // State for FAQ
     const [openFAQIndex, setOpenFAQIndex] = useState<number | null>(null);
@@ -61,6 +65,11 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
 
     // Fetch reviewer's assigned applications from Firebase using the new review service
     useEffect(() => {
+        getCurrentCycle().then((cycle) => {
+            setAppCycle(cycle)
+        }).catch((e) => {
+            console.error(e)
+        })
         const fetchAssignedApplications = async () => {
             if (!currentUser) {
                 setError("User not authenticated");
@@ -106,8 +115,8 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                         const appData = appDoc.data();
 
                         // Format date for display
-                        const dueDateStr = appData.dueDate
-                            ? new Date(appData.dueDate).toLocaleDateString('en-US', {
+                        const dueDateStr = appCycle?.reviewerDeadline
+                            ? new Date(appCycle.reviewerDeadline).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
@@ -173,6 +182,10 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                         <img src={logo} alt="Logo" className="dashboard-logo" />
                         <h1 className="dashboard-header">Reviewer Dashboard</h1>
                     </div>
+
+                    {appCycle?.stage == "Applications Open" ?
+                            <Banner>{`REMINDER: Reviews due on ${appCycle?.reviewerDeadline.toLocaleDateString()}`}</Banner> :
+                            <Banner>ALERT: Review Period Has Ended</Banner>}
 
                     <div className="dashboard-sections-content" style={{ flexGrow: 1 }}>
                         <div className="dashboard-section">

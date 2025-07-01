@@ -16,6 +16,8 @@ import {firstLetterCap} from "../../utils/stringfuncs"
 import CoverPageModal from "../../components/applications/CoverPageModal";
 import { FAQItem } from "../../types/faqTypes";
 import { getFAQs } from "../../backend/faq-handler";
+import { getCurrentCycle } from "../../backend/application-cycle";
+import ApplicationCycle from "../../types/applicationCycle-types";
 
 function ApplicantUsersDashboard(): JSX.Element {
     const sidebarItems = getSidebarbyRole('applicant');
@@ -32,8 +34,15 @@ function ApplicantUsersDashboard(): JSX.Element {
     const [inProgressApplications, setInProgressApplications] = useState<Application[]>([]);
     const [openModal, setOpenModal] = useState<Application | null>();
     const [faqData, setFAQData] = useState<FAQItem[]>([]);
+    const [appCycle, setAppCycle] = useState<ApplicationCycle>();
 
     useEffect(() => {
+        getCurrentCycle().then((cycle) => {
+            setAppCycle(cycle)
+            console.log(cycle)
+        }).catch((e) => {
+            console.error(e)
+        })
         getUsersCurrentCycleAppplications().then((apps) => {
             setCompletedApplications(apps)
         }).catch((e) => {
@@ -61,7 +70,11 @@ function ApplicantUsersDashboard(): JSX.Element {
                             Applicant Dashboard
                         </h1>
                     </div>
-                    <Banner deadline={new Date('2024-12-31T23:59:59')}></Banner>
+                    {
+                        appCycle?.stage == "Applications Open" ?
+                            <Banner>{`REMINDER: Research applications due on ${appCycle?.researchDeadline.toLocaleDateString()}, Nextgen applications due on ${appCycle?.nextGenDeadline.toLocaleDateString()}, Nonresearch applications due on ${appCycle?.nonResearchDeadline.toLocaleDateString()}`}</Banner> :
+                            <Banner>ALERT: Applications Are Closed for this Year</Banner>
+                    }
                     <div className="ApplicantDashboard-sections-content">
                         <div className="ApplicantDashboard-section">
                             <div className="ApplicantDashboard-section-header">

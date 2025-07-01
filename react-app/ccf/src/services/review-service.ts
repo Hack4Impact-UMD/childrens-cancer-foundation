@@ -9,7 +9,8 @@ import {
     where,
     serverTimestamp,
     orderBy,
-    setDoc
+    setDoc,
+    Timestamp
 } from "firebase/firestore";
 import { db } from "../index";
 import Review, { ReviewSummary } from "../types/review-types";
@@ -132,7 +133,14 @@ export const getReviewsForReviewer = async (reviewerId: string): Promise<Review[
             const reviewsSnapshot = await getDocs(reviewerQuery);
 
             reviewsSnapshot.forEach((reviewDoc) => {
-                allReviews.push({ id: reviewDoc.id, ...reviewDoc.data() } as Review);
+                const data = reviewDoc.data()
+                allReviews.push(
+                    { 
+                    id: reviewDoc.id, 
+                    ...data, 
+                    lastUpdated: data.lastUpdated ? (data.lastUpdated as Timestamp).toDate() : undefined,
+                    submittedDate: data.submittedDate ? (data.submittedDate as Timestamp).toDate(): undefined,
+                } as Review);
             });
         }
 
