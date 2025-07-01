@@ -184,7 +184,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                     </div>
 
                     {appCycle?.stage == "Applications Open" ?
-                            <Banner>{`REMINDER: Reviews due on ${appCycle?.reviewerDeadline}`}</Banner> :
+                            <Banner>{`REMINDER: Reviews due on ${appCycle?.reviewerDeadline.toLocaleDateString()}`}</Banner> :
                             <Banner>ALERT: Review Period Has Ended</Banner>}
 
                     <div className="dashboard-sections-content" style={{ flexGrow: 1 }}>
