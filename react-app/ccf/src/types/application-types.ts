@@ -140,8 +140,9 @@ export interface GrantApplication {
     instituionEmail?: string;
     institution?: string;
     institutionAddress?: string;
-    institutionEmail?: string;
+    institutionCityStateZip?: string;
     institutionPhoneNumber?: string;
+    institutionEmail?: string;
     // namesOfStaff?: string;
     patentApplied?: string;
     pdf?: string;
