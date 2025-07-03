@@ -142,7 +142,7 @@ export interface GrantApplication {
     institutionAddress?: string;
     institutionEmail?: string;
     institutionPhoneNumber?: string;
-    namesOfStaff?: string;
+    // namesOfStaff?: string;
     patentApplied?: string;
     pdf?: string;
     recommendedAmount?: number;
