@@ -115,7 +115,17 @@
 
 .applications-table th:nth-child(7),
 .applications-table td:nth-child(7) {
+    min-width: 100px;
+}
+
+.applications-table th:nth-child(8),
+.applications-table td:nth-child(8) {
     min-width: 300px;
+}
+
+.applications-table th:nth-child(9),
+.applications-table td:nth-child(9) {
+    min-width: 80px;
 }
 
 .applications-table th,
@@ -494,4 +504,38 @@
     .currency-input {
         width: 70px;
     }
+}
+.acceptance-toggle-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.acceptance-toggle-btn.accepted {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.acceptance-toggle-btn.accepted:hover {
+    background-color: #4CAF50;
+}
+
+.acceptance-toggle-btn.rejected {
+    background-color: #BE0019;
+    color: white;
+}
+
+.acceptance-toggle-btn.rejected:hover {
+    background-color: #BE0019;
+}
+
+.acceptance-toggle-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.6;
 }

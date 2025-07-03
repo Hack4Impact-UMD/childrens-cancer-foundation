@@ -78,10 +78,11 @@ export const updateDecisionComments = async (applicationId: string, comments: st
 export const updateFundingDecision = async (
     applicationId: string,
     fundingAmount: number,
-    decision: string
+    decision: string,
+    isAccepted: boolean
 ): Promise<void> => {
     try {
-        await updateDecisionData(applicationId, { fundingAmount, decision });
+        await updateDecisionData(applicationId, { fundingAmount, decision, isAccepted });
     } catch (error) {
         console.error("Error updating funding decision:", error);
         throw error;
