@@ -47,7 +47,7 @@ function ReviewApplication({ type, formData, hideFile}: ReviewProps): JSX.Elemen
         <p className="text-label">Types of Cancer Being Addressed: {formData.typesOfCancerAddressed}</p>
         <p className="text-label">Administration Official Name/Title: {formData.adminOfficialName}</p>
         <p className="text-label">Admin Street Address: {formData.adminOfficialAddress}</p>
-        <p className="text-label">Admin City/St/Zip: {formData.adminCityStateZip}</p>
+        <p className="text-label">Admin City/St/Zip: {formData.adminOfficialCityStateZip}</p>
         <p className="text-label">Admin Phone Number: {formData.adminPhoneNumber}</p>
         <p className="text-label">Admin Email: {formData.adminEmail}</p>
         <p className="text-label">Amount Requested: {formData.amountRequested}</p>
