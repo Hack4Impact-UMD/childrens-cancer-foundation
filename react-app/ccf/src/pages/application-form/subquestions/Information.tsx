@@ -99,8 +99,8 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
         <p className="text-label">Department Head *</p>
         <input 
           type="text" 
-          name="deptHead" 
-          value={formData.deptHead} 
+          name="departmentHead" 
+          value={formData.departmentHead} 
           onChange={handleChange} 
           placeholder="Enter department head name/title" 
           required 

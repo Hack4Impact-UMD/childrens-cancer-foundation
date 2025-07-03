@@ -39,7 +39,7 @@ function ReviewApplication({ type, formData, hideFile}: ReviewProps): JSX.Elemen
         <p className="text-label">Other Staff Name/Title: {formData.otherStaff}</p>
         <p className="text-label">Institution: {formData.institution}</p>
         <p className="text-label">Department: {formData.department}</p>
-        <p className="text-label">Department Head: {formData.deptHead}</p>
+        <p className="text-label">Department Head: {formData.departmentHead}</p>
         <p className="text-label">Street Address: {formData.institutionAddress}</p>
         <p className="text-label">City/St/Zip: {formData.institutionCityStateZip}</p>
         <p className="text-label">Phone: {formData.institutionPhoneNumber}</p>
@@ -52,7 +52,7 @@ function ReviewApplication({ type, formData, hideFile}: ReviewProps): JSX.Elemen
         <p className="text-label">Admin Email: {formData.adminEmail}</p>
         <p className="text-label">Amount Requested: {formData.amountRequested}</p>
         <p className="text-label">Dates of Project: {formData.dates}</p>
-        <p className="text-label">EIN #: {formData.ein}</p>
+        <p className="text-label">EIN #: {formData.einNumber}</p>
         <p className="text-label">Biosketch Funding Info: {formData.includedFundingInfo}</p>
         <p className="text-label">Attestation (Human/Animal Subjects): {formData.attestationHumanSubjects ? 'Yes' : 'No'}</p>
         <p className="text-label">Attestation (Certification): {formData.attestationCertification ? 'Yes' : 'No'}</p>
