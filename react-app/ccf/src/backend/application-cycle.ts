@@ -8,8 +8,6 @@ export const getCurrentCycle = async (): Promise<ApplicationCycle> => {
 
   const snap = await getDocs(q);
 
-  const snap = await getDocs(q);
-
   if (snap.empty) {
     throw new Error("No current application cycle found");
   }
