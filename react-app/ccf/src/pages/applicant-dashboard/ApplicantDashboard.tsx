@@ -35,11 +35,12 @@ function ApplicantUsersDashboard(): JSX.Element {
     const [openModal, setOpenModal] = useState<Application | null>();
     const [faqData, setFAQData] = useState<FAQItem[]>([]);
     const [appCycle, setAppCycle] = useState<ApplicationCycle>();
+    const [applicationsOpen, setApplicationsOpen] = useState<boolean>(false);
 
     useEffect(() => {
         getCurrentCycle().then((cycle) => {
             setAppCycle(cycle)
-            console.log(cycle)
+            setApplicationsOpen(cycle.stage == "Applications Open")
         }).catch((e) => {
             console.error(e)
         })
@@ -132,9 +133,9 @@ function ApplicantUsersDashboard(): JSX.Element {
 
                                     <h3>START YOUR APPLICATION:</h3>
                                     <div className="ApplicantDashboard-buttons">
-                                       <Button width="25%" height="46px" onClick={() => {navigate("/applicant/application-form/nextgen")}}>NextGen</Button>
-                                        <Button width="25%" height="46px" onClick={() => {navigate("/applicant/application-form/research")}}>Research Grant</Button>
-                                        <Button width="25%" height="46px" onClick={() => {navigate("/applicant/application-form/nonresearch")}}>Non-Research Grant</Button>
+                                       <Button disabled={!applicationsOpen} width="25%" height="46px" onClick={() => {navigate("/applicant/application-form/nextgen")}}>NextGen</Button>
+                                        <Button disabled={!applicationsOpen} width="25%" height="46px" onClick={() => {navigate("/applicant/application-form/research")}}>Research Grant</Button>
+                                        <Button disabled={!applicationsOpen} width="25%" height="46px" onClick={() => {navigate("/applicant/application-form/nonresearch")}}>Non-Research Grant</Button>
                                     </div>
                                 </div>
                             )}
