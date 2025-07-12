@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './ApplicationForm.css';
 import Breadcrumb from './Components/Breadcrumbs';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,7 @@ import { uploadResearchApplication } from '../../backend/applicant-form-submit';
 import { validateEmail, validatePhoneNumber } from '../../utils/validation';
 import { toast } from 'react-toastify';
 import { Modal } from '../../components/modal/modal';
+import { getCurrentCycle } from '../../backend/application-cycle';
 
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
@@ -64,6 +65,14 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [errors, setErrors] = useState<any>({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+    const [appOpen, setAppOpen] = useState<boolean>(false);
+
+    useEffect(() => {
+        getCurrentCycle().then(cycle => {
+            setAppOpen(cycle.stage == "Applications Open")
+        })
+    }, [])
+
     const goBack = () => {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
@@ -122,6 +131,16 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                     invalidSections["My Information"].push(`${fieldName} (Invalid format)`);
                 }
             });
+        }
+        if (!appOpen) {
+            const formattedContent = (
+                <div style={{ whiteSpace: 'pre-line' }}>
+                    Applications Are Closed
+                </div>
+            );
+            setModalContent(formattedContent);
+            setIsModalOpen(true);
+            return;
         }
 
         if (Object.keys(invalidSections).length > 0) {
@@ -202,7 +221,8 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                 ) : (
                     <button
                         onClick={handleSubmit}
-                        className={`save-btn ${!isFormValid() ? 'warning' : ''}`}
+                        className={`save-btn ${!appOpen ? (!isFormValid() ? 'warning' : '') : 'disabled'}`}
+                        disabled={(!appOpen && isFormValid())}
                     >
                         Save and Submit
                     </button>

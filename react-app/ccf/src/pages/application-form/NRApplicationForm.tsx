@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './ApplicationForm.css';
 import Breadcrumb from './Components/Breadcrumbs';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import ReviewApplication from './subquestions/Review';
 import AboutGrant from './subquestions/AboutGrant';
 import { NonResearchApplication } from '../../types/application-types';
 import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
+import { getCurrentCycle } from '../../backend/application-cycle';
 
 function NRApplicationForm(): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
@@ -34,6 +35,14 @@ function NRApplicationForm(): JSX.Element {
         file: null
     });
 
+    const [appOpen, setAppOpen] = useState<boolean>(false);
+
+    useEffect(() => {
+        getCurrentCycle().then(cycle => {
+            setAppOpen(cycle.stage == "Applications Open")
+        })
+    }, [])
+
     const goBack = () => {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
@@ -48,15 +57,16 @@ function NRApplicationForm(): JSX.Element {
 
     const handleSubmit = () => {
         try {
-            const application: NonResearchApplication = formData as NonResearchApplication
-            if (formData.file) {
-                uploadNonResearchApplication(application, formData.file)
+            if (isFormValid() && appOpen) {
+                const application: NonResearchApplication = formData as NonResearchApplication
+                if (formData.file) {
+                    uploadNonResearchApplication(application, formData.file)
+                }
+                navigate('/applicant/dashboard')
             }
         } catch (e) {
             console.log(e)
         }
-
-        navigate('/applicant/dashboard')
     };
 
     // Validation function to check if all fields are filled
@@ -95,8 +105,8 @@ function NRApplicationForm(): JSX.Element {
                 ) : (
                     <button
                         onClick={handleSubmit}
-                        className={`save-btn ${!isFormValid() ? 'disabled' : ''}`}
-                        disabled={!isFormValid()}
+                        className={`save-btn ${appOpen ? (!isFormValid() ? 'warning' : '') : 'disabled'}`}
+                        disabled={!appOpen && !isFormValid()}
                     >
                         Save and Submit
                     </button>
