@@ -11,6 +11,7 @@ import { getCurrentCycle } from "../../backend/application-cycle";
 import { Decision } from "../../types/decision-types";
 import { getDecisionData } from "../../services/decision-data-service";
 import { DecisionBox } from "../decisions/decisionBox";
+import blueDocument from '../../assets/blueDocumentIcon.png';
 
 interface CoverPageModalProps {
     application: Application;
@@ -62,11 +63,18 @@ const AdminCoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps
                 })
             }
         })
-    }
+      }
     },[isOpen])
 
     const researchCoverPage = (
       <div className="cover-page-modal-child">
+        <div className="header-row">
+            <img src={blueDocument} alt="Document Icon" className="section-icon" />
+            <div>
+                <h2 className="title">{application.title}</h2>
+                <p className="subtitle">{application.grantType}</p>
+            </div>
+        </div>
         {decision ? <DecisionBox decision={decision}></DecisionBox> : ""}
             <div className="application-pdf-link">{pdfLink ? <a target="_blank" href={pdfLink.url}>Application PDF</a>: ""}</div>
             <div className="post-grant-report-pdf-link">{reportLink ? <a target="_blank" href={reportLink.url}>Post Grant Report</a>: reportMsg}</div>
