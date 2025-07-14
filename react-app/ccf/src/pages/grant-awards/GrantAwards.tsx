@@ -226,7 +226,6 @@ function GrantAwards(): JSX.Element {
             console.log("Comments saved successfully");
         } catch (error) {
             console.error("Error saving comments:", error);
-            alert("Error saving comments. Please try again.");
         }
     };
 
@@ -312,10 +311,8 @@ function GrantAwards(): JSX.Element {
             for (let i = 0; i < applications.length; i++) {
                 await saveChangesToFirestore(i);
             }
-            alert("All changes saved successfully!");
         } catch (error) {
             console.error("Error saving changes:", error);
-            alert("Error saving changes. Please try again.");
         }
     };
 
