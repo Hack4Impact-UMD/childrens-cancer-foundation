@@ -36,6 +36,7 @@ import AllApplications from './pages/reviewer-all-applications/AllApplications'
 import ApplicationReview from "./pages/application-review/ApplicationReview";
 import ApplicationReviewReadOnly from "./pages/application-review/ApplicationReviewReadOnly";
 import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
+import EmailActionHandler from "./pages/email-action-handler/EmailActionHandler";
 
 // import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
 
@@ -55,6 +56,7 @@ function App(): JSX.Element {
       />
       <Routes>
         <Route path="/Login" element={<Login />} />
+        <Route path="/email-action-handler" element={<EmailActionHandler />} />
         {/* 404 page */}
         <Route path="*" element={<ErrorPage type={"404"}></ErrorPage>} />
         <Route path="/forgot-password" element={<></>} />
