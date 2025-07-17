@@ -126,8 +126,6 @@ function AdminApplicationsDatabase(): JSX.Element {
     const openApplicationDocument = (url: string) => {
         if (url) {
             window.open(url, '_blank');
-        } else {
-            alert("No document available");
         }
     };
 

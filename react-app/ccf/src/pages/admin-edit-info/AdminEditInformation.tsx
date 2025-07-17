@@ -91,10 +91,7 @@ function AdminEditInformation(): JSX.Element {
         if (newCycleName) {
             const success = await endCurrentCycleAndStartNewOne(newCycleName);
             if (success) {
-                alert("New application cycle started successfully.");
                 window.location.reload();
-            } else {
-                alert("Failed to start a new application cycle.");
             }
         }
     };
