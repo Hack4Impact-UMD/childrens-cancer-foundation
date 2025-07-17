@@ -19,6 +19,7 @@ interface ApplicationBoxProps {
     title?: string;
     principalInvestigator?: string;
     onClick?: (dueDate: string, applicationId?: string) => void;
+    onModalOpen?: (applicationId: string) => void;
 }
 
 const ApplicationBox = ({
@@ -28,11 +29,21 @@ const ApplicationBox = ({
                             status,
                             title,
                             principalInvestigator,
-                            onClick = () => {}
+                            onClick = () => {},
+                            onModalOpen = () => {}
                         }: ApplicationBoxProps): JSX.Element => {
     // Handle click with optional applicationId
     const handleClick = () => {
         onClick(dueDate, id);
+    };
+
+    const handleModalOpen = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering the parent onClick
+        if (id) {
+            onModalOpen(id);
+        } else {
+            console.error("No application ID provided for modal");
+        }
     };
 
     return (
@@ -50,6 +61,12 @@ const ApplicationBox = ({
             >
                 {dueDate}
                 <FaArrowRight className="arrow" />
+            </button>
+            <button 
+                className="modal-button" 
+                onClick={handleModalOpen}
+            >
+                Open Modal
             </button>
         </div>
     );
