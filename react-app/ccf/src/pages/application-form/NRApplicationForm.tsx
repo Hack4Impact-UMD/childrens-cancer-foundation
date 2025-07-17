@@ -9,6 +9,7 @@ import AboutGrant from './subquestions/AboutGrant';
 import { NonResearchApplication } from '../../types/application-types';
 import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
 import { getCurrentCycle } from '../../backend/application-cycle';
+import { toast } from 'react-toastify';
 
 function NRApplicationForm(): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
@@ -55,17 +56,48 @@ function NRApplicationForm(): JSX.Element {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         try {
             if (isFormValid() && appOpen) {
-                const application: NonResearchApplication = formData as NonResearchApplication
+                const application: NonResearchApplication = formData as NonResearchApplication;
                 if (formData.file) {
-                    uploadNonResearchApplication(application, formData.file)
+                    // Show loading toast
+                    toast.info('Submitting application...');
+
+                    // Call the secure cloud function
+                    const result = await uploadNonResearchApplication(application, formData.file);
+
+                    if (result.success) {
+                        toast.success('Application submitted successfully!');
+                        navigate('/applicant/dashboard');
+                    } else {
+                        toast.error('Failed to submit application. Please try again.');
+                    }
                 }
-                navigate('/applicant/dashboard')
             }
-        } catch (e) {
-            console.log(e)
+        } catch (error: any) {
+            console.error('Application submission error:', error);
+
+            // Handle specific error messages from the cloud function
+            if (error.message) {
+                if (error.message.includes('Applications are currently closed')) {
+                    toast.error('Applications are currently closed. Please check back later.');
+                } else if (error.message.includes('already submitted')) {
+                    toast.error('You have already submitted an application for this grant type.');
+                } else if (error.message.includes('Deadline')) {
+                    toast.error('The deadline for this application type has passed.');
+                } else if (error.message.includes('Only PDF files')) {
+                    toast.error('Please upload a PDF file.');
+                } else if (error.message.includes('size exceeds')) {
+                    toast.error('File size exceeds 50MB limit. Please upload a smaller file.');
+                } else if (error.message.includes('Invalid application data')) {
+                    toast.error('Please check your application data and try again.');
+                } else {
+                    toast.error(error.message);
+                }
+            } else {
+                toast.error('Failed to submit application. Please try again.');
+            }
         }
     };
 
