@@ -37,6 +37,8 @@ function AccountPageReviewers(): JSX.Element {
 
   const [institutionError, setInstitutionError] = useState(false);
 
+  const [showVerificationMsg, setShowVerificationMsg] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -106,7 +108,6 @@ function AccountPageReviewers(): JSX.Element {
     // don't let user submit if pwd reqs aren't met
     e.preventDefault();
 
-    // Check whitelist before proceeding
     if (!emailError && email) {
       const isWhitelisted = await checkEmailWhitelist(email);
       if (!isWhitelisted) {
@@ -120,11 +121,11 @@ function AccountPageReviewers(): JSX.Element {
 
     if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
+      e.preventDefault();
       return;
     }
 
     try {
-      // Clear any previous whitelist error
       setEmailWhitelistError(false);
 
       const userData: UserData = {
@@ -136,9 +137,8 @@ function AccountPageReviewers(): JSX.Element {
         role: "reviewer"
       };
 
-      // Use the addReviewerUser function that handles both authentication and database operations
       await addReviewerUser(userData, pwd);
-      navigate("/");
+      setShowVerificationMsg(true);
     } catch (e) {
       console.log(e);
     }
@@ -146,7 +146,11 @@ function AccountPageReviewers(): JSX.Element {
 
   const checkConfirmPwd = () => {
     if (confirmPwd !== "") {
-      confirmPwd === pwd ? setPwdUnmatched(false) : setPwdUnmatched(true);
+      if (confirmPwd === pwd) {
+        setPwdUnmatched(false);
+      } else {
+        setPwdUnmatched(true);
+      }
     }
   };
 
@@ -233,7 +237,7 @@ function AccountPageReviewers(): JSX.Element {
                   setPwd(e.target.value);
                   checkPasswordRequirements(e.target.value);
                 }}
-                onFocus={() => setShowReqs(true)} // Show on focus
+                onFocus={() => setShowReqs(true)}
                 onBlur={() => setShowReqs(false)}
                 onKeyUp={checkConfirmPwd}
                 className="input"
@@ -355,24 +359,28 @@ function AccountPageReviewers(): JSX.Element {
               >
                 Sign Up
               </button>
+              
+              {showVerificationMsg && (
+                <div className="verification-message">
+                  <div className="verification-text">
+                    <h3>Account Created Successfully!</h3>
+                    <p>Please check your email and verify your address before logging in.</p>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
         </div>
 
         <div className="right-container2">
-          {/* remove once given image */}
-          <div className="image-placeholder2"></div>
-        </div>
-      </div>
-
-      <div className="right-container2">
-        <div className="images-container">
-          <div className="stacked-images">
-            <img src={hanleyImage} alt="Lab research" className="research-image" />
-            <img src={toretskyImage} alt="Doctor with patient" className="research-image" />
-          </div>
-          <div className="yellow-overlay">
-            <img src={yellowOverlay} alt="" className="overlay-image" />
+          <div className="images-container">
+            <div className="stacked-images">
+              <img src={hanleyImage} alt="Lab research" className="research-image" />
+              <img src={toretskyImage} alt="Doctor with patient" className="research-image" />
+            </div>
+            <div className="yellow-overlay">
+              <img src={yellowOverlay} alt="" className="overlay-image" />
+            </div>
           </div>
         </div>
       </div>

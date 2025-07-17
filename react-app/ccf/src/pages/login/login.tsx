@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { loginUser } from "../../services/auth_login";
+import { resendEmailVerification } from "../../utils/emailActionUtils";
 import "./login.css";
 import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
 import toretsky from "../../assets/toretskywithpatient 1.png";
@@ -13,6 +14,8 @@ function Login() {
   const [input, setInput] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loggedIn, setLoggedIn] = useState<boolean>(false)
+  const [showResendButton, setShowResendButton] = useState<boolean>(false);
+  const [resendLoading, setResendLoading] = useState<boolean>(false);
   const [isWideScreen, setIsWideScreen] = useState<boolean>(
     window.innerWidth > 750
   );
@@ -31,14 +34,41 @@ function Login() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setShowResendButton(false);
     const email = input.email.toLowerCase().trim();
     const password = input.password;
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
     } else {
-      const { error: loginError } = await loginUser(email, password);
-      if (loginError) setError(loginError);
-      else setLoggedIn(true)
+      const result = await loginUser(email, password);
+      if (result.error) {
+        setError(result.error);
+        if (result.emailNotVerified) {
+          setShowResendButton(true);
+        }
+      } else {
+        setLoggedIn(true);
+      }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    try {
+      const result = await loginUser(input.email.toLowerCase().trim(), input.password);
+      if (result.emailNotVerified) {
+        const resendResult = await resendEmailVerification();
+        if (resendResult.success) {
+          setError("A new verification email has been sent. Please check your email.");
+          setShowResendButton(false);
+        } else {
+          setError(resendResult.message);
+        }
+      }
+    } catch (error) {
+      setError("Failed to resend verification email. Please try again.");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -141,6 +171,18 @@ function Login() {
           /> */}
 
           {error && <p className="error">{error}</p>}
+          
+          {showResendButton && (
+            <button 
+              type="button" 
+              onClick={handleResendVerification}
+              disabled={resendLoading}
+              className="resend-verification-btn"
+            >
+              {resendLoading ? 'Sending...' : 'Resend Verification Email'}
+            </button>
+          )}
+          
           <Button variant={"red"} type={"submit"} className={"button"}>
             <>
               Login

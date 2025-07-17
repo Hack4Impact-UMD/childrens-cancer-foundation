@@ -1,4 +1,4 @@
-import { signInWithEmailAndPassword, AuthErrorCodes } from "firebase/auth";
+import { signInWithEmailAndPassword, AuthErrorCodes, signOut } from "firebase/auth";
 import { auth, db } from "../index"
 import { getDoc, doc } from "firebase/firestore";
 import {UserData} from "../types/usertypes"
@@ -6,14 +6,24 @@ import {UserData} from "../types/usertypes"
 export const loginUser = async (email: string, password: string) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    if (!user.emailVerified) {
+      await signOut(auth);
+      return { 
+        user: null, 
+        error: "Please verify your email address before logging in. Check your inbox for a verification email.",
+        emailNotVerified: true
+      };
+    }
+    
     console.log("Successfully signed in");
-    return { user: userCredential.user, error: null };
+    return { user: userCredential.user, error: null, emailNotVerified: false };
   } catch (err: any) {
     let errorMessage = "Incorrect username or password";
     if (err.code === AuthErrorCodes.INVALID_PASSWORD || err.code === AuthErrorCodes.USER_DELETED || err.code === AuthErrorCodes.INVALID_EMAIL) {
       errorMessage = "The email address or password is incorrect";
     }
-    return { user: null, error: errorMessage };
+    return { user: null, error: errorMessage, emailNotVerified: false };
   }
 };
 
