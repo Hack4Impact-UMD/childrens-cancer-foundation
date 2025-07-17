@@ -26,6 +26,7 @@ interface Application {
     requested: string;
     recommended: string;
     comments: string;
+    isAccepted: boolean;
 }
 
 interface CommentModalProps {
@@ -138,7 +139,8 @@ function GrantAwards(): JSX.Element {
                     finalScore,
                     requested: `$${data.amountRequested || "0"}`,
                     recommended: "$0", // Will be populated from admin data
-                    comments: "" // Will be populated from admin data
+                    comments: "", // Will be populated from admin data
+                    isAccepted: false 
                 };
 
                 applicationsData.push(application);
@@ -151,7 +153,8 @@ function GrantAwards(): JSX.Element {
             const finalApplicationsData = applicationsData.map(app => ({
                 ...app,
                 recommended: `$${adminDataMap[app.id]?.fundingAmount || "0"}`,
-                comments: adminDataMap[app.id]?.comments || ""
+                comments: adminDataMap[app.id]?.comments || "",
+                isAccepted: adminDataMap[app.id]?.isAccepted ?? false 
             }));
 
             setApplications(finalApplicationsData);
@@ -173,10 +176,21 @@ function GrantAwards(): JSX.Element {
 
         if (field === 'recommended') {
             appToUpdate.recommended = value;
+            const valueWithoutSign = value.replace('$', '').replace(/,/g, '');
+            const recommendedAmount = Number(valueWithoutSign) || 0;
+            appToUpdate.isAccepted = recommendedAmount > 0;
         }
-
         setApplications(updatedApplications);
-        // No firebase updates until save button is clicked
+    };
+
+    const handleAcceptanceToggle = (index: number) => {
+        const updatedApplications = [...applications];
+        const appToUpdate = updatedApplications[index];
+        appToUpdate.isAccepted = !appToUpdate.isAccepted;
+        if (!appToUpdate.isAccepted) {
+            appToUpdate.recommended = "$0";
+        }
+        setApplications(updatedApplications);
     };
 
     const saveChangesToFirestore = async (index: number) => {
@@ -193,7 +207,7 @@ function GrantAwards(): JSX.Element {
             const decision = recommendedAmount > 0 ? "accepted" : "pending";
 
             // Update admin data (comments and funding decision) in separate collection
-            await updateFundingDecision(appId, recommendedAmount, decision);
+            await updateFundingDecision(appId, recommendedAmount, decision, appToUpdate.isAccepted);
 
             // Update only the decision field in the applications collection (no sensitive data)
             const applicationRef = doc(db, "applications", appId);
@@ -281,7 +295,7 @@ function GrantAwards(): JSX.Element {
     };
 
     const handleDownloadCSV = () => {
-        const headers = ['Name (Last, First)', 'Program Type', 'Institution', 'Final Avg. Score', 'Requested', 'Recommended', 'Comments'];
+        const headers = ['Name (Last, First)', 'Program Type', 'Institution', 'Final Avg. Score', 'Requested', 'Recommended', 'Accepted', 'Comments'];
         const csvContent = [
             headers.join(','),
             ...applications.map(app => [
@@ -291,6 +305,7 @@ function GrantAwards(): JSX.Element {
                 app.finalScore,
                 `"${String(app.requested).replace(/"/g, '""')}"`,
                 `"${String(app.recommended).replace(/"/g, '""')}"`,
+                `"${app.isAccepted ? 'Accepted' : 'Rejected'}"`,
                 `"${app.comments.replace(/"/g, '""')}"`
             ].join(','))
         ].join('\n');
@@ -364,6 +379,7 @@ function GrantAwards(): JSX.Element {
                                                 <th onClick={() => handleSort('recommended')} className="sortable">
                                                     Recommended {getSortIcon('recommended')}
                                                 </th>
+                                                <th>Acceptance</th>
                                                 <th>Comments</th>
                                                 <th>Save</th>
                                             </tr>
@@ -395,6 +411,15 @@ function GrantAwards(): JSX.Element {
                                                             title="Recommended Amount"
                                                             aria-label={`Recommended funding amount for ${app.name}`}
                                                         />
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            className={`acceptance-toggle-btn ${app.isAccepted ? 'accepted' : 'rejected'}`}
+                                                            onClick={() => handleAcceptanceToggle(index)}
+                                                            title={app.isAccepted ? 'Click to reject' : 'Click to accept'}
+                                                        >
+                                                            {app.isAccepted ? 'Accepted' : 'Rejected'}
+                                                        </button>
                                                     </td>
                                                     <td>
                                                         <button
