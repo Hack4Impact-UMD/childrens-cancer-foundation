@@ -133,7 +133,7 @@ function AdminApplicationsDatabase(): JSX.Element {
 
     return (
         <div>
-            <Sidebar links={sidebarItems}/>
+            <Sidebar links={sidebarItems} />
 
             <div className="dashboard-container">
                 <div className="dashboard-content">
@@ -151,136 +151,140 @@ function AdminApplicationsDatabase(): JSX.Element {
                     />
 
                     <div className="filter-container">
-                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, applicationCycle: e.target.value})}>
+                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, applicationCycle: e.target.value })}>
                             <option value="">Application Cycle</option>
                             {availableYears.map((year) => (
                                 <option key={year} value={year}>{year}</option>
                             ))}
                         </select>
 
-                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, decision: e.target.value})}>
+                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, decision: e.target.value })}>
                             <option value="">Decision</option>
                             <option value="accepted">Approved</option>
                             <option value="rejected">Rejected</option>
                             <option value="pending">Pending</option>
                         </select>
 
-                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, grantType: e.target.value})}>
+                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, grantType: e.target.value })}>
                             <option value="">Grant Type</option>
                             <option value="research">Research</option>
                             <option value="nextgen">Next Gen</option>
                         </select>
 
-                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, institution: e.target.value})}>
+                        <select className="filter-dropdown" onChange={(e) => setFilters({ ...filters, institution: e.target.value })}>
                             <option value="">Institution</option>
                             {availableInstitutions.map((institution) => (
                                 <option key={institution} value={institution}>{institution}</option>
                             ))}
                         </select>
                     </div>
-                    
-                    {Object.keys(filteredApplications).length == 0 ? "No applications matching filters" : 
 
-                    <div className="dashboard-sections-content">
-                        {Object.keys(filteredApplications).sort((a, b) => Number(b) - Number(a)).map((year) => (
-                            <div key={year} className="dashboard-section">
-                                <div className="section-header" onClick={() => toggleYear(year)}>
-                                    <div className="header-content">
-                                        <img src={document} alt="Document Icon" className="section-icon" />
-                                        <h2>{year}</h2>
+
+
+
+
+                    {Object.keys(filteredApplications).length == 0 ? "No applications matching filters" :
+
+                        <div className="dashboard-sections-content">
+                            {Object.keys(filteredApplications).sort((a, b) => Number(b) - Number(a)).map((year) => (
+                                <div key={year} className="dashboard-section">
+                                    <div className="section-header" onClick={() => toggleYear(year)}>
+                                        <div className="header-content">
+                                            <img src={document} alt="Document Icon" className="section-icon" />
+                                            <h2>{year}</h2>
+                                        </div>
+                                        <button className="expand-collapse-btn">
+                                            {collapseState[year] ? <FaArrowDown /> : <FaArrowUp />}
+                                        </button>
                                     </div>
-                                    <button className="expand-collapse-btn">
-                                        {collapseState[year] ? <FaArrowDown /> : <FaArrowUp />}
-                                    </button>
-                                </div>
 
-                                {!collapseState[year] && (
-                                    <>
-                                        <div className="applications-container" >
-                                            {filteredApplications[year].map((app, index) => {
-                                                const isExpanded = expandedApplications[`${year}-${index}`];
-                                                const iconColor = isExpanded ? blueDocument : yellowDocument;
-                                                return (
-                                                    <div key={index} className={`single-application-box ${isExpanded ? 'expanded' : ''}`}>
-                                                        <div className="application-header">
-                                                            <div className="application-info">
-                                                                <img src={iconColor} alt="Document Icon" className="section-icon" />
-                                                                <div className="application-info-text">
-                                                                    <p className="application-title">{app.title}</p>
-                                                                    <p className="subtext">{app.grantType} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
+                                    {!collapseState[year] && (
+                                        <>
+                                            <div className="applications-container" >
+                                                {filteredApplications[year].map((app, index) => {
+                                                    const isExpanded = expandedApplications[`${year}-${index}`];
+                                                    const iconColor = isExpanded ? blueDocument : yellowDocument;
+                                                    return (
+                                                        <div key={index} className={`single-application-box ${isExpanded ? 'expanded' : ''}`}>
+                                                            <div className="application-header">
+                                                                <div className="application-info">
+                                                                    <img src={iconColor} alt="Document Icon" className="section-icon" />
+                                                                    <div className="application-info-text">
+                                                                        <p className="application-title">{app.title}</p>
+                                                                        <p className="subtext">{app.grantType} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
 
-                                                        {isExpanded && (
-                                                            <div className="application-details">
-                                                                <hr className="divider"/>
-                                                                <div className="details-two-columns">
-                                                                    <div className="details-block">
-                                                                        <div className="detail-item">
-                                                                            <span className="detail-label">Application Title: </span>
-                                                                            <span className="detail-value">{app.title || " N/A"}</span>
+                                                            {isExpanded && (
+                                                                <div className="application-details">
+                                                                    <hr className="divider" />
+                                                                    <div className="details-two-columns">
+                                                                        <div className="details-block">
+                                                                            <div className="detail-item">
+                                                                                <span className="detail-label">Application Title: </span>
+                                                                                <span className="detail-value">{app.title || " N/A"}</span>
+                                                                            </div>
+                                                                            <div className="detail-item">
+                                                                                <span className="detail-label">Application Type: </span>
+                                                                                <span className="detail-value">{app.grantType || " N/A"}</span>
+                                                                            </div>
+                                                                            <div className="detail-item">
+                                                                                <span className="detail-label">Principal Investigator/Requestor: </span>
+                                                                                <span className="detail-value">{app.grantType == "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
+                                                                            </div>
+                                                                            <div className="detail-item">
+                                                                                <span className="detail-label">Institution: </span>
+                                                                                <span className="detail-value">{app.institution || " N/A"}</span>
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="detail-item">
-                                                                            <span className="detail-label">Application Type: </span>
-                                                                            <span className="detail-value">{app.grantType || " N/A"}</span>
-                                                                        </div>
-                                                                        <div className="detail-item">
-                                                                            <span className="detail-label">Principal Investigator/Requestor: </span>
-                                                                            <span className="detail-value">{app.grantType == "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
-                                                                        </div>
-                                                                        <div className="detail-item">
-                                                                            <span className="detail-label">Institution: </span>
-                                                                            <span className="detail-value">{app.institution || " N/A"}</span>
+                                                                        <div className="details-block">
+                                                                            <div className="detail-item">
+                                                                                <span className="detail-label">Cancer Type: </span>
+                                                                                <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
+                                                                            </div>
+                                                                            <div className="detail-item">
+                                                                                <span className="detail-label">Amount Requested: </span>
+                                                                                <span className="detail-value">${app.amountRequested || " N/A"}</span>
+                                                                            </div>
+                                                                            <div className="detail-item">
+                                                                                <span className="detail-label">Continuation of Funding: </span>
+                                                                                <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
+                                                                            </div>
+                                                                            <div className="detail-item">
+                                                                                <span className="detail-label">Status: </span>
+                                                                                <span className="detail-value">{firstLetterCap(app.decision)}</span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="details-block">
-                                                                        <div className="detail-item">
-                                                                            <span className="detail-label">Cancer Type: </span>
-                                                                            <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
-                                                                        </div>
-                                                                        <div className="detail-item">
-                                                                            <span className="detail-label">Amount Requested: </span>
-                                                                            <span className="detail-value">${app.amountRequested || " N/A"}</span>
-                                                                        </div>
-                                                                        <div className="detail-item">
-                                                                            <span className="detail-label">Continuation of Funding: </span>
-                                                                            <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
-                                                                        </div>
-                                                                        <div className="detail-item">
-                                                                            <span className="detail-label">Status: </span>
-                                                                            <span className="detail-value">{firstLetterCap(app.decision)}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="action-buttons">
-                                                                    <Button className="action-button cover-sheet" onClick={(event) => {event.stopPropagation(); setOpenModal(app)}}>
-                                                                        Cover Sheet Information
-                                                                        <FaChevronRight className="button-icon" />
-                                                                    </Button>
-                                                                    {/* <button
+                                                                    <div className="action-buttons">
+                                                                        <Button className="action-button cover-sheet" onClick={(event) => { event.stopPropagation(); setOpenModal(app) }}>
+                                                                            Cover Sheet Information
+                                                                            <FaChevronRight className="button-icon" />
+                                                                        </Button>
+                                                                        {/* <button
                                                                         className="action-button completed-app"
                                                                         onClick={() => openApplicationDocument(app.file)}
                                                                     >
                                                                         Completed Application
                                                                     </button> */}
+                                                                    </div>
+                                                                    <AdminCoverPageModal application={app} isOpen={openModal == app} onClose={closeModal}></AdminCoverPageModal>
                                                                 </div>
-                                                                <AdminCoverPageModal application={app} isOpen={openModal == app} onClose={closeModal}></AdminCoverPageModal>
-                                                            </div>
-                                                        )}
-                                                        <button className="expand-collapse-btn" onClick={() => toggleApplication(year, index)}>
-                                                            {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
-                                                        </button>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                }
+                                                            )}
+                                                            <button className="expand-collapse-btn" onClick={() => toggleApplication(year, index)}>
+                                                                {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    }
                 </div>
             </div>
         </div>

@@ -143,18 +143,8 @@ exports.submitApplication = onCall(async (request) => {
             throw new functions.https.HttpsError('failed-precondition', `Deadline for ${grantType} applications has passed`);
         }
 
-        // 6. Check for duplicate submissions
-        const existingAppQuery = await admin.firestore()
-            .collection('applications')
-            .where('creatorId', '==', userId)
-            .where('applicationCycle', '==', currentCycle.name)
-            .where('grantType', '==', grantType)
-            .limit(1)
-            .get();
-
-        if (!existingAppQuery.empty) {
-            throw new functions.https.HttpsError('already-exists', 'You have already submitted an application for this grant type in the current cycle');
-        }
+        // 6. Multiple applications are now allowed within the same cycle
+        // Removed duplicate submission check to allow multiple applications per cycle
 
         // 7. Validate application data based on grant type
         const validationResult = validateApplicationData(application, grantType);
@@ -226,6 +216,7 @@ exports.submitApplication = onCall(async (request) => {
 
 // Helper function to validate application data
 function validateApplicationData(application, grantType) {
+
     const errors = [];
 
     // Common validation
@@ -287,7 +278,7 @@ function validateApplicationData(application, grantType) {
         }
 
         if (!application.creditAgreement || typeof application.creditAgreement !== 'string' || application.creditAgreement.trim() === '') {
-            errors.push('Credit Agreement is required');
+            errors.push('Credit Agreement is    ');
         }
 
         if (!application.patentApplied || typeof application.patentApplied !== 'string' || application.patentApplied.trim() === '') {
@@ -323,6 +314,7 @@ function validateApplicationData(application, grantType) {
         if (!application.timeframe || typeof application.timeframe !== 'string' || application.timeframe.trim() === '') {
             errors.push('Timeframe is required');
         }
+
     }
 
     return {
@@ -360,4 +352,5 @@ exports.getReviewers = onRequest(async (req, res) => {
         res.status(500).send("Failed to retrieve reviewers");
     }
 });
+
 //# sourceMappingURL=index.js.map
