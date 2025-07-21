@@ -38,7 +38,6 @@ export const handleSignup = (
         setError("The email address is already in use.");
       } else {
         console.log(err.code);
-        alert(err.code);
       }
     });
 };

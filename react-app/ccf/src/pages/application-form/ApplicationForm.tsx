@@ -92,7 +92,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         }
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const invalidSections: { [key: string]: string[] } = {};
 
         // Check required fields page by page
@@ -132,6 +132,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                 }
             });
         }
+
         if (!appOpen) {
             const formattedContent = (
                 <div style={{ whiteSpace: 'pre-line' }}>
@@ -160,14 +161,45 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         }
 
         try {
-            const application: ResearchApplication = formData as ResearchApplication
-            if (formData.file)
-                uploadResearchApplication(application, formData.file, type == "NextGen")
-        } catch (e) {
-            console.log(e)
-        }
+            const application: ResearchApplication = formData as ResearchApplication;
+            if (formData.file) {
+                // Show loading toast
+                toast.info('Submitting application...');
 
-        navigate('/applicant/dashboard')
+                // Call the secure cloud function
+                const result = await uploadResearchApplication(application, formData.file, type === "NextGen");
+
+                if (result.success) {
+                    toast.success('Application submitted successfully!');
+                    navigate('/applicant/dashboard');
+                } else {
+                    toast.error('Failed to submit application. Please try again.');
+                }
+            }
+        } catch (error: any) {
+            console.error('Application submission error:', error);
+
+            // Handle specific error messages from the cloud function
+            if (error.message) {
+                if (error.message.includes('Applications are currently closed')) {
+                    toast.error('Applications are currently closed. Please check back later.');
+                } else if (error.message.includes('already submitted')) {
+                    toast.error('You have already submitted an application for this grant type.');
+                } else if (error.message.includes('Deadline')) {
+                    toast.error('The deadline for this application type has passed.');
+                } else if (error.message.includes('Only PDF files')) {
+                    toast.error('Please upload a PDF file.');
+                } else if (error.message.includes('size exceeds')) {
+                    toast.error('File size exceeds 50MB limit. Please upload a smaller file.');
+                } else if (error.message.includes('Invalid application data')) {
+                    toast.error('Please check your application data and try again.');
+                } else {
+                    toast.error(error.message);
+                }
+            } else {
+                toast.error('Failed to submit application. Please try again.');
+            }
+        }
     };
     const isFormValid = (checkAll = false) => {
         const hasRequiredFields = requiredFields.reduce((acc, curr) => {

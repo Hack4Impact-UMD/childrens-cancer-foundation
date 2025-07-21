@@ -8,16 +8,20 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReviewers = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
+exports.getReviewers = exports.submitApplication = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
 const functions = require("firebase-functions");
+const { onRequest, onCall } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 admin.initializeApp();
+
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
-exports.helloWorld = functions.https.onRequest((request, response) => {
+exports.helloWorld = onRequest((request, response) => {
     response.send("Hello from Firebase!");
 });
-exports.addReviewerRole = functions.https.onCall((data, context) => {
+
+exports.addReviewerRole = onCall((request) => {
+    const { data } = request;
     return admin.auth().getUserByEmail(data.email).then((user) => {
         return admin.auth().setCustomUserClaims(user.uid, {
             "role": "reviewer"
@@ -30,7 +34,9 @@ exports.addReviewerRole = functions.https.onCall((data, context) => {
         return err;
     });
 });
-exports.addApplicantRole = functions.https.onCall((data, context) => {
+
+exports.addApplicantRole = onCall((request) => {
+    const { data } = request;
     return admin.auth().getUserByEmail(data.email).then((user) => {
         return admin.auth().setCustomUserClaims(user.uid, {
             "role": "applicant"
@@ -43,7 +49,9 @@ exports.addApplicantRole = functions.https.onCall((data, context) => {
         return err;
     });
 });
-exports.addAdminRole = functions.https.onCall((data, context) => {
+
+exports.addAdminRole = onCall((request) => {
+    const { data } = request;
     return admin.auth().getUserByEmail(data.email).then((user) => {
         return admin.auth().setCustomUserClaims(user.uid, {
             "role": "admin"
@@ -57,8 +65,266 @@ exports.addAdminRole = functions.https.onCall((data, context) => {
     });
 });
 
+// Secure Application Submission Function
+exports.submitApplication = onCall(async (request) => {
+    try {
+        const { data, auth } = request;
+
+        // 1. Authentication Check
+        if (!auth) {
+            throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to submit applications');
+        }
+
+        const userId = auth.uid;
+        const userEmail = auth.token.email;
+
+        // 2. Validate user role
+        const userRole = auth.token.role;
+        if (userRole !== 'applicant') {
+            throw new functions.https.HttpsError('permission-denied', 'Only applicants can submit applications');
+        }
+
+        // 3. Validate required data
+        const { application, grantType, fileData, fileName, fileType } = data;
+
+        if (!application || !grantType || !fileData || !fileName) {
+            throw new functions.https.HttpsError('invalid-argument', 'Missing required application data');
+        }
+
+        if (!['research', 'nextgen', 'nonresearch'].includes(grantType)) {
+            throw new functions.https.HttpsError('invalid-argument', 'Invalid grant type');
+        }
+
+        // 4. Validate file type and size
+        if (fileType !== 'application/pdf') {
+            throw new functions.https.HttpsError('invalid-argument', 'Only PDF files are allowed');
+        }
+
+        const fileBuffer = Buffer.from(fileData, 'base64');
+        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+        if (fileBuffer.length > MAX_FILE_SIZE) {
+            throw new functions.https.HttpsError('invalid-argument', 'File size exceeds 50MB limit');
+        }
+
+        // 5. Get current application cycle and validate submission period
+        const cycleSnapshot = await admin.firestore()
+            .collection('applicationCycles')
+            .where('current', '==', true)
+            .limit(1)
+            .get();
+
+        if (cycleSnapshot.empty) {
+            throw new functions.https.HttpsError('failed-precondition', 'No active application cycle found');
+        }
+
+        const currentCycle = cycleSnapshot.docs[0].data();
+        const now = new Date();
+
+        // Check if applications are open
+        if (currentCycle.stage !== 'Applications Open') {
+            throw new functions.https.HttpsError('failed-precondition', 'Applications are currently closed');
+        }
+
+        // Check deadline based on grant type
+        let deadline;
+        switch (grantType) {
+            case 'research':
+                deadline = currentCycle.researchDeadline.toDate();
+                break;
+            case 'nextgen':
+                deadline = currentCycle.nextGenDeadline.toDate();
+                break;
+            case 'nonresearch':
+                deadline = currentCycle.nonResearchDeadline.toDate();
+                break;
+        }
+
+        if (now > deadline) {
+            throw new functions.https.HttpsError('failed-precondition', `Deadline for ${grantType} applications has passed`);
+        }
+
+        // 6. Multiple applications are now allowed within the same cycle
+        // Removed duplicate submission check to allow multiple applications per cycle
+
+        // 7. Validate application data based on grant type
+        const validationResult = validateApplicationData(application, grantType);
+        if (!validationResult.isValid) {
+            throw new functions.https.HttpsError('invalid-argument', `Invalid application data: ${validationResult.errors.join(', ')}`);
+        }
+
+        // 8. Upload file to Firebase Storage
+        const fileId = admin.firestore().collection('applications').doc().id;
+        const fileName_storage = `${fileId}_${Date.now()}.pdf`;
+        const bucket = admin.storage().bucket();
+        const file = bucket.file(`pdfs/${fileName_storage}`);
+
+        await file.save(fileBuffer, {
+            metadata: {
+                contentType: 'application/pdf',
+                metadata: {
+                    uploadedBy: userId,
+                    originalName: fileName,
+                    applicationId: fileId
+                }
+            }
+        });
+
+        // 9. Create application document
+        const applicationDetails = {
+            ...application,
+            decision: 'pending',
+            creatorId: userId,
+            applicationId: fileId,
+            grantType: grantType,
+            file: fileName_storage,
+            applicationCycle: currentCycle.name,
+            submitTime: admin.firestore.Timestamp.now()
+        };
+
+        await admin.firestore()
+            .collection('applications')
+            .doc(fileId)
+            .set(applicationDetails);
+
+        // 10. Log the submission
+        functions.logger.info('Application submitted successfully', {
+            userId,
+            userEmail,
+            grantType,
+            applicationId: fileId,
+            cycle: currentCycle.name
+        });
+
+        return {
+            success: true,
+            applicationId: fileId,
+            message: 'Application submitted successfully'
+        };
+
+    } catch (error) {
+        functions.logger.error('Application submission error:', error);
+
+        // If it's already an HttpsError, re-throw it
+        if (error instanceof functions.https.HttpsError) {
+            throw error;
+        }
+
+        // Otherwise, wrap in internal error
+        throw new functions.https.HttpsError('internal', 'Application submission failed');
+    }
+});
+
+// Helper function to validate application data
+function validateApplicationData(application, grantType) {
+
+    const errors = [];
+
+    // Common validation
+    if (!application.title || typeof application.title !== 'string' || application.title.trim() === '') {
+        errors.push('Title is required');
+    }
+
+    if (!application.institution || typeof application.institution !== 'string' || application.institution.trim() === '') {
+        errors.push('Institution is required');
+    }
+
+    if (!application.amountRequested || typeof application.amountRequested !== 'string' || application.amountRequested.trim() === '') {
+        errors.push('Amount requested is required');
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (grantType === 'research' || grantType === 'nextgen') {
+        // Research/NextGen specific validation
+        if (!application.principalInvestigator || typeof application.principalInvestigator !== 'string' || application.principalInvestigator.trim() === '') {
+            errors.push('Principal Investigator is required');
+        }
+
+        if (!application.typesOfCancerAddressed || typeof application.typesOfCancerAddressed !== 'string' || application.typesOfCancerAddressed.trim() === '') {
+            errors.push('Types of Cancer Addressed is required');
+        }
+
+        if (!application.namesOfStaff || typeof application.namesOfStaff !== 'string' || application.namesOfStaff.trim() === '') {
+            errors.push('Names of Staff is required');
+        }
+
+        if (!application.institutionAddress || typeof application.institutionAddress !== 'string' || application.institutionAddress.trim() === '') {
+            errors.push('Institution Address is required');
+        }
+
+        if (!application.institutionPhoneNumber || typeof application.institutionPhoneNumber !== 'string' || application.institutionPhoneNumber.trim() === '') {
+            errors.push('Institution Phone Number is required');
+        }
+
+        if (!application.institutionEmail || !emailRegex.test(application.institutionEmail)) {
+            errors.push('Valid Institution Email is required');
+        }
+
+        if (!application.adminOfficialName || typeof application.adminOfficialName !== 'string' || application.adminOfficialName.trim() === '') {
+            errors.push('Admin Official Name is required');
+        }
+
+        if (!application.adminPhoneNumber || typeof application.adminPhoneNumber !== 'string' || application.adminPhoneNumber.trim() === '') {
+            errors.push('Admin Phone Number is required');
+        }
+
+        if (!application.adminEmail || !emailRegex.test(application.adminEmail)) {
+            errors.push('Valid Admin Email is required');
+        }
+
+        if (!application.includedPublishedPaper || typeof application.includedPublishedPaper !== 'string' || application.includedPublishedPaper.trim() === '') {
+            errors.push('Published Paper information is required');
+        }
+
+        if (!application.creditAgreement || typeof application.creditAgreement !== 'string' || application.creditAgreement.trim() === '') {
+            errors.push('Credit Agreement is    ');
+        }
+
+        if (!application.patentApplied || typeof application.patentApplied !== 'string' || application.patentApplied.trim() === '') {
+            errors.push('Patent Applied information is required');
+        }
+
+        if (!application.includedFundingInfo || typeof application.includedFundingInfo !== 'string' || application.includedFundingInfo.trim() === '') {
+            errors.push('Funding Information is required');
+        }
+
+        if (!application.dates || typeof application.dates !== 'string' || application.dates.trim() === '') {
+            errors.push('Dates are required');
+        }
+
+        if (!application.continuation || typeof application.continuation !== 'string' || application.continuation.trim() === '') {
+            errors.push('Continuation information is required');
+        }
+
+    } else if (grantType === 'nonresearch') {
+        // Non-research specific validation
+        if (!application.requestor || typeof application.requestor !== 'string' || application.requestor.trim() === '') {
+            errors.push('Requestor is required');
+        }
+
+        if (!application.institutionPhoneNumber || typeof application.institutionPhoneNumber !== 'string' || application.institutionPhoneNumber.trim() === '') {
+            errors.push('Institution Phone Number is required');
+        }
+
+        if (!application.institutionEmail || !emailRegex.test(application.institutionEmail)) {
+            errors.push('Valid Institution Email is required');
+        }
+
+        if (!application.timeframe || typeof application.timeframe !== 'string' || application.timeframe.trim() === '') {
+            errors.push('Timeframe is required');
+        }
+
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+}
+
 // Get Reviewers Function
-exports.getReviewers = functions.https.onRequest(async (req, res) => {
+exports.getReviewers = onRequest(async (req, res) => {
     try {
         const reviewerUserIds = [];
 
@@ -86,4 +352,5 @@ exports.getReviewers = functions.https.onRequest(async (req, res) => {
         res.status(500).send("Failed to retrieve reviewers");
     }
 });
+
 //# sourceMappingURL=index.js.map

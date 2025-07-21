@@ -164,7 +164,6 @@ function ApplicationReview(): JSX.Element {
 
   const submitReviewHandler = async () => {
     if (!currentReview?.id || !overall || !applicationId) {
-      alert("Please provide an overall score before submitting");
       return;
     }
 
@@ -176,13 +175,11 @@ function ApplicationReview(): JSX.Element {
       setSaveStatus('saved');
 
       // Navigate back to dashboard after submission
-      alert("Review submitted successfully!");
       navigate("/reviewer/dashboard");
 
     } catch (err) {
       console.error("Error submitting review:", err);
       setSaveStatus('error');
-      alert("Error submitting review. Please try again.");
     }
   };
 
