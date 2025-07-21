@@ -16,6 +16,7 @@ import { getReviewsForReviewer } from "../../services/review-service";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { getCurrentCycle } from "../../backend/application-cycle";
 import Banner from "../../components/banner/Banner";
+import CoverPageModal from "../../components/applications/CoverPageModal";
 
 interface FAQItem {
     question: string;
@@ -44,6 +45,10 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     const [error, setError] = useState<string | null>(null);
     const [appCycle, setAppCycle] = useState<ApplicationCycle>();
 
+    // State for modal
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
+    const [currentModalApplication, setCurrentModalApplication] = useState<any>(null);
+
     // State for FAQ
     const [openFAQIndex, setOpenFAQIndex] = useState<number | null>(null);
 
@@ -61,6 +66,28 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     const handleDueDateClick = (dueDate: string, applicationId: string) => {
         // Navigate to review page with application ID
         window.location.href = `/reviewer/review?id=${applicationId}`;
+    };
+
+    const handleModalOpen = async (applicationId: string) => {
+        try {
+            const applicationRef = doc(db, "applications", applicationId);
+            const applicationDoc = await getDoc(applicationRef);
+
+            if (applicationDoc.exists()) {
+                const applicationData = applicationDoc.data();
+                setCurrentModalApplication(applicationData);
+                setModalOpen(true);
+            } else {
+                console.error("Application not found");
+            }
+        } catch (error) {
+            console.error("Error fetching application:", error);
+        }
+    };
+
+    const closeModal = () => {
+        setModalOpen(false);
+        setCurrentModalApplication(null);
     };
 
     // Fetch reviewer's assigned applications from Firebase using the new review service
@@ -213,11 +240,13 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                                                     {pendingReviews.map((application, index) => (
                                                         <ApplicationBox
                                                             key={index}
+                                                            id={application.id}
                                                             applicationType={application.applicationType}
                                                             dueDate={application.dueDate}
                                                             title={application.title}
                                                             principalInvestigator={application.principalInvestigator}
                                                             onClick={() => handleDueDateClick(application.dueDate, application.id || '')}
+                                                            onModalOpen={handleModalOpen}
                                                         />
                                                     ))}
                                                     <hr className="red-line" />
@@ -230,11 +259,13 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                                                     {inProgressReviews.map((application, index) => (
                                                         <ApplicationBox
                                                             key={index}
+                                                            id={application.id}
                                                             applicationType={application.applicationType}
                                                             dueDate={application.dueDate}
                                                             title={application.title}
                                                             principalInvestigator={application.principalInvestigator}
                                                             onClick={() => handleDueDateClick(application.dueDate, application.id || '')}
+                                                            onModalOpen={handleModalOpen}
                                                         />
                                                     ))}
                                                     <hr className="red-line" />
@@ -247,11 +278,13 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                                                     {completedReviews.map((application, index) => (
                                                         <ApplicationBox
                                                             key={index}
+                                                            id={application.id}
                                                             applicationType={application.applicationType}
                                                             dueDate={application.dueDate}
                                                             title={application.title}
                                                             principalInvestigator={application.principalInvestigator}
                                                             onClick={() => handleDueDateClick(application.dueDate, application.id || '')}
+                                                            onModalOpen={handleModalOpen}
                                                         />
                                                     ))}
                                                 </>
@@ -327,6 +360,13 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                     </div>
                 </div>
             </div>
+            {currentModalApplication && (
+                    <CoverPageModal
+                        onClose={closeModal}
+                        isOpen={modalOpen}
+                        application={currentModalApplication}
+                    />
+            )}
         </div>
     );
 }

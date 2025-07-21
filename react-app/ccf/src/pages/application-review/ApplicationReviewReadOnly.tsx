@@ -126,8 +126,6 @@ function ApplicationReviewReadOnly(): JSX.Element {
     const openApplicationViewer = () => {
         if (application?.file) {
             window.open(application.file, '_blank');
-        } else {
-            alert("Application PDF not available");
         }
     };
 
