@@ -2,14 +2,19 @@ export interface ApplicationInfo {
     applicationId: number;
     title: string;
     principalInvestigator: string;
-    typesOfCancerAddressed: string;
-    namesOfStaff: string;
+    otherStaff: string;
+    coPI: boolean;
     institution: string;
+    department: string;
+    departmentHead: string;
     institutionAddress: string;
+    institutionCityStateZip: string;
     institutionPhoneNumber: string;
-    instituionEmail: string;
+    institutionEmail: string;
+    typesOfCancerAddressed: string;
     adminOfficialName: string;
     adminOfficialAddress: string;
+    adminOfficialCityStateZip: string;
     adminPhoneNumber: string;
     adminEmail: string;
     decision: string;
@@ -25,6 +30,11 @@ export interface ApplicationQuestions {
     dates: string;
     continuation: boolean;
     continuationYears?: string;
+    einNumber: string;
+    attestationHumanSubjects: boolean;
+    attestationCertification: boolean;
+    signaturePI: string;
+    signatureDeptHead: string;
 }
 
 export interface AssignReviewers {
@@ -38,14 +48,19 @@ export interface AssignReviewers {
 export interface ResearchApplication {
     title: string;
     principalInvestigator: string;
-    typesOfCancerAddressed: string;
-    namesOfStaff: string;
+    otherStaff: string;
+    coPI: boolean;
     institution: string;
+    department: string;
+    departmentHead: string;
     institutionAddress: string;
+    institutionCityStateZip: string;
     institutionPhoneNumber: string;
     institutionEmail: string;
+    typesOfCancerAddressed: string;
     adminOfficialName: string;
     adminOfficialAddress: string;
+    adminOfficialCityStateZip: string;
     adminPhoneNumber: string;
     adminEmail: string;
     includedPublishedPaper: string;
@@ -56,6 +71,11 @@ export interface ResearchApplication {
     dates: string;
     continuation: string;
     continuationYears?: string;
+    einNumber: string;
+    attestationHumanSubjects: boolean;
+    attestationCertification: boolean;
+    signaturePI: string;
+    signatureDeptHead: string;
 }
 
 export type Application = (ResearchApplication | NonResearchApplication) & ApplicationDetails
@@ -120,9 +140,10 @@ export interface GrantApplication {
     instituionEmail?: string;
     institution?: string;
     institutionAddress?: string;
-    institutionEmail?: string;
+    institutionCityStateZip?: string;
     institutionPhoneNumber?: string;
-    namesOfStaff?: string;
+    institutionEmail?: string;
+    // namesOfStaff?: string;
     patentApplied?: string;
     pdf?: string;
     recommendedAmount?: number;
