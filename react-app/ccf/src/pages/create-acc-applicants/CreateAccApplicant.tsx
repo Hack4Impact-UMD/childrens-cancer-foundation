@@ -36,6 +36,7 @@ function AccountPageApplicants(): JSX.Element {
   const [yellowOverlay, setYellowOverlay] = useState<string | undefined>(undefined);
 
   const navigate = useNavigate();
+  const [showVerificationMsg, setShowVerificationMsg] = useState(false);
 
   useEffect(() => { }, [
     firstName,
@@ -102,8 +103,8 @@ function AccountPageApplicants(): JSX.Element {
         title: title,
         role: "applicant"
       }
-      addApplicantUser(userData, pwd)
-      navigate("/");
+      await addApplicantUser(userData, pwd)
+      setShowVerificationMsg(true);
     } catch (e) {
       console.log(e)
     }
@@ -194,7 +195,7 @@ function AccountPageApplicants(): JSX.Element {
                   setPwd(e.target.value);
                   checkPasswordRequirements(e.target.value);
                 }}
-                onFocus={() => setShowReqs(true)} // Show on focus
+                onFocus={() => setShowReqs(true)}
                 onBlur={() => setShowReqs(false)}
                 onKeyUp={checkConfirmPwd}
                 className="input"
@@ -328,6 +329,15 @@ function AccountPageApplicants(): JSX.Element {
               >
                 Sign Up
               </button>
+              
+              {showVerificationMsg && (
+                <div className="verification-message">
+                  <div className="verification-text">
+                    <h3>Account Created Successfully!</h3>
+                    <p>Please check your email and verify your address before logging in.</p>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
         </div>

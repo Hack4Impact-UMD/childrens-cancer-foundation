@@ -1,7 +1,7 @@
 import { db, auth, functions } from '../index';
 import { collection, doc, setDoc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { UserData } from '../types/usertypes';
-import { createUserWithEmailAndPassword, deleteUser} from 'firebase/auth';
+import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 
 // Function to add a new applicant user
@@ -14,6 +14,8 @@ export const addApplicantUser = async (userData: UserData, password: string): Pr
   try {
     const addApplicantRole = httpsCallable(functions, "addApplicantRole");
     user = userCredential.user;
+
+    await sendEmailVerification(user);
     await setDoc(doc(db, "applicants", user.uid), {
       firstName: userData.firstName,
       lastName: userData.lastName,
@@ -47,6 +49,9 @@ export const addReviewerUser = async (userData: UserData, password: string): Pro
   try {
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
     const user = userCredential.user;
+    
+    await sendEmailVerification(user);
+    
     await setDoc(doc(db, "reviewers", user.uid), {
       firstName: userData.firstName,
       lastName: userData.lastName,
