@@ -43,7 +43,7 @@ const EditableFAQComponent: React.FC<FAQComponentProps> = ({ faqs }) => {
                     </div>
                     {activeIndex === index && (
                         <div className="faq-answer">
-                            <MarkdownPreviewer _text={faq.answer} _minRows={3} />
+                            <MarkdownPreviewer _text={faq.answer} />
                         </div>
                     )}
                 </div>
