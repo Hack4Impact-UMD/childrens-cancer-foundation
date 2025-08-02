@@ -132,3 +132,13 @@
 .stage-buttons .MuiButton-contained:hover {
   background-color: #125ea7 !important;
 }
+
+.editable-info-section {
+    display: flex;
+    flex-direction: column;
+    margin: 20px !important;
+    padding: 20px !important;
+    border: 4px solid #c41230;
+    border-radius: 8px;
+    gap: 10px
+}

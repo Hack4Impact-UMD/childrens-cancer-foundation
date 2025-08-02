@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TextField, Box } from '@mui/material';
 import Markdown from 'markdown-to-jsx';
 
-export default function MarkdownPreviewer(_previewOnly: boolean = false): JSX.Element {
+const MarkdownPreviewer: React.FC<{_previewOnly?: boolean}> = ({_previewOnly = false}) => {
     const [previewOnly, setPreviewOnly] = useState(_previewOnly);
     const [text, setText] = useState('');
     const handleTextChange = (e: any) => {
@@ -25,4 +25,5 @@ export default function MarkdownPreviewer(_previewOnly: boolean = false): JSX.El
             </Box>
         </Box>
     );
-}
+};
+export default MarkdownPreviewer;

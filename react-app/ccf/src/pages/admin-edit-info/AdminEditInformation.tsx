@@ -8,6 +8,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
+import MarkdownPreviewer from '../../components/markdown/Markdown';
 import { TextField, Button, CircularProgress, Snackbar } from '@mui/material';
 
 import {
@@ -350,7 +351,14 @@ function AdminEditInformation(): JSX.Element {
                             End Current Cycle and Start New
                         </Button>
                     </div>
+                    <div>
+                        <div className="editable-info-section">
+                            <h2>Markdown Previewer</h2>
+                            <MarkdownPreviewer _previewOnly={false} />
+                        </div>
+                    </div>
                 </div>
+
             </div>
             <Snackbar
                 open={!!stageSnack}
