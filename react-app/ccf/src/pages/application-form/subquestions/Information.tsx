@@ -11,9 +11,11 @@ interface InformationProps {
 
 function Information({ formData, setFormData, errors, setErrors }: InformationProps): JSX.Element {
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevData: any) => ({ ...prevData, [name]: value }));
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const {name, value, type} = e.target;
+    let newValue: any = value;
+    if (type === 'checkbox' && e.target instanceof HTMLInputElement) {newValue = e.target.checked;}
+    setFormData((prevData: any) => ({...prevData, [name]: newValue}));
     if (errors[name]) {
       setErrors((prevErrors: any) => ({ ...prevErrors, [name]: "" }));
     }
@@ -35,7 +37,7 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
   return (
     <div className="form-container">
       <div className="left-container">
-        <p className="text-label">Title of Project*</p>
+        <p className="text-label">Title of Project *</p>
         <input
           type="text"
           name="title"
@@ -46,40 +48,33 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
           className="text-input"
         />
 
-        <p className="text-label">Principal Investigator*</p>
-        <input
-          type="text"
-          name="principalInvestigator"
-          value={formData.principalInvestigator}
-          onChange={handleChange}
-          placeholder="Enter principal investigator"
-          required
-          className="text-input"
+        <p className="text-label">Principal Investigator Name/Title *</p>
+        <input 
+          type="text" 
+          name="principalInvestigator" 
+          value={formData.principalInvestigator} 
+          onChange={handleChange} 
+          placeholder="Enter PI name/title" 
+          required 
+          className="text-input" 
         />
 
-        <p className="text-label">Types of Cancer Being Addressed*</p>
-        <input
-          type="text"
-          name="typesOfCancerAddressed"
-          value={formData.typesOfCancerAddressed}
-          onChange={handleChange}
-          placeholder="Enter types of cancers"
-          required
-          className="text-input"
+        <p className="text-label">Other Staff Name/Title</p>
+        <input 
+          type="text" 
+          name="otherStaff" 
+          value={formData.otherStaff} 
+          onChange={handleChange} 
+          placeholder="Enter other staff name/title" 
+          className="text-input" 
         />
 
-        <p className="text-label">Name/Titles of Other Staff*</p>
-        <input
-          type="text"
-          name="namesOfStaff"
-          value={formData.namesOfStaff}
-          onChange={handleChange}
-          placeholder="Enter name/titles of other staff"
-          required
-          className="text-input"
-        />
+        <div className="checkbox-row">
+          <input type="checkbox" name="coPI" checked={formData.coPI || false} onChange={handleChange} />
+          <label className="text-label">Co-PI?</label>
+        </div>
 
-        <p className="text-label">Institution*</p>
+        <p className="text-label">Institution *</p>
         <input
           type="text"
           name="institution"
@@ -90,93 +85,149 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
           className="text-input"
         />
 
-        <p className="text-label">Address of Institution*</p>
-        <input
-          type="text"
-          name="institutionAddress"
-          value={formData.institutionAddress}
-          onChange={handleChange}
-          placeholder="Enter address of Institution"
-          required
-          className="text-input"
+        <p className="text-label">Department *</p>
+        <input 
+          type="text" 
+          name="department" 
+          value={formData.department} 
+          onChange={handleChange} 
+          placeholder="Enter department" 
+          required 
+          className="text-input" 
         />
-      </div>
-      <div className="right-container">
-        <p className="text-label">Institution Phone Number*</p>
-        <input
-          type="text"
-          name="institutionPhoneNumber"
-          value={formData.institutionPhoneNumber}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="Enter institution phone number"
-          required
-          className={`text-input ${errors.institutionPhoneNumber ? 'invalid' : ''}`}
+
+        <p className="text-label">Department Head *</p>
+        <input 
+          type="text" 
+          name="departmentHead" 
+          value={formData.departmentHead} 
+          onChange={handleChange} 
+          placeholder="Enter department head name/title" 
+          required 
+          className="text-input" 
+        />
+
+        <p className="text-label">Street Address *</p>
+        <input 
+          type="text"  
+          name="institutionAddress" 
+          value={formData.institutionAddress} 
+          onChange={handleChange} 
+          placeholder="Enter street address" 
+          required 
+          className="text-input" 
+        />
+
+        <p className="text-label">City/St/Zip *</p>
+        <input 
+          type="text" 
+          name="institutionCityStateZip" 
+          value={formData.institutionCityStateZip} 
+          onChange={handleChange} 
+          placeholder="Enter city, state, zip" 
+          required 
+          className="text-input" 
+        />
+
+        <p className="text-label">Phone *</p>
+        <input 
+          type="text" 
+          name="institutionPhoneNumber" 
+          value={formData.institutionPhoneNumber} 
+          onChange={handleChange} 
+          onBlur={handleBlur} 
+          placeholder="Enter phone number" 
+          required 
+          className={`text-input ${errors.institutionPhoneNumber ? 'invalid' : ''}`} 
         />
         {errors.institutionPhoneNumber && <p className="error-message">{errors.institutionPhoneNumber}</p>}
 
-        <p className="text-label">Institution Email*</p>
-        <input
-          type="text"
-          name="institutionEmail"
-          value={formData.institutionEmail}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="Enter institution email"
-          required
-          className={`text-input ${errors.institutionEmail ? 'invalid' : ''}`}
+        <p className="text-label">Email *</p>
+        <input 
+          type="text" 
+          name="institutionEmail" 
+          value={formData.institutionEmail} 
+          onChange={handleChange} 
+          onBlur={handleBlur} 
+          placeholder="Enter email" 
+          required 
+          className={`text-input ${errors.institutionEmail ? 'invalid' : ''}`} 
         />
         {errors.institutionEmail && <p className="error-message">{errors.institutionEmail}</p>}
+      </div>
 
-        <p className="text-label">Administration Official Name*</p>
-        <input
-          type="text"
-          name="adminOfficialName"
-          value={formData.adminOfficialName}
-          onChange={handleChange}
-          placeholder="Enter administration official"
+
+      <div className="right-container">
+        <p className="text-label">Types of Cancer Being Addressed *</p>
+        <input type="text" 
+          name="typesOfCancerAddressed" 
+          value={formData.typesOfCancerAddressed} 
+          onChange={handleChange} 
+          placeholder="Enter types of cancer" 
           required
-          className="text-input"
+          className="text-input" 
+        />
+        
+        <p className="text-label">Administration Official Name/Title to be notified if awarded *</p>
+        <input 
+          type="text" 
+          name="adminOfficialName" 
+          value={formData.adminOfficialName} 
+          onChange={handleChange} 
+          placeholder="Enter admin official name/title" 
+          required 
+          className="text-input" 
         />
 
-        <p className="text-label">Address of Administration Official*</p>
-        <input
-          type="text"
-          name="adminOfficialAddress"
-          value={formData.adminOfficialAddress}
-          onChange={handleChange}
-          placeholder="Enter address of administration official"
-          required
-          className="text-input"
+        <p className="text-label"> Admin Street Address *</p>
+        <input 
+          type="text" 
+          name="adminOfficialAddress" 
+          value={formData.adminOfficialAddress} 
+          onChange={handleChange} 
+          placeholder="Enter admin official address" 
+          required 
+          className="text-input" 
         />
 
-        <p className="text-label">Administration Official Phone Number*</p>
-        <input
+        <p className="text-label">Admin City/St/Zip *</p>
+        <input 
+          type="text" 
+          name="adminOfficialCityStateZip" 
+          value={formData.adminOfficialCityStateZip} 
+          onChange={handleChange} 
+          placeholder="Enter admin city, state, zip" 
+          required 
+          className="text-input" 
+        />
+
+        <p className="text-label">Admin Phone Number *</p>
+        <input 
           type="text"
-          name="adminPhoneNumber"
-          value={formData.adminPhoneNumber}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="Enter administration official phone number"
-          required
-          className={`text-input ${errors.adminPhoneNumber ? 'invalid' : ''}`}
+          name="adminPhoneNumber" 
+          value={formData.adminPhoneNumber} 
+          onChange={handleChange} 
+          onBlur={handleBlur} 
+          placeholder="Enter admin phone number" 
+          required 
+          className={`text-input ${errors.adminPhoneNumber ? 'invalid' : ''}`} 
         />
         {errors.adminPhoneNumber && <p className="error-message">{errors.adminPhoneNumber}</p>}
 
-        <p className="text-label">Email of Administration Official*</p>
-        <input
-          type="text"
-          name="adminEmail"
-          value={formData.adminEmail}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="Enter administration official email"
-          required
-          className={`text-input ${errors.adminEmail ? 'invalid' : ''}`}
+        <p className="text-label">Admin Email *</p>
+        <input 
+          type="text" 
+          name="adminEmail" 
+          value={formData.adminEmail} 
+          onChange={handleChange} 
+          onBlur={handleBlur} 
+          placeholder="Enter admin email" 
+          required 
+          className={`text-input ${errors.adminEmail ? 'invalid' : ''}`} 
         />
         {errors.adminEmail && <p className="error-message">{errors.adminEmail}</p>}
+        </div>
       </div>
-    </div>
   );
 }
 

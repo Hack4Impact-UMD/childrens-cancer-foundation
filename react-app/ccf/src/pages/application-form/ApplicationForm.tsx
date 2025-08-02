@@ -26,30 +26,43 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const totalPages = pages.length;
     const navigate = useNavigate();
     const requiredFields = [
-        'title', 'principalInvestigator', 'typesOfCancerAddressed', 'namesOfStaff', 'institution',
-        'institutionAddress', 'institutionPhoneNumber', 'institutionEmail', 'adminOfficialName',
-        'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement', 'patentApplied',
-        'includedFundingInfo', 'amountRequested', 'dates', 'continuation', 'file'
-    ]
+        'title', 'principalInvestigator', 'otherStaff', 'coPI', 'institution', 
+        'department', 'departmentHead', 'institutionAddress', 'institutionCityStateZip', 
+        'institutionPhoneNumber', 'institutionEmail', 'typesOfCancerAddressed', 
+        'adminOfficialName', 'adminOfficialAddress', 'adminOfficialCityStateZip', 
+        'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement', 
+        'patentApplied', 'includedFundingInfo', 'amountRequested', 'dates', 'continuation', 
+        'continuationYears', 'einNumber', 'attestationHumanSubjects', 'attestationCertification', 
+        'signaturePI', 'signatureDeptHead', 'file'
+    ];
     const pageFields: { [key: number]: string[] } = {
         1: ['file'],
-        3: ['title', 'principalInvestigator', 'typesOfCancerAddressed', 'namesOfStaff', 'institution',
-            'institutionAddress', 'institutionPhoneNumber', 'institutionEmail', 'adminOfficialName',
-            'adminPhoneNumber', 'adminEmail'],
-        4: ['includedPublishedPaper', 'creditAgreement', 'patentApplied', 'includedFundingInfo',
-            'amountRequested', 'dates', 'continuation'],
+        3: ['title', 'principalInvestigator', 'otherStaff', 'coPI', 'institution', 
+            'department', 'departmentHead', 'institutionAddress', 'institutionCityStateZip', 
+            'institutionPhoneNumber', 'institutionEmail', 'typesOfCancerAddressed', 
+            'adminOfficialName', 'adminOfficialAddress', 'adminOfficialCityStateZip', 
+            'adminPhoneNumber', 'adminEmail', 'einNumber'],
+        4: ['includedPublishedPaper', 'creditAgreement', 'patentApplied', 
+            'includedFundingInfo', 'amountRequested', 'dates', 'continuation', 
+            'continuationYears', 'attestationHumanSubjects', 'attestationCertification', 
+            'signaturePI', 'signatureDeptHead'],
     };
     const [formData, setFormData] = useState({
         title: '',
         principalInvestigator: '',
-        typesOfCancerAddressed: '',
+        otherStaff: '',
+        coPI: false,
         institution: '',
-        namesOfStaff: '',
+        department: '',
+        departmentHead: '',
         institutionAddress: '',
+        institutionCityStateZip: '',
         institutionPhoneNumber: '',
         institutionEmail: '',
+        typesOfCancerAddressed: '',
         adminOfficialName: '',
         adminOfficialAddress: '',
+        adminOfficialCityStateZip: '',
         adminPhoneNumber: '',
         adminEmail: '',
         includedPublishedPaper: '',
@@ -60,6 +73,11 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         dates: '',
         continuation: '',
         continuationYears: '',
+        einNumber: '',
+        attestationHumanSubjects: false,
+        attestationCertification: false,
+        signaturePI: '',
+        signatureDeptHead: '',
         file: null
     });
     const [errors, setErrors] = useState<any>({});
