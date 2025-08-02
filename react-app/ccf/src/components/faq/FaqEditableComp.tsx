@@ -4,12 +4,17 @@ import { FAQComponentProps } from '../../types/faqTypes';
 import question from '../../assets/question.png';
 import MarkdownPreviewer from '../markdown/Markdown';
 import { Box, TextField } from '@mui/material';
+import { uploadFAQ, uploadFAQBatch } from '../../backend/faq-handler';
 
 const EditableFAQComponent: React.FC<FAQComponentProps> = ({ faqs }) => {
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
     const toggleFAQ = (index: number) => {
         setActiveIndex(activeIndex === index ? null : index);
+    };
+
+    const updateFAQ = (id: string, question: string, answer: string) => {
+        uploadFAQ({ id: id.trim(), question: question.trim(), answer: answer.trim() });
     };
 
     return (
