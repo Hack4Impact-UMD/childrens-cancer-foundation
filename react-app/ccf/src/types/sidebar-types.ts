@@ -60,7 +60,7 @@ export const getApplicantSidebarItems = async (): Promise<SideBarTypes[]> => {
 
         // Add decisions link with exclamation icon if in Final Decisions stage
         if (currentCycle.stage === "Final Decisions") {
-            baseSidebar.splice(1, 0, { name: '❗ Decisions', path: '/applicant/decisions' });
+            baseSidebar.splice(1, 0, { name: 'Decisions', path: '/applicant/decisions' });
         }
 
         baseSidebar.push({ name: 'Logout', path: '/login' });

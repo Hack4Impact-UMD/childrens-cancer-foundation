@@ -6,14 +6,35 @@ import { getSidebarbyRole, getApplicantSidebarItems, SideBarTypes } from "../../
 import { getUsersCurrentCycleAppplications } from "../../backend/application-filters";
 import { getDecisionData } from "../../services/decision-data-service";
 import { getCurrentCycle } from "../../backend/application-cycle";
-import { Application } from "../../types/application-types";
+import { Application, ResearchApplication, NonResearchApplication, ApplicationDetails } from "../../types/application-types";
 import { Decision } from "../../types/decision-types";
 import { DecisionBox } from "../../components/decisions/decisionBox";
 import { firstLetterCap } from "../../utils/stringfuncs";
 import "./ApplicantDecisions.css";
 
-interface ApplicationWithDecision extends Application {
-    decision?: Decision;
+// Type for application data as returned by getUsersCurrentCycleAppplications (includes id from Firestore doc)
+interface ApplicationWithId {
+    id: string;
+    title: string;
+    grantType: "research" | "nextgen" | "nonresearch";
+    decision: "pending" | "accepted" | "rejected";
+    creatorId: string;
+    applicationId?: string;
+    file: string;
+    applicationCycle: string;
+    submitTime: Date;
+    // Research-specific fields
+    principalInvestigator?: string;
+    // Non-research-specific fields  
+    requestor?: string;
+    // Other common fields that might exist
+    institution?: string;
+    amountRequested?: string;
+    [key: string]: any; // For any other fields from the original application
+}
+
+interface ApplicationWithDecision extends ApplicationWithId {
+    decisionData?: Decision;
     hasDecision: boolean;
 }
 
@@ -46,8 +67,12 @@ function ApplicantDecisions(): JSX.Element {
 
                 // Get user's applications for current cycle
                 const userApplications = await getUsersCurrentCycleAppplications();
+                const userApplicationsWithId: ApplicationWithId[] = userApplications.map(app => ({
+                    ...app as any,
+                    id: (app as any).id
+                }));
 
-                if (userApplications.length === 0) {
+                if (userApplicationsWithId.length === 0) {
                     setError("No applications found for the current cycle.");
                     setLoading(false);
                     return;
@@ -55,19 +80,19 @@ function ApplicantDecisions(): JSX.Element {
 
                 // Efficiently fetch decisions for all applications
                 const applicationsWithDecisions: ApplicationWithDecision[] = await Promise.all(
-                    userApplications.map(async (app) => {
+                    userApplicationsWithId.map(async (app) => {
                         try {
                             const decision = await getDecisionData(app.id);
                             return {
                                 ...app,
-                                decision: decision || undefined,
+                                decisionData: decision || undefined,
                                 hasDecision: !!decision
                             };
                         } catch (error) {
                             console.warn(`No decision found for application ${app.id}`);
                             return {
                                 ...app,
-                                decision: undefined,
+                                decisionData: undefined,
                                 hasDecision: false
                             };
                         }
@@ -188,8 +213,8 @@ function ApplicantDecisions(): JSX.Element {
                                         <h3 className="application-title-detail">{selectedApplication.title}</h3>
                                     )}
 
-                                    {selectedApplication.hasDecision && selectedApplication.decision ? (
-                                        <DecisionBox decision={selectedApplication.decision} />
+                                    {selectedApplication.hasDecision && selectedApplication.decisionData ? (
+                                        <DecisionBox decision={selectedApplication.decisionData} />
                                     ) : (
                                         <div className="no-decision-message">
                                             <FaExclamationTriangle className="pending-icon" />
