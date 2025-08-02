@@ -25,19 +25,23 @@ export const DecisionBox = ({ decision }: { decision: Decision }) => {
     }, []);
 
     useEffect(() => {
-        if (decision.decision === "accepted") {
+        if (decision.isAccepted === true) {
             setShowConfetti(true);
             const timer = setTimeout(() => {
                 setShowConfetti(false);
             }, 5000);
             return () => clearTimeout(timer);
         }
-    }, [decision.decision]);
+    }, [decision.isAccepted]);
 
     const getDecisionStatus = () => {
-        const actualDecision = decision.decision || "pending";
-        // If decision is pending, display as rejected in UI
-        return actualDecision === "pending" ? "rejected" : actualDecision;
+        // Use isAccepted boolean field to determine status
+        if (decision.isAccepted === true) {
+            return "accepted";
+        } else {
+            // If isAccepted is false or undefined, show as rejected
+            return "rejected";
+        }
     };
 
     const getStatusColor = () => {
@@ -47,26 +51,12 @@ export const DecisionBox = ({ decision }: { decision: Decision }) => {
                 return "#22c55e"; // green
             case "rejected":
                 return "#ef4444"; // red
-            case "pending":
-                return "#f59e0b"; // amber
             default:
                 return "#6b7280"; // gray
         }
     };
 
-    const getStatusIcon = () => {
-        const status = getDecisionStatus();
-        switch (status) {
-            case "accepted":
-                return "✓";
-            case "rejected":
-                return "✕";
-            case "pending":
-                return "⏳";
-            default:
-                return "❓";
-        }
-    };
+
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-US', {
@@ -108,7 +98,7 @@ export const DecisionBox = ({ decision }: { decision: Decision }) => {
 
                 <div className="decision-details">
                     {/* Only show funding section for accepted decisions */}
-                    {(decision.decision === "accepted") && (
+                    {(decision.isAccepted === true) && (
                         <div className="funding-section">
                             <div className="section-label">Funding Decision</div>
                             <div className="funding-amount">
