@@ -18,10 +18,14 @@ import {
     endCurrentCycleAndStartNewOne
 } from '../../backend/application-cycle';
 import { getSidebarbyRole } from "../../types/sidebar-types";
-import { Modal } from "../../components/modal/modal";
 import ApplicationCycle from "../../types/applicationCycle-types";
+import { FAQItem } from "../../types/faqTypes";
+import { getFAQs } from "../../backend/faq-handler";
+import EditableFAQComponent from "../../components/faq/FaqEditableComp";
+import { Edit } from "lucide-react";
 
 function AdminEditInformation(): JSX.Element {
+    const [faqData, setFAQData] = useState<FAQItem[]>([]);
     const [nextGenDate, setNextGenDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [researchDate, setResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [nonResearchDate, setNonResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
@@ -31,9 +35,14 @@ function AdminEditInformation(): JSX.Element {
     const [stageSaving, setStageSaving] = useState(false); // shows button spinner
     const [stageSnack, setStageSnack] = useState<string | null>(null); // snackbar text
 
-
     const [appDeadlineMessage, setAppDeadlineMessage] = useState<string | null>(null);
     const [revDeadlineMessage, setRevDeadlineMessage] = useState<string | null>(null);
+
+    useEffect(() => {
+        getFAQs().then(faqs => {
+            setFAQData(faqs)
+        })
+    }, []);
 
     const cycleStages: ApplicationCycle["stage"][] = [
         "Applications Open",
@@ -354,7 +363,7 @@ function AdminEditInformation(): JSX.Element {
                     <div>
                         <div className="editable-info-section">
                             <h2>Markdown Previewer</h2>
-                            <MarkdownPreviewer _previewOnly={false} />
+                            <EditableFAQComponent faqs={faqData} />
                         </div>
                     </div>
                 </div>

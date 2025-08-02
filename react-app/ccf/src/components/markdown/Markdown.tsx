@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { TextField, Box } from '@mui/material';
 import Markdown from 'markdown-to-jsx';
 
-const MarkdownPreviewer: React.FC<{_previewOnly?: boolean}> = ({_previewOnly = false}) => {
+const MarkdownPreviewer: React.FC<{_previewOnly?: boolean, _text?: string, _minRows?: number}> = ({_previewOnly = false, _text = '', _minRows = 1}) => {
     const [previewOnly, setPreviewOnly] = useState(_previewOnly);
-    const [text, setText] = useState('');
+    const [text, setText] = useState(_text);
+    const [minRows, setMinRows] = useState(_minRows);
     const handleTextChange = (e: any) => {
         setText(e.target.value);
     };
@@ -13,8 +14,9 @@ const MarkdownPreviewer: React.FC<{_previewOnly?: boolean}> = ({_previewOnly = f
             {(!previewOnly) ? (
                 <TextField
                 label="Enter Markdown"
+                value={text}
                 multiline
-                minRows={6}
+                minRows={minRows}
                 fullWidth
                 onChange={handleTextChange}
                 variant="outlined"
