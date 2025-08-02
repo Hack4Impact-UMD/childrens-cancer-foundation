@@ -1,19 +1,234 @@
-.decision-box-border {
-    padding: 10px;
-    border: 5px solid #BE0019;
-    border-radius: 8px;
-    background-color: white;
+.decision-box {
+    width: 100%;
+    background: transparent;
+    margin-top: 20px;
 }
 
-.decision-title {
+.decision-status-section {
+    /* background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); */
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.status-header {
+    margin-bottom: 20px;
+}
+
+.status-title {
+    color: rgb(0, 0, 0);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.status-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.status-icon {
+    font-size: 1.5rem;
     font-weight: bold;
-    font-size: 1rem;
-    margin-bottom: 8px;
 }
 
-.decision-text,
-.funding-text,
-.comments {
-    margin-bottom: 6px;
+.status-text {
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.decision-details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.funding-section {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.funding-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4caf50, #2196f3);
+}
+
+.section-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.funding-amount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #2c3e50;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.funding-note {
+    color: #4caf50;
+    font-weight: 600;
     font-size: 0.95rem;
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.comments-section {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.comments-content {
+    color: #495057;
+    line-height: 1.7;
+    font-size: 1rem;
+    padding: 16px;
+    padding-top: 25px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+    font-style: italic;
+    position: relative;
+}
+
+.comments-content::before {
+    content: '"';
+    font-size: 3rem;
+    color: #2196f3;
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    font-family: Georgia, serif;
+    opacity: 0.3;
+}
+
+/* Status-specific styling */
+.status-badge[style*="rgb(34, 197, 94)"] {
+    /* Accepted - Green */
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+    animation: acceptedPulse 2s ease-in-out infinite;
+}
+
+.status-badge[style*="rgb(239, 68, 68)"] {
+    /* Rejected - Red */
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+.status-badge[style*="rgb(245, 158, 11)"] {
+    /* Pending - Amber */
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    animation: pendingPulse 3s ease-in-out infinite;
+}
+
+@keyframes acceptedPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+    }
+}
+
+@keyframes pendingPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .decision-status-section {
+        padding: 20px 16px;
+        margin-bottom: 20px;
+    }
+
+    .status-title {
+        font-size: 1rem;
+    }
+
+    .status-badge {
+        padding: 12px 24px;
+        font-size: 1rem;
+        gap: 8px;
+    }
+
+    .status-icon {
+        font-size: 1.25rem;
+    }
+
+    .funding-amount {
+        font-size: 2rem;
+    }
+
+    .funding-section,
+    .comments-section {
+        padding: 16px;
+    }
+
+    .decision-details {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .funding-amount {
+        font-size: 1.75rem;
+    }
+
+    .status-badge {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .comments-content::before {
+        font-size: 2rem;
+        top: -5px;
+    }
 }

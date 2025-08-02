@@ -4,7 +4,7 @@ import "./Settings.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css"
-import { getSidebarbyRole } from "../../types/sidebar-types";
+import { getSidebarbyRole, getApplicantSidebarItems, SideBarTypes } from "../../types/sidebar-types";
 import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUserData, getCurrentUserClaims } from "../../services/auth_login";
@@ -15,7 +15,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { editApplicantUser } from "../../users/usermanager";
 
 function AccountSettingsPage(): JSX.Element {
-  const sidebarItems = getSidebarbyRole('applicant');
+  const [sidebarItems, setSidebarItems] = useState<SideBarTypes[]>(getSidebarbyRole('applicant'));
   // User information
   const [username, setUsername] = useState<string | null>("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -65,6 +65,13 @@ function AccountSettingsPage(): JSX.Element {
   };
 
   useEffect(() => {
+    // Fetch dynamic sidebar items
+    getApplicantSidebarItems().then((items) => {
+      setSidebarItems(items);
+    }).catch((e) => {
+      console.error('Error loading sidebar items:', e);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (user) {
