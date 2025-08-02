@@ -38,8 +38,6 @@ import ApplicationReview from "./pages/application-review/ApplicationReview";
 import ApplicationReviewReadOnly from "./pages/application-review/ApplicationReviewReadOnly";
 import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
 
-import Markdown from "./components/markdown/Markdown"; // Importing the Markdown component
-
 // import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
 
 function App(): JSX.Element {
@@ -214,7 +212,6 @@ function App(): JSX.Element {
           path="/admin/grant-awards"
           element={<AdminProtectedRoute element={<GrantAwards />} />}
         />
-        <Route path="/markdown" element={Markdown()} />
       </Routes>
 
     </BrowserRouter>
