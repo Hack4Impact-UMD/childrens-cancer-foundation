@@ -1,0 +1,55 @@
+import React, { useState } from 'react';
+import './FAQComponent.css';
+import { FAQComponentProps } from '../../types/faqTypes';
+import question from '../../assets/question.png';
+import MarkdownPreviewer from '../markdown/Markdown';
+import { Box, TextField } from '@mui/material';
+
+const EditableFAQComponent: React.FC<FAQComponentProps> = ({ faqs }) => {
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+    const toggleFAQ = (index: number) => {
+        setActiveIndex(activeIndex === index ? null : index);
+    };
+
+    return (
+        <div className="faq-container">
+            {faqs.map((faq, index) => (
+                <div key={index} className="faq-item">
+                    <div
+                        className="faq-question"
+                        onClick={() => toggleFAQ(index)}
+                        style={{ cursor: 'pointer', display: 'flex', alignItems: 'left' }}
+                    >
+                        <p>
+                            <img
+                                src={question}
+                                alt="Question Icon"
+                                style={{
+                                    width: '25px',
+                                    marginRight: '10px',
+                                    transform: activeIndex === index ? 'rotate(90deg)' : 'rotate(0deg)',
+                                    transition: 'transform 0.3s',
+                                }}
+                            />
+                            <Box className="markdown">
+                                <TextField
+                                    label="Enter Frequently Asked Question"
+                                    value={faq.question}
+                                    variant="outlined"
+                                    className="markdown-input" />
+                            </Box>
+                        </p>
+                    </div>
+                    {activeIndex === index && (
+                        <div className="faq-answer">
+                            <MarkdownPreviewer _text={faq.answer} _minRows={3} />
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+};
+
+export default EditableFAQComponent;
