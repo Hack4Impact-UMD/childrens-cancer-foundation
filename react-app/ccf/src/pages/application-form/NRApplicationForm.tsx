@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './ApplicationForm.css';
 import Breadcrumb from './Components/Breadcrumbs';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,8 @@ import ReviewApplication from './subquestions/Review';
 import AboutGrant from './subquestions/AboutGrant';
 import { NonResearchApplication } from '../../types/application-types';
 import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
+import { getCurrentCycle } from '../../backend/application-cycle';
+import { toast } from 'react-toastify';
 
 function NRApplicationForm(): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
@@ -34,6 +36,14 @@ function NRApplicationForm(): JSX.Element {
         file: null
     });
 
+    const [appOpen, setAppOpen] = useState<boolean>(false);
+
+    useEffect(() => {
+        getCurrentCycle().then(cycle => {
+            setAppOpen(cycle.stage == "Applications Open")
+        })
+    }, [])
+
     const goBack = () => {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
@@ -46,17 +56,49 @@ function NRApplicationForm(): JSX.Element {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         try {
-            const application: NonResearchApplication = formData as NonResearchApplication
-            if (formData.file) {
-                uploadNonResearchApplication(application, formData.file)
-            }
-        } catch (e) {
-            console.log(e)
-        }
+            if (isFormValid() && appOpen) {
+                const application: NonResearchApplication = formData as NonResearchApplication;
+                if (formData.file) {
+                    // Show loading toast
+                    toast.info('Submitting application...');
 
-        navigate('/applicant/dashboard')
+                    // Call the secure cloud function
+                    const result = await uploadNonResearchApplication(application, formData.file);
+
+                    if (result.success) {
+                        toast.success('Application submitted successfully!');
+                        navigate('/applicant/dashboard');
+                    } else {
+                        toast.error('Failed to submit application. Please try again.');
+                    }
+                }
+            }
+        } catch (error: any) {
+            console.error('Application submission error:', error);
+
+            // Handle specific error messages from the cloud function
+            if (error.message) {
+                if (error.message.includes('Applications are currently closed')) {
+                    toast.error('Applications are currently closed. Please check back later.');
+                } else if (error.message.includes('already submitted')) {
+                    toast.error('You have already submitted an application for this grant type.');
+                } else if (error.message.includes('Deadline')) {
+                    toast.error('The deadline for this application type has passed.');
+                } else if (error.message.includes('Only PDF files')) {
+                    toast.error('Please upload a PDF file.');
+                } else if (error.message.includes('size exceeds')) {
+                    toast.error('File size exceeds 50MB limit. Please upload a smaller file.');
+                } else if (error.message.includes('Invalid application data')) {
+                    toast.error('Please check your application data and try again.');
+                } else {
+                    toast.error(error.message);
+                }
+            } else {
+                toast.error('Failed to submit application. Please try again.');
+            }
+        }
     };
 
     // Validation function to check if all fields are filled
@@ -95,8 +137,8 @@ function NRApplicationForm(): JSX.Element {
                 ) : (
                     <button
                         onClick={handleSubmit}
-                        className={`save-btn ${!isFormValid() ? 'disabled' : ''}`}
-                        disabled={!isFormValid()}
+                        className={`save-btn ${appOpen ? (!isFormValid() ? 'warning' : '') : 'disabled'}`}
+                        disabled={!appOpen && !isFormValid()}
                     >
                         Save and Submit
                     </button>

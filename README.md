@@ -22,12 +22,13 @@ The project follows a standard Create React App structure, with the main applica
 ```
 /
 ├── build/                  # Production build output
+├── functions/              # Firebase Cloud Functions
 ├── public/                 # Public assets
 │   ├── index.html          # Main HTML file
 │   └── ...
 ├── src/
 │   ├── assets/             # Images and other static assets
-│   ├── backend/            # Backend logic (Firebase interactions)
+│   ├── backend/            # Backend logic (Firebase interactions and cloud function calls)
 │   ├── components/         # Reusable React components
 │   ├── firebase_config/    # Firebase configuration
 │   ├── pages/              # Top-level page components
@@ -42,8 +43,9 @@ The project follows a standard Create React App structure, with the main applica
 
 ### Key Directories
 
+- **`functions/`**: Contains Firebase Cloud Functions for secure server-side processing.
 - **`src/assets`**: Contains static assets like images and icons.
-- **`src/backend`**: Contains the logic for interacting with Firebase services. This includes functions for submitting forms, managing application cycles, filtering applications, and handling user roles.
+- **`src/backend`**: Contains the logic for interacting with Firebase services and calling secure cloud functions. This includes functions for submitting forms, managing application cycles, filtering applications, and handling user roles.
 - **`src/components`**: Contains reusable React components that are used across different pages. This includes components for banners, buttons, modals, and the sidebar.
 - **`src/firebase_config`**: Contains the Firebase configuration file (`FireConfig.ts`).
 - **`src/pages`**: Contains the main page components, each corresponding to a specific route in the application. This includes pages for login, dashboards for different user roles, application forms, and settings.
@@ -57,6 +59,7 @@ To get the project up and running on your local machine, follow these steps:
 ### Prerequisites
 
 - **Node.js and npm:** Make sure you have Node.js and npm installed. You can download them from [nodejs.org](https://nodejs.org/).
+- **Firebase CLI:** Install Firebase CLI globally: `npm install -g firebase-tools`
 
 ### Installation
 
@@ -72,6 +75,11 @@ To get the project up and running on your local machine, follow these steps:
     ```bash
     npm install
     ```
+4.  **Install Firebase Functions dependencies:**
+    ```bash
+    cd ../../functions
+    npm install
+    ```
 
 ### Running the Application
 
@@ -82,6 +90,8 @@ npm start
 ```
 
 This will start the development server and open the application in your default browser at `http://localhost:3000`. The page will automatically reload if you make any changes to the code.
+
+For local development with Firebase emulators, run `firebase emulators:start` from the project root.
 
 ## Firebase Integration
 
@@ -221,9 +231,22 @@ In the project directory, you can run:
 
 ### Firebase Cloud Functions
 
-The project uses Firebase Cloud Functions to perform backend tasks that require elevated privileges, such as managing user roles.
+The project uses Firebase Cloud Functions to perform backend tasks that require elevated privileges, such as managing user roles and securely processing application submissions.
 
-#### `addReviewerRole(data, context)`
+#### `submitApplication(request)`
+
+- **Trigger:** HTTPS Callable
+- **Description:** Securely processes grant application submissions with comprehensive server-side validation.
+- **Parameters:**
+  - `application` (object): Complete application data
+  - `grantType` (string): "research", "nextgen", or "nonresearch"
+  - `fileData` (string): Base64-encoded PDF file
+  - `fileName` (string): Original file name
+  - `fileType` (string): File MIME type
+- **Returns:** Success confirmation with application ID
+- **Security Features:** Authentication verification, role validation, deadline checking, duplicate prevention, file validation
+
+#### `addReviewerRole(request)`
 
 - **Trigger:** HTTPS Callable
 - **Description:** Assigns the "reviewer" role to a user.
@@ -231,7 +254,7 @@ The project uses Firebase Cloud Functions to perform backend tasks that require 
   - `data.email` (string): The email address of the user to be made a reviewer.
 - **Returns:** A success or error message.
 
-#### `addApplicantRole(data, context)`
+#### `addApplicantRole(request)`
 
 - **Trigger:** HTTPS Callable
 - **Description:** Assigns the "applicant" role to a user.
@@ -239,7 +262,7 @@ The project uses Firebase Cloud Functions to perform backend tasks that require 
   - `data.email` (string): The email address of the user to be made an applicant.
 - **Returns:** A success or error message.
 
-#### `addAdminRole(data, context)`
+#### `addAdminRole(request)`
 
 - **Trigger:** HTTPS Callable
 - **Description:** Assigns the "admin" role to a user.
@@ -247,7 +270,7 @@ The project uses Firebase Cloud Functions to perform backend tasks that require 
   - `data.email` (string): The email address of the user to be made an admin.
 - **Returns:** A success or error message.
 
-#### `getReviewers(req, res)`
+#### `getReviewers(request)`
 
 - **Trigger:** HTTPS Request
 - **Description:** Retrieves a list of all users with the "reviewer" role.

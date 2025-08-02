@@ -362,7 +362,6 @@ const AssignReviewersPage: React.FC = () => {
       );
 
       setLoading(false);
-      alert('Reviewers assigned successfully!');
 
     } catch (err) {
       console.error('Error confirming reviewers:', err);
@@ -391,7 +390,6 @@ const AssignReviewersPage: React.FC = () => {
 
         // TODO: Implement review deletion from reviews/{applicationId}/reviewers/{reviewId}
         // For now, we'll just warn the user that this functionality is limited
-        alert('Reviewer removal from active review processes is currently limited. Please contact system administrator.');
         return;
       }
 
