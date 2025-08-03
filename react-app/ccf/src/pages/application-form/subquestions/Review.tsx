@@ -31,30 +31,33 @@ function ReviewApplication({ type, formData, hideFile}: ReviewProps): JSX.Elemen
   </div>
   );
     
-    
     else return (
     <div className="review-form-container">
       <div className="proposal-text">
         <p className="text-label">Title of Project: {formData.title}</p>
-        <p className="text-label">Principal Investigator: {formData.principalInvestigator}</p>
-        <p className="text-label">Types of Cancers Being Addressed: {formData.typesOfCancerAddressed}</p>
+        <p className="text-label">Principal Investigator Name/Title: {formData.principalInvestigator}</p>
+        <p className="text-label">Other Staff Name/Title: {formData.otherStaff}</p>
         <p className="text-label">Institution: {formData.institution}</p>
-        <p className="text-label">Address of Institution: {formData.institutionAddress}</p>
-        <p className="text-label">Phone Number: {formData.institutionPhoneNumber}</p>
+        <p className="text-label">Department: {formData.department}</p>
+        <p className="text-label">Department Head: {formData.departmentHead}</p>
+        <p className="text-label">Street Address: {formData.institutionAddress}</p>
+        <p className="text-label">City/St/Zip: {formData.institutionCityStateZip}</p>
+        <p className="text-label">Phone: {formData.institutionPhoneNumber}</p>
         <p className="text-label">Email: {formData.institutionEmail}</p>
-        <p className="text-label">Administration Official Name: {formData.adminOfficialName}</p>
-        <p className="text-label">Address of Administration Official: {formData.adminOfficialAddress}</p>
-        <p className="text-label">Phone Number: {formData.adminPhoneNumber}</p>
-        <p className="text-label">Email: {formData.adminEmail}</p>
-        <p className="text-label">I have included in this Grant Application any paper that I have published on this Grant topic while receiving CCF funding: {formData.includedPublishedPaper}</p>
-        <p className="text-label">I am in the process of writing a paper on this Grant topic. I agree to give credit to CCF as a funder and will provide a copy of this paper when published: {formData.creditAgreement}</p>
-        <p className="text-label">I have applied for a Patent for discoveries in my prior years on this Grant topic, funded by CCF: {formData.patentApplied}</p>
-        <p className="text-label">I have included information in my Biosketch on current sources of funding, and applications pending for sources of funding for same or similar grants as this Grant Proposal. {formData.includedFundingInfo}</p>
-        <br />
-        <br />
+        <p className="text-label">Types of Cancer Being Addressed: {formData.typesOfCancerAddressed}</p>
+        <p className="text-label">Administration Official Name/Title: {formData.adminOfficialName}</p>
+        <p className="text-label">Admin Street Address: {formData.adminOfficialAddress}</p>
+        <p className="text-label">Admin City/St/Zip: {formData.adminOfficialCityStateZip}</p>
+        <p className="text-label">Admin Phone Number: {formData.adminPhoneNumber}</p>
+        <p className="text-label">Admin Email: {formData.adminEmail}</p>
         <p className="text-label">Amount Requested: {formData.amountRequested}</p>
-        <p className="text-label">Dates of Grant Project: {formData.dates}</p>
-        <p className="text-label">Continuation of Current Funding: {formData.continuation}</p>
+        <p className="text-label">Dates of Project: {formData.dates}</p>
+        <p className="text-label">EIN #: {formData.einNumber}</p>
+        <p className="text-label">Biosketch Funding Info: {formData.includedFundingInfo}</p>
+        <p className="text-label">Attestation (Human/Animal Subjects): {formData.attestationHumanSubjects ? 'Yes' : 'No'}</p>
+        <p className="text-label">Attestation (Certification): {formData.attestationCertification ? 'Yes' : 'No'}</p>
+        <p className="text-label">Signature of Principal Investigator(s): {formData.signaturePI}</p>
+        <p className="text-label">Signature of Department Head: {formData.signatureDeptHead}</p>
         {hideFile ? "": <p className="text-label">File: {formData.file?.name || 'No file uploaded'}</p>}
       </div>
     </div>

@@ -7,6 +7,7 @@ import "./App.css";
 import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplicant";
 import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
 import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
+import ApplicantDecisions from "./pages/applicant-decisions/ApplicantDecisions";
 
 
 import Sidebar from "./components/sidebar/Sidebar";
@@ -91,6 +92,12 @@ function App(): JSX.Element {
           path="/applicant/dashboard"
           element={
             <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
+          }
+        />
+        <Route
+          path="/applicant/decisions"
+          element={
+            <ApplicantProtectedRoute element={<ApplicantDecisions />} />
           }
         />
         <Route
