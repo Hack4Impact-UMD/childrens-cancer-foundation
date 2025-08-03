@@ -145,9 +145,10 @@ function AdminDashboardViewAll(): JSX.Element {
                                                 const searchFilter = searchTerm.toLowerCase();
                                                 return (
                                                     searchTerm === "" ||
-                                                    account.name.toLowerCase().includes(searchFilter) ||
-                                                    account.affiliation.toLowerCase().includes(searchFilter) ||
-                                                    account.accountNumber.toLowerCase().includes(searchFilter)
+                                                    account.firstName?.toLowerCase()?.includes(searchFilter) ||
+                                                    account.lastName?.toLowerCase()?.includes(searchFilter) ||
+                                                    account.affiliation?.toLowerCase()?.includes(searchFilter) ||
+                                                    account.email?.toLowerCase()?.includes(searchFilter)
                                                 );
                                             })
                                             .filter(account => {
