@@ -109,3 +109,20 @@
   a:hover {
     text-decoration: underline;
   }
+
+  .resend-verification-btn {
+    width: 90%;
+    padding: 10px;
+    background-color: #BE0019;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin: 10px 0;
+    font-size: 16px;
+  }
+
+  .resend-verification-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }

@@ -1,4 +1,4 @@
-import { AuthErrorCodes, createUserWithEmailAndPassword } from "firebase/auth";
+import { AuthErrorCodes, createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { auth } from "../index"
 
 type InputState = {
@@ -22,6 +22,13 @@ export const handleSignup = (
   createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       console.log(userCredential.user);
+      sendEmailVerification(userCredential.user)
+        .then(() => {
+          console.log("Verification email sent.");
+        })
+        .catch((err) => {
+          console.error("Error sending verification email:", err);
+        });
       console.log("Successfully signed up");
     })
     .catch((err) => {

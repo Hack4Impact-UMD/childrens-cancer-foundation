@@ -287,3 +287,30 @@ select.input:focus {
   outline: none;
   border-color: #be0019;
 }
+
+.verification-message {
+  display: flex;
+  align-items: center;
+  background-color: #d4edda;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+  color: #155724;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.verification-text h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #155724;
+}
+
+.verification-text p {
+  margin: 0;
+  font-size: 14px;
+  color: #155724;
+  line-height: 1.4;
+}
+
+
