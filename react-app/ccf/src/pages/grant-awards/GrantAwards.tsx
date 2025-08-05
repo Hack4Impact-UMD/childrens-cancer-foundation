@@ -331,6 +331,11 @@ function GrantAwards(): JSX.Element {
         }
     };
 
+    const handleReleaseDecisions = async () => {
+        // TODO: Implement release decisions functionality
+        alert("Release Decisions functionality will be implemented soon!");
+    };
+
     return (
         <div>
             <Sidebar links={sidebarItems} />
@@ -452,6 +457,13 @@ function GrantAwards(): JSX.Element {
                                     disabled={Object.values(savingChanges).some(v => v)}
                                 >
                                     Save All Changes
+                                </button>
+                                <button
+                                    className="release-decisions-btn"
+                                    onClick={handleReleaseDecisions}
+                                    disabled={Object.values(savingChanges).some(v => v)}
+                                >
+                                    Release Decisions
                                 </button>
                             </div>
                         </div>

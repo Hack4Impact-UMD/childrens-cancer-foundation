@@ -8,7 +8,7 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReviewers = exports.submitApplication = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
+exports.releaseDecisions = exports.getReviewers = exports.submitApplication = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
 const functions = require("firebase-functions");
 const { onRequest, onCall } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
@@ -322,6 +322,15 @@ function validateApplicationData(application, grantType) {
         errors
     };
 }
+
+exports.releaseDecisions = onCall(async (request) => {
+    // TODO: Implement release decisions functionality
+    return {
+        success: true,
+        emailsSent: 0,
+        message: "Release Decisions functionality is not yet implemented"
+    };
+});
 
 // Get Reviewers Function
 exports.getReviewers = onRequest(async (req, res) => {
