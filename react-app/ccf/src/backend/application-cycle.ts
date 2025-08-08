@@ -15,9 +15,10 @@ export const getCurrentCycle = async (): Promise<ApplicationCycle> => {
   const cycle = snap.docs[0].data()
   return {
     ...cycle,
-    researchDeadline: (cycle.researchDeadline as Timestamp).toDate(),
-    nonResearchDeadline: (cycle.nonResearchDeadline as Timestamp).toDate(),
-    nextGenDeadline: (cycle.nextGenDeadline as Timestamp).toDate(),
+    researchDeadline: (cycle.allApplicationsDeadline || cycle.researchDeadline as Timestamp).toDate(),
+    nonResearchDeadline: (cycle.allApplicationsDeadline || cycle.nonResearchDeadline as Timestamp).toDate(),
+    nextGenDeadline: (cycle.allApplicationsDeadline || cycle.nextGenDeadline as Timestamp).toDate(),
+    allApplicationsDeadline: (cycle.allApplicationsDeadline as Timestamp).toDate(),
     reviewerDeadline: (cycle.reviewerDeadline as Timestamp).toDate(),
     startDate: (cycle.startDate as Timestamp).toDate(),
     endDate: (cycle.endDate as Timestamp).toDate()
@@ -33,9 +34,10 @@ export const getAllCycles = async (): Promise<Array<ApplicationCycle>> => {
     const cycle = d.data()
     return {
       ...cycle,
-      researchDeadline: (cycle.researchDeadline as Timestamp).toDate(),
-      nonResearchDeadline: (cycle.nonResearchDeadline as Timestamp).toDate(),
-      nextGenDeadline: (cycle.nextGenDeadline as Timestamp).toDate(),
+      researchDeadline: (cycle.allApplicationsDeadline || cycle.researchDeadline as Timestamp).toDate(),
+      nonResearchDeadline: (cycle.allApplicationsDeadline || cycle.nonResearchDeadline as Timestamp).toDate(),
+      nextGenDeadline: (cycle.allApplicationsDeadline || cycle.nextGenDeadline as Timestamp).toDate(),
+      allApplicationsDeadline: (cycle.allApplicationsDeadline as Timestamp).toDate(),
       reviewerDeadline: (cycle.reviewerDeadline as Timestamp).toDate(),
       startDate: (cycle.startDate as Timestamp).toDate(),
       endDate: (cycle.endDate as Timestamp).toDate()
@@ -68,9 +70,14 @@ export const updateCycleStage = async (newStage: ApplicationCycle["stage"]): Pro
 
 // update application cycle deadlines
 export const updateCurrentCycleDeadlines = async (deadlines: {
+  allApplicationsDate?: dayjs.Dayjs | null;
+  acceptingResponses?: boolean;
+
+  // keeping below old parameter names for backwards compatibility
   nextGenDate?: dayjs.Dayjs | null;
   researchDate?: dayjs.Dayjs | null;
   nonResearchDate?: dayjs.Dayjs | null;
+
   reviewerDate?: dayjs.Dayjs | null;
 }) => {
   try {
@@ -94,10 +101,31 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
 
 
     const updateData: any = {};
-    if (deadlines.nextGenDate) updateData.nextGenDeadline = toTimestampAt1159PM(deadlines.nextGenDate);
-    if (deadlines.researchDate) updateData.researchDeadline = toTimestampAt1159PM(deadlines.researchDate);
-    if (deadlines.nonResearchDate) updateData.nonResearchDeadline = toTimestampAt1159PM(deadlines.nonResearchDate);
+    if (deadlines.allApplicationsDate) {
+      const timestamp = toTimestampAt1159PM(deadlines.allApplicationsDate);
+      updateData.allApplicationsDeadline = timestamp;
+      updateData.nextGenDeadline = timestamp;
+      updateData.researchDeadline = timestamp;
+      updateData.nonResearchDeadline = timestamp;
+    }
+
+    // for backwards compatibility
+    if (deadlines.nextGenDate || deadlines.researchDate || deadlines.nonResearchDate) {
+      const universalDate = deadlines.nextGenDate || deadlines.researchDate || deadlines.nonResearchDate;
+      if (universalDate) {
+        const timestamp = toTimestampAt1159PM(universalDate);
+        updateData.allApplicationsDeadline = timestamp;
+        updateData.nextGenDeadline = timestamp;
+        updateData.researchDeadline = timestamp;
+        updateData.nonResearchDeadline = timestamp;
+      }
+    } 
+    
     if (deadlines.reviewerDate) updateData.reviewerDeadline = toTimestampAt1159PM(deadlines.reviewerDate);
+
+    if (typeof deadlines.acceptingResponses === "boolean") {
+      updateData.acceptingResponses = deadlines.acceptingResponses;
+    }
 
     await updateDoc(doc(db, "applicationCycles", currentDocId), updateData);
 
@@ -129,10 +157,12 @@ export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
       startDate: Timestamp.now(),
       endDate: Timestamp.fromDate(oneYearFromNow),
       stage: 'Application Period',
+      allApplicationsDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       nextGenDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       researchDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       nonResearchDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       reviewerDeadline: Timestamp.fromDate(dayjs().add(8, 'month').hour(23).minute(59).toDate()),
+      acceptingResponses: true,
     });
 
     return true;
