@@ -71,7 +71,6 @@ export const updateCycleStage = async (newStage: ApplicationCycle["stage"]): Pro
 // update application cycle deadlines
 export const updateCurrentCycleDeadlines = async (deadlines: {
   allApplicationsDate?: dayjs.Dayjs | null;
-  acceptingResponses?: boolean;
 
   // keeping below old parameter names for backwards compatibility
   nextGenDate?: dayjs.Dayjs | null;
@@ -123,10 +122,6 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
     
     if (deadlines.reviewerDate) updateData.reviewerDeadline = toTimestampAt1159PM(deadlines.reviewerDate);
 
-    if (typeof deadlines.acceptingResponses === "boolean") {
-      updateData.acceptingResponses = deadlines.acceptingResponses;
-    }
-
     await updateDoc(doc(db, "applicationCycles", currentDocId), updateData);
 
     return true;
@@ -162,7 +157,6 @@ export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
       researchDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       nonResearchDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       reviewerDeadline: Timestamp.fromDate(dayjs().add(8, 'month').hour(23).minute(59).toDate()),
-      acceptingResponses: true,
     });
 
     return true;
