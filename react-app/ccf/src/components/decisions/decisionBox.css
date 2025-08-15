@@ -140,6 +140,19 @@
     opacity: 0.3;
 }
 
+.button-to-results{
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.results-button{
+    padding: 15px;
+    background-color: #2196f3;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
 /* Status-specific styling */
 .status-badge[style*="rgb(34, 197, 94)"] {
     /* Accepted - Green */

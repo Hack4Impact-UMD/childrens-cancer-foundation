@@ -29,6 +29,7 @@ import AdminSettings from "./pages/settings/AdminSettings";
 import ApplicantSettings from "./pages/settings/ApplicantSettings";
 import ReviewerSettings from "./pages/settings/ReviewerSettings";
 
+import ResultsPage from "./pages/applicant_results/ResultsPage";
 
 
 import AdminEditInformation from "./pages/admin-edit-info/AdminEditInformation";
@@ -98,6 +99,14 @@ function App(): JSX.Element {
             <ApplicantProtectedRoute element={<ApplicantDecisions />} />
           }
         />
+
+        <Route
+          path="/applicant/results"
+          element={
+            <ApplicantProtectedRoute element={<ResultsPage />} />
+          }
+        />
+
         <Route
           path="*"
           element={

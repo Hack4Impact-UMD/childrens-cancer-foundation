@@ -3,6 +3,7 @@ import { firstLetterCap } from "../../utils/stringfuncs";
 import { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import "./decisionBox.css"
+import { useNavigate } from "react-router-dom";
 
 export const DecisionBox = ({ decision }: { decision: Decision }) => {
     console.log(decision);
@@ -69,6 +70,12 @@ export const DecisionBox = ({ decision }: { decision: Decision }) => {
 
     const status = getDecisionStatus();
 
+    const navigate = useNavigate();
+
+    const goToResults = () => {
+        navigate("/applicant/results");
+    };
+
     return (
         <>
             {showConfetti && (
@@ -118,6 +125,11 @@ export const DecisionBox = ({ decision }: { decision: Decision }) => {
                             </div>
                         </div>
                     )}
+
+                    <div className="button-to-results">
+                        <button onClick={goToResults} className="results-button">Go to Results</button>
+                    </div>
+
                 </div>
             </div>
         </>
