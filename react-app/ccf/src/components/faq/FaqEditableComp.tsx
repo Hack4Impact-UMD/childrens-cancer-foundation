@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './FAQComponent.css';
 import { FAQComponentProps } from '../../types/faqTypes';
-import question from '../../assets/question.png';
 import MarkdownPreviewer from '../markdown/Markdown';
 import { Box, TextField } from '@mui/material';
 import { uploadFAQ, uploadFAQBatch } from '../../backend/faq-handler';
@@ -27,16 +26,6 @@ const EditableFAQComponent: React.FC<FAQComponentProps> = ({ faqs }) => {
                         style={{ cursor: 'pointer', display: 'flex', alignItems: 'left' }}
                     >
                         <p>
-                            <img
-                                src={question}
-                                alt="Question Icon"
-                                style={{
-                                    width: '25px',
-                                    marginRight: '10px',
-                                    transform: activeIndex === index ? 'rotate(90deg)' : 'rotate(0deg)',
-                                    transition: 'transform 0.3s',
-                                }}
-                            />
                             <Box className="markdown">
                                 <TextField
                                     label="Enter Frequently Asked Question"
