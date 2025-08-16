@@ -73,7 +73,7 @@ export const DecisionBox = ({ decision }: { decision: Decision }) => {
     const navigate = useNavigate();
 
     const goToResults = () => {
-        navigate("/applicant/results");
+        navigate("/applicant/results", { state: { decision } });
     };
 
     return (
@@ -128,6 +128,7 @@ export const DecisionBox = ({ decision }: { decision: Decision }) => {
 
                     <div className="button-to-results">
                         <button onClick={goToResults} className="results-button">Go to Results</button>
+                        
                     </div>
 
                 </div>
