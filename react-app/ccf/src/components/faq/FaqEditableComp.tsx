@@ -109,10 +109,11 @@ const EditableFAQComponent: React.FC<FAQComponentProps> = ({ faqs }) => {
                     </div>
                     {(editingIndices.has(index) || activeIndices.has(index)) && (
                         <div className="faq-answer">
-                            <div className="markdown-preview-light" onChange={() => handleAnswerChange(index, answerValues[index])}>
+                            <div className="markdown-preview-light">
                                 <MarkdownPreviewer
                                     _text={answerValues[index] || faq.answer}
-                                    _previewOnly={!editingIndices.has(index)} 
+                                    _previewOnly={!editingIndices.has(index)}
+                                    onChange={(newText: string) => handleAnswerChange(index, newText)}
                                 />
                             </div>
                         </div>
