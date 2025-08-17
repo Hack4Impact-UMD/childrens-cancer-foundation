@@ -33,6 +33,7 @@ const EditableFAQComponent: React.FC<FAQComponentProps> = ({ faqs }) => {
                 <div key={index} className="faq-item">
                     <div
                         className="faq-question"
+                        onClick={() => {if (!(editingIndex === index)) toggleFAQ(index);}}
                     >
                         <div className="faq-question-header">
                             <div className="expand-icon" onClick={(e) => {toggleEdit(index, e); toggleFAQ(index)}}>
