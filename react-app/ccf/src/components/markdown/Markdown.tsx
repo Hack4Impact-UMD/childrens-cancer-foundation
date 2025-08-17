@@ -26,7 +26,9 @@ const MarkdownPreviewer: React.FC<{_previewOnly?: boolean, _text?: string, _minR
                 className="markdown-input"/>
             ) : (null)}
             <Box className="markdown-previewer">
-                <Markdown>{text.trim().replaceAll('\n', '\n<br>')}</Markdown>
+                <Markdown>
+                    {text.split('\n').map((s) => s === '' ? '\n<br>' : s + '\n').join('\n')}
+                </Markdown>
             </Box>
         </Box>
     );
