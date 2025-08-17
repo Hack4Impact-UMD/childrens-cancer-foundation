@@ -62,17 +62,32 @@
     margin-bottom: 5px !important;
 }
 
+.deadline-section {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px !important;
+    flex-wrap: 'nowrap';
+}
+
 .interactive-date-selector {
     display: flex;
     flex-direction: row;
     width: 100%;
     align-items: center;
     justify-content: space-between;
+    gap: 10px !important;
+    flex-wrap: 'nowrap';
 }
 
 .interactive-date-selector h2 {
     font-size: 20px !important;
     color: #003E83;
+    white-space: nowrap;
+    min-width: auto;
+    flex-shrink: 0;
 }
 
 .save-button {
