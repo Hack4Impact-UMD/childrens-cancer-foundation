@@ -1,5 +1,5 @@
 .faq-container {
-    background-color: #f9f9f9;
+    background: #f8f8f8;
     padding: 20px;
     border-radius: 8px;
     font-family: Arial, sans-serif;
@@ -26,20 +26,40 @@
     color: #b71c1c;
     display: flex;
     align-items: center;
-    text-align: left; /* Align text within the question element to the left */
-    width: 100%; /* Ensure the question takes up full width */
-}
-
-.faq-question span {
-    margin-right: 10px; /* Add space between the icon and text */
+    text-align: left;
+    width: 100%;
 }
 
 .faq-answer {
     margin-top: 5px;
     font-size: 16px;
     color: #333;
-    text-align: left; /* Ensure the answer text is left-aligned */
-    width: 100%; /* Full width for the answer */
+    text-align: left;
+    width: 100%;
+}
+
+.faq-question-header {
+    display: flex;
+    margin-left: -50px;
+    padding: 0px 10px;
+}
+
+.expand-icon {
+    display: flex;
+    align-items: center;
+    color: #b71c1c;
+}
+
+.markdown-preview-light {
+    border-radius: 4px;
+    padding: 12px;
+    margin-top: 8px;
+    min-width: 100%;
+}
+
+.markdown-preview-light .markdown-previewer {
+    border: none;
+    padding: 10px;
 }
 
 /* Optional: Adjust padding for larger screens */
