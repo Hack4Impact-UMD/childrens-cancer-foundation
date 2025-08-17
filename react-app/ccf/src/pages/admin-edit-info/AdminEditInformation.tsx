@@ -362,7 +362,7 @@ function AdminEditInformation(): JSX.Element {
                     </div>
                     <div>
                         <div className="editable-info-section">
-                            <h2>Markdown Previewer</h2>
+                            <h2>Update Frequently Asked Questions:</h2>
                             <EditableFAQComponent faqs={faqData} />
                         </div>
                     </div>
