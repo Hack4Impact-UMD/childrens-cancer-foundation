@@ -1,6 +1,6 @@
 .faq-container {
+    background: #f8f8f8;
     padding: 20px;
-    border-radius: 8px;
     font-family: Arial, sans-serif;
     width: 100%; /* Full width */
     box-sizing: border-box; /* Include padding in width calculation */
@@ -34,7 +34,8 @@
     font-size: 16px;
     color: #333;
     text-align: left;
-    width: 100%;
+    width: 95%;
+    border: 2px solid #b71c1c !important;
 }
 
 .faq-question-header {
