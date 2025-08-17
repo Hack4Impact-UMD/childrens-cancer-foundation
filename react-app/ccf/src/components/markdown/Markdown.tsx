@@ -18,12 +18,8 @@ const MarkdownPreviewer: React.FC<MarkdownPreviewerProps> = ({_previewOnly = fal
     const handleTextChange = (e: any) => {
         const newText = e.target.value;
         setText(newText);
+        if (onChange) onChange(newText);
     };
-
-    // notify parent when text changes
-    useEffect(() => {
-        if (onChange) onChange(text);
-    }, [text, onChange]);
     return (
         <Box className="markdown">
             {(!previewOnly) ? (
