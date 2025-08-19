@@ -18,7 +18,7 @@ const MarkdownPreviewer: React.FC<MarkdownPreviewerProps> = ({_previewOnly = fal
     const handleTextChange = (e: any) => {
         const newText = e.target.value;
         setText(newText);
-        if (onChange) onChange(newText);
+        if (onChange && !previewOnly) onChange(newText);
     };
     return (
         <Box className="markdown">

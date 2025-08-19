@@ -30,6 +30,7 @@ import React, { useState } from 'react';
 import './FAQComponent.css';
 import { FAQComponentProps } from '../../types/faqTypes';
 import question from '../../assets/question.png';
+import MarkdownPreviewer from '../markdown/Markdown';
 
 const FAQComponent: React.FC<FAQComponentProps> = ({ faqs }) => {
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -65,7 +66,7 @@ const FAQComponent: React.FC<FAQComponentProps> = ({ faqs }) => {
                     </div>
                     {activeIndex === index && (
                         <div className="faq-answer">
-                            {faq.answer}
+                            <MarkdownPreviewer _text={faq.answer} _previewOnly={true} />
                         </div>
                     )}
                 </div>
