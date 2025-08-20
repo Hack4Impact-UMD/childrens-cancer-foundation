@@ -125,6 +125,18 @@ export interface GrantAwardApplication {
     recommended: string;
     comments: string;
     isAccepted: boolean;
+    // Optional display fields for configurable columns
+    title?: string;
+    applicationCycle?: string;
+    submitTime?: string;
+    typesOfCancerAddressed?: string;
+    adminOfficialName?: string;
+    adminEmail?: string;
+    adminPhoneNumber?: string;
+    institutionEmail?: string;
+    requestor?: string;
+    timeframe?: string;
+    finalScoreAvailable?: boolean;
 }
 
 export interface ApplicationDetails {
