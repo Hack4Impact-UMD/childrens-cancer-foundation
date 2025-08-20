@@ -10,6 +10,7 @@ import { NonResearchApplication } from '../../types/application-types';
 import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
 import { getCurrentCycle } from '../../backend/application-cycle';
 import { toast } from 'react-toastify';
+import { validateEmail, validatePhoneNumber} from '../../utils/validation';
 
 function NRApplicationForm(): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
@@ -53,10 +54,24 @@ function NRApplicationForm(): JSX.Element {
     };
 
     const handleContinue = () => {
+        if (currentPage === 2) {
+            const validationErrors = validateCurrentPage();
+            if (validationErrors.length > 0) {
+                toast.warn(`Please fix the following issues: ${validationErrors.join(', ')}`);
+                return;
+            }
+        }
+        
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
     const handleSubmit = async () => {
+        const validationErrors = validateCurrentPage();
+        if (validationErrors.length > 0) {
+            toast.error(`Please fix the following issues before submitting: ${validationErrors.join(', ')}`);
+            return;
+        }
+
         try {
             if (isFormValid() && appOpen) {
                 const application: NonResearchApplication = formData as NonResearchApplication;
@@ -101,9 +116,58 @@ function NRApplicationForm(): JSX.Element {
         }
     };
 
-    // Validation function to check if all fields are filled
-    const isFormValid = () => {
-        return requiredFields.reduce((acc, curr) => (formData as any)[curr] !== '' && (formData as any)[curr] !== null && acc, true);
+    const validateCurrentPage = (): string[] => {
+        const errors: string[] = [];
+        
+        for (const field of requiredFields) {
+            const value = (formData as any)[field];
+            if (!value || value.toString().trim() === '') {
+                const fieldName = getFieldDisplayName(field);
+                errors.push(`${fieldName} is required`);
+            }
+        }
+    
+        if (formData.institutionEmail && formData.institutionEmail.trim() !== '') {
+            const emailError = validateEmail(formData.institutionEmail);
+            if (emailError) {
+                errors.push('Invalid email format');
+            }
+        }
+        
+        if (formData.institutionPhoneNumber && formData.institutionPhoneNumber.trim() !== '') {
+            const phoneError = validatePhoneNumber(formData.institutionPhoneNumber);
+            if (phoneError) {
+                errors.push('Invalid phone number format');
+            }
+        }
+        
+        if (formData.amountRequested && formData.amountRequested.trim() !== '') {
+            const amount = parseFloat(formData.amountRequested);
+            if (isNaN(amount) || amount <= 0) {
+                errors.push('Amount requested must be a valid positive number');
+            }
+        }
+        
+        return errors;
+    };
+
+    const getFieldDisplayName = (field: string): string => {
+        const fieldNames: { [key: string]: string } = {
+            'title': 'Title',
+            'requestor': 'Principal Requestor',
+            'institution': 'Institution',
+            'institutionPhoneNumber': 'Phone Number',
+            'institutionEmail': 'Email',
+            'amountRequested': 'Amount Requested',
+            'timeframe': 'Timeframe',
+            'file': 'File'
+        };
+        return fieldNames[field] || field;
+    };
+
+    const isFormValid = (): boolean => {
+        const errors = validateCurrentPage();
+        return errors.length === 0;
     };
 
     const renderPage = () => {
