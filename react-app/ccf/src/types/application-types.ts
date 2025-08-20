@@ -93,6 +93,40 @@ export interface NonResearchApplication {
     additionalInfo?: string;
 }
 
+export interface FormErrors {
+    [key: string]: string;
+}
+
+export interface InformationProps {
+    formData: any;
+    setFormData: (data: any) => void;
+    errors?: FormErrors;
+    setErrors?: (errors: FormErrors | ((prev: FormErrors) => FormErrors)) => void;
+}
+
+export interface ReviewProps {
+    type: any;
+    formData: any;
+    hideFile?: boolean;
+}
+
+export interface ApplicationQuestionsProps {
+    formData: any;
+    setFormData: (data: any) => void;
+}
+
+export interface GrantAwardApplication {
+    id: string;
+    name: string;
+    programType: string;
+    institution: string;
+    finalScore: number;
+    requested: string;
+    recommended: string;
+    comments: string;
+    isAccepted: boolean;
+}
+
 export interface ApplicationDetails {
     decision: "pending" | "accepted" | "rejected";
     creatorId: string;

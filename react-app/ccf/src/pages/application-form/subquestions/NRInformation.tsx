@@ -1,10 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import "./SubForm.css";
-
-interface InformationProps {
-  formData: any;
-  setFormData: (data: any) => void;
-}
+import { InformationProps } from "../../../types/application-types";
 
 function NRInformation({ formData, setFormData }: InformationProps): JSX.Element {
 
