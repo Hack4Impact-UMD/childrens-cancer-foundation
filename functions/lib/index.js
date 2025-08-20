@@ -8,7 +8,7 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReviewers = exports.submitApplication = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
+exports.getApplicationReviews = exports.getReviewers = exports.submitApplication = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
 const functions = require("firebase-functions");
 const { onRequest, onCall } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
@@ -372,6 +372,82 @@ exports.getReviewers = onRequest(async (req, res) => {
     } catch (error) {
         functions.logger.error("Error retrieving reviewers:", error);
         res.status(500).send("Failed to retrieve reviewers");
+    }
+});
+
+// Get Application Reviews for Applicants
+exports.getApplicationReviews = onCall(async (request) => {
+    try {
+        const { data, auth } = request;
+
+        // 1. Authentication Check
+        if (!auth) {
+            throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to get reviews');
+        }
+
+        const userId = auth.uid;
+        const userRole = auth.token.role;
+
+        // 2. Validate user role - only applicants can get their own reviews
+        if (userRole !== 'applicant') {
+            throw new functions.https.HttpsError('permission-denied', 'Only applicants can get their own reviews');
+        }
+
+        // 3. Validate required data
+        const { applicationId } = data;
+        if (!applicationId) {
+            throw new functions.https.HttpsError('invalid-argument', 'Application ID is required');
+        }
+
+        // 4. Verify the application belongs to the requesting user
+        const applicationRef = admin.firestore().collection('applications').doc(applicationId);
+        const applicationDoc = await applicationRef.get();
+
+        if (!applicationDoc.exists) {
+            throw new functions.https.HttpsError('not-found', 'Application not found');
+        }
+
+        const applicationData = applicationDoc.data();
+        if (applicationData.creatorId !== userId) {
+            throw new functions.https.HttpsError('permission-denied', 'You can only access reviews for your own applications');
+        }
+
+        // 5. Get reviews for the application
+        const reviewsRef = admin.firestore().collection('reviews').doc(applicationId).collection('reviewers');
+        const reviewsSnapshot = await reviewsRef.get();
+
+        const reviews = [];
+        reviewsSnapshot.forEach((doc) => {
+            const reviewData = doc.data();
+            // Only return non-internal feedback to applicants
+            const publicReview = {
+                id: doc.id,
+                reviewerType: reviewData.reviewerType,
+                status: reviewData.status,
+                feedback: {
+                    significance: reviewData.feedback?.significance || '',
+                    approach: reviewData.feedback?.approach || '',
+                    feasibility: reviewData.feedback?.feasibility || '',
+                    investigator: reviewData.feedback?.investigator || '',
+                    summary: reviewData.feedback?.summary || ''
+                    // Note: internal feedback is excluded for applicants
+                }
+            };
+            reviews.push(publicReview);
+        });
+
+        const primaryReview = reviews.find(r => r.reviewerType === 'primary');
+        const secondaryReview = reviews.find(r => r.reviewerType === 'secondary');
+
+        return {
+            applicationId,
+            primaryReview,
+            secondaryReview
+        };
+
+    } catch (error) {
+        functions.logger.error("Error getting application reviews:", error);
+        throw new functions.https.HttpsError('internal', 'Failed to get application reviews');
     }
 });
 

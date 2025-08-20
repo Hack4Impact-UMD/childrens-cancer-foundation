@@ -12,6 +12,7 @@ import {
     setDoc,
     Timestamp
 } from "firebase/firestore";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { db } from "../index";
 import Review, { ReviewSummary } from "../types/review-types";
 
@@ -97,22 +98,11 @@ export const getReviewById = async (applicationId: string, reviewId: string): Pr
 // Get reviews for a specific application
 export const getReviewsForApplication = async (applicationId: string): Promise<ReviewSummary> => {
     try {
-        const reviewersRef = collection(db, "reviews", applicationId, "reviewers");
-        const reviewsSnapshot = await getDocs(reviewersRef);
-        const reviews: Review[] = [];
-
-        reviewsSnapshot.forEach((doc) => {
-            reviews.push({ id: doc.id, ...doc.data() } as Review);
-        });
-
-        const primaryReview = reviews.find(r => r.reviewerType === 'primary');
-        const secondaryReview = reviews.find(r => r.reviewerType === 'secondary');
-
-        return {
-            applicationId,
-            primaryReview,
-            secondaryReview
-        };
+        const functions = getFunctions();
+        const getApplicationReviews = httpsCallable(functions, 'getApplicationReviews');
+        
+        const result = await getApplicationReviews({ applicationId });
+        return result.data as ReviewSummary;
     } catch (error) {
         console.error("Error getting reviews for application:", error);
         throw error;
