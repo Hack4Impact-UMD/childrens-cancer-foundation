@@ -47,10 +47,10 @@
     margin-bottom: 1%;
     margin-top: 1%;
     font-weight: 600;
-    text-align: center; 
+    text-align: center;
 }
 
-.decision-labels{
+.decision-labels {
     color: var(--color-blue);
     font-size: 1.25rem;
     margin-bottom: 1%;
@@ -58,83 +58,82 @@
     font-weight: 600;
 }
 
-.reward-money{
+.reward-money {
     margin-bottom: 18px;
     font-size: 1rem;
-    line-height: 1.5; 
+    line-height: 1.5;
     padding-left: 10px;
 }
 
-.reward-money b{
+.reward-money b {
     margin-bottom: 18px;
     font-size: 1rem;
-    line-height: 1.5; 
+    line-height: 1.5;
     font-weight: 600;
 }
 
 .letter-content p {
     margin-bottom: 18px;
     font-size: 1rem;
-    line-height: 1.5; 
+    line-height: 1.5;
 }
 
-.reviews-container{
+.reviews-container {
     flex-direction: column;
-    margin-bottom: 2rem;    
+    margin-bottom: 2rem;
 }
 
-.review-section{        
-    margin-bottom: 0.5rem;    
+.review-section {
+    margin-bottom: 0.5rem;
 }
 
-.review-text{
+.review-text {
     font-size: 0.85rem;
-    font-weight: 600;        
+    font-weight: 600;
     max-width: 100%;
-    margin-bottom: 1rem; 
+    margin-bottom: 1rem;
     font-weight: 400;
 }
 
-.review-text b{
+.review-text b {
     font-size: 0.85rem;
     font-weight: 600;
 }
 
-.reviews{
+.reviews {
     margin-left: 20px;
     margin-bottom: 40px;
 }
 
-.reviews h2{
+.reviews h2 {
     font-size: 0.85rem;
 }
 
-.review-box{
+.review-box {
     width: 100%;
     padding-right: 15px;
     margin-top: 5px;
-    margin-bottom: 1rem;           
+    margin-bottom: 1rem;
     border-width: 5px;
-    background: #e3e3e3;          
-    border: 1px solid #575757;    
-    border-radius: 10px;            
-    padding: 12px 16px; 
-    padding-bottom: 20px;         
-    
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* soft shadow */
+    background: #e3e3e3;
+    border: 1px solid #575757;
+    border-radius: 10px;
+    padding: 12px 16px;
+    padding-bottom: 20px;
+
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    /* soft shadow */
     font-size: 0.95rem;
     line-height: 1.5;
 }
 
-.review-box p{
+.review-box p {
     font-size: 0.85rem;
 }
 
-.button{
+.button {
     padding: 5px;
     padding-top: 10px;
     padding-bottom: 10px;
     max-width: 200px;
 }
-
-
