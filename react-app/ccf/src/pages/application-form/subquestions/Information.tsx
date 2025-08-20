@@ -1,13 +1,7 @@
 import { ChangeEvent, FocusEvent } from "react";
 import "./SubForm.css";
 import { validateEmail, validatePhoneNumber } from "../../../utils/validation";
-
-interface InformationProps {
-  formData: any;
-  setFormData: (data: any) => void;
-  errors: any;
-  setErrors: (errors: any) => void;
-}
+import { InformationProps, FormErrors } from "../../../types/application-types";
 
 function Information({ formData, setFormData, errors, setErrors }: InformationProps): JSX.Element {
 
@@ -16,8 +10,8 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
     let newValue: any = value;
     if (type === 'checkbox' && e.target instanceof HTMLInputElement) {newValue = e.target.checked;}
     setFormData((prevData: any) => ({...prevData, [name]: newValue}));
-    if (errors[name]) {
-      setErrors((prevErrors: any) => ({ ...prevErrors, [name]: "" }));
+    if (errors && setErrors && errors[name]) {
+      setErrors((prevErrors: FormErrors) => ({ ...prevErrors, [name]: "" }));
     }
   };
 
@@ -31,7 +25,9 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
     } else if (name === "institutionPhoneNumber" || name === "adminPhoneNumber") {
       error = validatePhoneNumber(value);
     }
-    setErrors((prevErrors: any) => ({ ...prevErrors, [name]: error || "" }));
+    if (setErrors) {
+      setErrors((prevErrors: FormErrors) => ({ ...prevErrors, [name]: error || "" }));
+    }
   };
 
   return (
@@ -138,9 +134,9 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
           onBlur={handleBlur} 
           placeholder="Enter phone number" 
           required 
-          className={`text-input ${errors.institutionPhoneNumber ? 'invalid' : ''}`} 
+                    className={`text-input ${errors?.institutionPhoneNumber ? 'invalid' : ''}`}
         />
-        {errors.institutionPhoneNumber && <p className="error-message">{errors.institutionPhoneNumber}</p>}
+        {errors?.institutionPhoneNumber && <p className="error-message">{errors.institutionPhoneNumber}</p>}
 
         <p className="text-label">Email *</p>
         <input 
@@ -151,9 +147,9 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
           onBlur={handleBlur} 
           placeholder="Enter email" 
           required 
-          className={`text-input ${errors.institutionEmail ? 'invalid' : ''}`} 
+                    className={`text-input ${errors?.institutionEmail ? 'invalid' : ''}`}
         />
-        {errors.institutionEmail && <p className="error-message">{errors.institutionEmail}</p>}
+        {errors?.institutionEmail && <p className="error-message">{errors.institutionEmail}</p>}
       </div>
 
 
@@ -210,9 +206,9 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
           onBlur={handleBlur} 
           placeholder="Enter admin phone number" 
           required 
-          className={`text-input ${errors.adminPhoneNumber ? 'invalid' : ''}`} 
+                    className={`text-input ${errors?.adminPhoneNumber ? 'invalid' : ''}`}
         />
-        {errors.adminPhoneNumber && <p className="error-message">{errors.adminPhoneNumber}</p>}
+        {errors?.adminPhoneNumber && <p className="error-message">{errors.adminPhoneNumber}</p>}
 
         <p className="text-label">Admin Email *</p>
         <input 
@@ -223,9 +219,9 @@ function Information({ formData, setFormData, errors, setErrors }: InformationPr
           onBlur={handleBlur} 
           placeholder="Enter admin email" 
           required 
-          className={`text-input ${errors.adminEmail ? 'invalid' : ''}`} 
+                    className={`text-input ${errors?.adminEmail ? 'invalid' : ''}`}
         />
-        {errors.adminEmail && <p className="error-message">{errors.adminEmail}</p>}
+        {errors?.adminEmail && <p className="error-message">{errors.adminEmail}</p>}
         </div>
       </div>
   );

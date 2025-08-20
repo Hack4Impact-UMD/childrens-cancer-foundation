@@ -1,12 +1,7 @@
 import { useState } from "react";
 import "./SubForm.css";
 import React from "react";
-
-interface ReviewProps {
-  type: any;
-  formData: any;
-  hideFile?: boolean;
-}
+import { ReviewProps } from "../../../types/application-types";
 
 /* Still need to add useState from information*/
 function ReviewApplication({ type, formData, hideFile}: ReviewProps): JSX.Element {

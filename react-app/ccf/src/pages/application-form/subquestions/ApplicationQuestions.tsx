@@ -1,10 +1,6 @@
 import { useState } from "react";
 import "./SubForm.css";
-
-interface ApplicationQuestionsProps {
-  formData: any;
-  setFormData: (data: any) => void;
-}
+import { ApplicationQuestionsProps } from "../../../types/application-types";
 
 function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsProps): JSX.Element {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
