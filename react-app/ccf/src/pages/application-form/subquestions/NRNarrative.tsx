@@ -1,10 +1,6 @@
 import { useState, useRef } from "react";
 import "./SubForm.css";
-
-interface InformationProps {
-  formData: any;
-  setFormData: (data: any) => void;
-}
+import { InformationProps } from "../../../types/application-types";
 
 function NRNarrative({ formData, setFormData }: InformationProps): JSX.Element {
   const [selectedFile, setSelectedFile] = useState<File | null>(formData.file);
