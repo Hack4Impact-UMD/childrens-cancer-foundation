@@ -236,21 +236,28 @@ function validateApplicationData(application, grantType) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (grantType === 'research' || grantType === 'nextgen') {
-        // Research/NextGen specific validation
+        // Research/NextGen specific validation - only require fields marked with * on the form
         if (!application.principalInvestigator || typeof application.principalInvestigator !== 'string' || application.principalInvestigator.trim() === '') {
             errors.push('Principal Investigator is required');
+        }
+
+        // Department and Department Head are starred in the form
+        if (!application.department || typeof application.department !== 'string' || application.department.trim() === '') {
+            errors.push('Department is required');
+        }
+        if (!application.departmentHead || typeof application.departmentHead !== 'string' || application.departmentHead.trim() === '') {
+            errors.push('Department Head is required');
         }
 
         if (!application.typesOfCancerAddressed || typeof application.typesOfCancerAddressed !== 'string' || application.typesOfCancerAddressed.trim() === '') {
             errors.push('Types of Cancer Addressed is required');
         }
 
-        if (!application.namesOfStaff || typeof application.namesOfStaff !== 'string' || application.namesOfStaff.trim() === '') {
-            errors.push('Names of Staff is required');
-        }
-
         if (!application.institutionAddress || typeof application.institutionAddress !== 'string' || application.institutionAddress.trim() === '') {
             errors.push('Institution Address is required');
+        }
+        if (!application.institutionCityStateZip || typeof application.institutionCityStateZip !== 'string' || application.institutionCityStateZip.trim() === '') {
+            errors.push('Institution City/State/Zip is required');
         }
 
         if (!application.institutionPhoneNumber || typeof application.institutionPhoneNumber !== 'string' || application.institutionPhoneNumber.trim() === '') {
@@ -263,6 +270,12 @@ function validateApplicationData(application, grantType) {
 
         if (!application.adminOfficialName || typeof application.adminOfficialName !== 'string' || application.adminOfficialName.trim() === '') {
             errors.push('Admin Official Name is required');
+        }
+        if (!application.adminOfficialAddress || typeof application.adminOfficialAddress !== 'string' || application.adminOfficialAddress.trim() === '') {
+            errors.push('Admin Official Address is required');
+        }
+        if (!application.adminOfficialCityStateZip || typeof application.adminOfficialCityStateZip !== 'string' || application.adminOfficialCityStateZip.trim() === '') {
+            errors.push('Admin City/State/Zip is required');
         }
 
         if (!application.adminPhoneNumber || typeof application.adminPhoneNumber !== 'string' || application.adminPhoneNumber.trim() === '') {
@@ -278,7 +291,7 @@ function validateApplicationData(application, grantType) {
         }
 
         if (!application.creditAgreement || typeof application.creditAgreement !== 'string' || application.creditAgreement.trim() === '') {
-            errors.push('Credit Agreement is    ');
+            errors.push('Credit Agreement is required');
         }
 
         if (!application.patentApplied || typeof application.patentApplied !== 'string' || application.patentApplied.trim() === '') {
@@ -293,9 +306,18 @@ function validateApplicationData(application, grantType) {
             errors.push('Dates are required');
         }
 
-        if (!application.continuation || typeof application.continuation !== 'string' || application.continuation.trim() === '') {
-            errors.push('Continuation information is required');
+        if (!application.einNumber || typeof application.einNumber !== 'string' || application.einNumber.trim() === '') {
+            errors.push('EIN Number is required');
         }
+
+        if (!application.signaturePI || typeof application.signaturePI !== 'string' || application.signaturePI.trim() === '') {
+            errors.push('Signature of Principal Investigator is required');
+        }
+        if (!application.signatureDeptHead || typeof application.signatureDeptHead !== 'string' || application.signatureDeptHead.trim() === '') {
+            errors.push('Signature of Department Head is required');
+        }
+
+        // Note: Non-starred fields like otherStaff, coPI, continuation, continuationYears, and attestations are optional
 
     } else if (grantType === 'nonresearch') {
         // Non-research specific validation
