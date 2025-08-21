@@ -66,7 +66,9 @@ const FAQComponent: React.FC<FAQComponentProps> = ({ faqs }) => {
                     </div>
                     {activeIndex === index && (
                         <div className="faq-answer">
-                            <MarkdownPreviewer _text={faq.answer} _previewOnly={true} />
+                            <div className="markdown-preview-light">
+                                <MarkdownPreviewer _text={faq.answer} _previewOnly={true} />
+                            </div>
                         </div>
                     )}
                 </div>
