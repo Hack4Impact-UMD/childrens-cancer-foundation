@@ -10,6 +10,23 @@ type MarkdownPreviewerProps = {
     onChange?: (text: string) => void;
 };
 
+const bannedElements = {
+    iframe:   () => null,
+    script:   () => null,
+    object:   () => null,
+    style:    () => null,
+    input:    () => null,
+    form:     () => null,
+    textarea: () => null,
+    button:   () => null,
+    label:    () => null,
+    html:     () => null,
+    head:     () => null,
+    title:    () => null,
+    body:     () => null,
+    code:     () => null
+}
+
 const MarkdownPreviewer: React.FC<MarkdownPreviewerProps> = ({_previewOnly = false, _text = '', _minRows = 1, onChange}) => {
     const [previewOnly, setPreviewOnly] = useState(_previewOnly);
     const [text, setText] = useState(_text);
@@ -35,7 +52,7 @@ const MarkdownPreviewer: React.FC<MarkdownPreviewerProps> = ({_previewOnly = fal
                 className="markdown-input"/>
             ) : (null)}
             <Box className="markdown-previewer">
-                <Markdown>
+                <Markdown options={{ overrides: bannedElements }}>
                     {text.split('\n').map((s) => s === '' ? '\n<br>' : s + '\n').join('\n')}
                 </Markdown>
             </Box>
