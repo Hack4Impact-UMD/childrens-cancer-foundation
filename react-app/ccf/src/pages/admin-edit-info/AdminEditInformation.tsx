@@ -24,7 +24,6 @@ import EditableFAQComponent from "../../components/faq/FaqEditableComp";
 import { Edit } from "lucide-react";
 
 function AdminEditInformation(): JSX.Element {
-    const [faqData, setFAQData] = useState<FAQItem[]>([]);
     const [nextGenDate, setNextGenDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [researchDate, setResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [nonResearchDate, setNonResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
@@ -36,6 +35,8 @@ function AdminEditInformation(): JSX.Element {
 
     const [appDeadlineMessage, setAppDeadlineMessage] = useState<string | null>(null);
     const [revDeadlineMessage, setRevDeadlineMessage] = useState<string | null>(null);
+
+    const [faqData, setFAQData] = useState<FAQItem[]>([]);
 
     useEffect(() => {
         getFAQs().then(faqs => {
