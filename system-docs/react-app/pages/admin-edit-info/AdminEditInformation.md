@@ -49,6 +49,8 @@ This page allows administrators to manage application cycle settings, deadlines,
 - **Editable FAQs**: Admins can add, edit, and remove frequently asked questions
 - **Real-time Updates**: Changes are immediately reflected in the application
 - **User-friendly Interface**: Simple form for managing FAQ content
+- **Sample FAQ Initialization**: Button to populate database with sample FAQ data
+- **Markdown Support**: FAQ answers support rich text formatting
 
 ## Data Flow
 
@@ -77,6 +79,15 @@ This page allows administrators to manage application cycle settings, deadlines,
 ## Related Components
 
 - **Application Cycle Backend**: Handles cycle data management
-- **FAQ Handler**: Manages FAQ content
+- **FAQ Handler**: Manages FAQ content with sample data initialization
 - **Date Pickers**: Material-UI components for date selection
 - **Sidebar**: Provides navigation to other admin functions
+- **EditableFAQComponent**: Component for editing FAQ content
+
+## Recent Updates
+
+### FAQ Integration Enhancement
+- Added "Initialize Sample FAQs" button for easy database population
+- Enhanced FAQ data fetching and error handling
+- Improved user experience with sample content
+- Added debugging capabilities for troubleshooting

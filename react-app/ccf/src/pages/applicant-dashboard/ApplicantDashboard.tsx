@@ -68,6 +68,14 @@ function ApplicantUsersDashboard(): JSX.Element {
                     console.error(e)
                 })
 
+                // Fetch FAQ data
+                getFAQs().then((faqs) => {
+                    console.log('FAQ data loaded:', faqs);
+                    setFAQData(faqs);
+                }).catch((e) => {
+                    console.error('Error loading FAQ data:', e);
+                });
+
                 // Get user applications and check decisions
                 const apps = await getUsersCurrentCycleAppplications();
 

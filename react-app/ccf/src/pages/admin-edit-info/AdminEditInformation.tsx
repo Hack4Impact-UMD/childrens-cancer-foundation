@@ -18,7 +18,7 @@ import {
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { FAQItem } from "../../types/faqTypes";
-import { getFAQs } from "../../backend/faq-handler";
+import { getFAQs, initializeSampleFAQs } from "../../backend/faq-handler";
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
 import { Edit } from "lucide-react";
 
@@ -358,6 +358,36 @@ function AdminEditInformation(): JSX.Element {
                     <div>
                         <div className="editable-info-section">
                             <h2>Update Frequently Asked Questions:</h2>
+                            <Button
+                                variant="contained"
+                                onClick={async () => {
+                                    try {
+                                        await initializeSampleFAQs();
+                                        // Refresh FAQ data
+                                        const updatedFaqs = await getFAQs();
+                                        setFAQData(updatedFaqs);
+                                        alert('Sample FAQs initialized successfully!');
+                                    } catch (error) {
+                                        console.error('Error initializing FAQs:', error);
+                                        alert('Error initializing FAQs. Please try again.');
+                                    }
+                                }}
+                                sx={{
+                                    backgroundColor: '#79747E',
+                                    fontFamily: 'Roboto, sans-serif',
+                                    textTransform: 'none',
+                                    height: '40px',
+                                    fontSize: '1rem',
+                                    fontWeight: 'normal',
+                                    borderRadius: '10px',
+                                    '&:hover': {
+                                        backgroundColor: '#003E83'
+                                    },
+                                    marginBottom: '20px'
+                                }}
+                            >
+                                Initialize Sample FAQs
+                            </Button>
                             <EditableFAQComponent faqs={faqData} />
                         </div>
                     </div>

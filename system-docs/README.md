@@ -49,6 +49,7 @@ The Children's Cancer Foundation (CCF) grant management system is a comprehensiv
 - **applicationCycles**: Application cycle configuration
 - **decisions**: Application decision data
 - **users**: User account information
+- **FAQs**: Frequently asked questions and answers
 
 ## Recent Updates
 
@@ -70,6 +71,14 @@ The Children's Cancer Foundation (CCF) grant management system is a comprehensiv
 - **Basic Application System**: Core grant application functionality
 - **User Authentication**: Role-based access control
 - **Review System**: Basic reviewer workflow
+
+### v1.1 - FAQ System Enhancement
+- **FAQ Integration Fix**: Resolved empty FAQ display in applicant dashboard
+- **Dynamic FAQ Loading**: Implemented Firebase-based FAQ data fetching
+- **Sample Data Initialization**: Added admin tools for populating FAQ database
+- **Markdown Support**: Enhanced FAQ answers with rich text formatting
+- **Empty State Handling**: Improved user experience when no FAQs are available
+- **Debugging Capabilities**: Added comprehensive logging for troubleshooting
 
 ## Post-Grant Report System
 
@@ -101,6 +110,7 @@ The Children's Cancer Foundation (CCF) grant management system is a comprehensiv
 ### Firebase Documentation
 - **firebase-functions/**: Serverless function documentation
 - **firestore/**: Database collection and security rule documentation
+- **faq-handler.md**: FAQ management backend functions
 
 ### React Application Documentation
 - **react-app/components/**: Reusable component documentation

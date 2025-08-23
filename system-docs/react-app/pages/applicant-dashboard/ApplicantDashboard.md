@@ -29,9 +29,10 @@ The Applicant Dashboard (`ApplicantDashboard.tsx`) is the main interface for app
 - **Status-Based Display**: Different content based on application decisions
 
 ### FAQ and Contact
-- **FAQ Section**: Collapsible frequently asked questions
+- **FAQ Section**: Collapsible frequently asked questions with markdown support
 - **Contact Information**: Applicant support contact details
 - **Expandable Sections**: User-controlled content visibility
+- **Dynamic FAQ Loading**: Fetches FAQ data from Firebase database
 
 ## Post-Grant Reports Section
 
@@ -88,6 +89,7 @@ type ApplicationWithDecision = Application & {
   4. Checks decision status for each application
   5. Verifies post-grant report submission status
   6. Fetches PDF URLs for submitted reports
+  7. Loads FAQ data from Firebase database
 
 ### `formatDate(dateString: string | Date | undefined | null)`
 - **Purpose**: Safely formats dates for display
@@ -164,7 +166,7 @@ if (submittedReport) {
 - **`getReportsByUser`**: Fetches user's submitted reports
 - **`getPDFDownloadURL`**: Converts file IDs to download URLs
 - **`getCurrentCycle`**: Gets current application cycle
-- **`getFAQs`**: Fetches FAQ data
+- **`getFAQs`**: Fetches FAQ data from Firebase database
 
 ### Components
 - **`Sidebar`**: Navigation component
@@ -210,3 +212,9 @@ if (submittedReport) {
 - Simple status display
 - FAQ and contact sections
 - Basic navigation
+
+### v1.1 - FAQ Integration Fix
+- Fixed FAQ data fetching from Firebase
+- Added empty state handling for FAQ component
+- Implemented sample FAQ initialization
+- Added debugging and error handling for FAQ functionality
