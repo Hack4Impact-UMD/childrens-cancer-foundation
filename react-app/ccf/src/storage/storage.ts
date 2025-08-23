@@ -1,8 +1,12 @@
 import { ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
-import { storage } from '../index'
+import { storage, auth } from '../index'
 
 export const uploadFileToStorage = async (file: File): Promise<string> => {
-
+  // Check if user is authenticated
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('User must be authenticated to upload files');
+  }
 
   const MAX_PDF_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB in bytes
 
@@ -15,14 +19,15 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
     throw new Error('File type not supported (ONLY pdf file type accepted).');
   }
 
-
   if (!file) {
     throw new Error('No file selected');
   }
+
   const name = crypto.randomUUID()
   const storageRef = ref(storage, 'pdfs/' + name);
 
   try {
+    console.log('Uploading file to storage...');
     const snapshot = await uploadBytes(storageRef, file);
     console.log('Uploaded a blob or file!');
 
@@ -78,6 +83,17 @@ export const listAndDownloadAllPDFs = async (): Promise<Array<{ name: string, ur
     return files;
   } catch (error) {
     console.error("Error listing files:", error);
+    throw error;
+  }
+};
+
+export const getPDFDownloadURL = async (fileId: string): Promise<string> => {
+  try {
+    const fileRef = ref(storage, `pdfs/${fileId}`);
+    const downloadURL = await getDownloadURL(fileRef);
+    return downloadURL;
+  } catch (error) {
+    console.error("Error getting PDF download URL:", error);
     throw error;
   }
 };

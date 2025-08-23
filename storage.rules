@@ -6,7 +6,13 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /pdfs/{fileName} {
+      // Allow read and write for authenticated users
       allow read, write: if request.auth != null;
+      
+      // Additional validation for uploads
+      allow write: if request.auth != null 
+        && request.resource.size < 50 * 1024 * 1024  // 50MB limit
+        && request.resource.contentType.matches('application/pdf');
     }
   }
 }

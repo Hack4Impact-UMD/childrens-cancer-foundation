@@ -28,6 +28,33 @@ service cloud.firestore {
         resource.data.userId == request.auth.uid;
     }
 
+    // Post Grant Reports collection rules
+    match /post-grant-reports/{reportId} {
+      // Allow applicants to create their own reports
+      allow create: if isApplicant() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Allow applicants to read their own reports
+      allow read: if isApplicant() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Allow applicants to update their own reports
+      allow update: if isApplicant() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Allow admins to read all reports
+      allow read: if isAdmin();
+    }
+
+    // Decision Data collection rules
+    match /decision-data/{decisionId} {
+      // Allow applicants to read decision data (security handled at application level)
+      allow read: if isApplicant();
+      
+      // Allow admins to read and write all decision data
+      allow read, write: if isAdmin();
+    }
+
     // This rule allows anyone with your Firestore database reference to view, edit,
     // and delete all data in your Firestore database. It is useful for getting
     // started, but it is configured to expire after 30 days because it

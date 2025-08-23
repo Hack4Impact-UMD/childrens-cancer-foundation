@@ -25,6 +25,7 @@ import { Edit } from "lucide-react";
 function AdminEditInformation(): JSX.Element {
     const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [reviewerDate, setReviewerDate] = useState<dayjs.Dayjs | null>(null);
+    const [postGrantReportDate, setPostGrantReportDate] = useState<dayjs.Dayjs | null>(null);
     // Current stage of application cycle
     const [currentStage, setCurrentStage] = useState<string | null>(null);
     const [stageSaving, setStageSaving] = useState(false); // shows button spinner
@@ -32,6 +33,7 @@ function AdminEditInformation(): JSX.Element {
 
     const [appDeadlineMessage, setAppDeadlineMessage] = useState<string | null>(null);
     const [revDeadlineMessage, setRevDeadlineMessage] = useState<string | null>(null);
+    const [postGrantReportDeadlineMessage, setPostGrantReportDeadlineMessage] = useState<string | null>(null);
 
     const [faqData, setFAQData] = useState<FAQItem[]>([]);
 
@@ -43,8 +45,9 @@ function AdminEditInformation(): JSX.Element {
 
     const cycleStages: ApplicationCycle["stage"][] = [
         "Applications Open",
-        "Reviewing Applications",
-        "Reviews Closed",
+        "Applications Closed",
+        "Review",
+        "Grading",
         "Final Decisions"
     ];
 
@@ -54,6 +57,10 @@ function AdminEditInformation(): JSX.Element {
 
     const handleReviewerDateChange = (newReviewerDate: Dayjs | null) => {
         setReviewerDate(newReviewerDate);
+    }
+
+    const handlePostGrantReportDateChange = (newPostGrantReportDate: Dayjs | null) => {
+        setPostGrantReportDate(newPostGrantReportDate);
     }
 
     const sidebarItems = getSidebarbyRole("admin")
@@ -246,6 +253,69 @@ function AdminEditInformation(): JSX.Element {
                             }}
 
                         >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
+                    </div>
+                    <div className="deadline-interactives">
+                        <h2>Post-Grant Reports:</h2>
+                        <div className="interactive-date-selector">
+                            <h2>Post-Grant Report Deadline</h2>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                    value={postGrantReportDate}
+                                    onChange={handlePostGrantReportDateChange}
+                                    enableAccessibleFieldDOMStructure={false}
+                                    sx={{
+                                        backgroundColor: '#79747E',
+                                    }}
+                                    slots={{
+                                        textField: (props: any) => (
+                                            <TextField
+                                                {...props}
+                                                sx={{
+                                                    '& .MuiInputBase-input': {
+                                                        textAlign: 'center',
+                                                        height: '8px',
+                                                        width: '150px',
+                                                        color: '#79747E',
+                                                    },
+                                                    '& .MuiOutlinedInput-notchedOutline': {
+                                                        border: '2px solid #79747E',
+                                                        borderRadius: '15px'
+                                                    },
+                                                }}
+                                            />
+                                        ),
+                                    }}
+                                />
+                            </LocalizationProvider>
+                            <Button
+                                variant="contained"
+                                onClick={async () => {
+                                    const success = await updateCurrentCycleDeadlines({
+                                        postGrantReportDate
+                                    });
+
+                                    if (success) {
+                                        console.log("Post-grant report deadline updated.");
+                                        setPostGrantReportDeadlineMessage("Post-Grant Report Deadline Updated!");
+                                        setTimeout(() => setPostGrantReportDeadlineMessage(null), 3000);
+                                    }
+                                }}
+                                sx={{
+                                    backgroundColor: '#79747E',
+                                    fontFamily: 'Roboto, sans-serif',
+                                    textTransform: 'none',
+                                    height: '40px',
+                                    fontSize: '1.25rem',
+                                    fontWeight: 'normal',
+                                    borderRadius: '10px',
+                                    '&:hover': {
+                                        backgroundColor: '#003E83'
+                                    },
+                                    marginBottom: '10px',
+                                    marginTop: '10px'
+                                }}
+                            >{postGrantReportDeadlineMessage ?? "Set Post-Grant Report Deadline"}</Button>
+                        </div>
                     </div>
                     <div className="stage-toggle-section">
                         <h2>Current Stage: {currentStage ?? "Not set"}</h2>

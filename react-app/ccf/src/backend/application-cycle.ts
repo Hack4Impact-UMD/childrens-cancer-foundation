@@ -21,7 +21,8 @@ export const getCurrentCycle = async (): Promise<ApplicationCycle> => {
     allApplicationsDeadline: (cycle.allApplicationsDeadline as Timestamp).toDate(),
     reviewerDeadline: (cycle.reviewerDeadline as Timestamp).toDate(),
     startDate: (cycle.startDate as Timestamp).toDate(),
-    endDate: (cycle.endDate as Timestamp).toDate()
+    endDate: (cycle.endDate as Timestamp).toDate(),
+    postGrantReportDeadline: cycle.postGrantReportDeadline ? (cycle.postGrantReportDeadline as Timestamp).toDate() : undefined
   } as ApplicationCycle
 }
 
@@ -78,6 +79,7 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
   nonResearchDate?: dayjs.Dayjs | null;
 
   reviewerDate?: dayjs.Dayjs | null;
+  postGrantReportDate?: dayjs.Dayjs | null;
 }) => {
   try {
     const querySnapshot = await getDocs(collection(db, "applicationCycles"));
@@ -118,12 +120,12 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
         updateData.researchDeadline = timestamp;
         updateData.nonResearchDeadline = timestamp;
       }
-    } 
-    
+    }
+
     if (deadlines.reviewerDate) updateData.reviewerDeadline = toTimestampAt1159PM(deadlines.reviewerDate);
+    if (deadlines.postGrantReportDate) updateData.postGrantReportDeadline = toTimestampAt1159PM(deadlines.postGrantReportDate);
 
     await updateDoc(doc(db, "applicationCycles", currentDocId), updateData);
-
     return true;
   } catch (error) {
     console.error("Failed to update deadlines:", error);
