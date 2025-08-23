@@ -37,6 +37,18 @@ The FAQ handler (`faq-handler.ts`) provides backend functions for managing Frequ
 - **Parameters**: `faq` - FAQItem object with id, question, and answer
 - **Usage**: Used for adding new FAQ entries
 
+### `createNewFAQ(question: string, answer: string)`
+- **Purpose**: Creates a new FAQ with auto-generated ID
+- **Parameters**: 
+  - `question` - The FAQ question text
+  - `answer` - The FAQ answer text (supports markdown)
+- **Returns**: `Promise<FAQItem>` - The created FAQ item
+- **Features**:
+  - Auto-generates unique ID using timestamp
+  - Trims whitespace from input
+  - Includes error handling and logging
+  - Used by the admin UI for creating new FAQs
+
 ### `initializeSampleFAQs()`
 - **Purpose**: Populates the database with sample FAQ data
 - **Features**:
@@ -102,6 +114,16 @@ const newFAQ = {
 };
 
 await addFAQ(newFAQ);
+```
+
+### Creating a New FAQ with Auto-Generated ID
+```typescript
+import { createNewFAQ } from '../backend/faq-handler';
+
+const newFAQ = await createNewFAQ(
+    "What is the grant amount?",
+    "Grant amounts vary by type and cycle."
+);
 ```
 
 ### Initializing Sample Data

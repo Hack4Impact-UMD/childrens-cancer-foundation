@@ -51,6 +51,9 @@ This page allows administrators to manage application cycle settings, deadlines,
 - **User-friendly Interface**: Simple form for managing FAQ content
 - **Sample FAQ Initialization**: Button to populate database with sample FAQ data
 - **Markdown Support**: FAQ answers support rich text formatting
+- **New FAQ Creation**: Form-based interface for creating new FAQ entries
+- **Auto-Generated IDs**: New FAQs get unique IDs automatically
+- **Form Validation**: Ensures both question and answer fields are filled
 
 ## Data Flow
 
@@ -91,3 +94,11 @@ This page allows administrators to manage application cycle settings, deadlines,
 - Enhanced FAQ data fetching and error handling
 - Improved user experience with sample content
 - Added debugging capabilities for troubleshooting
+
+### New FAQ Creation Feature
+- Added "Add New FAQ" button with toggle functionality
+- Implemented form-based FAQ creation interface
+- Added form validation for required fields
+- Integrated with Firebase backend for data persistence
+- Added loading states and error handling
+- Auto-refresh FAQ list after creation

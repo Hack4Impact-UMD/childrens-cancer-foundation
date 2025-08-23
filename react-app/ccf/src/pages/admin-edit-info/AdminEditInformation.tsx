@@ -7,7 +7,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
-import { TextField, Button, CircularProgress, Snackbar, Switch } from '@mui/material';
+import { TextField, Button, CircularProgress, Snackbar, Switch, Box, Typography } from '@mui/material';
 
 import {
     updateCurrentCycleDeadlines,
@@ -18,7 +18,7 @@ import {
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { FAQItem } from "../../types/faqTypes";
-import { getFAQs, initializeSampleFAQs } from "../../backend/faq-handler";
+import { getFAQs, initializeSampleFAQs, createNewFAQ } from "../../backend/faq-handler";
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
 import { Edit } from "lucide-react";
 
@@ -36,6 +36,10 @@ function AdminEditInformation(): JSX.Element {
     const [postGrantReportDeadlineMessage, setPostGrantReportDeadlineMessage] = useState<string | null>(null);
 
     const [faqData, setFAQData] = useState<FAQItem[]>([]);
+    const [showNewFAQForm, setShowNewFAQForm] = useState<boolean>(false);
+    const [newFAQQuestion, setNewFAQQuestion] = useState<string>('');
+    const [newFAQAnswer, setNewFAQAnswer] = useState<string>('');
+    const [isCreatingFAQ, setIsCreatingFAQ] = useState<boolean>(false);
 
     useEffect(() => {
         getFAQs().then(faqs => {
@@ -98,6 +102,34 @@ function AdminEditInformation(): JSX.Element {
             if (success) {
                 window.location.reload();
             }
+        }
+    };
+
+    const handleCreateNewFAQ = async () => {
+        if (!newFAQQuestion.trim() || !newFAQAnswer.trim()) {
+            alert('Please fill in both question and answer fields.');
+            return;
+        }
+
+        setIsCreatingFAQ(true);
+        try {
+            await createNewFAQ(newFAQQuestion, newFAQAnswer);
+
+            // Refresh FAQ data
+            const updatedFaqs = await getFAQs();
+            setFAQData(updatedFaqs);
+
+            // Reset form
+            setNewFAQQuestion('');
+            setNewFAQAnswer('');
+            setShowNewFAQForm(false);
+
+            alert('New FAQ created successfully!');
+        } catch (error) {
+            console.error('Error creating new FAQ:', error);
+            alert('Error creating new FAQ. Please try again.');
+        } finally {
+            setIsCreatingFAQ(false);
         }
     };
 
@@ -358,36 +390,144 @@ function AdminEditInformation(): JSX.Element {
                     <div>
                         <div className="editable-info-section">
                             <h2>Update Frequently Asked Questions:</h2>
-                            <Button
-                                variant="contained"
-                                onClick={async () => {
-                                    try {
-                                        await initializeSampleFAQs();
-                                        // Refresh FAQ data
-                                        const updatedFaqs = await getFAQs();
-                                        setFAQData(updatedFaqs);
-                                        alert('Sample FAQs initialized successfully!');
-                                    } catch (error) {
-                                        console.error('Error initializing FAQs:', error);
-                                        alert('Error initializing FAQs. Please try again.');
-                                    }
-                                }}
-                                sx={{
-                                    backgroundColor: '#79747E',
-                                    fontFamily: 'Roboto, sans-serif',
-                                    textTransform: 'none',
-                                    height: '40px',
-                                    fontSize: '1rem',
-                                    fontWeight: 'normal',
-                                    borderRadius: '10px',
-                                    '&:hover': {
-                                        backgroundColor: '#003E83'
-                                    },
-                                    marginBottom: '20px'
-                                }}
-                            >
-                                Initialize Sample FAQs
-                            </Button>
+
+                            {/* FAQ Management Buttons */}
+                            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                                <Button
+                                    variant="contained"
+                                    onClick={async () => {
+                                        try {
+                                            await initializeSampleFAQs();
+                                            // Refresh FAQ data
+                                            const updatedFaqs = await getFAQs();
+                                            setFAQData(updatedFaqs);
+                                            alert('Sample FAQs initialized successfully!');
+                                        } catch (error) {
+                                            console.error('Error initializing FAQs:', error);
+                                            alert('Error initializing FAQs. Please try again.');
+                                        }
+                                    }}
+                                    sx={{
+                                        backgroundColor: '#79747E',
+                                        fontFamily: 'Roboto, sans-serif',
+                                        textTransform: 'none',
+                                        height: '40px',
+                                        fontSize: '1rem',
+                                        fontWeight: 'normal',
+                                        borderRadius: '10px',
+                                        '&:hover': {
+                                            backgroundColor: '#003E83'
+                                        }
+                                    }}
+                                >
+                                    Initialize Sample FAQs
+                                </Button>
+
+                                <Button
+                                    variant="contained"
+                                    onClick={() => setShowNewFAQForm(!showNewFAQForm)}
+                                    sx={{
+                                        backgroundColor: '#4CAF50',
+                                        fontFamily: 'Roboto, sans-serif',
+                                        textTransform: 'none',
+                                        height: '40px',
+                                        fontSize: '1rem',
+                                        fontWeight: 'normal',
+                                        borderRadius: '10px',
+                                        '&:hover': {
+                                            backgroundColor: '#45a049'
+                                        }
+                                    }}
+                                >
+                                    {showNewFAQForm ? 'Cancel' : 'Add New FAQ'}
+                                </Button>
+                            </div>
+
+                            {/* New FAQ Form */}
+                            {showNewFAQForm && (
+                                <Box
+                                    sx={{
+                                        border: '2px solid #ddd',
+                                        borderRadius: '10px',
+                                        padding: '20px',
+                                        marginBottom: '20px',
+                                        backgroundColor: '#f9f9f9'
+                                    }}
+                                >
+                                    <Typography variant="h6" sx={{ marginBottom: '15px', color: '#333' }}>
+                                        Create New FAQ
+                                    </Typography>
+
+                                    <TextField
+                                        label="Question"
+                                        value={newFAQQuestion}
+                                        onChange={(e) => setNewFAQQuestion(e.target.value)}
+                                        variant="outlined"
+                                        fullWidth
+                                        multiline
+                                        rows={2}
+                                        sx={{ marginBottom: '15px' }}
+                                        placeholder="Enter the frequently asked question..."
+                                    />
+
+                                    <TextField
+                                        label="Answer"
+                                        value={newFAQAnswer}
+                                        onChange={(e) => setNewFAQAnswer(e.target.value)}
+                                        variant="outlined"
+                                        fullWidth
+                                        multiline
+                                        rows={4}
+                                        sx={{ marginBottom: '15px' }}
+                                        placeholder="Enter the answer (supports markdown formatting)..."
+                                    />
+
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <Button
+                                            variant="contained"
+                                            onClick={handleCreateNewFAQ}
+                                            disabled={isCreatingFAQ || !newFAQQuestion.trim() || !newFAQAnswer.trim()}
+                                            sx={{
+                                                backgroundColor: '#4CAF50',
+                                                fontFamily: 'Roboto, sans-serif',
+                                                textTransform: 'none',
+                                                height: '40px',
+                                                fontSize: '1rem',
+                                                fontWeight: 'normal',
+                                                borderRadius: '10px',
+                                                '&:hover': {
+                                                    backgroundColor: '#45a049'
+                                                },
+                                                '&:disabled': {
+                                                    backgroundColor: '#cccccc'
+                                                }
+                                            }}
+                                        >
+                                            {isCreatingFAQ ? 'Creating...' : 'Create FAQ'}
+                                        </Button>
+
+                                        <Button
+                                            variant="outlined"
+                                            onClick={() => {
+                                                setShowNewFAQForm(false);
+                                                setNewFAQQuestion('');
+                                                setNewFAQAnswer('');
+                                            }}
+                                            sx={{
+                                                fontFamily: 'Roboto, sans-serif',
+                                                textTransform: 'none',
+                                                height: '40px',
+                                                fontSize: '1rem',
+                                                fontWeight: 'normal',
+                                                borderRadius: '10px'
+                                            }}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </Box>
+                            )}
+
                             <EditableFAQComponent faqs={faqData} />
                         </div>
                     </div>

@@ -49,6 +49,25 @@ export const addFAQ = async (faq: FAQItem) => {
     });
 }
 
+export const createNewFAQ = async (question: string, answer: string) => {
+    try {
+        // Generate a unique ID for the new FAQ
+        const newId = Date.now().toString();
+        const newFAQ: FAQItem = {
+            id: newId,
+            question: question.trim(),
+            answer: answer.trim()
+        };
+
+        await addFAQ(newFAQ);
+        console.log('New FAQ created successfully:', newFAQ);
+        return newFAQ;
+    } catch (error) {
+        console.error('Error creating new FAQ:', error);
+        throw error;
+    }
+}
+
 export const initializeSampleFAQs = async () => {
     const sampleFAQs: FAQItem[] = [
         {

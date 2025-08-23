@@ -79,6 +79,9 @@ The Children's Cancer Foundation (CCF) grant management system is a comprehensiv
 - **Markdown Support**: Enhanced FAQ answers with rich text formatting
 - **Empty State Handling**: Improved user experience when no FAQs are available
 - **Debugging Capabilities**: Added comprehensive logging for troubleshooting
+- **New FAQ Creation**: Added form-based interface for creating new FAQ entries
+- **Auto-Generated IDs**: Implemented automatic ID generation for new FAQs
+- **Form Validation**: Added validation for required question and answer fields
 
 ## Post-Grant Report System
 
