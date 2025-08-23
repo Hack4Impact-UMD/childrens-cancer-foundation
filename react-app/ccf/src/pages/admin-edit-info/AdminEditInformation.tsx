@@ -17,6 +17,10 @@ import {
 } from '../../backend/application-cycle';
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationCycle from "../../types/applicationCycle-types";
+import { FAQItem } from "../../types/faqTypes";
+import { getFAQs } from "../../backend/faq-handler";
+import EditableFAQComponent from "../../components/faq/FaqEditableComp";
+import { Edit } from "lucide-react";
 
 function AdminEditInformation(): JSX.Element {
     const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
@@ -28,6 +32,14 @@ function AdminEditInformation(): JSX.Element {
 
     const [appDeadlineMessage, setAppDeadlineMessage] = useState<string | null>(null);
     const [revDeadlineMessage, setRevDeadlineMessage] = useState<string | null>(null);
+
+    const [faqData, setFAQData] = useState<FAQItem[]>([]);
+
+    useEffect(() => {
+        getFAQs().then(faqs => {
+            setFAQData(faqs)
+        })
+    }, []);
 
     const cycleStages: ApplicationCycle["stage"][] = [
         "Applications Open",
@@ -273,7 +285,14 @@ function AdminEditInformation(): JSX.Element {
                             End Current Cycle and Start New
                         </Button>
                     </div>
+                    <div>
+                        <div className="editable-info-section">
+                            <h2>Update Frequently Asked Questions:</h2>
+                            <EditableFAQComponent faqs={faqData} />
+                        </div>
+                    </div>
                 </div>
+
             </div>
             <Snackbar
                 open={!!stageSnack}

@@ -19,6 +19,7 @@ import Banner from "../../components/banner/Banner";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 
 interface FAQItem {
+    id: string;
     question: string;
     answer: string;
 }
