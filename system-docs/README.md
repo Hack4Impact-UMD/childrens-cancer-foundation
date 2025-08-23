@@ -22,7 +22,7 @@ The Children's Cancer Foundation (CCF) grant management system is a comprehensiv
 ### User Role Management
 - **Applicants**: Submit applications and post-grant reports
 - **Reviewers**: Evaluate applications and provide feedback
-- **Administrators**: Manage cycles, users, and system configuration
+- **Administrators**: Manage cycles, users, system configuration, and reviewer whitelist
 
 ### Security & Authentication
 - **Firebase Authentication**: Secure user authentication and role management
@@ -50,6 +50,7 @@ The Children's Cancer Foundation (CCF) grant management system is a comprehensiv
 - **decisions**: Application decision data
 - **users**: User account information
 - **FAQs**: Frequently asked questions and answers
+- **reviewer-whitelist**: Reviewer email whitelist for account creation
 
 ## Recent Updates
 
@@ -82,6 +83,13 @@ The Children's Cancer Foundation (CCF) grant management system is a comprehensiv
 - **New FAQ Creation**: Added form-based interface for creating new FAQ entries
 - **Auto-Generated IDs**: Implemented automatic ID generation for new FAQs
 - **Form Validation**: Added validation for required question and answer fields
+
+### v1.2 - Reviewer Whitelist Management
+- **Whitelist System**: Added reviewer email whitelist for secure account creation
+- **Admin Management**: Comprehensive admin interface for managing whitelist entries
+- **Search and Filter**: Advanced search and filtering capabilities for whitelist entries
+- **Security Enhancement**: Prevents unauthorized reviewer account creation
+- **Integration**: Seamless integration with existing reviewer account creation flow
 
 ## Post-Grant Report System
 

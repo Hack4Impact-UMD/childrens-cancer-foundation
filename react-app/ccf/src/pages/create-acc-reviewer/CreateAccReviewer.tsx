@@ -7,7 +7,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { VALID_INSTITUTIONS, validateInstitution, checkEmailCreateAcc, checkPasswordRequirements as checkPasswordRequirementsUtil } from "../../utils/validation";
 import { addReviewerUser } from "../../users/usermanager";
 import { UserData } from "../../types/usertypes"
-import { db, storage } from "../../index"
+import { db, storage, auth } from "../../index"
 import { ref, getDownloadURL } from "firebase/storage";
 
 function AccountPageReviewers(): JSX.Element {
@@ -138,9 +138,20 @@ function AccountPageReviewers(): JSX.Element {
 
       // Use the addReviewerUser function that handles both authentication and database operations
       await addReviewerUser(userData, pwd);
-      navigate("/");
+
+      // Force token refresh to get updated custom claims
+      if (auth.currentUser) {
+        await auth.currentUser.getIdToken(true);
+      }
+
+      // Add a small delay to ensure Firebase has processed the custom claims
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Navigate to reviewer dashboard directly instead of root
+      navigate("/reviewer/dashboard");
     } catch (e) {
-      console.log(e);
+      console.error("Error creating reviewer account:", e);
+      // You might want to show an error message to the user here
     }
   };
 

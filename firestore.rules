@@ -1,5 +1,4 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     // Helper function to check if user is an admin
@@ -7,27 +6,53 @@ service cloud.firestore {
       return request.auth != null && 
         request.auth.token.role == 'admin';
     }
-
+    
     // Helper function to check if user is an applicant
     function isApplicant() {
       return request.auth != null && 
         request.auth.token.role == 'applicant';
     }
-
+    
+    // Helper function to check if user is a reviewer
+    function isReviewer() {
+      return request.auth != null && 
+        request.auth.token.role == 'reviewer';
+    }
+    
     // Applications collection rules
     match /applications/{applicationId} {
-      // Allow only admins to read all applications
-      allow read: if isAdmin();
-      
-      // Allow applicants to create new applications
-      allow create: if isApplicant() && 
-        request.resource.data.userId == request.auth.uid;
-      
-      // Allow applicants to update their own applications
-      allow update: if isApplicant() && 
-        resource.data.userId == request.auth.uid;
+      allow read: if isAdmin() || isReviewer() || (isApplicant() && request.auth.uid == resource.data.creatorId);
+      allow write: if isAdmin();
     }
-
+    
+    // FAQs collection rules
+    match /FAQs/{faqId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    
+    // Applicants
+    match /applicants/{applicantId} {
+      allow read, write: if isAdmin() || isReviewer() || request.auth.uid == applicantId;
+    }
+    
+    // Reviewers
+    match /reviewers/{reviewerId} {
+      allow read, write: if isAdmin() || isReviewer();
+    }
+    
+    // Application Cycles
+    match /applicationCycles/{cycleId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    
+    // Decision Data
+    match /decision-data/{decisionId} {
+      allow read: if isAdmin() || isReviewer() || (isApplicant() && request.auth.uid == get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.creatorId);
+      allow write: if isAdmin();
+    }
+    
     // Post Grant Reports collection rules
     match /post-grant-reports/{reportId} {
       // Allow applicants to create their own reports
@@ -42,45 +67,24 @@ service cloud.firestore {
       allow update: if isApplicant() && 
         resource.data.userId == request.auth.uid;
       
-      // Allow admins to read all reports
-      allow read: if isAdmin();
+      // Allow admins to read and update all reports
+      allow read, update: if isAdmin();
     }
-
-    // Decision Data collection rules
-    match /decision-data/{decisionId} {
-      // Allow applicants to read decision data (security handled at application level)
-      allow read: if isApplicant();
-      
-      // Allow admins to read and write all decision data
-      allow read, write: if isAdmin();
+    
+    // Reviewer Whitelist
+    match /reviewer-whitelist/{whitelistId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
     }
-
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2030, 12, 25);
+    
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read, write: if isAdmin() || isReviewer();
     }
-
-    match /applicantUsers/{userId} {
-      allow write: if request.resource.data.name != null &&
-        request.resource.data.title != null && size(request.resource.data.title) > 0 &&
-        request.resource.data.email != null && size(request.resource.data.email) > 0 &&
-        request.resource.data.institutionalAffiliation != null && size(request.resource.data.institutionalAffiliation) > 0 &&
-        request.resource.data.principalInvestigator != null && size(request.resource.data.principalInvestigator) > 0;
-    }
-
-    match /reviewerUsers/{userId} {
-      allow write: if request.auth != null &&
-        request.resource.data.name != null && size(request.resource.data.name) > 0 &&
-        request.resource.data.email != null && size(request.resource.data.email) > 0 &&
-        request.resource.data.institutionalAffiliation != null && size(request.resource.data.institutionalAffiliation) > 0;
+    
+    // Reviewer subcollection
+    match /reviews/{reviewId}/reviewers/{reviewreviewerId} {
+      allow read, write: if isAdmin() || isReviewer();
     }
   }
 }

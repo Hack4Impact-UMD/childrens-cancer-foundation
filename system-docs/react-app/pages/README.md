@@ -7,6 +7,7 @@ This directory contains documentation for the React pages used in this project.
 - [admin-dashboard](./admin-dashboard)
 - [admin-database](./admin-database)
 - [admin-edit-info](./admin-edit-info)
+- [admin-whitelist](./admin-whitelist)
 - [applicant-dashboard](./applicant-dashboard)
 - [applicant-decisions](./applicant-decisions)
 - [application-form](./application-form)

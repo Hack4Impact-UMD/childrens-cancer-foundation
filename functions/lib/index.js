@@ -27,11 +27,21 @@ exports.addReviewerRole = onCall((request) => {
             "role": "reviewer"
         });
     }).then(() => {
+        // Also create the user document in the reviewers collection
+        return admin.firestore().collection('reviewers').doc(data.userId).set({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            title: data.title,
+            email: data.email,
+            affiliation: data.affiliation
+        });
+    }).then(() => {
         return {
             message: `Success! ${data.email} has been made a reviewer.`
         };
     }).catch((err) => {
-        return err;
+        console.error("Error in addReviewerRole:", err);
+        throw new functions.https.HttpsError('internal', 'Failed to assign reviewer role');
     });
 });
 
@@ -42,11 +52,21 @@ exports.addApplicantRole = onCall((request) => {
             "role": "applicant"
         });
     }).then(() => {
+        // Also create the user document in the applicants collection
+        return admin.firestore().collection('applicants').doc(data.userId).set({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            title: data.title,
+            email: data.email,
+            affiliation: data.affiliation
+        });
+    }).then(() => {
         return {
             message: `Success! ${data.email} has been made an applicant.`
         };
     }).catch((err) => {
-        return err;
+        console.error("Error in addApplicantRole:", err);
+        throw new functions.https.HttpsError('internal', 'Failed to assign applicant role');
     });
 });
 
@@ -61,7 +81,8 @@ exports.addAdminRole = onCall((request) => {
             message: `Success! ${data.email} has been made an admin.`
         };
     }).catch((err) => {
-        return err;
+        console.error("Error in addAdminRole:", err);
+        throw new functions.https.HttpsError('internal', 'Failed to assign admin role');
     });
 });
 
@@ -448,6 +469,196 @@ exports.getApplicationReviews = onCall(async (request) => {
     } catch (error) {
         functions.logger.error("Error getting application reviews:", error);
         throw new functions.https.HttpsError('internal', 'Failed to get application reviews');
+    }
+});
+
+// Update Application Review Status (Admin only)
+exports.updateApplicationReviewStatus = onCall(async (request) => {
+    try {
+        const { data, auth } = request;
+
+        // 1. Authentication Check
+        if (!auth) {
+            throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+        }
+
+        const userRole = auth.token.role;
+
+        // 2. Validate user role - only admins can update application status
+        if (userRole !== 'admin') {
+            throw new functions.https.HttpsError('permission-denied', 'Only admins can update application review status');
+        }
+
+        // 3. Validate required data
+        const { applicationId } = data;
+        if (!applicationId) {
+            throw new functions.https.HttpsError('invalid-argument', 'Application ID is required');
+        }
+
+        // 4. Get reviews for the application
+        const reviewsRef = admin.firestore().collection('reviews').doc(applicationId).collection('reviewers');
+        const reviewsSnapshot = await reviewsRef.get();
+
+        const reviews = [];
+        reviewsSnapshot.forEach((doc) => {
+            const reviewData = doc.data();
+            reviews.push({
+                id: doc.id,
+                ...reviewData
+            });
+        });
+
+        const primaryReview = reviews.find(r => r.reviewerType === 'primary');
+        const secondaryReview = reviews.find(r => r.reviewerType === 'secondary');
+
+        // 5. Update application status based on review completion
+        const applicationRef = admin.firestore().collection('applications').doc(applicationId);
+
+        if (primaryReview?.status === 'completed' && secondaryReview?.status === 'completed') {
+            // Both reviews completed - calculate average score
+            const primaryScore = primaryReview.score || 0;
+            const secondaryScore = secondaryReview.score || 0;
+            const averageScore = (primaryScore + secondaryScore) / 2;
+
+            await applicationRef.update({
+                reviewStatus: 'completed',
+                averageScore: averageScore,
+                primaryScore: primaryScore,
+                secondaryScore: secondaryScore,
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            return {
+                success: true,
+                message: 'Application review status updated to completed',
+                averageScore: averageScore
+            };
+        } else if (primaryReview || secondaryReview) {
+            // At least one reviewer assigned but not both completed
+            await applicationRef.update({
+                reviewStatus: 'in-progress',
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            return {
+                success: true,
+                message: 'Application review status updated to in-progress'
+            };
+        } else {
+            // No reviewers assigned
+            await applicationRef.update({
+                reviewStatus: 'not-started',
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            return {
+                success: true,
+                message: 'Application review status updated to not-started'
+            };
+        }
+
+    } catch (error) {
+        functions.logger.error("Error updating application review status:", error);
+        throw new functions.https.HttpsError('internal', 'Failed to update application review status');
+    }
+});
+
+// Trigger Application Review Status Update (Reviewer only)
+exports.triggerApplicationStatusUpdate = onCall(async (request) => {
+    try {
+        const { data, auth } = request;
+
+        // 1. Authentication Check
+        if (!auth) {
+            throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+        }
+
+        const userRole = auth.token.role;
+
+        // 2. Validate user role - only reviewers can trigger status updates
+        if (userRole !== 'reviewer') {
+            throw new functions.https.HttpsError('permission-denied', 'Only reviewers can trigger application status updates');
+        }
+
+        // 3. Validate required data
+        const { applicationId } = data;
+        if (!applicationId) {
+            throw new functions.https.HttpsError('invalid-argument', 'Application ID is required');
+        }
+
+        // 4. Verify the reviewer has a review for this application
+        const reviewsRef = admin.firestore().collection('reviews').doc(applicationId).collection('reviewers');
+        const reviewerReviewsQuery = reviewsRef.where('reviewerId', '==', auth.uid);
+        const reviewerReviewsSnapshot = await reviewerReviewsQuery.get();
+
+        if (reviewerReviewsSnapshot.empty) {
+            throw new functions.https.HttpsError('permission-denied', 'You do not have a review assignment for this application');
+        }
+
+        // 5. Get all reviews for the application
+        const allReviewsSnapshot = await reviewsRef.get();
+
+        const reviews = [];
+        allReviewsSnapshot.forEach((doc) => {
+            const reviewData = doc.data();
+            reviews.push({
+                id: doc.id,
+                ...reviewData
+            });
+        });
+
+        const primaryReview = reviews.find(r => r.reviewerType === 'primary');
+        const secondaryReview = reviews.find(r => r.reviewerType === 'secondary');
+
+        // 6. Update application status based on review completion
+        const applicationRef = admin.firestore().collection('applications').doc(applicationId);
+
+        if (primaryReview?.status === 'completed' && secondaryReview?.status === 'completed') {
+            // Both reviews completed - calculate average score
+            const primaryScore = primaryReview.score || 0;
+            const secondaryScore = secondaryReview.score || 0;
+            const averageScore = (primaryScore + secondaryScore) / 2;
+
+            await applicationRef.update({
+                reviewStatus: 'completed',
+                averageScore: averageScore,
+                primaryScore: primaryScore,
+                secondaryScore: secondaryScore,
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            return {
+                success: true,
+                message: 'Application review status updated to completed',
+                averageScore: averageScore
+            };
+        } else if (primaryReview || secondaryReview) {
+            // At least one reviewer assigned but not both completed
+            await applicationRef.update({
+                reviewStatus: 'in-progress',
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            return {
+                success: true,
+                message: 'Application review status updated to in-progress'
+            };
+        } else {
+            // No reviewers assigned
+            await applicationRef.update({
+                reviewStatus: 'not-started',
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            return {
+                success: true,
+                message: 'Application review status updated to not-started'
+            };
+        }
+
+    } catch (error) {
+        functions.logger.error("Error triggering application review status update:", error);
+        throw new functions.https.HttpsError('internal', 'Failed to trigger application review status update');
     }
 });
 

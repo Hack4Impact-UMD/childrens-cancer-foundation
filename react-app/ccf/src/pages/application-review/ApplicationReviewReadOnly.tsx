@@ -6,7 +6,7 @@ import logo from "../../assets/ccf-logo.png";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../..";
 import { getSidebarbyRole } from "../../types/sidebar-types";
-import { getReviewsForApplication } from "../../services/review-service";
+import { getReviewsForApplicationAdmin } from "../../services/review-service";
 import Review, { ReviewSummary } from "../../types/review-types";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
@@ -86,7 +86,7 @@ function ApplicationReviewReadOnly(): JSX.Element {
                 setApplication(applicationData);
 
                 // Fetch review data using the new service
-                const reviews = await getReviewsForApplication(applicationId);
+                const reviews = await getReviewsForApplicationAdmin(applicationId);
                 setReviewSummary(reviews);
 
                 // Fetch reviewer information

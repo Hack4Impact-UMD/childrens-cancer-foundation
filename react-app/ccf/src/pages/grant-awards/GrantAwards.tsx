@@ -1,12 +1,12 @@
 import { useState, useEffect, ChangeEvent, useCallback, useMemo } from 'react';
 import "./GrantAwards.css";
-import { FaDownload, FaSortUp, FaSortDown, FaComments, FaTimes } from 'react-icons/fa';
+import { FaDownload, FaSortUp, FaSortDown, FaComments, FaTimes, FaSync } from 'react-icons/fa';
 import Sidebar from "../../components/sidebar/Sidebar";
 import logo from "../../assets/ccf-logo.png";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from '../..';
 import { getSidebarbyRole } from '../../types/sidebar-types';
-import { getReviewsForApplication } from '../../services/review-service';
+import { getReviewsForApplicationAdmin, checkAndUpdateApplicationStatus } from '../../services/review-service';
 import {
     getMultipleDecisionData,
     updateDecisionComments,
@@ -139,6 +139,25 @@ function GrantAwards(): JSX.Element {
 
     const sidebarItems = getSidebarbyRole("admin");
 
+    // Function to check and update application scores if needed
+    const checkAndUpdateScores = async (applicationsData: GrantAwardApplication[]) => {
+        const applicationsToUpdate = applicationsData.filter(app =>
+            !app.finalScoreAvailable && app.finalScore === 0
+        );
+
+        if (applicationsToUpdate.length > 0) {
+            console.log(`Checking ${applicationsToUpdate.length} applications for score updates...`);
+
+            for (const app of applicationsToUpdate) {
+                try {
+                    await checkAndUpdateApplicationStatus(app.id);
+                } catch (error) {
+                    console.warn(`Failed to update scores for application ${app.id}:`, error);
+                }
+            }
+        }
+    };
+
     const fetchApplications = useCallback(async () => {
         try {
             setLoading(true);
@@ -153,19 +172,9 @@ function GrantAwards(): JSX.Element {
                 const data: any = doc.data();
                 applicationIds.push(doc.id);
 
-                // Get final score from reviews collection
-                let finalScore = 0;
-                let finalScoreAvailable = false;
-                try {
-                    const reviewSummary = await getReviewsForApplication(doc.id);
-                    if (reviewSummary.primaryReview?.status === 'completed' &&
-                        reviewSummary.secondaryReview?.status === 'completed') {
-                        finalScore = ((reviewSummary.primaryReview.score || 0) + (reviewSummary.secondaryReview.score || 0)) / 2;
-                        finalScoreAvailable = true;
-                    }
-                } catch (error) {
-                    console.log(`No reviews found for application ${doc.id}`);
-                }
+                // Get final score from application document (stored when both reviews are completed)
+                let finalScore = data.averageScore || 0;
+                let finalScoreAvailable = data.reviewStatus === 'completed';
 
                 // Map Firestore data to GrantAwardApplication interface (without admin data)
                 const application: GrantAwardApplication = {
@@ -207,6 +216,9 @@ function GrantAwards(): JSX.Element {
 
             setApplications(finalApplicationsData);
             setLoading(false);
+
+            // Check and update scores for applications that might need it
+            await checkAndUpdateScores(finalApplicationsData);
         } catch (error) {
             console.error("Error fetching applications:", error);
             setLoading(false);
@@ -435,6 +447,26 @@ function GrantAwards(): JSX.Element {
         }
     };
 
+    const refreshScores = async () => {
+        try {
+            setLoading(true);
+            // Check and update scores for all applications
+            for (const app of applications) {
+                try {
+                    await checkAndUpdateApplicationStatus(app.id);
+                } catch (error) {
+                    console.warn(`Failed to update scores for application ${app.id}:`, error);
+                }
+            }
+            // Reload the applications data
+            await fetchApplications();
+        } catch (error) {
+            console.error("Error refreshing scores:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const normalizedQuery = searchQuery.trim().toLowerCase();
     const filteredApplications = applications.filter(app => {
         if (selectedCycle !== 'All' && app.applicationCycle !== selectedCycle) return false;
@@ -480,6 +512,16 @@ function GrantAwards(): JSX.Element {
                                     <span className="download-text">Download as CSV</span>
                                     <button className="download-btn" onClick={() => handleDownloadCSV(sortedApplications)} title="Download CSV" aria-label="Download applications as CSV">
                                         <FaDownload />
+                                    </button>
+                                    <span className="refresh-text">Refresh Scores</span>
+                                    <button
+                                        className="refresh-btn"
+                                        onClick={refreshScores}
+                                        disabled={loading}
+                                        title="Refresh application scores"
+                                        aria-label="Refresh application scores"
+                                    >
+                                        <FaSync className={loading ? 'spinning' : ''} />
                                     </button>
                                 </div>
                             </div>

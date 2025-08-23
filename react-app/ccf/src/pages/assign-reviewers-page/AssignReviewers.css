@@ -439,3 +439,38 @@
   font-weight: bold;
   font-size: 14px;
 }
+
+.ar-average-score {
+  text-align: center;
+  padding: 10px;
+  background-color: #cce5ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 8px;
+  color: #004085;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.ar-refresh-status-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffc107;
+  color: #212529;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 12px;
+}
+
+.ar-refresh-status-btn:hover {
+  background-color: #e0a800;
+}
+
+.ar-refresh-status-btn:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}

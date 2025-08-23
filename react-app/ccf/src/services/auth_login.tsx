@@ -1,7 +1,7 @@
 import { signInWithEmailAndPassword, AuthErrorCodes } from "firebase/auth";
 import { auth, db } from "../index"
 import { getDoc, doc } from "firebase/firestore";
-import {UserData} from "../types/usertypes"
+import { UserData } from "../types/usertypes"
 
 export const loginUser = async (email: string, password: string) => {
   try {
@@ -63,8 +63,10 @@ export const getCurrentUserData = async (): Promise<UserData | null> => {
       throw new Error('User role not found');
     }
 
-    const userDoc = await getDoc(doc(db, `${role}s`, user.uid));
-    
+    // Use the standard collection naming pattern
+    const collectionName = `${role}s`;
+    const userDoc = await getDoc(doc(db, collectionName, user.uid));
+
     if (userDoc.exists()) {
       return userDoc.data() as UserData;
     }

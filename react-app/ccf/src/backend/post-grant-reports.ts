@@ -53,3 +53,20 @@ export const getReportsByUser = async (userId: string): Promise<PostGrantReport[
         return []
     }
 }
+
+export const getAllPostGrantReports = async (): Promise<PostGrantReport[]> => {
+    try {
+        const querySnapshot = await getDocs(collection(db, "post-grant-reports"))
+        const reports: PostGrantReport[] = []
+        querySnapshot.docs.forEach((doc) => {
+            reports.push({
+                ...doc.data(),
+                id: doc.id
+            } as PostGrantReport)
+        })
+        return reports
+    } catch (error) {
+        console.error("Error getting all post-grant reports:", error)
+        return []
+    }
+}

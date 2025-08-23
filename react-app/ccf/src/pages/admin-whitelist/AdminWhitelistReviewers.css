@@ -1,0 +1,294 @@
+.dashboard-container {
+    padding: 20px;
+    margin-left: 250px;
+    background-color: #f5f5f5;
+}
+
+.ApplicantDashboard-header-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.ApplicantDashboard-logo {
+    width: 100px;
+    height: 100px;
+    margin-right: 15px;
+}
+
+.ApplicantDashboard-header {
+    color: #c41230;
+    font-size: 60px;
+    margin: 0;
+}
+
+.search-filter-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    gap: 10px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #D9D9D9;
+    border-radius: 4px;
+    padding: 5px 10px;
+    width: 100%;
+    border-radius: 10px;
+}
+
+.search-icon {
+    color: #888;
+    margin-right: 8px;
+}
+
+.search-bar input {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 5px;
+    background-color: transparent;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #D9D9D9;
+    min-width: 150px;
+    margin-right: 20px;
+}
+
+.add-button {
+    background-color: #003E83;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 400;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.3s;
+}
+
+.add-button:hover {
+    background-color: #002a5c;
+}
+
+.whitelist-table-container {
+    background-color: #fff;
+    border: 2px solid #c41230;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.whitelist-header {
+    background-color: #f9f9f9;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.whitelist-header h2 {
+    margin: 0;
+    color: #c41230;
+    font-size: 24px;
+}
+
+.whitelist-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.whitelist-table th,
+.whitelist-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.whitelist-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: #333;
+}
+
+.whitelist-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+}
+
+.no-entries {
+    padding: 40px;
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+    font-style: italic;
+}
+
+/* Add Form Styles */
+.add-form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.add-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.add-form h3 {
+    margin: 0 0 20px 0;
+    color: #c41230;
+    font-size: 24px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #003E83;
+    box-shadow: 0 0 0 2px rgba(0, 62, 131, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.submit-button {
+    background-color: #003E83;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background-color: #002a5c;
+}
+
+.cancel-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.cancel-button:hover {
+    background-color: #5a6268;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    .ApplicantDashboard-header {
+        font-size: 40px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter select {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .whitelist-table {
+        font-size: 14px;
+    }
+
+    .whitelist-table th,
+    .whitelist-table td {
+        padding: 8px 10px;
+    }
+}

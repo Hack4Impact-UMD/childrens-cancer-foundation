@@ -1,12 +1,12 @@
 import { db, auth, functions } from '../index';
 import { collection, doc, setDoc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { UserData } from '../types/usertypes';
-import { createUserWithEmailAndPassword, deleteUser} from 'firebase/auth';
+import { createUserWithEmailAndPassword, deleteUser } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 
 // Function to add a new applicant user
 export const addApplicantUser = async (userData: UserData, password: string): Promise<void> => {
-  var user : any = null
+  var user: any = null
   const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password).catch((e) => {
     console.log("User could not be created: " + e);
     throw e;
@@ -39,7 +39,7 @@ export const addApplicantUser = async (userData: UserData, password: string): Pr
 
 // Function to add a new reviewer user
 export const addReviewerUser = async (userData: UserData, password: string): Promise<void> => {
-  var user : any = null
+  var user: any = null
   const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password).catch((e) => {
     console.log("User could not be created: " + e);
     throw e;
@@ -47,26 +47,23 @@ export const addReviewerUser = async (userData: UserData, password: string): Pro
   try {
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
     const user = userCredential.user;
-    await setDoc(doc(db, "reviewers", user.uid), {
+
+    // Pass user data to the Firebase function which will handle the database write
+    const result = await addReviewerRole({
+      email: userData.email,
+      userId: user.uid,
       firstName: userData.firstName,
       lastName: userData.lastName,
       title: userData.title,
-      email: userData.email,
       affiliation: userData.affiliation
     });
-    await addReviewerRole({ email: userData.email })
-      .then((result) => {
-        console.log(result.data); // Success message from the function
-      })
-      .catch((error) => {
-        throw error
-      });
+    console.log(result.data); // Success message from the function
   } catch (e) {
     if (user !== null) {
       await deleteUser(user);
-      await deleteDoc(doc(db, "reviewers", user.uid));
     }
     console.error(e);
+    throw e; // Re-throw the error so the calling function can handle it
   }
 };
 
@@ -127,8 +124,8 @@ export const getReviewerUser = async (userId: string): Promise<UserData | null> 
 // Function to assign a reviewer to an application
 export const assignApplicationToReviewer = async (userId: string, applicationId: string): Promise<void> => {
   try {
-    const reviewerRef = doc(collection(db, 'reviewerUsers'), userId);
-    
+    const reviewerRef = doc(collection(db, 'reviewers'), userId);
+
     //snapshot
     const reviewerSnap = await getDoc(reviewerRef);
 

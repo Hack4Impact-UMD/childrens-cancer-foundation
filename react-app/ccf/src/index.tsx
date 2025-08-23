@@ -22,13 +22,13 @@ const cong = initializeApp(firebaseConfig);
 
 
 // firestore database connection
-const db = getFirestore();
+const db = getFirestore(cong);
 // // cloud storage connection
-const storage = getStorage();
+const storage = getStorage(cong);
 // auth connection
-const auth = getAuth();
+const auth = getAuth(cong);
 // functions connection
-const functions = getFunctions();
+const functions = getFunctions(cong);
 
 
 //flag for local testing

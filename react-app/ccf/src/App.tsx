@@ -39,6 +39,8 @@ import AllApplications from './pages/reviewer-all-applications/AllApplications'
 import ApplicationReview from "./pages/application-review/ApplicationReview";
 import ApplicationReviewReadOnly from "./pages/application-review/ApplicationReviewReadOnly";
 import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
+import AdminWhitelistReviewers from "./pages/admin-whitelist/AdminWhitelistReviewers";
+import AdminPostGrantReports from "./pages/admin-post-grant-reports/AdminPostGrantReports";
 
 // import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
 
@@ -109,14 +111,6 @@ function App(): JSX.Element {
         />
 
         <Route
-          path="*"
-          element={
-            <ErrorPage type="404" />
-          }
-        />
-
-
-        <Route
           path="/protected-page"
           element={
             <ErrorPage type="401" />
@@ -128,16 +122,10 @@ function App(): JSX.Element {
           path="/admin"
           element={<AdminProtectedRoute element={<AdminApplicationsDatabase></AdminApplicationsDatabase>} />}
         />
-        Need to change path to create-account after authentication
+        {/* Need to change path to create-account after authentication */}
         <Route
           path="/admin-database"
           element={<AdminProtectedRoute element={<AdminApplicationsDatabase />} />}
-        />
-        <Route
-          path="/applicant/dashboard"
-          element={
-            <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
-          }
         />
         {/* Admin View All Accounts Page*/}
         <Route
@@ -153,7 +141,7 @@ function App(): JSX.Element {
             <AdminProtectedRoute element={<AdminApplicationsDatabase />} />
           }
         />
-        Admin Edit Information Page
+        {/* Admin Edit Information Page */}
         <Route
           path="/admin/edit-information"
           element={
@@ -193,7 +181,7 @@ function App(): JSX.Element {
         />
         {/* Admin dashboard */}
         <Route path="/admin" element={<></>} />
-        Need to change path to create-account after authentication
+        {/* Need to change path to create-account after authentication */}
         <Route
           path="/create-account-reviewers"
           element={<AccountPageReviewers />}
@@ -210,6 +198,15 @@ function App(): JSX.Element {
           path={"/admin/assign-reviewers"}
           element={<AssignReviewers />}
         />
+        <Route
+          path={"/admin/whitelist-reviewers"}
+          element={<AdminProtectedRoute element={<AdminWhitelistReviewers />} />}
+        />
+
+        <Route
+          path={"/admin/post-grant-reports"}
+          element={<AdminProtectedRoute element={<AdminPostGrantReports />} />}
+        />
 
         <Route
           path="/reviewer/settings"
@@ -221,12 +218,20 @@ function App(): JSX.Element {
         />
 
         <Route path="/reviewer-dashboard" element={
-          <ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>
+          <ReviewerProtectedRoute element={<ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>} />
         }>
         </Route>
         <Route
           path="/admin/grant-awards"
           element={<AdminProtectedRoute element={<GrantAwards />} />}
+        />
+
+        {/* Catch-all route for 404 errors - must be last */}
+        <Route
+          path="*"
+          element={
+            <ErrorPage type="404" />
+          }
         />
       </Routes>
 

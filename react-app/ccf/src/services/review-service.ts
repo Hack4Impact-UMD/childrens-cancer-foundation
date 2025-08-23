@@ -58,6 +58,8 @@ export const updateReview = async (applicationId: string, reviewId: string, upda
             ...updates,
             lastUpdated: serverTimestamp()
         });
+
+        // Note: Application status updates will be handled separately to avoid permission issues
     } catch (error) {
         console.error("Error updating review:", error);
         throw error;
@@ -75,8 +77,44 @@ export const submitReview = async (applicationId: string, reviewId: string, scor
             submittedDate: serverTimestamp(),
             lastUpdated: serverTimestamp()
         });
+
+        // Automatically trigger application status update when review is submitted
+        try {
+            await triggerApplicationStatusUpdate(applicationId);
+        } catch (statusError) {
+            console.warn("Failed to trigger application status update:", statusError);
+            // Don't throw error here as the review submission was successful
+        }
     } catch (error) {
         console.error("Error submitting review:", error);
+        throw error;
+    }
+};
+
+// Check if both reviews are completed and update application status (Admin only)
+export const checkAndUpdateApplicationStatus = async (applicationId: string): Promise<void> => {
+    try {
+        const functions = getFunctions();
+        const updateApplicationReviewStatus = httpsCallable(functions, 'updateApplicationReviewStatus');
+
+        const result = await updateApplicationReviewStatus({ applicationId });
+        console.log('Application review status updated:', result.data);
+    } catch (error) {
+        console.error("Error checking application review status:", error);
+        throw error;
+    }
+};
+
+// Trigger application status update (Reviewer only)
+export const triggerApplicationStatusUpdate = async (applicationId: string): Promise<void> => {
+    try {
+        const functions = getFunctions();
+        const triggerApplicationStatusUpdate = httpsCallable(functions, 'triggerApplicationStatusUpdate');
+
+        const result = await triggerApplicationStatusUpdate({ applicationId });
+        console.log('Application review status triggered:', result.data);
+    } catch (error) {
+        console.error("Error triggering application review status update:", error);
         throw error;
     }
 };
@@ -95,16 +133,47 @@ export const getReviewById = async (applicationId: string, reviewId: string): Pr
     }
 };
 
-// Get reviews for a specific application
+// Get reviews for a specific application (for applicants - uses Firebase function)
 export const getReviewsForApplication = async (applicationId: string): Promise<ReviewSummary> => {
     try {
         const functions = getFunctions();
         const getApplicationReviews = httpsCallable(functions, 'getApplicationReviews');
-        
+
         const result = await getApplicationReviews({ applicationId });
         return result.data as ReviewSummary;
     } catch (error) {
         console.error("Error getting reviews for application:", error);
+        throw error;
+    }
+};
+
+// Get reviews for a specific application (for admins - direct Firestore query)
+export const getReviewsForApplicationAdmin = async (applicationId: string): Promise<ReviewSummary> => {
+    try {
+        const reviewersRef = collection(db, "reviews", applicationId, "reviewers");
+        const reviewsSnapshot = await getDocs(reviewersRef);
+
+        const reviews: Review[] = [];
+        reviewsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            reviews.push({
+                id: doc.id,
+                ...data,
+                lastUpdated: data.lastUpdated ? (data.lastUpdated as Timestamp).toDate() : undefined,
+                submittedDate: data.submittedDate ? (data.submittedDate as Timestamp).toDate() : undefined,
+            } as Review);
+        });
+
+        const primaryReview = reviews.find(r => r.reviewerType === 'primary');
+        const secondaryReview = reviews.find(r => r.reviewerType === 'secondary');
+
+        return {
+            applicationId,
+            primaryReview,
+            secondaryReview
+        };
+    } catch (error) {
+        console.error("Error getting reviews for application (admin):", error);
         throw error;
     }
 };
@@ -125,12 +194,12 @@ export const getReviewsForReviewer = async (reviewerId: string): Promise<Review[
             reviewsSnapshot.forEach((reviewDoc) => {
                 const data = reviewDoc.data()
                 allReviews.push(
-                    { 
-                    id: reviewDoc.id, 
-                    ...data, 
-                    lastUpdated: data.lastUpdated ? (data.lastUpdated as Timestamp).toDate() : undefined,
-                    submittedDate: data.submittedDate ? (data.submittedDate as Timestamp).toDate(): undefined,
-                } as Review);
+                    {
+                        id: reviewDoc.id,
+                        ...data,
+                        lastUpdated: data.lastUpdated ? (data.lastUpdated as Timestamp).toDate() : undefined,
+                        submittedDate: data.submittedDate ? (data.submittedDate as Timestamp).toDate() : undefined,
+                    } as Review);
             });
         }
 
@@ -206,6 +275,13 @@ export const assignReviewersToApplication = async (
                 summary: '',
                 internal: ''
             }
+        });
+
+        // Update application status to indicate reviews are in progress
+        const applicationRef = doc(db, "applications", applicationId);
+        await updateDoc(applicationRef, {
+            reviewStatus: 'in-progress',
+            lastUpdated: serverTimestamp()
         });
     } catch (error) {
         console.error("Error assigning reviewers:", error);

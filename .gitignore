@@ -1,7 +1,87 @@
-
+# Firebase configuration files
 react-app/ccf/src/firebase_config/FireConfig.ts
+serviceAccountKey.json
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# IDE files
 /.idea
 /react-app/.idea
-*.log
+.vscode/
+*.swp
+*.swo
+*~
 
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Environment variables
 *.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+node_modules/
+*/node_modules/
+react-app/ccf/node_modules/
+functions/node_modules/
+
+# Build outputs
+/build/
+/dist/
+react-app/ccf/build/
+react-app/ccf/dist/
+functions/lib/
+functions/dist/
+
+# Coverage reports
+/coverage/
+*.lcov
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Firebase local files
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# TypeScript
+*.tsbuildinfo
+
+# Package manager files
+yarn.lock
+pnpm-lock.yaml
+
+# Backup files
+backup-*/
+*.backup
+*.bak
+
+# Test files
+test-reset.js
+create-test-accounts.js
+create-collections-cli.js
+create-empty-collections.js
+recreate-collections.js
+reset-firebase-admin.js
+reset-firebase.js

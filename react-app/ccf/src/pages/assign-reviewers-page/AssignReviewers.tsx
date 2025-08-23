@@ -10,8 +10,9 @@ import { useNavigate } from 'react-router-dom';
 import { getSidebarbyRole } from '../../types/sidebar-types';
 import {
   assignReviewersToApplication,
-  getReviewsForApplication,
-  findReviewForReviewerAndApplication
+  getReviewsForApplicationAdmin,
+  findReviewForReviewerAndApplication,
+  checkAndUpdateApplicationStatus
 } from '../../services/review-service';
 import { GrantApplication, Reviewer } from '../../types/application-types';
 
@@ -27,6 +28,9 @@ interface ExtendedGrantApplication extends GrantApplication {
   secondaryReviewerId?: string;
   primaryReviewStatus?: string;
   secondaryReviewStatus?: string;
+  primaryScore?: number;
+  secondaryScore?: number;
+  averageScore?: number;
   submittedDate?: string;
   expanded: boolean;
 }
@@ -153,7 +157,7 @@ const AssignReviewersPage: React.FC = () => {
           let status: 'not-started' | 'in-progress' | 'completed' = 'not-started';
 
           try {
-            const reviewSummary = await getReviewsForApplication(doc.id);
+            const reviewSummary = await getReviewsForApplicationAdmin(doc.id);
 
             if (reviewSummary.primaryReview) {
               primaryReviewerId = reviewSummary.primaryReview.reviewerId;
@@ -186,6 +190,9 @@ const AssignReviewersPage: React.FC = () => {
             secondaryReviewerId,
             primaryReviewStatus,
             secondaryReviewStatus,
+            primaryScore: data.primaryScore,
+            secondaryScore: data.secondaryScore,
+            averageScore: data.averageScore,
             status,
             submittedDate: data.submittedDate || '',
             expanded: false
@@ -426,6 +433,23 @@ const AssignReviewersPage: React.FC = () => {
     navigate(`/reviewer/review-application?id=${applicationId}`);
   };
 
+  const refreshApplicationStatus = async (applicationId: string) => {
+    try {
+      setLoading(true);
+      await checkAndUpdateApplicationStatus(applicationId);
+
+      // Reload the page to refresh data
+      window.location.reload();
+
+      setError(null);
+    } catch (err) {
+      console.error('Error refreshing application status:', err);
+      setError('Failed to refresh application status. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Function to get reviewer name from ID
   const getReviewerName = (reviewerId?: string) => {
     if (!reviewerId) return '';
@@ -539,6 +563,13 @@ const AssignReviewersPage: React.FC = () => {
             </div>
 
             <div className="ar-action-buttons">
+              {/* Show average score if both reviews are completed */}
+              {app.status === 'completed' && app.averageScore && (
+                <div className="ar-average-score">
+                  Average Score: {app.averageScore.toFixed(1)}
+                </div>
+              )}
+
               {/* View Reviews button - show if at least one review is completed */}
               {hasCompletedReview(app) && (
                 <button
@@ -546,6 +577,17 @@ const AssignReviewersPage: React.FC = () => {
                   onClick={() => viewReview(app.document_id)}
                 >
                   <FaEye className="ar-eye-icon" /> View Reviews
+                </button>
+              )}
+
+              {/* Refresh Status button - show if reviewers are assigned but status might be stale */}
+              {(app.primaryReviewerId || app.secondaryReviewerId) && (
+                <button
+                  className="ar-refresh-status-btn"
+                  onClick={() => refreshApplicationStatus(app.document_id)}
+                  disabled={loading}
+                >
+                  {loading ? 'Refreshing...' : 'Refresh Status'}
                 </button>
               )}
 
