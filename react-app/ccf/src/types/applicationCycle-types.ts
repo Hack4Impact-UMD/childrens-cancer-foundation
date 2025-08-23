@@ -1,12 +1,14 @@
 export default interface ApplicationCycle {
-    current: boolean;
-    endDate: Date;
+    id: string;
     name: string;
-    allApplicationsDeadline: Date;
+    current: boolean;
+    stage: 'Applications Open' | 'Applications Closed' | 'Review' | 'Grading' | 'Final Decisions';
+    researchDeadline: Date;
     nextGenDeadline: Date;
     nonResearchDeadline: Date;
-    researchDeadline: Date;
+    allApplicationsDeadline: Date;
     reviewerDeadline: Date;
     startDate: Date;
-    stage: "Applications Open" | "Reviewing Applications" | "Reviews Closed" | "Final Decisions"
+    endDate: Date;
+    postGrantReportDeadline?: Date;
 }

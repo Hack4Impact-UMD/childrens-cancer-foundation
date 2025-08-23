@@ -18,6 +18,7 @@ import ReviewerProtectedRoute from './components/Routing/ReviewerProtectedRoute'
 import CreateAccMenu from './pages/create-acc-menu/CreateAccMenu';
 import ErrorPage from './pages/error/error';
 import PostGrantReport from './post-grant-report/post-grant-report';
+import PostGrantReportPage from './pages/post-grant-report/PostGrantReportPage';
 import DefaultRoute from './components/Routing/DefaultRoute'
 import ReviewerDashboard from "./pages/reviewer-dashboard/ReviewerDashboard";
 import faq_data from "./StaticData/FAQ-REVIEWER";
@@ -170,6 +171,12 @@ function App(): JSX.Element {
           path="/applicant/post-grant-report"
           element={
             <ApplicantProtectedRoute element={<PostGrantReport />} />
+          }
+        />
+        <Route
+          path="/applicant/post-grant-report/:applicationId"
+          element={
+            <ApplicantProtectedRoute element={<PostGrantReportPage />} />
           }
         />
         <Route

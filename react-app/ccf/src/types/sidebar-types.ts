@@ -51,6 +51,9 @@ export const getApplicantSidebarItems = async (): Promise<SideBarTypes[]> => {
     try {
         // Import here to avoid circular dependency
         const { getCurrentCycle } = await import('../backend/application-cycle');
+        const { getUsersCurrentCycleAppplications } = await import('../backend/application-filters');
+        const { getDecisionData } = await import('../services/decision-data-service');
+
         const currentCycle = await getCurrentCycle();
 
         const baseSidebar: SideBarTypes[] = [
@@ -62,6 +65,8 @@ export const getApplicantSidebarItems = async (): Promise<SideBarTypes[]> => {
         if (currentCycle.stage === "Final Decisions") {
             baseSidebar.splice(1, 0, { name: 'Decisions', path: '/applicant/decisions' });
         }
+
+        // Post-grant reports are now shown in the main dashboard instead of sidebar
 
         baseSidebar.push({ name: 'Logout', path: '/login' });
 
