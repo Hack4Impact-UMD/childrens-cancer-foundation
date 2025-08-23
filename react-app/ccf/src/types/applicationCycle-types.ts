@@ -2,6 +2,7 @@ export default interface ApplicationCycle {
     current: boolean;
     endDate: Date;
     name: string;
+    allApplicationsDeadline: Date;
     nextGenDeadline: Date;
     nonResearchDeadline: Date;
     researchDeadline: Date;

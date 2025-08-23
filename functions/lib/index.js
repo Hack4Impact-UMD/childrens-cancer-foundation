@@ -8,7 +8,7 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReviewers = exports.submitApplication = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
+exports.getApplicationReviews = exports.getReviewers = exports.submitApplication = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
 const functions = require("firebase-functions");
 const { onRequest, onCall } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
@@ -236,21 +236,28 @@ function validateApplicationData(application, grantType) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (grantType === 'research' || grantType === 'nextgen') {
-        // Research/NextGen specific validation
+        // Research/NextGen specific validation - only require fields marked with * on the form
         if (!application.principalInvestigator || typeof application.principalInvestigator !== 'string' || application.principalInvestigator.trim() === '') {
             errors.push('Principal Investigator is required');
+        }
+
+        // Department and Department Head are starred in the form
+        if (!application.department || typeof application.department !== 'string' || application.department.trim() === '') {
+            errors.push('Department is required');
+        }
+        if (!application.departmentHead || typeof application.departmentHead !== 'string' || application.departmentHead.trim() === '') {
+            errors.push('Department Head is required');
         }
 
         if (!application.typesOfCancerAddressed || typeof application.typesOfCancerAddressed !== 'string' || application.typesOfCancerAddressed.trim() === '') {
             errors.push('Types of Cancer Addressed is required');
         }
 
-        if (!application.namesOfStaff || typeof application.namesOfStaff !== 'string' || application.namesOfStaff.trim() === '') {
-            errors.push('Names of Staff is required');
-        }
-
         if (!application.institutionAddress || typeof application.institutionAddress !== 'string' || application.institutionAddress.trim() === '') {
             errors.push('Institution Address is required');
+        }
+        if (!application.institutionCityStateZip || typeof application.institutionCityStateZip !== 'string' || application.institutionCityStateZip.trim() === '') {
+            errors.push('Institution City/State/Zip is required');
         }
 
         if (!application.institutionPhoneNumber || typeof application.institutionPhoneNumber !== 'string' || application.institutionPhoneNumber.trim() === '') {
@@ -263,6 +270,12 @@ function validateApplicationData(application, grantType) {
 
         if (!application.adminOfficialName || typeof application.adminOfficialName !== 'string' || application.adminOfficialName.trim() === '') {
             errors.push('Admin Official Name is required');
+        }
+        if (!application.adminOfficialAddress || typeof application.adminOfficialAddress !== 'string' || application.adminOfficialAddress.trim() === '') {
+            errors.push('Admin Official Address is required');
+        }
+        if (!application.adminOfficialCityStateZip || typeof application.adminOfficialCityStateZip !== 'string' || application.adminOfficialCityStateZip.trim() === '') {
+            errors.push('Admin City/State/Zip is required');
         }
 
         if (!application.adminPhoneNumber || typeof application.adminPhoneNumber !== 'string' || application.adminPhoneNumber.trim() === '') {
@@ -278,7 +291,7 @@ function validateApplicationData(application, grantType) {
         }
 
         if (!application.creditAgreement || typeof application.creditAgreement !== 'string' || application.creditAgreement.trim() === '') {
-            errors.push('Credit Agreement is    ');
+            errors.push('Credit Agreement is required');
         }
 
         if (!application.patentApplied || typeof application.patentApplied !== 'string' || application.patentApplied.trim() === '') {
@@ -293,9 +306,18 @@ function validateApplicationData(application, grantType) {
             errors.push('Dates are required');
         }
 
-        if (!application.continuation || typeof application.continuation !== 'string' || application.continuation.trim() === '') {
-            errors.push('Continuation information is required');
+        if (!application.einNumber || typeof application.einNumber !== 'string' || application.einNumber.trim() === '') {
+            errors.push('EIN Number is required');
         }
+
+        if (!application.signaturePI || typeof application.signaturePI !== 'string' || application.signaturePI.trim() === '') {
+            errors.push('Signature of Principal Investigator is required');
+        }
+        if (!application.signatureDeptHead || typeof application.signatureDeptHead !== 'string' || application.signatureDeptHead.trim() === '') {
+            errors.push('Signature of Department Head is required');
+        }
+
+        // Note: Non-starred fields like otherStaff, coPI, continuation, continuationYears, and attestations are optional
 
     } else if (grantType === 'nonresearch') {
         // Non-research specific validation
@@ -350,6 +372,82 @@ exports.getReviewers = onRequest(async (req, res) => {
     } catch (error) {
         functions.logger.error("Error retrieving reviewers:", error);
         res.status(500).send("Failed to retrieve reviewers");
+    }
+});
+
+// Get Application Reviews for Applicants
+exports.getApplicationReviews = onCall(async (request) => {
+    try {
+        const { data, auth } = request;
+
+        // 1. Authentication Check
+        if (!auth) {
+            throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to get reviews');
+        }
+
+        const userId = auth.uid;
+        const userRole = auth.token.role;
+
+        // 2. Validate user role - only applicants can get their own reviews
+        if (userRole !== 'applicant') {
+            throw new functions.https.HttpsError('permission-denied', 'Only applicants can get their own reviews');
+        }
+
+        // 3. Validate required data
+        const { applicationId } = data;
+        if (!applicationId) {
+            throw new functions.https.HttpsError('invalid-argument', 'Application ID is required');
+        }
+
+        // 4. Verify the application belongs to the requesting user
+        const applicationRef = admin.firestore().collection('applications').doc(applicationId);
+        const applicationDoc = await applicationRef.get();
+
+        if (!applicationDoc.exists) {
+            throw new functions.https.HttpsError('not-found', 'Application not found');
+        }
+
+        const applicationData = applicationDoc.data();
+        if (applicationData.creatorId !== userId) {
+            throw new functions.https.HttpsError('permission-denied', 'You can only access reviews for your own applications');
+        }
+
+        // 5. Get reviews for the application
+        const reviewsRef = admin.firestore().collection('reviews').doc(applicationId).collection('reviewers');
+        const reviewsSnapshot = await reviewsRef.get();
+
+        const reviews = [];
+        reviewsSnapshot.forEach((doc) => {
+            const reviewData = doc.data();
+            // Only return non-internal feedback to applicants
+            const publicReview = {
+                id: doc.id,
+                reviewerType: reviewData.reviewerType,
+                status: reviewData.status,
+                feedback: {
+                    significance: reviewData.feedback?.significance || '',
+                    approach: reviewData.feedback?.approach || '',
+                    feasibility: reviewData.feedback?.feasibility || '',
+                    investigator: reviewData.feedback?.investigator || '',
+                    summary: reviewData.feedback?.summary || ''
+                    // Note: internal feedback is excluded for applicants
+                }
+            };
+            reviews.push(publicReview);
+        });
+
+        const primaryReview = reviews.find(r => r.reviewerType === 'primary');
+        const secondaryReview = reviews.find(r => r.reviewerType === 'secondary');
+
+        return {
+            applicationId,
+            primaryReview,
+            secondaryReview
+        };
+
+    } catch (error) {
+        functions.logger.error("Error getting application reviews:", error);
+        throw new functions.https.HttpsError('internal', 'Failed to get application reviews');
     }
 });
 

@@ -13,25 +13,14 @@ import {
     updateFundingDecision,
     getDecisionData
 } from '../../services/decision-data-service';
+import { GrantAwardApplication } from '../../types/application-types';
 
 type SortField = 'name' | 'programType' | 'institution' | 'finalScore' | 'requested' | 'recommended';
 type SortDirection = 'asc' | 'desc';
 
-interface Application {
-    id: string;
-    name: string;
-    programType: string;
-    institution: string;
-    finalScore: number;
-    requested: string;
-    recommended: string;
-    comments: string;
-    isAccepted: boolean;
-}
-
 interface CommentModalProps {
     isOpen: boolean;
-    application: Application | null;
+    application: GrantAwardApplication | null;
     onClose: () => void;
     onSave: (id: string, comments: string) => void;
 }
@@ -83,7 +72,7 @@ function CommentModal({ isOpen, application, onClose, onSave }: CommentModalProp
 }
 
 function GrantAwards(): JSX.Element {
-    const [applications, setApplications] = useState<Application[]>([]);
+    const [applications, setApplications] = useState<GrantAwardApplication[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [sortConfig, setSortConfig] = useState<{
         field: SortField;
@@ -94,7 +83,7 @@ function GrantAwards(): JSX.Element {
     });
     const [commentModal, setCommentModal] = useState({
         isOpen: false,
-        application: null as Application | null
+        application: null as GrantAwardApplication | null
     });
     const [savingChanges, setSavingChanges] = useState<{ [key: string]: boolean }>({});
 
@@ -110,7 +99,7 @@ function GrantAwards(): JSX.Element {
             const applicationsRef = collection(db, "applications");
             const querySnapshot = await getDocs(applicationsRef);
 
-            const applicationsData: Application[] = [];
+            const applicationsData: GrantAwardApplication[] = [];
             const applicationIds: string[] = [];
 
             // First, collect all application data and IDs
@@ -130,8 +119,8 @@ function GrantAwards(): JSX.Element {
                     console.log(`No reviews found for application ${doc.id}`);
                 }
 
-                // Map Firestore data to Application interface (without admin data)
-                const application: Application = {
+                // Map Firestore data to GrantAwardApplication interface (without admin data)
+                const application: GrantAwardApplication = {
                     id: doc.id,
                     name: data.principalInvestigator || "Unknown",
                     programType: data.grantType || "Unknown",
@@ -243,7 +232,7 @@ function GrantAwards(): JSX.Element {
         }
     };
 
-    const openCommentModal = (app: Application) => {
+    const openCommentModal = (app: GrantAwardApplication) => {
         setCommentModal({
             isOpen: true,
             application: app

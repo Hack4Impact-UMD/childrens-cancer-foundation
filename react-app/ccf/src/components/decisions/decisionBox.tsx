@@ -1,8 +1,9 @@
 import { Decision } from "../../types/decision-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
 import { useEffect, useState } from "react";
-import Confetti from "react-confetti";
+// import Confetti from "react-confetti";
 import "./decisionBox.css"
+import { useNavigate } from "react-router-dom";
 
 export const DecisionBox = ({ decision }: { decision: Decision }) => {
     console.log(decision);
@@ -69,16 +70,21 @@ export const DecisionBox = ({ decision }: { decision: Decision }) => {
 
     const status = getDecisionStatus();
 
+    const navigate = useNavigate();
+
+    const goToResults = () => {
+        navigate("/applicant/results", { state: { decision } });
+    };
+
     return (
         <>
-            {showConfetti && (
-                <Confetti
-                    width={windowDimensions.width}
-                    height={windowDimensions.height}
-                    recycle={false}
-                    numberOfPieces={200}
-                />
-            )}
+            {/* {showConfetti &&
+                // <Confetti
+                //     width={windowDimensions.width}
+                //     height={windowDimensions.height}
+                //     recycle={false}
+                //     numberOfPieces={200}
+                // />} */}
             <div className="decision-box">
                 <div className="decision-status-section">
                     <div className="status-header">
@@ -118,6 +124,12 @@ export const DecisionBox = ({ decision }: { decision: Decision }) => {
                             </div>
                         </div>
                     )}
+
+                    <div className="button-to-results">
+                        <button onClick={goToResults} className="results-button">Go to Results</button>
+                        
+                    </div>
+
                 </div>
             </div>
         </>

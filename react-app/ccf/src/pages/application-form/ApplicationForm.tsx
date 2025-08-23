@@ -26,26 +26,24 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const totalPages = pages.length;
     const navigate = useNavigate();
     const requiredFields = [
-        'title', 'principalInvestigator', 'otherStaff', 'coPI', 'institution', 
-        'department', 'departmentHead', 'institutionAddress', 'institutionCityStateZip', 
-        'institutionPhoneNumber', 'institutionEmail', 'typesOfCancerAddressed', 
-        'adminOfficialName', 'adminOfficialAddress', 'adminOfficialCityStateZip', 
-        'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement', 
-        'patentApplied', 'includedFundingInfo', 'amountRequested', 'dates', 'continuation', 
-        'continuationYears', 'einNumber', 'attestationHumanSubjects', 'attestationCertification', 
-        'signaturePI', 'signatureDeptHead', 'file'
+        'title', 'principalInvestigator', 'institution',
+        'department', 'departmentHead', 'institutionAddress', 'institutionCityStateZip',
+        'institutionPhoneNumber', 'institutionEmail', 'typesOfCancerAddressed',
+        'adminOfficialName', 'adminOfficialAddress', 'adminOfficialCityStateZip',
+        'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement',
+        'patentApplied', 'includedFundingInfo', 'amountRequested', 'dates',
+        'einNumber', 'signaturePI', 'signatureDeptHead', 'file'
     ];
     const pageFields: { [key: number]: string[] } = {
         1: ['file'],
-        3: ['title', 'principalInvestigator', 'otherStaff', 'coPI', 'institution', 
-            'department', 'departmentHead', 'institutionAddress', 'institutionCityStateZip', 
-            'institutionPhoneNumber', 'institutionEmail', 'typesOfCancerAddressed', 
-            'adminOfficialName', 'adminOfficialAddress', 'adminOfficialCityStateZip', 
-            'adminPhoneNumber', 'adminEmail', 'einNumber'],
-        4: ['includedPublishedPaper', 'creditAgreement', 'patentApplied', 
-            'includedFundingInfo', 'amountRequested', 'dates', 'continuation', 
-            'continuationYears', 'attestationHumanSubjects', 'attestationCertification', 
-            'signaturePI', 'signatureDeptHead'],
+        3: ['title', 'principalInvestigator', 'institution',
+            'department', 'departmentHead', 'institutionAddress', 'institutionCityStateZip',
+            'institutionPhoneNumber', 'institutionEmail', 'typesOfCancerAddressed',
+            'adminOfficialName', 'adminOfficialAddress', 'adminOfficialCityStateZip',
+            'adminPhoneNumber', 'adminEmail'],
+        4: ['includedPublishedPaper', 'creditAgreement', 'patentApplied',
+            'includedFundingInfo', 'amountRequested', 'dates',
+            'einNumber', 'signaturePI', 'signatureDeptHead'],
     };
     const [formData, setFormData] = useState({
         title: '',

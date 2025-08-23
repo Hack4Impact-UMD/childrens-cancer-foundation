@@ -2,13 +2,12 @@ import "./AdminEditInformation.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
-// import { FaSearch } from "react-icons/fa";
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
-import { TextField, Button, CircularProgress, Snackbar } from '@mui/material';
+import { TextField, Button, CircularProgress, Snackbar, Switch } from '@mui/material';
 
 import {
     updateCurrentCycleDeadlines,
@@ -24,9 +23,7 @@ import EditableFAQComponent from "../../components/faq/FaqEditableComp";
 import { Edit } from "lucide-react";
 
 function AdminEditInformation(): JSX.Element {
-    const [nextGenDate, setNextGenDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
-    const [researchDate, setResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
-    const [nonResearchDate, setNonResearchDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
+    const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [reviewerDate, setReviewerDate] = useState<dayjs.Dayjs | null>(null);
     // Current stage of application cycle
     const [currentStage, setCurrentStage] = useState<string | null>(null);
@@ -51,17 +48,8 @@ function AdminEditInformation(): JSX.Element {
         "Final Decisions"
     ];
 
-
-    const handleNextGenChange = (newNextGenDate: Dayjs | null) => {
-        setNextGenDate(newNextGenDate);
-    };
-
-    const handleResearchChange = (newResearchDate: Dayjs | null) => {
-        setResearchDate(newResearchDate);
-    };
-
-    const handleNonResearchChange = (newNonResearchDate: Dayjs | null) => {
-        setNonResearchDate(newNonResearchDate);
+    const handleAllApplicationsChange = (newDate: Dayjs | null) => {
+        setAllApplicationsDate(newDate);
     };
 
     const handleReviewerDateChange = (newReviewerDate: Dayjs | null) => {
@@ -126,135 +114,72 @@ function AdminEditInformation(): JSX.Element {
                     <div className="deadline-interactives">
                         <h2>Applications:</h2>
                         <div className="interactive-date-selector">
-                            <h2>NextGen Grant Application</h2>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    value={nextGenDate}
-                                    onChange={handleNextGenChange}
-                                    enableAccessibleFieldDOMStructure={false}
+                            <h2>All Applications</h2>
+                            <div className="deadline-section">
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DatePicker
+                                        value={allApplicationsDate}
+                                        onChange={handleAllApplicationsChange}
+                                        enableAccessibleFieldDOMStructure={false}
+                                        sx={{
+                                            backgroundColor: '#79747E',
+                                        }}
+                                        slots={{
+                                            textField: (props: any) => (
+                                                <TextField
+                                                    {...props}
+                                                    sx={{
+                                                        '& .MuiInputBase-input': {
+                                                            textAlign: 'center',
+                                                            height: '8px',
+                                                            width: '150px',
+                                                            color: '#79747E'
+                                                        },
+                                                        '& .MuiOutlinedInput-notchedOutline': {
+                                                            border: '2px solid #79747E',
+                                                            borderRadius: '15px'
+                                                        },
+                                                    }}
+                                                />
+                                            ),
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                <Button
+                                    variant="contained"
+                                    onClick={async () => {
+                                        const success = await updateCurrentCycleDeadlines({
+                                            allApplicationsDate
+                                        });
+
+                                        //debug
+                                        if (success) {
+                                            console.log("Application deadlines updated.");
+                                            setAppDeadlineMessage("Application Deadlines Updated!");
+                                            setTimeout(() => setAppDeadlineMessage(null), 3000); // clear after 3 seconds
+                                        }
+                                    }}
                                     sx={{
-                                        backgroundColor: '#79747E'
+                                        backgroundColor: '#79747E',
+                                        fontFamily: 'Roboto, sans-serif',
+                                        textTransform: 'none',
+                                        height: '40px',
+                                        fontSize: '1.25rem',
+                                        fontWeight: 'normal',
+                                        borderRadius: '10px',
+                                        '&:hover': {
+                                            backgroundColor: '#003E83'
+                                        },
+                                        minWidth: 'auto !important',
+                                        width: 'auto !important',
+                                        whiteSpace: 'nowrap',
+                                        marginBottom: '10px',
+                                        marginTop: '10px',
                                     }}
-                                    slots={{
-                                        textField: (props: any) => (
-                                            <TextField
-                                                {...props}
-                                                sx={{
-                                                    '& .MuiInputBase-input': {
-                                                        textAlign: 'center',
-                                                        height: '8px',
-                                                        width: '150px',
-                                                        color: '#79747E'
-                                                    },
-                                                    '& .MuiOutlinedInput-notchedOutline': {
-                                                        border: '2px solid #79747E',
-                                                        borderRadius: '15px'
-                                                    },
-                                                }}
-                                            />
-                                        ),
-                                    }}
-                                />
-                            </LocalizationProvider>
+
+                                >{appDeadlineMessage ?? "Set Application Deadline"}</Button>
+                            </div>
                         </div>
-                        <div className="interactive-date-selector">
-                            <h2>Research Grant Application</h2>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    value={researchDate}
-                                    onChange={handleResearchChange}
-                                    enableAccessibleFieldDOMStructure={false}
-                                    sx={{
-                                        backgroundColor: '#79747E'
-                                    }}
-                                    slots={{
-                                        textField: (props: any) => (
-                                            <TextField
-                                                {...props}
-                                                sx={{
-                                                    '& .MuiInputBase-input': {
-                                                        textAlign: 'center',
-                                                        height: '8px',
-                                                        width: '150px',
-                                                        color: '#79747E'
-                                                    },
-                                                    '& .MuiOutlinedInput-notchedOutline': {
-                                                        border: '2px solid #79747E',
-                                                        borderRadius: '15px'
-                                                    },
-                                                }}
-                                            />
-                                        ),
-                                    }}
-                                />
-                            </LocalizationProvider>
-                        </div>
-                        <div className="interactive-date-selector">
-                            <h2>Non-Research Grant Application</h2>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    value={nonResearchDate}
-                                    onChange={handleNonResearchChange}
-                                    enableAccessibleFieldDOMStructure={false}
-                                    sx={{
-                                        backgroundColor: '#79747E'
-                                    }}
-                                    slots={{
-                                        textField: (props: any) => (
-                                            <TextField
-                                                {...props}
-                                                sx={{
-                                                    '& .MuiInputBase-input': {
-                                                        textAlign: 'center',
-                                                        height: '8px',
-                                                        width: '150px',
-                                                        color: '#79747E'
-                                                    },
-                                                    '& .MuiOutlinedInput-notchedOutline': {
-                                                        border: '2px solid #79747E',
-                                                        borderRadius: '15px'
-                                                    },
-                                                }}
-                                            />
-                                        ),
-                                    }}
-                                />
-                            </LocalizationProvider>
-                        </div>
-
-                        <Button
-                            variant="contained"
-                            onClick={async () => {
-                                const success = await updateCurrentCycleDeadlines({
-                                    nextGenDate,
-                                    researchDate,
-                                    nonResearchDate
-                                });
-
-                                //debug
-                                if (success) {
-                                    console.log("Application deadlines updated.");
-                                    setAppDeadlineMessage("Application Deadlines Updated!");
-                                    setTimeout(() => setAppDeadlineMessage(null), 3000); // clear after 3 seconds
-                                }
-                            }}
-                            sx={{
-                                backgroundColor: '#79747E',
-                                fontFamiy: 'Roboto, sans-serif',
-                                textTransform: 'none',
-                                height: '40px',
-                                fontSize: '1.25rem',
-                                fontWeight: 'normal',
-                                borderRadius: '10px',
-                                '&:hover': {
-                                    backgroundColor: '#003E83'
-                                },
-                                marginBottom: '10px',
-                                marginTop: '10px'
-                            }}
-
-                        >{appDeadlineMessage ?? "Set Application Deadline"}</Button>
-
                     </div>
                     <div className="deadline-interactives">
                         <h2>Reviews:</h2>
