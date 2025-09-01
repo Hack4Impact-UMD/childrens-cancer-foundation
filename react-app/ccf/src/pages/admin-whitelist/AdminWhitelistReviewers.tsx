@@ -47,7 +47,7 @@ function AdminWhitelistReviewers(): JSX.Element {
             // Fetch actual reviewer accounts
             const reviewersRef = collection(db, "reviewers");
             const reviewersSnapshot = await getDocs(reviewersRef);
-            
+
             const reviewersData: { [email: string]: any } = {};
             reviewersSnapshot.docs.forEach(doc => {
                 const data = doc.data();
@@ -59,15 +59,15 @@ function AdminWhitelistReviewers(): JSX.Element {
             // Merge whitelist with actual reviewer data
             const mergedEntries: WhitelistEntry[] = whitelistEntries.map(entry => {
                 const reviewerData = reviewersData[entry.email.toLowerCase()];
-                
+
                 if (reviewerData) {
                     // If reviewer has created an account, use their actual data
                     return {
                         ...entry,
                         firstName: reviewerData.firstName || entry.firstName,
                         lastName: reviewerData.lastName || entry.lastName,
-                        name: reviewerData.firstName && reviewerData.lastName 
-                            ? `${reviewerData.firstName} ${reviewerData.lastName}` 
+                        name: reviewerData.firstName && reviewerData.lastName
+                            ? `${reviewerData.firstName} ${reviewerData.lastName}`
                             : entry.name,
                         title: reviewerData.title || entry.title,
                         affiliation: reviewerData.affiliation || entry.affiliation,
@@ -198,6 +198,17 @@ function AdminWhitelistReviewers(): JSX.Element {
                                     ))}
                                 </select>
                             </div>
+                            <div className="filter">
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    aria-label="Filter by account status"
+                                >
+                                    <option value="">All Status</option>
+                                    <option value="registered">Registered</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                            </div>
                             <button
                                 className="add-button"
                                 onClick={() => setShowAddForm(true)}
@@ -285,13 +296,21 @@ function AdminWhitelistReviewers(): JSX.Element {
                     <div className="whitelist-table-container">
                         <div className="whitelist-header">
                             <h2>Whitelisted Emails ({filteredEntries.length})</h2>
+                            <div className="whitelist-stats">
+                                <span className="stat">
+                                    Registered: {whitelistEntries.filter(entry => entry.hasAccount).length}
+                                </span>
+                                <span className="stat">
+                                    Pending: {whitelistEntries.filter(entry => !entry.hasAccount).length}
+                                </span>
+                            </div>
                         </div>
 
                         {loading ? (
                             <div className="loading">Loading whitelist entries...</div>
                         ) : filteredEntries.length === 0 ? (
                             <div className="no-entries">
-                                {searchTerm || affiliationFilter ? 'No entries match your filters.' : 'No emails in the whitelist yet.'}
+                                {searchTerm || affiliationFilter || statusFilter ? 'No entries match your filters.' : 'No emails in the whitelist yet.'}
                             </div>
                         ) : (
                             <table className="whitelist-table">
