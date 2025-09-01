@@ -14,6 +14,12 @@ This page provides the user interface for registered users to sign in to the app
 -   **Function:** `loginUser()` (which wraps Firebase's `signInWithEmailAndPassword` method).
 -   **Details:** When a user submits their email and password, this function is called to verify the credentials with Firebase Authentication. If the credentials are correct, the user is signed in, and their authentication state is managed by Firebase.
 
+### Password Reset Functionality
+
+-   **Purpose:** To allow users to reset their forgotten passwords.
+-   **Function:** `resetPassword()` (which wraps Firebase's `sendPasswordResetEmail` method).
+-   **Details:** Users can click the "Forgot password" link on the login page to navigate to `/forgot-password`. They enter their email address, and Firebase sends a password reset email with instructions to create a new password.
+
 ## Data Flow Summary
 
 1.  The user enters their email and password into the login form.

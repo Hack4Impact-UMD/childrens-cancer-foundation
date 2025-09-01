@@ -4,56 +4,221 @@ import React from "react";
 import { ReviewProps } from "../../../types/application-types";
 
 /* Still need to add useState from information*/
-function ReviewApplication({ type, formData, hideFile}: ReviewProps): JSX.Element {
+function ReviewApplication({ type, formData, hideFile }: ReviewProps): JSX.Element {
   if (type === "NonResearch") return (
     <div className="review-form-container">
-    <div className="proposal-text">
-      <p className="text-label">Title of Project: {formData.title}</p>
-      <p className="text-label">Principal Requestor: {formData.requestor}</p>
-      <p className="text-label">Institution: {formData.institution}</p>
-      <p className="text-label">Phone Number: {formData.institutionPhoneNumber}</p>
-      <p className="text-label">Email: {formData.institutionEmail}</p>
-      <p className = "text-label">Explain the Project requested and justify the need for your requested Project: {formData.explanation}</p>
-      <br />
-      <br />
-      <p className="text-label">We ask that you include other sources from which you are seeking to fund the Project and any other funding source, and/or the amount contributed by your Institution/Hospital: {formData.sources}</p>
-      <br />
-      <br />
-      <p className="text-label">Time Frame: {formData.timeframe}</p>
-      <p className="text-label">Signature of Department Head or other person(s) designated to approve grant requests: {formData.signature}</p>
-      {hideFile ? "": <p className="text-label">File: {formData.file?.name || 'No file uploaded'}</p>}
+      <div className="proposal-text">
+        <div className="detail-card">
+          <h3 className="card-title">Project Information</h3>
+          <div className="detail-grid">
+            <div className="detail-item">
+              <span className="detail-label">Title of Project</span>
+              <span className="detail-value">{formData.title || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Principal Requestor</span>
+              <span className="detail-value">{formData.requestor || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Institution</span>
+              <span className="detail-value">{formData.institution || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Phone Number</span>
+              <span className="detail-value">{formData.institutionPhoneNumber || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Email</span>
+              <span className="detail-value">{formData.institutionEmail || "N/A"}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="detail-card">
+          <h3 className="card-title">Project Details</h3>
+          <div className="detail-grid">
+            <div className="detail-item full-width">
+              <span className="detail-label">Project Explanation</span>
+              <span className="detail-value">{formData.explanation || "N/A"}</span>
+            </div>
+            <div className="detail-item full-width">
+              <span className="detail-label">Funding Sources</span>
+              <span className="detail-value">{formData.sources || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Time Frame</span>
+              <span className="detail-value">{formData.timeframe || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Department Head Signature</span>
+              <span className="detail-value">{formData.signature || "N/A"}</span>
+            </div>
+          </div>
+        </div>
+
+        {!hideFile && (
+          <div className="detail-card">
+            <h3 className="card-title">Attachments</h3>
+            <div className="detail-item">
+              <span className="detail-label">File</span>
+              <span className="detail-value">{formData.file?.name || 'No file uploaded'}</span>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
   );
-    
-    else return (
+
+  else return (
     <div className="review-form-container">
       <div className="proposal-text">
-        <p className="text-label">Title of Project: {formData.title}</p>
-        <p className="text-label">Principal Investigator Name/Title: {formData.principalInvestigator}</p>
-        <p className="text-label">Other Staff Name/Title: {formData.otherStaff}</p>
-        <p className="text-label">Institution: {formData.institution}</p>
-        <p className="text-label">Department: {formData.department}</p>
-        <p className="text-label">Department Head: {formData.departmentHead}</p>
-        <p className="text-label">Street Address: {formData.institutionAddress}</p>
-        <p className="text-label">City/St/Zip: {formData.institutionCityStateZip}</p>
-        <p className="text-label">Phone: {formData.institutionPhoneNumber}</p>
-        <p className="text-label">Email: {formData.institutionEmail}</p>
-        <p className="text-label">Types of Cancer Being Addressed: {formData.typesOfCancerAddressed}</p>
-        <p className="text-label">Administration Official Name/Title: {formData.adminOfficialName}</p>
-        <p className="text-label">Admin Street Address: {formData.adminOfficialAddress}</p>
-        <p className="text-label">Admin City/St/Zip: {formData.adminOfficialCityStateZip}</p>
-        <p className="text-label">Admin Phone Number: {formData.adminPhoneNumber}</p>
-        <p className="text-label">Admin Email: {formData.adminEmail}</p>
-        <p className="text-label">Amount Requested: {formData.amountRequested}</p>
-        <p className="text-label">Dates of Project: {formData.dates}</p>
-        <p className="text-label">EIN #: {formData.einNumber}</p>
-        <p className="text-label">Biosketch Funding Info: {formData.includedFundingInfo}</p>
-        <p className="text-label">Attestation (Human/Animal Subjects): {formData.attestationHumanSubjects ? 'Yes' : 'No'}</p>
-        <p className="text-label">Attestation (Certification): {formData.attestationCertification ? 'Yes' : 'No'}</p>
-        <p className="text-label">Signature of Principal Investigator(s): {formData.signaturePI}</p>
-        <p className="text-label">Signature of Department Head: {formData.signatureDeptHead}</p>
-        {hideFile ? "": <p className="text-label">File: {formData.file?.name || 'No file uploaded'}</p>}
+        {/* Project Information Card */}
+        <div className="detail-card">
+          <h3 className="card-title">Project Information</h3>
+          <div className="detail-grid">
+            <div className="detail-item full-width">
+              <span className="detail-label">Title of Project</span>
+              <span className="detail-value">{formData.title || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Principal Investigator Name/Title</span>
+              <span className="detail-value">{formData.principalInvestigator || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Other Staff Name/Title</span>
+              <span className="detail-value">{formData.otherStaff || "N/A"}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Institution Information Card */}
+        <div className="detail-card">
+          <h3 className="card-title">Institution Information</h3>
+          <div className="detail-grid">
+            <div className="detail-item">
+              <span className="detail-label">Institution</span>
+              <span className="detail-value">{formData.institution || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Department</span>
+              <span className="detail-value">{formData.department || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Department Head</span>
+              <span className="detail-value">{formData.departmentHead || "N/A"}</span>
+            </div>
+            <div className="detail-item full-width">
+              <span className="detail-label">Street Address</span>
+              <span className="detail-value">{formData.institutionAddress || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">City/State/Zip</span>
+              <span className="detail-value">{formData.institutionCityStateZip || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Phone</span>
+              <span className="detail-value">{formData.institutionPhoneNumber || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Email</span>
+              <span className="detail-value">{formData.institutionEmail || "N/A"}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Research Details Card */}
+        <div className="detail-card">
+          <h3 className="card-title">Research Details</h3>
+          <div className="detail-grid">
+            <div className="detail-item full-width">
+              <span className="detail-label">Types of Cancer Being Addressed</span>
+              <span className="detail-value">{formData.typesOfCancerAddressed || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Amount Requested</span>
+              <span className="detail-value">{formData.amountRequested || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Dates of Project</span>
+              <span className="detail-value">{formData.dates || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">EIN Number</span>
+              <span className="detail-value">{formData.einNumber || "N/A"}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Administrative Information Card */}
+        <div className="detail-card">
+          <h3 className="card-title">Administrative Information</h3>
+          <div className="detail-grid">
+            <div className="detail-item">
+              <span className="detail-label">Administration Official Name/Title</span>
+              <span className="detail-value">{formData.adminOfficialName || "N/A"}</span>
+            </div>
+            <div className="detail-item full-width">
+              <span className="detail-label">Admin Street Address</span>
+              <span className="detail-value">{formData.adminOfficialAddress || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Admin City/State/Zip</span>
+              <span className="detail-value">{formData.adminOfficialCityStateZip || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Admin Phone Number</span>
+              <span className="detail-value">{formData.adminPhoneNumber || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Admin Email</span>
+              <span className="detail-value">{formData.adminEmail || "N/A"}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Information Card */}
+        <div className="detail-card">
+          <h3 className="card-title">Additional Information</h3>
+          <div className="detail-grid">
+            <div className="detail-item">
+              <span className="detail-label">Biosketch Funding Info</span>
+              <span className="detail-value">{formData.includedFundingInfo || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Attestation (Human/Animal Subjects)</span>
+              <span className="detail-value">{formData.attestationHumanSubjects ? 'Yes' : 'No'}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Attestation (Certification)</span>
+              <span className="detail-value">{formData.attestationCertification ? 'Yes' : 'No'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Signatures Card */}
+        <div className="detail-card">
+          <h3 className="card-title">Signatures</h3>
+          <div className="detail-grid">
+            <div className="detail-item">
+              <span className="detail-label">Signature of Principal Investigator(s)</span>
+              <span className="detail-value">{formData.signaturePI || "N/A"}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Signature of Department Head</span>
+              <span className="detail-value">{formData.signatureDeptHead || "N/A"}</span>
+            </div>
+          </div>
+        </div>
+
+        {!hideFile && (
+          <div className="detail-card">
+            <h3 className="card-title">Attachments</h3>
+            <div className="detail-item">
+              <span className="detail-label">File</span>
+              <span className="detail-value">{formData.file?.name || 'No file uploaded'}</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

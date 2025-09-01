@@ -61,10 +61,10 @@ function Login() {
   }, []);
 
   return (
-    <div className="container">
+    <div className="login-container">
       {loggedIn && <Navigate to="/" replace={true} />}
-      <div className="content">
-        <form className="form" onSubmit={handleSubmit}>
+      <div className="login-content">
+        <form className="login-form" onSubmit={handleSubmit}>
           <div className="logo">
             <img src="/ccflogo.png" alt="Logo" className="logoImage" />
           </div>
@@ -72,26 +72,26 @@ function Login() {
           <div className="loginText">
             <p>
               New to CCF?{" "}
-              <Link to="/create-account-menu">
+              <Link to="/create-account-menu" className="createAccountLink">
                 <u>Create Account</u>
               </Link>
             </p>
           </div>
-            <TextField
-              id="outlined-basic"
-              label="Email"
-              name="email"
-              variant="outlined"
-              onChange={handleChange}
-              value={input.email}
-              required
-              sx={{
-                width: '90%',
-                paddingBottom: '20px'
-              }}
-            />
+          <TextField
+            id="outlined-basic"
+            label="Email"
+            name="email"
+            variant="outlined"
+            onChange={handleChange}
+            value={input.email}
+            required
+            sx={{
+              width: '90%',
+              paddingBottom: '20px'
+            }}
+          />
 
-            {/* <label htmlFor="email">Email</label>
+          {/* <label htmlFor="email">Email</label>
           <input
             name="email"
             placeholder="Enter your email"
@@ -102,33 +102,33 @@ function Login() {
             className="input"
           /> */}
 
-            <TextField
-              id="outlined-basic"
-              type={showPassword ? 'text' : 'password'}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              name="password"
-              label="Password"
-              variant="outlined"
-              onChange={handleChange}
-              value={input.password}
-              required
-              sx={{
-                width: '90%',
-                paddingBottom: '20px'
-              }}
-            />
+          <TextField
+            id="outlined-basic"
+            type={showPassword ? 'text' : 'password'}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleClickShowPassword}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            name="password"
+            label="Password"
+            variant="outlined"
+            onChange={handleChange}
+            value={input.password}
+            required
+            sx={{
+              width: '90%',
+              paddingBottom: '20px'
+            }}
+          />
           {/* <label htmlFor="password">Password</label>
           <input
             name="password"
@@ -141,7 +141,7 @@ function Login() {
           /> */}
 
           {error && <p className="error">{error}</p>}
-          <Button variant={"red"} type={"submit"} className={"button"}>
+          <Button variant={"red"} type={"submit"} className={"login-button"}>
             <>
               Login
             </>
@@ -154,7 +154,7 @@ function Login() {
         </form>
 
         {isWideScreen && (
-          <div className="imageContainer">
+          <div className="login-imageContainer">
             <img src={DrHanleyLabImage} alt="image" className="images" />
             <img src={toretsky} alt="image" className="images" />
             <div className="yellowOverlay">

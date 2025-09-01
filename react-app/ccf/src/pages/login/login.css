@@ -1,111 +1,153 @@
-.container {
+.login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
+  width: 100vw;
+  padding-left: 0 !important;
+  background-color: #f5f5f5;
+}
+
+.login-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Roboto', sans-serif;
+  gap: 40px;
+  width: 90vw;
+  max-width: 1200px;
+  height: 80vh;
   padding-left: 0 !important;
 }
 
-.content {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    margin-top: 10%;
-    padding: 20px;
-    font-family: 'Roboto', sans-serif;
-    gap: 20px;
-    width: 80vw;
-    padding-left: 0 !important;
-  }
+.login-imageContainer {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  width: 50%;
+  max-width: 600px;
+  margin-bottom: 20px;
+  padding-left: 0 !important;
+}
 
-  .imageContainer {
-    position: relative;
-    max-height: 70%;
-    width: 80%;
-    margin-bottom: 20px;
-    padding-left: 0 !important;
-  }
+.yellowOverlay {
+  position: absolute;
+  top: -4px;
+  left: 0;
+  width: 100%;
+  height: 100.5%;
+  z-index: 1;
+}
 
-  .yellowOverlay {
-    position: absolute;
-    top: -4px;
-    left: 0;
-    width: 100%;
-    height: 100.5%;
-    z-index: 1;
-  }
+.yellow {
+  width: 100%;
+  height: 100%;
+}
 
-  .yellow {
-    width: 100%;
-    height: 100%;
-  }
+.images {
+  width: 100%;
+  height: auto;
+  z-index: 0;
+  margin-top: -4px;
+}
 
-  .images {
-    width: 100%;
-    height: auto;
-    z-index: 0;
-    margin-top: -4px;
-  }
-  
-  .form {
-    display: flex;
+.login-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  width: 50%;
+  max-width: 500px;
+  background-color: #fff;
+  padding: 40px;
+  margin-right: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.input {
+  width: 90%;
+  padding: 10px;
+  margin: 10px 0 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.login-button {
+  width: 90%;
+  padding: 12px;
+  background-color: #BE0019;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  margin: 10px 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.error {
+  color: #BE0019;
+  margin-bottom: 10px;
+}
+
+
+.heading {
+  text-align: center;
+  color: #BE0019;
+}
+
+.spacing {
+  margin-top: 20px;
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.logoImage {
+  max-width: 100px;
+}
+
+.loginText {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.forgotPasswordLink,
+.createAccountLink {
+  color: blue;
+  text-decoration: none;
+}
+
+.forgotPasswordLink:hover,
+.createAccountLink:hover {
+  text-decoration: underline;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 750px) {
+  .login-content {
     flex-direction: column;
-    justify-content: center;
-    width: 80%;
-    background-color: #fff;
-    padding: 20px;
-    margin-right: 20px;
-  }
-  
-  .input {
-    width: 90%;
-    padding: 10px;
-    margin: 10px 0 20px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .button {
-    width: 90%;
-    padding: 10px;
-    background-color: #BE0019;
-    color: #fff;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    margin: 10px 0;
-  }
-  
-  .error {
-    color: #BE0019;
-    margin-bottom: 10px;
+    height: auto;
+    gap: 20px;
   }
 
-  
-  .heading {
-    text-align: center;
-    color: #BE0019;
+  .login-form {
+    width: 95%;
+    max-width: none;
+    margin-right: 0;
+    padding: 20px;
   }
-  
-  .spacing {
-    margin-top: 20px;
+
+  .login-imageContainer {
+    display: none;
   }
-  
-  .logo {
-    text-align: center;
-    margin-bottom: 1rem;
+
+  .login-button {
+    width: 100%;
   }
-  
-  .logoImage {
-    max-width: 100px;
-  }
-  
-  a {
-    color: blue;
-    text-decoration: none;
-  }
-  
-  a:hover {
-    text-decoration: underline;
-  }
+}

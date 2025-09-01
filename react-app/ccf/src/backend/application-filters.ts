@@ -18,7 +18,7 @@ export async function getFilteredApplications(filters: FilterOptions): Promise<A
         const conditions = [];
 
         if (filters.date) {
-            conditions.push(where('dates', '==', filters.date));
+            conditions.push(where('applicationCycle', '==', filters.date));
         }
 
         if (filters.decision) {
@@ -30,7 +30,7 @@ export async function getFilteredApplications(filters: FilterOptions): Promise<A
         }
 
         // Create the query with all conditions
-        q = query(q, ...conditions, orderBy('dates', 'desc'));
+        q = query(q, ...conditions, orderBy('submitTime', 'desc'));
 
         // Execute the query
         const querySnapshot = await getDocs(q);

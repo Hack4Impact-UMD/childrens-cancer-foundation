@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Login from "./pages/login/login";
+import ForgotPassword from "./pages/forgot-password/ForgotPassword";
+import EmailActionHandler from "./pages/email-action-handler/EmailActionHandler";
 import "./App.css";
 import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplicant";
 import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
@@ -63,7 +65,8 @@ function App(): JSX.Element {
         <Route path="/login" element={<Login />} />
         {/* 404 page */}
         <Route path="*" element={<ErrorPage type={"404"}></ErrorPage>} />
-        <Route path="/forgot-password" element={<></>} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/email-action-handler" element={<EmailActionHandler />} />
         <Route path="/create-account-menu" element={<CreateAccMenu />} />
         {/* Need to change path to create-account after authentication */}
         <Route

@@ -46,7 +46,8 @@
     object-fit: contain;
 }
 
-.completed-applications, .in-progress-applications {
+.completed-applications,
+.in-progress-applications {
     margin-bottom: 20px;
 }
 
@@ -113,19 +114,28 @@
 .modal-button {
     display: flex;
     align-items: center;
-    background-color: rgba(217, 217, 217, 0.5);
+    background-color: #F0C567;
     border: none;
     border-radius: 8px;
     padding: 8px 16px;
-    color: white;
+    color: #003E83;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.2s ease;
+    font-weight: 500;
+    transition: all 0.2s ease;
     width: fit-content;
+    gap: 8px;
 }
 
 .modal-button:hover {
-    background-color: rgba(217, 217, 217, 0.7);
+    background-color: #e6b94d;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-button:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 .application-status {

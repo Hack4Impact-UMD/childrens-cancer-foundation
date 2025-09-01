@@ -26,7 +26,7 @@ function AllApplications(): JSX.Element {
   /*Make use of application box component instead, also retrieve applications from firebase*/
   useEffect(() => {
     getCurrentCycle().then((cycle) => {
-      getFilteredApplications({date: cycle.name}).then((apps) => {
+      getFilteredApplications({ date: cycle.name }).then((apps) => {
         setApplicationsData(apps)
         setFilteredApplications(apps)
       })
@@ -37,13 +37,13 @@ function AllApplications(): JSX.Element {
 
   useEffect(() => {
     const filteredApps = applicationsData
-      .filter((app) => app.title.toLowerCase().includes(searchTerm.toLowerCase())
+      .filter((app) => app.title && app.title.toLowerCase().includes(searchTerm.toLowerCase())
         && (app.grantType == filters["grantType"] || !filters["grantType"])
         && (app.decision == filters["decision"] || !filters["decision"])
         && (app.institution == filters["institution"] || !filters["institution"])
       )
-      setFilteredApplications(filteredApps)
-  }, [filters, searchTerm])
+    setFilteredApplications(filteredApps)
+  }, [filters, searchTerm, applicationsData])
 
 
   return (
@@ -102,13 +102,13 @@ function AllApplications(): JSX.Element {
               <option value="Institution2">Institution2</option>
             </select>
           </div>
-            {filteredApplications.map(
-              (coverSheet, index) => (
-                <div>
+          {filteredApplications.map(
+            (coverSheet, index) => (
+              <div>
                 <div
                   key={index}
                   className="single-application-box clickable"
-                  onClick={() => {setOpenModal(coverSheet)}}
+                  onClick={() => { setOpenModal(coverSheet) }}
                 >
                   <div className="application-info">
                     <FaFileAlt className="application-icon" />
@@ -119,11 +119,11 @@ function AllApplications(): JSX.Element {
                       </p>
                     </div>
                   </div>
-                  </div>
-                  <CoverPageModal onClose={() => {setOpenModal(null)}} isOpen={coverSheet == openModal} application={coverSheet}></CoverPageModal>
                 </div>
-              )
-            )}
+                <CoverPageModal onClose={() => { setOpenModal(null) }} isOpen={coverSheet == openModal} application={coverSheet}></CoverPageModal>
+              </div>
+            )
+          )}
         </div>
       </div>
     </div>

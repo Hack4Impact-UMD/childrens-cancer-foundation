@@ -1,23 +1,175 @@
-.header-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.section-icon {
-  width: 5% !important;
-  height: auto !important;
-}
-
-.title {
-  color: var(--color-red);
-  font-size: 1.5rem;
+.cover-page-modal-child {
+  padding: 2rem;
+  background-color: #fff;
+  width: 100%;
   margin: 0;
 }
 
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.section-icon {
+  width: 56px !important;
+  height: 56px !important;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.title {
+  color: #BE0019;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  font-family: 'Inter', sans-serif;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
 .subtitle {
-  color: #545454;
+  color: #475569;
+  font-size: 1.25rem;
+  margin: 0.75rem 0 0 0;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pdf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 1.5rem 0;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #003E83 0%, #1e40af 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 1rem;
-  margin: 0.2rem 0 0 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 62, 131, 0.3);
+  font-family: 'Inter', sans-serif;
+}
+
+.pdf-link:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 62, 131, 0.4);
+}
+
+.pdf-link:active {
+  transform: translateY(0);
+}
+
+.section-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%);
+  margin: 3rem 0;
+  border-radius: 1px;
+}
+
+/* Style the Review component content */
+.review-section {
+  margin-top: 2.5rem;
+  padding: 0;
+  width: 100%;
+}
+
+.review-section h3 {
+  color: #003E83;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+.review-section p {
+  color: #334155;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Enhanced modal container styling */
+.cover-page-modal-child {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.cover-page-modal-child::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cover-page-modal-child::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.cover-page-modal-child::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.cover-page-modal-child::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive design improvements */
+@media (max-width: 1024px) {
+  .cover-page-modal-child {
+    padding: 1.5rem;
+  }
+
+  .header-row {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .subtitle {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .cover-page-modal-child {
+    padding: 1rem;
+  }
+
+  .header-row {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .section-icon {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .pdf-link {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
+  }
 }

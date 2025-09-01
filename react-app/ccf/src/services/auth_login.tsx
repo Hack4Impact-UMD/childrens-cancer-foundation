@@ -1,4 +1,4 @@
-import { signInWithEmailAndPassword, AuthErrorCodes } from "firebase/auth";
+import { signInWithEmailAndPassword, AuthErrorCodes, sendPasswordResetEmail } from "firebase/auth";
 import { auth, db } from "../index"
 import { getDoc, doc } from "firebase/firestore";
 import { UserData } from "../types/usertypes"
@@ -74,5 +74,22 @@ export const getCurrentUserData = async (): Promise<UserData | null> => {
   } catch (error) {
     console.error('Error fetching user data:', error);
     throw error;
+  }
+};
+
+export const resetPassword = async (email: string) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    console.log("Password reset email sent successfully");
+    return { success: true, error: null };
+  } catch (err: any) {
+    let errorMessage = "An error occurred while sending the password reset email";
+    if (err.code === AuthErrorCodes.INVALID_EMAIL) {
+      errorMessage = "Please enter a valid email address";
+    } else if (err.code === AuthErrorCodes.USER_DELETED) {
+      errorMessage = "No account found with this email address";
+    }
+    console.error("Password reset error:", err);
+    return { success: false, error: errorMessage };
   }
 };

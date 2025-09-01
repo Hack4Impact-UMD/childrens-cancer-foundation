@@ -8,17 +8,17 @@ import { downloadPDFsByName } from "../../storage/storage";
 import blueDocument from '../../assets/blueDocumentIcon.png';
 
 interface CoverPageModalProps {
-    application: Application;
-    isOpen: boolean;
-    onClose: () => void;
+  application: Application;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const CoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps) => {
+const CoverPageModal = ({ application, isOpen, onClose }: CoverPageModalProps) => {
 
   const [pdfLink, setPdfLink] = useState<any>();
 
-    useEffect(() => {
-      if (isOpen) {
+  useEffect(() => {
+    if (isOpen) {
       downloadPDFsByName([application.file]).then((links) => {
         if (links && links[0]) {
           setPdfLink(links[0])
@@ -27,26 +27,38 @@ const CoverPageModal = ({application, isOpen, onClose}: CoverPageModalProps) => 
         console.error(e)
       })
     }
-    },[isOpen])
+  }, [isOpen])
 
-    const researchCoverPage = (
-      <div className="cover-page-modal-child">
-        <div className="header-row">
-            <img src={blueDocument} alt="Document Icon" className="section-icon" />
-            <div>
-                <h2 className="title">{application.title}</h2>
-                <p className="subtitle">{application.grantType}</p>
-            </div>
+  const researchCoverPage = (
+    <div className="cover-page-modal-child">
+      <div className="header-row">
+        <img src={blueDocument} alt="Document Icon" className="section-icon" />
+        <div>
+          <h2 className="title">{application.title}</h2>
+          <p className="subtitle">{application.grantType}</p>
         </div>
-        {pdfLink ? <a target="_blank" href={pdfLink.url}>Application PDF</a>: ""}
-        <Review type={application.grantType} formData={application} hideFile={true}></Review>
       </div>
-    )
+      {pdfLink && (
+        <a
+          target="_blank"
+          href={pdfLink.url}
+          className="pdf-link"
+          rel="noopener noreferrer"
+        >
+          View Application PDF
+        </a>
+      )}
+      <div className="section-divider" />
+      <div className="review-section">
+        <Review type={application.grantType} formData={application} hideFile={true} />
+      </div>
+    </div>
+  )
 
-    
-    return (
-      <Modal isOpen={isOpen} onClose={onClose} children={researchCoverPage} fullscreen={true}></Modal>
-    );
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} children={researchCoverPage} fullscreen={true}></Modal>
+  );
 }
 
 export default CoverPageModal

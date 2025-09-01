@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaFileAlt, FaArrowRight } from "react-icons/fa";
+import { FaFileAlt, FaArrowRight, FaEye } from "react-icons/fa";
 import './ApplicationBox.css';
 
 export interface Application {
@@ -23,15 +23,15 @@ interface ApplicationBoxProps {
 }
 
 const ApplicationBox = ({
-                            id = "",
-                            applicationType,
-                            dueDate,
-                            status,
-                            title,
-                            principalInvestigator,
-                            onClick = () => {},
-                            onModalOpen = () => {}
-                        }: ApplicationBoxProps): JSX.Element => {
+    id = "",
+    applicationType,
+    dueDate,
+    status,
+    title,
+    principalInvestigator,
+    onClick = () => { },
+    onModalOpen = () => { }
+}: ApplicationBoxProps): JSX.Element => {
     // Handle click with optional applicationId
     const handleClick = () => {
         onClick(dueDate, id);
@@ -62,11 +62,12 @@ const ApplicationBox = ({
                 {dueDate}
                 <FaArrowRight className="arrow" />
             </button>
-            <button 
-                className="modal-button" 
+            <button
+                className="modal-button"
                 onClick={handleModalOpen}
             >
-                Open Modal
+                <FaEye />
+                View Details
             </button>
         </div>
     );
