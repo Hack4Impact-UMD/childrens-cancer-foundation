@@ -105,3 +105,4 @@ interface WhitelistEntry {
 - **Keyboard Navigation**: Full keyboard accessibility
 - **Form Labels**: Associated labels for all form inputs
 - **Color Contrast**: High contrast for readability
+

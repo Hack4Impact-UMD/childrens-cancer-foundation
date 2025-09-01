@@ -102,8 +102,8 @@ function AccountPageApplicants(): JSX.Element {
         title: title,
         role: "applicant"
       }
-      addApplicantUser(userData, pwd)
-      navigate("/");
+      await addApplicantUser(userData, pwd)
+      navigate("/Login");
     } catch (e) {
       console.log(e)
     }

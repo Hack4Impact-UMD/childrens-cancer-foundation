@@ -257,6 +257,45 @@
     background-color: #5a6268;
 }
 
+/* Status Badge Styles */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.registered {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #faeeba;
+}
+
+/* Row styling based on account status */
+.whitelist-table tr.has-account {
+    background-color: #f8f9fa;
+}
+
+.whitelist-table tr.has-account:hover {
+    background-color: #e9ecef;
+}
+
+.whitelist-table tr.no-account {
+    background-color: #fff;
+}
+
+.whitelist-table tr.no-account:hover {
+    background-color: #f9f9f9;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .dashboard-container {

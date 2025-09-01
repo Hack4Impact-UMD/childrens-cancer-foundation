@@ -17,11 +17,18 @@
     }
   ],
   "hosting": {
-    "public": "public",
+    "site": "childrenscancerfoundatio-6cd83",
+    "public": "react-app/ccf/build",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ]
   },
   "storage": {

@@ -147,8 +147,8 @@ function AccountPageReviewers(): JSX.Element {
       // Add a small delay to ensure Firebase has processed the custom claims
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Navigate to reviewer dashboard directly instead of root
-      navigate("/reviewer/dashboard");
+      // Navigate to login page after account creation
+      navigate("/Login");
     } catch (e) {
       console.error("Error creating reviewer account:", e);
       // You might want to show an error message to the user here

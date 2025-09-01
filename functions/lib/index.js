@@ -52,15 +52,6 @@ exports.addApplicantRole = onCall((request) => {
             "role": "applicant"
         });
     }).then(() => {
-        // Also create the user document in the applicants collection
-        return admin.firestore().collection('applicants').doc(data.userId).set({
-            firstName: data.firstName,
-            lastName: data.lastName,
-            title: data.title,
-            email: data.email,
-            affiliation: data.affiliation
-        });
-    }).then(() => {
         return {
             message: `Success! ${data.email} has been made an applicant.`
         };

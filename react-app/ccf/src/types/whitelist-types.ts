@@ -11,6 +11,7 @@ export interface WhitelistEntry {
     addedAt: Date;
     addedBy: string;
     status: 'active' | 'inactive';
+    hasAccount?: boolean; // Indicates if the reviewer has created an account
 }
 
 export interface WhitelistFormData {

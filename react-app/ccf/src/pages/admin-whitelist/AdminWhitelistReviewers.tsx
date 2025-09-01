@@ -2,8 +2,8 @@ import "./AdminWhitelistReviewers.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
-import { FaSearch, FaPlus, FaTrash, FaEdit } from "react-icons/fa";
-import { collection, getDocs, addDoc, deleteDoc, doc, query, where, orderBy } from "firebase/firestore";
+import { FaSearch, FaPlus, FaTrash } from "react-icons/fa";
+import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { db } from "../../index";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { WhitelistEntry, WhitelistFormData } from "../../types/whitelist-types";
@@ -13,6 +13,7 @@ function AdminWhitelistReviewers(): JSX.Element {
     const sidebarItems = getSidebarbyRole("admin");
     const [searchTerm, setSearchTerm] = useState("");
     const [affiliationFilter, setAffiliationFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
     const [whitelistEntries, setWhitelistEntries] = useState<WhitelistEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [uniqueAffiliations, setUniqueAffiliations] = useState<string[]>([]);
@@ -32,20 +33,60 @@ function AdminWhitelistReviewers(): JSX.Element {
     const fetchWhitelistEntries = async () => {
         setLoading(true);
         try {
+            // Fetch whitelist entries
             const whitelistRef = collection(db, "reviewer-whitelist");
-            const q = query(whitelistRef, orderBy("email"));
-            const querySnapshot = await getDocs(q);
+            const whitelistQuery = query(whitelistRef, orderBy("email"));
+            const whitelistSnapshot = await getDocs(whitelistQuery);
 
-            const entries: WhitelistEntry[] = querySnapshot.docs.map(doc => ({
+            const whitelistEntries: WhitelistEntry[] = whitelistSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
                 addedAt: doc.data().addedAt?.toDate() || new Date()
             })) as WhitelistEntry[];
 
-            setWhitelistEntries(entries);
+            // Fetch actual reviewer accounts
+            const reviewersRef = collection(db, "reviewers");
+            const reviewersSnapshot = await getDocs(reviewersRef);
+            
+            const reviewersData: { [email: string]: any } = {};
+            reviewersSnapshot.docs.forEach(doc => {
+                const data = doc.data();
+                if (data.email) {
+                    reviewersData[data.email.toLowerCase()] = data;
+                }
+            });
 
-            // Extract unique affiliations
-            const affiliations = entries
+            // Merge whitelist with actual reviewer data
+            const mergedEntries: WhitelistEntry[] = whitelistEntries.map(entry => {
+                const reviewerData = reviewersData[entry.email.toLowerCase()];
+                
+                if (reviewerData) {
+                    // If reviewer has created an account, use their actual data
+                    return {
+                        ...entry,
+                        firstName: reviewerData.firstName || entry.firstName,
+                        lastName: reviewerData.lastName || entry.lastName,
+                        name: reviewerData.firstName && reviewerData.lastName 
+                            ? `${reviewerData.firstName} ${reviewerData.lastName}` 
+                            : entry.name,
+                        title: reviewerData.title || entry.title,
+                        affiliation: reviewerData.affiliation || entry.affiliation,
+                        institution: reviewerData.affiliation || entry.institution,
+                        hasAccount: true
+                    };
+                } else {
+                    // If no account yet, use whitelist data
+                    return {
+                        ...entry,
+                        hasAccount: false
+                    };
+                }
+            });
+
+            setWhitelistEntries(mergedEntries);
+
+            // Extract unique affiliations from merged data
+            const affiliations = mergedEntries
                 .map(entry => entry.affiliation || entry.institution)
                 .filter((affiliation): affiliation is string => affiliation !== undefined && affiliation !== null && affiliation.trim() !== '');
             const uniqueAffiliationSet = new Set(affiliations);
@@ -114,7 +155,10 @@ function AdminWhitelistReviewers(): JSX.Element {
         const matchesAffiliation = !affiliationFilter ||
             entry.affiliation === affiliationFilter ||
             entry.institution === affiliationFilter;
-        return matchesSearch && matchesAffiliation;
+        const matchesStatus = !statusFilter ||
+            (statusFilter === 'registered' && entry.hasAccount) ||
+            (statusFilter === 'pending' && !entry.hasAccount);
+        return matchesSearch && matchesAffiliation && matchesStatus;
     });
 
     return (
@@ -257,13 +301,14 @@ function AdminWhitelistReviewers(): JSX.Element {
                                         <th>Name</th>
                                         <th>Title</th>
                                         <th>Institution</th>
+                                        <th>Account Status</th>
                                         <th>Added</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredEntries.map((entry) => (
-                                        <tr key={entry.id}>
+                                        <tr key={entry.id} className={entry.hasAccount ? "has-account" : "no-account"}>
                                             <td>{entry.email}</td>
                                             <td>
                                                 {entry.firstName && entry.lastName
@@ -273,6 +318,11 @@ function AdminWhitelistReviewers(): JSX.Element {
                                             </td>
                                             <td>{entry.title || entry.specialty || '-'}</td>
                                             <td>{entry.affiliation || entry.institution || '-'}</td>
+                                            <td>
+                                                <span className={`status-badge ${entry.hasAccount ? 'registered' : 'pending'}`}>
+                                                    {entry.hasAccount ? 'Registered' : 'Pending'}
+                                                </span>
+                                            </td>
                                             <td>
                                                 {entry.addedAt instanceof Date
                                                     ? entry.addedAt.toLocaleDateString()

@@ -60,6 +60,7 @@ function App(): JSX.Element {
       />
       <Routes>
         <Route path="/Login" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         {/* 404 page */}
         <Route path="*" element={<ErrorPage type={"404"}></ErrorPage>} />
         <Route path="/forgot-password" element={<></>} />
