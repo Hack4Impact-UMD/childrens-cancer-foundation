@@ -1,4 +1,4 @@
-import { collection, getDocs, query, doc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { FAQItem } from "../types/faqTypes";
 import { db } from "../index";
 
@@ -64,6 +64,17 @@ export const createNewFAQ = async (question: string, answer: string) => {
         return newFAQ;
     } catch (error) {
         console.error('Error creating new FAQ:', error);
+        throw error;
+    }
+}
+
+export const deleteFAQ = async (faqId: string) => {
+    try {
+        const docRef = doc(db, "FAQs", faqId);
+        await deleteDoc(docRef);
+        console.log('FAQ deleted successfully:', faqId);
+    } catch (error) {
+        console.error('Error deleting FAQ:', error);
         throw error;
     }
 }

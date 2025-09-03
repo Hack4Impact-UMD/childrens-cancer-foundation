@@ -7,7 +7,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
-import { TextField, Button, CircularProgress, Snackbar, Switch, Box, Typography } from '@mui/material';
+import { TextField, Button, CircularProgress, Snackbar, Box, Typography } from '@mui/material';
 
 import {
     updateCurrentCycleDeadlines,
@@ -20,7 +20,6 @@ import ApplicationCycle from "../../types/applicationCycle-types";
 import { FAQItem } from "../../types/faqTypes";
 import { getFAQs, initializeSampleFAQs, createNewFAQ } from "../../backend/faq-handler";
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
-import { Edit } from "lucide-react";
 
 function AdminEditInformation(): JSX.Element {
     const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
@@ -130,6 +129,16 @@ function AdminEditInformation(): JSX.Element {
             alert('Error creating new FAQ. Please try again.');
         } finally {
             setIsCreatingFAQ(false);
+        }
+    };
+
+    const handleFAQDeleted = async () => {
+        // Refresh FAQ data after deletion
+        try {
+            const updatedFaqs = await getFAQs();
+            setFAQData(updatedFaqs);
+        } catch (error) {
+            console.error('Error refreshing FAQs after deletion:', error);
         }
     };
 
@@ -528,7 +537,7 @@ function AdminEditInformation(): JSX.Element {
                                 </Box>
                             )}
 
-                            <EditableFAQComponent faqs={faqData} />
+                            <EditableFAQComponent faqs={faqData} onFAQDeleted={handleFAQDeleted} />
                         </div>
                     </div>
                 </div>

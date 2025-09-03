@@ -47,14 +47,44 @@
 
 .faq-question-header {
     display: flex;
-    margin-left: -50px;
+    align-items: center;
+    width: 100%;
     padding: 0px 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.faq-question-content {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 12px;
+}
+
+.faq-question-text {
+    flex: 1;
+    min-width: 0;
 }
 
 .expand-icon {
     display: flex;
     align-items: center;
     color: #b71c1c;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.expand-icon:hover {
+    background-color: rgba(183, 28, 28, 0.08);
+}
+
+.faq-buttons-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .markdown-preview-light {

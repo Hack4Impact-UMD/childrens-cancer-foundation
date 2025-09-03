@@ -65,3 +65,4 @@ The page handles the following error scenarios:
 - **Secure Password Input:** Password fields with show/hide functionality
 - **Email Verification:** Displays the email address to confirm the user is resetting the correct account
 
+
