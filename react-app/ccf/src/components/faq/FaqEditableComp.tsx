@@ -125,11 +125,11 @@ const EditableFAQComponent: React.FC<EditableFAQComponentProps> = ({ faqs, onFAQ
                                             />
                                         </Box>
                                     ) : (
-                                        <Typography 
-                                            onClick={() => toggleFAQ(index)} 
-                                            variant="h6" 
-                                            component="p" 
-                                            sx={{ 
+                                        <Typography
+                                            onClick={() => toggleFAQ(index)}
+                                            variant="h6"
+                                            component="p"
+                                            sx={{
                                                 cursor: 'pointer',
                                                 margin: 0,
                                                 fontSize: '18px',
