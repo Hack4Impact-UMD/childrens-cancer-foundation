@@ -1,18 +1,13 @@
 import React from 'react';
-import './Button.css';
+import { Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
 
-interface ButtonProps {
+interface ButtonProps extends MuiButtonProps {
   variant?: 'blue' | 'red';
   width?: string;
   height?: string;
   borderRadius?: string;
   fontWeight?: number | string;
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  disabled?: boolean;
-  type?: 'button' | 'submit' | 'reset';
   children: React.ReactNode;
-  className?: string;
-  title?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -21,29 +16,26 @@ const Button: React.FC<ButtonProps> = ({
   height,
   borderRadius = '20px',
   fontWeight = 400,
-  onClick,
-  disabled = false,
-  type = 'button',
   children,
-  className = '',
-  title,
+  ...rest
 }) => {
+  const color = variant === 'red' ? 'error' : 'primary';
+
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={`custom-button ${variant} ${className}`}
-      style={{ 
+    <MuiButton
+      variant="contained"
+      color={color}
+      sx={{
         width,
         height,
         borderRadius,
         fontWeight,
+        textTransform: 'none',
       }}
-      title={title}
+      {...rest}
     >
       {children}
-    </button>
+    </MuiButton>
   );
 };
 

@@ -6,7 +6,6 @@ import { submitDynamicApplication, validateApplicationData } from '../../backend
 import { getCurrentCycle } from '../../backend/application-cycle';
 import { 
   saveApplicationState, 
-  getApplicationState, 
   checkFormVersionCompatibility,
   resetApplicationState,
   markApplicationSubmitted
@@ -15,16 +14,22 @@ import { auth } from '../../index';
 import DynamicFormPage from './DynamicFormPage';
 import FormProgress from './FormProgress';
 import { toast } from 'react-toastify';
-import './DynamicApplicationForm.css';
+import {
+  Box,
+  Typography,
+  Button,
+  CircularProgress,
+  Container,
+  Paper,
+  Alert,
+  Modal,
+} from '@mui/material';
 
-interface DynamicApplicationFormProps {
-  grantType: GrantType;
-  onSubmit?: (applicationId: string) => void;
-}
+// ... (rest of the imports)
 
-const DynamicApplicationForm: React.FC<DynamicApplicationFormProps> = ({
+const DynamicApplicationForm: React.FC<{ grantType: GrantType; onSubmit?: (applicationId: string) => void; }> = ({
   grantType,
-  onSubmit
+  onSubmit,
 }) => {
   const navigate = useNavigate();
   const [template, setTemplate] = useState<FormTemplate | null>(null);
@@ -39,6 +44,7 @@ const DynamicApplicationForm: React.FC<DynamicApplicationFormProps> = ({
   const [showVersionResetModal, setShowVersionResetModal] = useState(false);
   const [versionResetReason, setVersionResetReason] = useState('');
 
+  // ... (useEffect and other functions remain largely the same, just UI parts will change)
   useEffect(() => {
     loadFormTemplate();
     checkApplicationStatus();
@@ -361,40 +367,30 @@ const DynamicApplicationForm: React.FC<DynamicApplicationFormProps> = ({
 
   if (loading) {
     return (
-      <div className="dynamic-form-container">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading application form...</p>
-        </div>
-      </div>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <CircularProgress />
+          <Typography sx={{ mt: 2 }}>Loading application form...</Typography>
+        </Paper>
+      </Container>
     );
   }
 
-  if (!template) {
+  if (!template || !applicationOpen) {
     return (
-      <div className="dynamic-form-container">
-        <div className="error-container">
-          <h2>Form Not Available</h2>
-          <p>The application form for {grantType} grants is not currently available.</p>
-          <button onClick={() => navigate('/applicant/dashboard')} className="btn-primary">
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h5" gutterBottom>
+            { !template ? 'Form Not Available' : 'Applications Closed' }
+          </Typography>
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
+            { !template ? `The application form for ${grantType} grants is not currently available.` : `Applications for ${grantType} grants are currently closed.`}
+          </Typography>
+          <Button variant="contained" onClick={() => navigate('/applicant/dashboard')}>
             Return to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!applicationOpen) {
-    return (
-      <div className="dynamic-form-container">
-        <div className="error-container">
-          <h2>Applications Closed</h2>
-          <p>Applications for {grantType} grants are currently closed.</p>
-          <button onClick={() => navigate('/applicant/dashboard')} className="btn-primary">
-            Return to Dashboard
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Paper>
+      </Container>
     );
   }
 
@@ -402,51 +398,34 @@ const DynamicApplicationForm: React.FC<DynamicApplicationFormProps> = ({
   const isLastPage = currentPageIndex === template.pages.length - 1;
 
   return (
-    <div className="dynamic-form-container">
-      {/* Version Reset Modal */}
-      {showVersionResetModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Form Updated</h2>
-            <p>The application form has been updated by an administrator.</p>
-            <p><strong>Reason:</strong> {versionResetReason}</p>
-            <p>Your previous progress has been reset to ensure you're using the latest version of the form.</p>
-            <div className="modal-actions">
-              <button 
-                onClick={handleVersionResetConfirm}
-                className="btn-primary"
-              >
-                Continue with Updated Form
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Modal open={showVersionResetModal} onClose={handleVersionResetConfirm}>
+        <Box sx={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: 400, bgcolor: 'background.paper', border: '2px solid #000', boxShadow: 24, p: 4,
+        }}>
+          <Typography variant="h6" component="h2">Form Updated</Typography>
+          <Typography sx={{ mt: 2 }}>
+            The application form has been updated by an administrator.
+            <strong>Reason:</strong> {versionResetReason}
+            Your previous progress has been reset.
+          </Typography>
+          <Button onClick={handleVersionResetConfirm} sx={{ mt: 2 }}>Continue</Button>
+        </Box>
+      </Modal>
 
-      <div className="form-header">
-        <div className="form-title-section">
-          <h1>{template.name}</h1>
-          {template.metadata?.description && (
-            <p className="form-description">{template.metadata.description}</p>
-          )}
-          {hasExistingDraft && (
-            <p className="draft-indicator">📝 Resuming your draft application</p>
-          )}
-        </div>
-        
+      <Paper sx={{ p: { xs: 2, md: 4 }, mb: 4 }}>
+        <Typography variant="h4" gutterBottom>{template.name}</Typography>
+        {template.metadata?.description && <Typography color="text.secondary">{template.metadata.description}</Typography>}
+        {hasExistingDraft && <Alert severity="info" sx={{ mt: 2 }}>📝 Resuming your draft application</Alert>}
         <FormProgress
           currentPage={currentPageIndex + 1}
           totalPages={template.pages.length}
-          pageNames={template.pages.map(page => page.title)}
+          pageNames={template.pages.map((page) => page.title)}
         />
-      </div>
+      </Paper>
 
-      {template.metadata?.instructions && (
-        <div className="form-instructions">
-          <h3>Instructions</h3>
-          <p>{template.metadata.instructions}</p>
-        </div>
-      )}
+      {template.metadata?.instructions && <Alert severity="info" sx={{ mb: 4 }}>{template.metadata.instructions}</Alert>}
 
       <DynamicFormPage
         page={currentPage}
@@ -457,44 +436,21 @@ const DynamicApplicationForm: React.FC<DynamicApplicationFormProps> = ({
         uploadedFile={uploadedFile}
       />
 
-      <div className="form-navigation">
-        <button
-          type="button"
-          onClick={goBack}
-          className="btn-secondary"
-        >
-          {currentPageIndex === 0 ? 'Back to Dashboard' : 'Previous'}
-        </button>
-
-        <div className="nav-spacer"></div>
-
-        {!isLastPage ? (
-          <button
-            type="button"
-            onClick={handleNextPage}
-            className="btn-primary"
-          >
-            Continue
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="btn-primary submit-btn"
-          >
-            {submitting ? (
-              <>
-                <div className="spinner"></div>
-                Submitting...
-              </>
-            ) : (
-              'Submit Application'
-            )}
-          </button>
-        )}
-      </div>
-    </div>
+      <Paper sx={{ p: 2, mt: 4, position: 'sticky', bottom: 16, zIndex: 1000 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Button variant="outlined" onClick={goBack}>
+            {currentPageIndex === 0 ? 'Back to Dashboard' : 'Previous'}
+          </Button>
+          {!isLastPage ? (
+            <Button variant="contained" onClick={handleNextPage}>Continue</Button>
+          ) : (
+            <Button variant="contained" color="success" onClick={handleSubmit} disabled={submitting}>
+              {submitting ? <CircularProgress size={24} /> : 'Submit Application'}
+            </Button>
+          )}
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

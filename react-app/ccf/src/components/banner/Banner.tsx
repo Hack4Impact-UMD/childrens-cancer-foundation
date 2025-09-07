@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import './Banner.css';
+import React, { useState } from 'react';
+import { Alert, AlertTitle, Box } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface BannerProps {
@@ -17,12 +16,30 @@ const Banner: React.FC<BannerProps> = ({ children }) => {
   if (!isBannerVisible) return null;
 
   return (
-    <div className='banner'>
-        <div className='textContainer'>
-            {children}
-        </div>
-      <button className='closeButton' onClick={handleCloseBanner}><CloseIcon></CloseIcon></button>
-    </div>
+    <Alert
+      severity="error"
+      onClose={handleCloseBanner}
+      icon={false}
+      sx={{
+        backgroundColor: '#BE0019',
+        color: 'white',
+        padding: '20px',
+        margin: '5px',
+        fontSize: '24px',
+        borderRadius: '4px',
+        minHeight: '100px',
+        border: '6px double white',
+        '.MuiAlert-message': {
+            flex: 1,
+            textAlign: 'center',
+        },
+        '.MuiAlert-action': {
+            alignItems: 'flex-start',
+        }
+      }}
+    >
+        {children}
+    </Alert>
   );
 };
 

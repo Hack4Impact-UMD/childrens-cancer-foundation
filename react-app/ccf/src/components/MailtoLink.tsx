@@ -1,19 +1,24 @@
-// react-app/ccf/src/components/MailtoLink.tsx
-
 import React from 'react';
-import MailtoLinkProps from "../types/MailToLinkTypes";
+import { Link as MuiLink, LinkProps as MuiLinkProps } from '@mui/material';
 
+interface MailtoLinkProps extends MuiLinkProps {
+    to: string | string[];
+    cc?: string | string[];
+    bcc?: string | string[];
+    subject?: string;
+    body?: string;
+    children: React.ReactNode;
+}
 
 const MailtoLink: React.FC<MailtoLinkProps> = ({
-                                                   to,
-                                                   cc,
-                                                   bcc,
-                                                   subject,
-                                                   body,
-                                                   children
-                                               }) => {
-    // Helper function to handle either a single string or an array of strings
-    // Converts arrays into a comma-separated string
+    to,
+    cc,
+    bcc,
+    subject,
+    body,
+    children,
+    ...rest
+}) => {
     const formatList = (list: string | string[] | undefined) =>
         Array.isArray(list) ? list.join(',') : list;
 
@@ -26,12 +31,11 @@ const MailtoLink: React.FC<MailtoLinkProps> = ({
     if (subject) queryParts.push(`subject=${encodeURIComponent(subject)}`);
     if (body) queryParts.push(`body=${encodeURIComponent(body)}`);
 
-    // If any parameters were added, join them with "&" and attach to the mailto link
     if (queryParts.length > 0) {
         link += `?${queryParts.join('&')}`;
     }
 
-    return <a href={link}>{children}</a>;
+    return <MuiLink href={link} {...rest}>{children}</MuiLink>;
 };
 
 export default MailtoLink;

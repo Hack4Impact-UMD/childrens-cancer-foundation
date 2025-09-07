@@ -1,8 +1,8 @@
 import React from 'react';
-import { FormPage, FormData, FieldErrors } from '../../types/form-template-types';
+import { FormPage, FormData, FieldErrors, FormField } from '../../types/form-template-types';
 import DynamicField from './DynamicField';
 import FileUploadField from './FileUploadField';
-import './DynamicFormPage.css';
+import { Box, Typography, Card, CardContent, CardHeader, Grid, Alert } from '@mui/material';
 
 interface DynamicFormPageProps {
   page: FormPage;
@@ -19,9 +19,8 @@ const DynamicFormPage: React.FC<DynamicFormPageProps> = ({
   fieldErrors,
   onFieldChange,
   onFileUpload,
-  uploadedFile
+  uploadedFile,
 }) => {
-  // Group fields by sections if they have section metadata
   const groupedFields = page.fields.reduce((groups, field) => {
     const section = field.metadata?.section || 'default';
     if (!groups[section]) {
@@ -29,116 +28,89 @@ const DynamicFormPage: React.FC<DynamicFormPageProps> = ({
     }
     groups[section].push(field);
     return groups;
-  }, {} as Record<string, typeof page.fields>);
+  }, {} as Record<string, FormField[]>);
 
-  // Sort fields within each section by order
-  Object.keys(groupedFields).forEach(section => {
+  Object.keys(groupedFields).forEach((section) => {
     groupedFields[section].sort((a, b) => a.order - b.order);
   });
 
-  const shouldShowField = (field: any): boolean => {
+  const shouldShowField = (field: FormField): boolean => {
     if (!field.conditionalLogic) return true;
-
     const dependsOnValue = formData[field.conditionalLogic.dependsOn];
-    const showWhen = field.conditionalLogic.showWhen;
+    const { showWhen, operator = 'equals' } = field.conditionalLogic;
 
     if (Array.isArray(showWhen)) {
       return showWhen.includes(dependsOnValue);
-    } else {
-      const operator = field.conditionalLogic.operator || 'equals';
-      
-      switch (operator) {
-        case 'equals':
-          return dependsOnValue === showWhen;
-        case 'not_equals':
-          return dependsOnValue !== showWhen;
-        case 'contains':
-          return Array.isArray(dependsOnValue) && dependsOnValue.includes(showWhen);
-        case 'greater_than':
-          return Number(dependsOnValue) > Number(showWhen);
-        case 'less_than':
-          return Number(dependsOnValue) < Number(showWhen);
-        default:
-          return dependsOnValue === showWhen;
-      }
+    }
+    switch (operator) {
+      case 'equals': return dependsOnValue === showWhen;
+      case 'not_equals': return dependsOnValue !== showWhen;
+      case 'contains': return Array.isArray(dependsOnValue) && dependsOnValue.includes(showWhen as string);
+      case 'greater_than': return Number(dependsOnValue) > Number(showWhen);
+      case 'less_than': return Number(dependsOnValue) < Number(showWhen);
+      default: return dependsOnValue === showWhen;
     }
   };
 
-  const renderField = (field: any) => {
-    if (!shouldShowField(field)) {
-      return null;
-    }
+  const renderField = (field: FormField) => {
+    if (!shouldShowField(field)) return null;
 
     if (field.type === 'file') {
       return (
-        <FileUploadField
-          key={field.id}
-          field={field}
-          uploadedFile={uploadedFile}
-          onFileUpload={onFileUpload}
-          error={fieldErrors[field.id]}
-        />
+        <Grid item xs={12} sm={field.width === 'half' ? 6 : 12} key={field.id}>
+          <FileUploadField
+            field={field}
+            uploadedFile={uploadedFile}
+            onFileUpload={onFileUpload}
+            error={fieldErrors[field.id]}
+          />
+        </Grid>
       );
     }
-
     return (
-      <DynamicField
-        key={field.id}
-        field={field}
-        value={formData[field.id]}
-        onChange={onFieldChange}
-        error={fieldErrors[field.id]}
-      />
+      <Grid item xs={12} sm={field.width === 'half' ? 6 : 12} key={field.id}>
+        <DynamicField
+          field={field}
+          value={formData[field.id]}
+          onChange={onFieldChange}
+          error={fieldErrors[field.id]}
+        />
+      </Grid>
     );
   };
 
-  const renderSection = (sectionName: string, fields: any[]) => {
+  const renderSection = (sectionName: string, fields: FormField[]) => {
     const visibleFields = fields.filter(shouldShowField);
-    
-    if (visibleFields.length === 0) {
-      return null;
-    }
+    if (visibleFields.length === 0) return null;
 
     return (
-      <div key={sectionName} className="form-section">
+      <Box key={sectionName} sx={{ mb: 4 }}>
         {sectionName !== 'default' && (
-          <div className="section-header">
-            <h3 className="section-title">{sectionName}</h3>
-          </div>
+          <CardHeader title={<Typography variant="h5" component="h3">{sectionName}</Typography>} sx={{ pb: 2 }} />
         )}
-        <div className="fields-grid">
+        <Grid container spacing={2}>
           {visibleFields.map(renderField)}
-        </div>
-      </div>
+        </Grid>
+      </Box>
     );
   };
 
   return (
-    <div className="dynamic-form-page">
-      <div className="page-header">
-        <h2 className="page-title">{page.title}</h2>
-        {page.description && (
-          <p className="page-description">{page.description}</p>
-        )}
-        {page.metadata?.instructions && (
-          <div className="page-instructions">
-            <p>{page.metadata.instructions}</p>
-          </div>
-        )}
-      </div>
+    <Card sx={{ boxShadow: 3, borderRadius: 3 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
+            {page.title}
+          </Typography>
+          {page.description && <Typography color="text.secondary" paragraph>{page.description}</Typography>}
+          {page.metadata?.instructions && <Alert severity="info">{page.metadata.instructions}</Alert>}
+        </Box>
 
-      <div className="page-content">
-        {Object.entries(groupedFields).map(([sectionName, fields]) =>
-          renderSection(sectionName, fields)
-        )}
-      </div>
+        {Object.entries(groupedFields).map(([sectionName, fields]) => renderSection(sectionName, fields))}
 
-      {page.metadata?.completionMessage && (
-        <div className="completion-message">
-          <p>{page.metadata.completionMessage}</p>
-        </div>
-      )}
-    </div>
+        {page.metadata?.completionMessage && <Alert severity="success">{page.metadata.completionMessage}</Alert>}
+      </CardContent>
+    </Card>
   );
 };
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TextField, Box } from '@mui/material';
 import Markdown from 'markdown-to-jsx';
-import './Markdown.css';
 
 type MarkdownPreviewerProps = {
     _previewOnly?: boolean;

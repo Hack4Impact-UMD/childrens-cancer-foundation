@@ -1,5 +1,15 @@
 import React from 'react';
-import './FormProgress.css';
+import {
+  Box,
+  Typography,
+  LinearProgress,
+  Stepper,
+  Step,
+  StepLabel,
+  StepIconProps,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import Check from '@mui/icons-material/Check';
 
 interface FormProgressProps {
   currentPage: number;
@@ -7,69 +17,68 @@ interface FormProgressProps {
   pageNames: string[];
 }
 
+const ColorlibStepIconRoot = styled('div')<{
+  ownerState: { completed?: boolean; active?: boolean };
+}>(({ theme, ownerState }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : '#ccc',
+  zIndex: 1,
+  color: '#fff',
+  width: 32,
+  height: 32,
+  display: 'flex',
+  borderRadius: '50%',
+  justifyContent: 'center',
+  alignItems: 'center',
+  ...(ownerState.active && {
+    background: theme.palette.primary.main,
+    boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
+  }),
+  ...(ownerState.completed && {
+    background: theme.palette.success.main,
+  }),
+}));
+
+function ColorlibStepIcon(props: StepIconProps) {
+  const { active, completed, className } = props;
+
+  const icons: { [index: string]: React.ReactElement } = {
+    1: <Check />,
+  };
+
+  return (
+    <ColorlibStepIconRoot ownerState={{ completed, active }} className={className}>
+      {completed ? <Check /> : <>{String(props.icon)}</>}
+    </ColorlibStepIconRoot>
+  );
+}
+
 const FormProgress: React.FC<FormProgressProps> = ({
   currentPage,
   totalPages,
-  pageNames
+  pageNames,
 }) => {
   const progressPercentage = (currentPage / totalPages) * 100;
+  const activeStep = currentPage - 1;
 
   return (
-    <div className="form-progress">
-      <div className="progress-header">
-        <span className="progress-text">
+    <Box sx={{ mt: 3, p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
           Step {currentPage} of {totalPages}
-        </span>
-        <span className="progress-percentage">
+        </Typography>
+        <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 500 }}>
           {Math.round(progressPercentage)}% Complete
-        </span>
-      </div>
-      
-      <div className="progress-bar-container">
-        <div className="progress-bar">
-          <div 
-            className="progress-fill"
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
-      </div>
-      
-      <div className="progress-steps">
-        {pageNames.map((pageName, index) => {
-          const stepNumber = index + 1;
-          const isActive = stepNumber === currentPage;
-          const isCompleted = stepNumber < currentPage;
-          const isUpcoming = stepNumber > currentPage;
-          
-          return (
-            <div
-              key={index}
-              className={`progress-step ${
-                isActive ? 'active' : 
-                isCompleted ? 'completed' : 
-                'upcoming'
-              }`}
-            >
-              <div className="step-indicator">
-                {isCompleted ? (
-                  <span className="step-check">✓</span>
-                ) : (
-                  <span className="step-number">{stepNumber}</span>
-                )}
-              </div>
-              <div className="step-info">
-                <div className="step-name">{pageName}</div>
-                <div className="step-status">
-                  {isActive && 'In Progress'}
-                  {isCompleted && 'Completed'}
-                  {isUpcoming && 'Upcoming'}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+        </Typography>
+      </Box>
+      <LinearProgress variant="determinate" value={progressPercentage} sx={{ height: 8, borderRadius: 4, mb: 3 }} />
+      <Stepper activeStep={activeStep} alternativeLabel>
+        {pageNames.map((label, index) => (
+          <Step key={label}>
+            <StepLabel StepIconComponent={ColorlibStepIcon}>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
+    </Box>
   );
 };
 
