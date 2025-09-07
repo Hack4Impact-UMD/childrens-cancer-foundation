@@ -86,5 +86,41 @@ service cloud.firestore {
     match /reviews/{reviewId}/reviewers/{reviewreviewerId} {
       allow read, write: if isAdmin() || isReviewer();
     }
+    
+    // Form Templates collection rules
+    match /formTemplates/{templateId} {
+      // Allow all authenticated users to read form templates (needed for applicant forms)
+      allow read: if request.auth != null;
+      // Only admins can create, update, or delete form templates
+      allow write: if isAdmin();
+    }
+    
+    // Form Template Versions collection rules (for version history)
+    match /formTemplateVersions/{versionId} {
+      // Allow all authenticated users to read template versions
+      allow read: if request.auth != null;
+      // Only admins can create version entries
+      allow create: if isAdmin();
+      // No updates or deletes allowed on version history
+    }
+    
+    // Application States collection rules (for draft applications)
+    match /applicationStates/{stateId} {
+      // Allow applicants to create, read, update, and delete their own application states
+      allow create: if isApplicant() && 
+        request.resource.data.applicantId == request.auth.uid;
+      
+      allow read: if isApplicant() && 
+        resource.data.applicantId == request.auth.uid;
+      
+      allow update: if isApplicant() && 
+        resource.data.applicantId == request.auth.uid;
+      
+      allow delete: if isApplicant() && 
+        resource.data.applicantId == request.auth.uid;
+      
+      // Allow admins to read all application states (for debugging/cleanup)
+      allow read: if isAdmin();
+    }
   }
 }

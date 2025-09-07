@@ -12,6 +12,7 @@ interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
   children: React.ReactNode;
   className?: string;
+  title?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -25,6 +26,7 @@ const Button: React.FC<ButtonProps> = ({
   type = 'button',
   children,
   className = '',
+  title,
 }) => {
   return (
     <button
@@ -38,6 +40,7 @@ const Button: React.FC<ButtonProps> = ({
         borderRadius,
         fontWeight,
       }}
+      title={title}
     >
       {children}
     </button>

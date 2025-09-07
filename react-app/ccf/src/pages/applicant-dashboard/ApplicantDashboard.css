@@ -68,6 +68,28 @@
     display: flex;
     justify-content: space-around;
     margin-top: 10px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.application-form-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.dynamic-indicator {
+    margin-left: 5px;
+    font-size: 0.8em;
+}
+
+.estimated-time {
+    color: #6c757d;
+    font-size: 0.75rem;
+    text-align: center;
 }
 
 .ApplicantDashboard-section-header {
@@ -543,4 +565,62 @@ ul {
 
 .pdf-link:hover {
     text-decoration: underline;
+}
+
+/* Draft Application Styles */
+.draft-application {
+    background-color: #fff3cd !important;
+    border: 2px solid #ffeaa7 !important;
+}
+
+.draft-application .application-info p {
+    color: #856404 !important;
+    font-weight: 500;
+}
+
+.draft-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.draft-details {
+    color: #6c757d !important;
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+.draft-application .ApplicantDashboard-application-status {
+    background-color: #ffeaa7 !important;
+    color: #856404 !important;
+}
+
+.draft-application .ApplicantDashboard-application-status p {
+    color: #856404 !important;
+    font-weight: 500;
+}
+
+.draft-application .application-status-icon {
+    color: #856404 !important;
+}
+
+/* Application Form Option Enhancements */
+.application-form-option {
+    position: relative;
+}
+
+.application-form-option .dynamic-indicator {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #28a745;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
 }

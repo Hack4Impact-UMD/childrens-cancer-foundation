@@ -65,8 +65,8 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     };
 
     const handleDueDateClick = (dueDate: string, applicationId: string) => {
-        // Navigate to review page with application ID
-        window.location.href = `/reviewer/review?id=${applicationId}`;
+        // Deprecated: navigation to old review page. Open modal instead.
+        handleModalOpen(applicationId);
     };
 
     const handleModalOpen = async (applicationId: string) => {

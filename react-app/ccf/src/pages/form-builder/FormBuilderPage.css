@@ -1,0 +1,42 @@
+/* FormBuilderPage.css - Minimal styles for MUI-based FormBuilderPage */
+
+/* Only essential custom styles that can't be handled by MUI */
+.form-builder-page {
+  /* This class is no longer used but kept for compatibility */
+}
+
+/* Custom styles for components that need specific styling */
+.template-card-hover {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.template-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Ensure proper spacing for sidebar */
+@media (max-width: 900px) {
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* Custom scrollbar for better aesthetics */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

@@ -87,7 +87,7 @@ const AdminCoverPageModal = ({ application, isOpen, onClose }: CoverPageModalPro
 
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} children={researchCoverPage} fullscreen={true}></Modal>
+        <Modal isOpen={isOpen} onClose={onClose} children={researchCoverPage} size={'viewport-90'}></Modal>
     );
 }
 

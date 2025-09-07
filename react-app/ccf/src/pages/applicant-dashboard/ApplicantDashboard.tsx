@@ -23,8 +23,11 @@ import ApplicationCycle from "../../types/applicationCycle-types";
 import { auth } from "../../index";
 import { PostGrantReport } from "../../types/post-grant-report-types";
 import { getPDFDownloadURL } from "../../storage/storage";
+import { getAvailableApplicationForms, AvailableForm } from "../../services/applicant-form-service";
+import { getDraftApplications, ApplicationState } from "../../backend/application-state-service";
+import { DynamicApplication } from "../../types/form-template-types";
 
-type ApplicationWithDecision = Application & {
+type ApplicationWithDecision = (Application | DynamicApplication) & {
     isAccepted?: boolean;
     hasReportSubmitted?: boolean;
     submittedReport?: PostGrantReport;
@@ -43,11 +46,13 @@ function ApplicantUsersDashboard(): JSX.Element {
 
     const [completedApplications, setCompletedApplications] = useState<ApplicationWithDecision[]>();
     const [inProgressApplications, setInProgressApplications] = useState<Application[]>([]);
-    const [openModal, setOpenModal] = useState<Application | null>();
+    const [openModal, setOpenModal] = useState<Application | DynamicApplication | null>();
     const [faqData, setFAQData] = useState<FAQItem[]>([]);
     const [appCycle, setAppCycle] = useState<ApplicationCycle>();
     const [applicationsOpen, setApplicationsOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
+    const [availableForms, setAvailableForms] = useState<AvailableForm[]>([]);
+    const [draftApplications, setDraftApplications] = useState<ApplicationState[]>([]);
 
     useEffect(() => {
         const initializeData = async () => {
@@ -75,6 +80,25 @@ function ApplicantUsersDashboard(): JSX.Element {
                 }).catch((e) => {
                     console.error('Error loading FAQ data:', e);
                 });
+
+                // Fetch available application forms
+                getAvailableApplicationForms().then((forms) => {
+                    console.log('Available forms loaded:', forms);
+                    setAvailableForms(forms);
+                }).catch((e) => {
+                    console.error('Error loading available forms:', e);
+                });
+
+                // Fetch draft applications
+                const user = auth.currentUser;
+                if (user) {
+                    getDraftApplications(user.uid).then((drafts) => {
+                        console.log('Draft applications loaded:', drafts);
+                        setDraftApplications(drafts);
+                    }).catch((e) => {
+                        console.error('Error loading draft applications:', e);
+                    });
+                }
 
                 // Get user applications and check decisions
                 const apps = await getUsersCurrentCycleAppplications();
@@ -253,6 +277,35 @@ function ApplicantUsersDashboard(): JSX.Element {
 
                             {!isApplicationCollapsed && (
                                 <div className="ApplicantDashboard-application-box">
+                                    {/* Draft Applications Section */}
+                                    {draftApplications && draftApplications.length > 0 && (
+                                        <>
+                                            <h3>DRAFT APPLICATIONS:</h3>
+                                            {draftApplications.map((draft, index) => (
+                                                <div key={index} className="ApplicantDashboard-single-application-box draft-application">
+                                                    <div className="application-info">
+                                                        <FaFileAlt className="application-icon" />
+                                                        <div className="draft-info">
+                                                            <p>{firstLetterCap(draft.grantType)} Grant Application</p>
+                                                            <small className="draft-details">
+                                                                Last saved: {draft.lastSaved.toDate().toLocaleDateString()} at {draft.lastSaved.toDate().toLocaleTimeString()}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                    <div className="ApplicantDashboard-application-status">
+                                                        <p>Draft - Page {draft.currentPageIndex + 1}</p>
+                                                        <FaArrowRight 
+                                                            className="application-status-icon" 
+                                                            onClick={() => navigate(`/applicant/application-form/dynamic/${draft.grantType}`)}
+                                                            style={{ cursor: 'pointer' }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <hr className="red-line" />
+                                        </>
+                                    )}
+
                                     {inProgressApplications && Object.keys(inProgressApplications).length > 0 && (
                                         <>
                                             <h3>IN PROGRESS APPLICATIONS:</h3>
@@ -281,11 +334,11 @@ function ApplicantUsersDashboard(): JSX.Element {
                                                         <FaFileAlt className="application-icon" />
                                                         <p>{firstLetterCap((application as any).grantType)}</p>
                                                     </div>
-                                                    <div className="ApplicantDashboard-application-status" onClick={() => { setOpenModal(application as Application) }}>
+                                                    <div className="ApplicantDashboard-application-status" onClick={() => { setOpenModal(application) }}>
                                                         <p>{firstLetterCap((application as any).decision)}</p>
                                                         <FaArrowRight className="application-status-icon" />
                                                     </div>
-                                                    <CoverPageModal application={application as Application} isOpen={openModal == application} onClose={closeModal}></CoverPageModal>
+                                                    <CoverPageModal application={application} isOpen={openModal == application} onClose={closeModal}></CoverPageModal>
                                                 </div>
                                             ))}
                                             <hr className="red-line" />
@@ -294,9 +347,36 @@ function ApplicantUsersDashboard(): JSX.Element {
 
                                     <h3>START YOUR APPLICATION:</h3>
                                     <div className="ApplicantDashboard-buttons">
-                                        <Button disabled={!applicationsOpen} width="25%" height="46px" onClick={() => { navigate("/applicant/application-form/nextgen") }}>NextGen</Button>
-                                        <Button disabled={!applicationsOpen} width="25%" height="46px" onClick={() => { navigate("/applicant/application-form/research") }}>Research Grant</Button>
-                                        <Button disabled={!applicationsOpen} width="25%" height="46px" onClick={() => { navigate("/applicant/application-form/nonresearch") }}>Non-Research Grant</Button>
+                                        {availableForms.length > 0 ? (
+                                            availableForms.map((form) => (
+                                                <div key={form.grantType} className="application-form-option">
+                                                    <Button 
+                                                        disabled={!applicationsOpen} 
+                                                        width="30%" 
+                                                        height="46px" 
+                                                        onClick={() => navigate(form.route)}
+                                                        title={form.description}
+                                                    >
+                                                        {form.grantType === 'research' ? 'Research Grant' : 
+                                                         form.grantType === 'nextgen' ? 'NextGen' : 
+                                                         'Non-Research Grant'}
+                                                        {form.isDynamic && <span className="dynamic-indicator">✨</span>}
+                                                    </Button>
+                                                    {form.estimatedTime && (
+                                                        <small className="estimated-time">
+                                                            ~{form.estimatedTime} min
+                                                        </small>
+                                                    )}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            // Fallback to static buttons
+                                            <>
+                                                <Button disabled={!applicationsOpen} width="25%" height="46px" onClick={() => { navigate("/applicant/application-form/nextgen") }}>NextGen</Button>
+                                                <Button disabled={!applicationsOpen} width="25%" height="46px" onClick={() => { navigate("/applicant/application-form/research") }}>Research Grant</Button>
+                                                <Button disabled={!applicationsOpen} width="25%" height="46px" onClick={() => { navigate("/applicant/application-form/nonresearch") }}>Non-Research Grant</Button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             )}

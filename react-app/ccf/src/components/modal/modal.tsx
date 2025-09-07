@@ -9,9 +9,10 @@ interface ModalProps {
   children: React.ReactNode
   title?: string
   fullscreen?: boolean
+  size?: 'auto' | 'fullscreen' | 'viewport-90'
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, fullscreen }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, fullscreen, size = 'auto' }) => {
   const modalRef = useRef<HTMLDivElement>(null)
 
   // Close modal when clicking outside
@@ -53,16 +54,22 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, 
   if (!isOpen) return null
 
   // Use createPortal to render the modal at the end of the document body
+  const containerClass = (() => {
+    if (size === 'fullscreen' || fullscreen) return 'ccf-modal-container ccf-fullscreen'
+    if (size === 'viewport-90') return 'ccf-modal-container ccf-viewport-90'
+    return 'ccf-modal-container'
+  })()
+
   return createPortal(
-    <div className="modal-overlay" role="dialog" aria-modal="true" onClick={(e) => {e.stopPropagation()}}>
-      <div className={"modal-container"+(fullscreen ? " fullscreen" : "")} ref={modalRef}>
-        <div className="modal-header">
-          {title && <h2 className="modal-title">{title}</h2>}
-          <button className="modal-close-button" onClick={close} aria-label="Close">
+    <div className="ccf-modal-overlay" role="dialog" aria-modal="true" onClick={(e) => {e.stopPropagation()}}>
+      <div className={containerClass} ref={modalRef}>
+        <div className="ccf-modal-header">
+          {title && <h2 className="ccf-modal-title">{title}</h2>}
+          <button className="ccf-modal-close-button" onClick={close} aria-label="Close">
             ×
           </button>
         </div>
-        <div className="modal-content">{children}</div>
+        <div className="ccf-modal-content">{children}</div>
       </div>
     </div>,
     document.body,

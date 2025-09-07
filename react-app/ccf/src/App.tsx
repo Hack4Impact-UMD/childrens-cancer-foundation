@@ -31,6 +31,9 @@ import GrantAwards from './pages/grant-awards/GrantAwards';
 import AdminSettings from "./pages/settings/AdminSettings";
 import ApplicantSettings from "./pages/settings/ApplicantSettings";
 import ReviewerSettings from "./pages/settings/ReviewerSettings";
+import FormBuilderPage from "./pages/form-builder/FormBuilderPage";
+import DynamicApplicationFormPage from "./pages/application-form/DynamicApplicationFormPage";
+import MigrationPage from "./pages/migration/MigrationPage";
 
 import ResultsPage from "./pages/applicant_results/ResultsPage";
 
@@ -63,8 +66,6 @@ function App(): JSX.Element {
       <Routes>
         <Route path="/Login" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        {/* 404 page */}
-        <Route path="*" element={<ErrorPage type={"404"}></ErrorPage>} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/email-action-handler" element={<EmailActionHandler />} />
         <Route path="/create-account-menu" element={<CreateAccMenu />} />
@@ -179,6 +180,12 @@ function App(): JSX.Element {
           path="/applicant/application-form/nextgen"
           element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
         />
+
+        {/* Dynamic Application Form Routes */}
+        <Route
+          path="/applicant/application-form/dynamic/:grantType"
+          element={<ApplicantProtectedRoute element={<DynamicApplicationFormPage />} />}
+        />
         <Route
           path="/applicant/application-form/nonresearch"
           element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
@@ -228,6 +235,26 @@ function App(): JSX.Element {
         <Route
           path="/admin/grant-awards"
           element={<AdminProtectedRoute element={<GrantAwards />} />}
+        />
+
+        {/* Form Builder Routes */}
+        <Route
+          path="/admin/form-builder"
+          element={<AdminProtectedRoute element={<FormBuilderPage />} />}
+        />
+        <Route
+          path="/admin/form-builder/edit/:templateId"
+          element={<AdminProtectedRoute element={<FormBuilderPage />} />}
+        />
+        <Route
+          path="/admin/form-builder/preview/:templateId"
+          element={<AdminProtectedRoute element={<FormBuilderPage />} />}
+        />
+
+        {/* Migration Route */}
+        <Route
+          path="/admin/migration"
+          element={<AdminProtectedRoute element={<MigrationPage />} />}
         />
 
         {/* Catch-all route for 404 errors - must be last */}
