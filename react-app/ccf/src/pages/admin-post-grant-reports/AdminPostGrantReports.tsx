@@ -62,7 +62,7 @@ function AdminPostGrantReports(): JSX.Element {
 
                 // Process all applications and filter for accepted ones
                 for (const doc of applicationsSnapshot.docs) {
-                    const applicationData = doc.data() as ApplicationInfo;
+                    const applicationData = doc.data() as any; // Treat as 'any' to access both structures
                     const applicationId = doc.id; // Use the document ID
                     const decisionData = decisionDataMap[applicationId];
 
@@ -93,9 +93,33 @@ function AdminPostGrantReports(): JSX.Element {
                             reportStatus = 'pending';
                         }
 
+                        // Create a new object with correctly mapped data
+                        const mappedApplication: ApplicationInfo = {
+                            applicationId: parseInt(applicationId) || applicationData.applicationId || 0,
+                            // Prioritize formData, then fall back to legacy/compatibility fields
+                            title: applicationData.formData?.title || applicationData.title || '',
+                            principalInvestigator: applicationData.formData?.principal_investigator || applicationData.principalInvestigator || '',
+                            otherStaff: applicationData.formData?.other_staff || applicationData.otherStaff || '',
+                            coPI: applicationData.formData?.co_pi || applicationData.coPI || false,
+                            institution: applicationData.formData?.institution_name || applicationData.institution || '',
+                            department: applicationData.formData?.department || applicationData.department || '',
+                            departmentHead: applicationData.formData?.department_head || applicationData.departmentHead || '',
+                            institutionAddress: applicationData.formData?.institution_address || applicationData.institutionAddress || '',
+                            institutionCityStateZip: applicationData.formData?.institution_city_state_zip || applicationData.institutionCityStateZip || '',
+                            institutionPhoneNumber: applicationData.formData?.institution_phone || applicationData.institutionPhoneNumber || '',
+                            institutionEmail: applicationData.formData?.institution_email || applicationData.institutionEmail || '',
+                            typesOfCancerAddressed: applicationData.formData?.types_of_cancer || applicationData.typesOfCancerAddressed || '',
+                            adminOfficialName: applicationData.formData?.admin_official_name || applicationData.adminOfficialName || '',
+                            adminOfficialAddress: applicationData.formData?.admin_official_address || applicationData.adminOfficialAddress || '',
+                            adminOfficialCityStateZip: applicationData.formData?.admin_official_city_state_zip || applicationData.adminOfficialCityStateZip || '',
+                            adminPhoneNumber: applicationData.formData?.admin_phone || applicationData.adminPhoneNumber || '',
+                            adminEmail: applicationData.formData?.admin_email || applicationData.adminEmail || '',
+                            decision: applicationData.decision || 'pending',
+                            assignedReviewers: applicationData.assignedReviewers || []
+                        };
+
                         applicationsWithReportStatus.push({
-                            ...applicationData,
-                            applicationId: parseInt(applicationId) || applicationData.applicationId, // Ensure we have the right ID
+                            ...mappedApplication,
                             reportStatus,
                             reportData,
                             deadline

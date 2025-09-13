@@ -133,7 +133,7 @@ function ApplicationReview(): JSX.Element {
     setFeedback({ ...feedback, [field]: value });
   };
 
-  const handleOverallScoreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleOverallScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setOverall(e.target.value);
   };
 
@@ -251,25 +251,25 @@ function ApplicationReview(): JSX.Element {
               </div>
             )}
 
-            <p className="view-app-link" onClick={() => setModalOpen(true)}>VIEW APPLICATION</p>
+            <button className="view-app-button" onClick={() => setModalOpen(true)}>
+              VIEW APPLICATION
+            </button>
             <div className="score-section">
               <p className="score-label">
                 Overall score: (1 <em>exceptional</em> - 5{" "}
                 <em>poor quality, unrepairable</em>)
               </p>
-              <select
-                className="score-dropdown"
+              <input
+                type="number"
+                step="0.1"
+                min="1"
+                max="5"
+                className="score-input"
                 value={overall}
                 onChange={handleOverallScoreChange}
-                aria-label="Overall score selection"
-              >
-                <option value="">Enter score.</option>
-                {[1, 2, 3, 4, 5].map((score) => (
-                  <option key={score} value={score}>
-                    {score}
-                  </option>
-                ))}
-              </select>
+                placeholder="Enter score (1.0 - 5.0)"
+                aria-label="Overall score input"
+              />
             </div>
 
             <p className="feedback-heading">

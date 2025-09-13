@@ -12,6 +12,28 @@
     text-decoration: underline;
     cursor: pointer;
   }
+
+  .view-app-button {
+    background-color: #003e83;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background-color 0.2s ease;
+    display: block;
+  }
+
+  .view-app-button:hover {
+    background-color: #002a5c;
+  }
+
+  .view-app-button:active {
+    background-color: #001f47;
+  }
   
   .score-section {
     margin-bottom: 15px;
@@ -38,6 +60,22 @@
     border-radius: 8px;
     border: 1px solid #ccc;
     background-color: #d9d9d980;
+  }
+
+  .score-input {
+    padding: 8px;
+    font-size: 14px;
+    width: 200px;
+    margin-left: 20px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: #d9d9d980;
+  }
+
+  .score-input:focus {
+    outline: none;
+    border-color: #003e83;
+    box-shadow: 0 0 0 2px rgba(0, 62, 131, 0.2);
   }
   
   .feedback-heading {

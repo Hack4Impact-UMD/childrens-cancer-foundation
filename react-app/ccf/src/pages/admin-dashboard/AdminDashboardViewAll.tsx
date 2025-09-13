@@ -2,13 +2,15 @@ import "./AdminDashboardViewAll.css";
 import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaCog, FaUsers, FaFileAlt } from "react-icons/fa";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../index";
 import MailtoLink from "../../components/MailtoLink";
 import sendIcon from "../../assets/email_send-solid.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { UserData } from "../../types/usertypes";
+import DynamicFieldsViewer from "../../components/dynamic-forms/DynamicFieldsViewer";
+import { FieldInfo } from "../../services/dynamic-fields-engine";
 
 function AdminDashboardViewAll(): JSX.Element {
     const sidebarItems = getSidebarbyRole("admin")
@@ -21,6 +23,10 @@ function AdminDashboardViewAll(): JSX.Element {
     const roles = ["Reviewer", "Applicant"];
     // Stores the emails of accounts selected via checkboxes in the table
     const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+    
+    // Dynamic fields viewer state
+    const [activeTab, setActiveTab] = useState<'accounts' | 'fields'>('accounts');
+    const [selectedField, setSelectedField] = useState<{id: string, info: FieldInfo} | null>(null);
     
     useEffect(() => {
         const fetchAllAccounts = async () => {
@@ -71,45 +77,66 @@ function AdminDashboardViewAll(): JSX.Element {
                         </h1>
                     </div>
 
-                    <div className="search-filter-container">
-                    <div className="search-bar">
-                        <FaSearch className="search-icon" />
-                        <input
-                            type="text"
-                            placeholder="Search"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                    {/* Tab Navigation */}
+                    <div className="admin-tabs">
+                        <button 
+                            className={`tab-button ${activeTab === 'accounts' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('accounts')}
+                        >
+                            <FaUsers className="tab-icon" />
+                            User Accounts
+                        </button>
+                        <button 
+                            className={`tab-button ${activeTab === 'fields' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('fields')}
+                        >
+                            <FaFileAlt className="tab-icon" />
+                            Dynamic Fields
+                        </button>
                     </div>
-                    <div className="filters">
-                        <div className="filter">
-                            <select
-                                value={affiliationFilter}
-                                onChange={(e) => setAffiliationFilter(e.target.value)}
-                            >
-                                <option value="">Institution</option>
-                                {uniqueAffiliations.map(aff => (
-                                    <option key={aff} value={aff}>
-                                        {aff}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="filter">
-                            <select
-                                value={roleFilter}
-                                onChange={(e) => setRoleFilter(e.target.value)}
-                            >
-                                <option value="">Role</option>
-                                {roles.map(role => (
-                                    <option key={role} value={role}>
-                                        {role}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                </div>
+
+                    {/* Conditional Content Based on Active Tab */}
+                    {activeTab === 'accounts' && (
+                        <>
+                            <div className="search-filter-container">
+                                <div className="search-bar">
+                                    <FaSearch className="search-icon" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                <div className="filters">
+                                    <div className="filter">
+                                        <select
+                                            value={affiliationFilter}
+                                            onChange={(e) => setAffiliationFilter(e.target.value)}
+                                        >
+                                            <option value="">Institution</option>
+                                            {uniqueAffiliations.map(aff => (
+                                                <option key={aff} value={aff}>
+                                                    {aff}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="filter">
+                                        <select
+                                            value={roleFilter}
+                                            onChange={(e) => setRoleFilter(e.target.value)}
+                                        >
+                                            <option value="">Role</option>
+                                            {roles.map(role => (
+                                                <option key={role} value={role}>
+                                                    {role}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                     <div className="ApplicantDashboard-sections-content">
                         <div className="accounts-table-container">
                             <div className="accounts-header">
@@ -188,6 +215,75 @@ function AdminDashboardViewAll(): JSX.Element {
                             )}
                         </div>
                     </div>
+                        </>
+                    )}
+
+                    {/* Dynamic Fields Tab */}
+                    {activeTab === 'fields' && (
+                        <div className="dynamic-fields-tab">
+                            <DynamicFieldsViewer
+                                showTitle={false}
+                                showFilters={true}
+                                showStats={true}
+                                onFieldSelect={(fieldId, fieldInfo) => {
+                                    setSelectedField({ id: fieldId, info: fieldInfo });
+                                }}
+                            />
+                            
+                            {/* Field Details Modal/Info */}
+                            {selectedField && (
+                                <div className="field-details-modal">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h3>Field Details: {selectedField.info.label}</h3>
+                                            <button 
+                                                className="close-button"
+                                                onClick={() => setSelectedField(null)}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                        <div className="modal-body">
+                                            <div className="field-detail-item">
+                                                <strong>Field ID:</strong> {selectedField.id}
+                                            </div>
+                                            <div className="field-detail-item">
+                                                <strong>Type:</strong> {selectedField.info.type}
+                                            </div>
+                                            <div className="field-detail-item">
+                                                <strong>Required:</strong> {selectedField.info.isRequired ? 'Yes' : 'No'}
+                                            </div>
+                                            {selectedField.info.helpText && (
+                                                <div className="field-detail-item">
+                                                    <strong>Help Text:</strong> {selectedField.info.helpText}
+                                                </div>
+                                            )}
+                                            <div className="field-detail-item">
+                                                <strong>Grant Types:</strong>
+                                                <div className="grant-types-list">
+                                                    {selectedField.info.grantTypes.map(grantType => (
+                                                        <span key={grantType} className="grant-type-badge">
+                                                            {grantType}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {selectedField.info.options && selectedField.info.options.length > 0 && (
+                                                <div className="field-detail-item">
+                                                    <strong>Options:</strong>
+                                                    <ul className="options-list">
+                                                        {selectedField.info.options.map((option, index) => (
+                                                            <li key={index}>{option}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

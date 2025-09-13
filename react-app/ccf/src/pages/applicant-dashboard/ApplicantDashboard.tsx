@@ -236,7 +236,9 @@ function ApplicantUsersDashboard(): JSX.Element {
                                     <div key={index} className="post-grant-report-item">
                                         <div className="report-item-info">
                                             <FaFileAlt className="report-icon" />
-                                            <span className="report-title">{(application as any).title || `${firstLetterCap((application as any).grantType)} Application`}</span>
+                                            <span className="report-title">
+                                                {(application as any).formData?.title || (application as any).title || `${firstLetterCap((application as any).grantType)} Application`}
+                                            </span>
                                         </div>
                                         {application.hasReportSubmitted ? (
                                             <button
@@ -332,9 +334,11 @@ function ApplicantUsersDashboard(): JSX.Element {
                                                 <div key={index} className="ApplicantDashboard-single-application-box">
                                                     <div className="application-info" >
                                                         <FaFileAlt className="application-icon" />
+                                                        {/* The grantType is a top-level field on both types, so direct access is okay */}
                                                         <p>{firstLetterCap((application as any).grantType)}</p>
                                                     </div>
                                                     <div className="ApplicantDashboard-application-status" onClick={() => { setOpenModal(application) }}>
+                                                        {/* The decision is a top-level field on both types, so direct access is okay */}
                                                         <p>{firstLetterCap((application as any).decision)}</p>
                                                         <FaArrowRight className="application-status-icon" />
                                                     </div>

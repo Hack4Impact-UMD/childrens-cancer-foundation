@@ -22,9 +22,16 @@ const FileUploadField: React.FC<FileUploadFieldProps> = ({
     const file = event.target.files?.[0] || null;
     
     if (file) {
-      // Validate file type (PDF only for now)
-      if (file.type !== 'application/pdf') {
-        alert('Please select a PDF file only.');
+      // Validate file type (PDF, DOC, DOCX, TXT)
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain'
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a PDF, Word document, or text file only.');
         return;
       }
 
@@ -60,8 +67,15 @@ const FileUploadField: React.FC<FileUploadFieldProps> = ({
       const file = files[0];
       
       // Validate file type
-      if (file.type !== 'application/pdf') {
-        alert('Please select a PDF file only.');
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain'
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a PDF, Word document, or text file only.');
         return;
       }
 
@@ -109,13 +123,13 @@ const FileUploadField: React.FC<FileUploadFieldProps> = ({
               <FaUpload className="upload-icon" />
               <div className="upload-text">
                 <p className="primary-text">Click to upload or drag and drop</p>
-                <p className="secondary-text">PDF files only, up to 10MB</p>
+                <p className="secondary-text">PDF, Word, or text files, up to 10MB</p>
               </div>
             </div>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,application/pdf"
+              accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
               onChange={handleFileSelect}
               style={{ display: 'none' }}
             />
@@ -150,7 +164,7 @@ const FileUploadField: React.FC<FileUploadFieldProps> = ({
       )}
 
       <div className="file-upload-help">
-        <p>• PDF files only</p>
+        <p>• PDF, Word, or text files only</p>
         <p>• Maximum file size: 10MB</p>
         <p>• This document should contain your complete grant proposal</p>
       </div>

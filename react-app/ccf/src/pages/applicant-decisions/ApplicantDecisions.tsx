@@ -56,17 +56,23 @@ function ApplicantDecisions(): JSX.Element {
         const fetchApplicationsAndDecisions = async () => {
             try {
                 setLoading(true);
+                console.log("Starting to fetch applications and decisions...");
 
                 // Check if we're in Final Decisions stage
                 const currentCycle = await getCurrentCycle();
+                console.log("Current cycle:", currentCycle);
+                
                 if (currentCycle.stage !== "Final Decisions") {
-                    setError("Decisions are not yet available. Please check back during the Final Decisions stage.");
+                    setError(`Decisions are not yet available. Current stage: ${currentCycle.stage}. Please check back during the Final Decisions stage.`);
                     setLoading(false);
                     return;
                 }
 
                 // Get user's applications for current cycle
+                console.log("Fetching user applications...");
                 const userApplications = await getUsersCurrentCycleAppplications();
+                console.log("User applications:", userApplications);
+                
                 const userApplicationsWithId: ApplicationWithId[] = userApplications.map(app => ({
                     ...app as any,
                     id: (app as any).id
@@ -79,17 +85,20 @@ function ApplicantDecisions(): JSX.Element {
                 }
 
                 // Efficiently fetch decisions for all applications
+                console.log("Fetching decisions for applications...");
                 const applicationsWithDecisions: ApplicationWithDecision[] = await Promise.all(
                     userApplicationsWithId.map(async (app) => {
                         try {
+                            console.log(`Fetching decision for application ${app.id}...`);
                             const decision = await getDecisionData(app.id);
+                            console.log(`Decision for ${app.id}:`, decision);
                             return {
                                 ...app,
                                 decisionData: decision || undefined,
                                 hasDecision: !!decision
                             };
                         } catch (error) {
-                            console.warn(`No decision found for application ${app.id}`);
+                            console.warn(`No decision found for application ${app.id}:`, error);
                             return {
                                 ...app,
                                 decisionData: undefined,
@@ -98,6 +107,8 @@ function ApplicantDecisions(): JSX.Element {
                         }
                     })
                 );
+                
+                console.log("Applications with decisions:", applicationsWithDecisions);
 
                 setApplications(applicationsWithDecisions);
 

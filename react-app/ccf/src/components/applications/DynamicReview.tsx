@@ -1,6 +1,9 @@
 import React from 'react';
 import { DynamicApplication, FormTemplate } from '../../types/form-template-types';
 import { getFormTemplate } from '../../backend/form-template-service';
+import { dynamicFieldsEngine, FieldInfo } from '../../services/dynamic-fields-engine';
+import { getDownloadURL, ref } from "firebase/storage";
+import { storage } from '../../index';
 import './DynamicReview.css';
 
 interface DynamicReviewProps {
@@ -11,6 +14,8 @@ interface DynamicReviewProps {
 const DynamicReview: React.FC<DynamicReviewProps> = ({ application, hideFile = false }) => {
   const [template, setTemplate] = React.useState<FormTemplate | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [fields, setFields] = React.useState<Map<string, FieldInfo>>(new Map());
+  const [fileDownloadUrls, setFileDownloadUrls] = React.useState<Record<string, string>>({});
 
   React.useEffect(() => {
     const loadTemplate = async () => {
@@ -18,6 +23,27 @@ const DynamicReview: React.FC<DynamicReviewProps> = ({ application, hideFile = f
         if (application.formTemplateId) {
           const formTemplate = await getFormTemplate(application.formTemplateId);
           setTemplate(formTemplate);
+          
+          // Load fields using the dynamic fields engine
+          const allFields = await dynamicFieldsEngine.getAllFields();
+          setFields(allFields);
+          
+          // Pre-generate download URLs for file fields
+          const urls: Record<string, string> = {};
+          for (const [fieldId, fieldInfo] of Array.from(allFields.entries())) {
+            const value = application.formData?.[fieldId];
+            if (value && dynamicFieldsEngine.isFileField(fieldInfo, value)) {
+              try {
+                const filePath = `pdfs/${value}`;
+                const fileRef = ref(storage, filePath);
+                const downloadUrl = await getDownloadURL(fileRef);
+                urls[fieldId] = downloadUrl;
+              } catch (error) {
+                console.error('Error generating download URL for field:', fieldId, error);
+              }
+            }
+          }
+          setFileDownloadUrls(urls);
         }
       } catch (error) {
         console.error('Error loading form template for review:', error);
@@ -28,6 +54,38 @@ const DynamicReview: React.FC<DynamicReviewProps> = ({ application, hideFile = f
 
     loadTemplate();
   }, [application.formTemplateId]);
+
+  const handleFileClick = (fieldId: string) => {
+    const downloadUrl = fileDownloadUrls[fieldId];
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank');
+    } else {
+      alert('File not found or unable to generate download link');
+    }
+  };
+
+  const showFullText = (text: string, label: string) => {
+    const newWindow = window.open('', '_blank', 'width=600,height=400');
+    if (newWindow) {
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>${label}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+              h1 { color: #c41230; margin-bottom: 20px; }
+              .content { white-space: pre-wrap; }
+            </style>
+          </head>
+          <body>
+            <h1>${label}</h1>
+            <div class="content">${text}</div>
+          </body>
+        </html>
+      `);
+      newWindow.document.close();
+    }
+  };
 
   const formatFieldValue = (value: any, fieldType: string): string => {
     if (value === null || value === undefined || value === '') {
@@ -49,28 +107,26 @@ const DynamicReview: React.FC<DynamicReviewProps> = ({ application, hideFile = f
     return String(value);
   };
 
-  const getFieldLabel = (fieldId: string, template: FormTemplate): string => {
-    // Find the field in the template
-    for (const page of template.pages) {
-      const field = page.fields.find(f => f.id === fieldId);
-      if (field) {
-        return field.label;
-      }
+  const getFieldLabel = (fieldId: string): string => {
+    const fieldInfo = fields.get(fieldId);
+    if (fieldInfo) {
+      return fieldInfo.label;
     }
     // Fallback to a formatted version of the field ID
     return fieldId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const groupFieldsByPage = (template: FormTemplate, formData: Record<string, any>) => {
-    const groupedFields: { [pageTitle: string]: Array<{ field: any; value: any }> } = {};
+    const groupedFields: { [pageTitle: string]: Array<{ fieldId: string; fieldInfo: FieldInfo; value: any }> } = {};
 
     template.pages.forEach(page => {
-      const pageFields: Array<{ field: any; value: any }> = [];
+      const pageFields: Array<{ fieldId: string; fieldInfo: FieldInfo; value: any }> = [];
       
       page.fields.forEach(field => {
         const value = formData[field.id];
-        if (value !== undefined && value !== null && value !== '') {
-          pageFields.push({ field, value });
+        const fieldInfo = fields.get(field.id);
+        if (value !== undefined && value !== null && value !== '' && fieldInfo) {
+          pageFields.push({ fieldId: field.id, fieldInfo, value });
         }
       });
 
@@ -121,21 +177,54 @@ const DynamicReview: React.FC<DynamicReviewProps> = ({ application, hideFile = f
       </div>
 
       <div className="review-content">
-        {Object.entries(groupedFields).map(([pageTitle, fields]) => (
+        {Object.entries(groupedFields).map(([pageTitle, pageFields]) => (
           <div key={pageTitle} className="detail-card">
             <h3 className="card-title">{pageTitle}</h3>
             <div className="detail-grid">
-              {fields.map(({ field, value }) => (
-                <div 
-                  key={field.id} 
-                  className={`detail-item ${field.width === 'full' ? 'full-width' : ''}`}
-                >
-                  <span className="detail-label">{field.label}</span>
-                  <span className="detail-value">
-                    {formatFieldValue(value, field.type)}
-                  </span>
-                </div>
-              ))}
+              {pageFields.map(({ fieldId, fieldInfo, value }) => {
+                const isFileField = dynamicFieldsEngine.isFileField(fieldInfo, value);
+                const isLongTextField = dynamicFieldsEngine.isLongTextField(fieldInfo, value);
+                const displayName = isFileField ? dynamicFieldsEngine.getFileDisplayName(String(value)) : null;
+                
+                return (
+                  <div 
+                    key={fieldId} 
+                    className={`detail-item ${fieldInfo.type === 'textarea' ? 'full-width' : ''}`}
+                  >
+                    <span className="detail-label">{fieldInfo.label}</span>
+                    <span className="detail-value">
+                      {isFileField ? (
+                        <button
+                          className="file-link-btn"
+                          onClick={() => handleFileClick(fieldId)}
+                          title={`Open ${String(value)}`}
+                        >
+                          📄 {displayName}
+                        </button>
+                      ) : isLongTextField ? (
+                        <div>
+                          <div className="long-text-preview">
+                            {String(value).length > 200 
+                              ? `${String(value).substring(0, 200)}...` 
+                              : String(value)
+                            }
+                          </div>
+                          {String(value).length > 200 && (
+                            <button
+                              className="show-full-text-btn"
+                              onClick={() => showFullText(String(value), fieldInfo.label)}
+                            >
+                              Show Full Text
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        formatFieldValue(value, fieldInfo.type)
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}

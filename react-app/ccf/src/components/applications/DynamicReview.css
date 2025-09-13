@@ -256,3 +256,56 @@
     font-size: 0.8rem;
   }
 }
+
+/* File link button styles */
+.file-link-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.2s ease;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-link-btn:hover {
+  background-color: #218838;
+}
+
+.file-link-btn:active {
+  background-color: #1e7e34;
+}
+
+/* Long text preview styles */
+.long-text-preview {
+  margin-bottom: 8px;
+  line-height: 1.5;
+  color: #495057;
+}
+
+.show-full-text-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+.show-full-text-btn:hover {
+  background-color: #0056b3;
+}
+
+.show-full-text-btn:active {
+  background-color: #004085;
+}

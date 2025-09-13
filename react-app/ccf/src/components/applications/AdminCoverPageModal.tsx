@@ -2,7 +2,6 @@ import { ApplicationDetails, ResearchApplication, NonResearchApplication, Applic
 import { Modal } from "../modal/modal";
 import './CoverPageModal.css'
 import '../../pages/application-form/subquestions/SubForm.css'
-import Review from "../../pages/application-form/subquestions/Review";
 import { useEffect, useState } from "react";
 import { downloadPDFsByName } from "../../storage/storage";
 import { PostGrantReport } from "../../types/post-grant-report-types";
@@ -12,6 +11,7 @@ import { Decision } from "../../types/decision-types";
 import { getDecisionData } from "../../services/decision-data-service";
 import { DecisionBox } from "../decisions/decisionBox";
 import blueDocument from '../../assets/blueDocumentIcon.png';
+import DynamicApplicationPreview from "../dynamic-forms/DynamicApplicationPreview";
 
 interface CoverPageModalProps {
     application: Application;
@@ -81,7 +81,16 @@ const AdminCoverPageModal = ({ application, isOpen, onClose }: CoverPageModalPro
             {decision ? <DecisionBox decision={decision}></DecisionBox> : ""}
             <div className="application-pdf-link">{pdfLink ? <a target="_blank" href={pdfLink.url}>Application PDF</a> : ""}</div>
             <div className="post-grant-report-pdf-link">{reportLink ? <a target="_blank" href={reportLink.url}>Post Grant Report</a> : reportMsg}</div>
-            <Review type={application.grantType} formData={application} hideFile={true}></Review>
+            
+            {/* Dynamic Application Data using the engine */}
+            <div className="dynamic-cover-sheet-content">
+                <DynamicApplicationPreview 
+                    application={application}
+                    showAllFields={true}
+                    maxFields={100}
+                    className="cover-sheet-preview"
+                />
+            </div>
         </div>
     )
 

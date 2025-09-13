@@ -15,6 +15,8 @@ import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
+import DynamicApplicationPreview from "../../components/dynamic-forms/DynamicApplicationPreview";
+import { dynamicFieldsEngine } from "../../services/dynamic-fields-engine";
 
 function AdminApplicationsDatabase(): JSX.Element {
     const [applicationsData, setApplicationsData] = useState<{ [year: string]: Application[] }>({});
@@ -30,9 +32,16 @@ function AdminApplicationsDatabase(): JSX.Element {
     const [availableYears, setAvailableYears] = useState<string[]>([]);
     const [availableInstitutions, setAvailableInstitutions] = useState<string[]>([]);
     const [openModal, setOpenModal] = useState<Application | null>();
+    const [openDynamicFieldsModal, setOpenDynamicFieldsModal] = useState<Application | null>();
+    
+    // Dynamic fields state - no longer needed since we show all by default
 
     const closeModal = () => {
         setOpenModal(null)
+    }
+
+    const closeDynamicFieldsModal = () => {
+        setOpenDynamicFieldsModal(null)
     }
 
     useEffect(() => {
@@ -74,11 +83,14 @@ function AdminApplicationsDatabase(): JSX.Element {
 
                 // Initialize expanded state for each application
                 const initialExpandedState: { [key: string]: boolean } = {};
+                
                 Object.keys(applications).forEach(year => {
                     applications[year].forEach((app, index) => {
-                        initialExpandedState[`${year}-${index}`] = false;
+                        const key = `${year}-${index}`;
+                        initialExpandedState[key] = false;
                     });
                 });
+                
                 setExpandedApplications(initialExpandedState);
 
             } catch (error) {
@@ -103,6 +115,8 @@ function AdminApplicationsDatabase(): JSX.Element {
             [key]: !prev[key]
         }));
     };
+
+    // toggleDynamicFields function removed - no longer needed
 
     const filteredApplications = Object.keys(applicationsData).reduce((acc, year) => {
         const filtered = applicationsData[year].filter(app =>
@@ -217,44 +231,15 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                             {isExpanded && (
                                                                 <div className="application-details">
                                                                     <hr className="divider" />
-                                                                    <div className="details-two-columns">
-                                                                        <div className="details-block">
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Application Title: </span>
-                                                                                <span className="detail-value">{app.title || " N/A"}</span>
-                                                                            </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Application Type: </span>
-                                                                                <span className="detail-value">{app.grantType || " N/A"}</span>
-                                                                            </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Principal Investigator/Requestor: </span>
-                                                                                <span className="detail-value">{app.grantType == "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
-                                                                            </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Institution: </span>
-                                                                                <span className="detail-value">{app.institution || " N/A"}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div className="details-block">
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Cancer Type: </span>
-                                                                                <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
-                                                                            </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Amount Requested: </span>
-                                                                                <span className="detail-value">${app.amountRequested || " N/A"}</span>
-                                                                            </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Continuation of Funding: </span>
-                                                                                <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
-                                                                            </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Status: </span>
-                                                                                <span className="detail-value">{firstLetterCap(app.decision)}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
+                                                                    {/* Dynamic Application Summary - First 6 Fields */}
+                                                                    <DynamicApplicationPreview 
+                                                                        application={app}
+                                                                        showAllFields={false}
+                                                                        maxFields={6}
+                                                                        className="summary-preview"
+                                                                        onShowAllFields={() => setOpenDynamicFieldsModal(app)}
+                                                                    />
+                                                                    
                                                                     <div className="action-buttons">
                                                                         <Button className="action-button cover-sheet" onClick={(event) => { event.stopPropagation(); setOpenModal(app) }}>
                                                                             Cover Sheet Information
@@ -285,6 +270,31 @@ function AdminApplicationsDatabase(): JSX.Element {
                     }
                 </div>
             </div>
+
+            {/* Dynamic Fields Modal */}
+            {openDynamicFieldsModal && (
+                <div className="dynamic-fields-modal">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h3>Complete Application Data</h3>
+                            <button 
+                                className="close-button"
+                                onClick={closeDynamicFieldsModal}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <DynamicApplicationPreview 
+                                application={openDynamicFieldsModal}
+                                showAllFields={true}
+                                maxFields={100}
+                                className="modal-preview"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

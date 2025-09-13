@@ -375,6 +375,8 @@
 .application-details {
     padding: 1rem 1.5rem;
     width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
 }
   
 .expanded-header h3 {
@@ -415,4 +417,257 @@
 
 .detail-value {
     color: #555;
+}
+
+/* Dynamic Fields Section */
+.dynamic-fields-section {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.dynamic-fields-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.dynamic-fields-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.toggle-dynamic-fields-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.toggle-dynamic-fields-button:hover {
+    background-color: #218838;
+}
+
+.toggle-dynamic-fields-button .button-icon {
+    font-size: 12px;
+}
+
+/* Embedded preview styling */
+.dynamic-application-preview.embedded-preview {
+    margin: 0;
+    border: 1px solid #c41230;
+    background-color: #fff;
+}
+
+.dynamic-application-preview.summary-preview {
+    margin: 0;
+    border: 1px solid #003E83;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.dynamic-application-preview.summary-preview .preview-header {
+    border-bottom-color: #003E83;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+}
+
+.dynamic-application-preview.summary-preview .preview-header h4 {
+    font-size: 14px;
+    color: #003E83;
+    font-weight: 600;
+}
+
+.dynamic-application-preview.summary-preview .field-item {
+    border-left-color: #003E83;
+    background-color: #fff;
+    padding: 8px;
+    margin-bottom: 8px;
+}
+
+.dynamic-application-preview.summary-preview .field-label {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.dynamic-application-preview.summary-preview .field-value {
+    font-size: 13px;
+}
+
+.dynamic-application-preview.embedded-preview .preview-header {
+    border-bottom-color: #c41230;
+    margin-bottom: 15px;
+}
+
+.dynamic-application-preview.embedded-preview .preview-header h4 {
+    font-size: 16px;
+    color: #c41230;
+}
+
+.dynamic-application-preview.embedded-preview .field-item {
+    border-left-color: #c41230;
+    background-color: #f8f9fa;
+}
+
+.dynamic-application-preview.embedded-preview .field-count {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-color: #bbdefb;
+}
+
+/* Dynamic Fields Modal */
+.dynamic-fields-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.dynamic-fields-modal .modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    max-width: 90vw;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.dynamic-fields-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.dynamic-fields-modal .modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.dynamic-fields-modal .close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.dynamic-fields-modal .close-button:hover {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+.dynamic-fields-modal .modal-body {
+    padding: 25px;
+    max-height: calc(90vh - 80px);
+    overflow-y: auto;
+}
+
+.dynamic-application-preview.modal-preview {
+    margin: 0;
+    border: none;
+    background-color: transparent;
+    padding: 0;
+}
+
+.dynamic-application-preview.modal-preview .preview-header {
+    border-bottom: 2px solid #c41230;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+}
+
+.dynamic-application-preview.modal-preview .preview-header h4 {
+    font-size: 18px;
+    color: #c41230;
+    font-weight: 600;
+}
+
+.dynamic-application-preview.modal-preview .fields-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.dynamic-application-preview.modal-preview .field-item {
+    border-left: 4px solid #c41230;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    width: 100%;
+}
+
+/* Responsive adjustments for dynamic fields */
+@media (max-width: 768px) {
+    .dynamic-fields-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .toggle-dynamic-fields-button {
+        align-self: stretch;
+        justify-content: center;
+    }
+    
+    .dynamic-fields-section {
+        padding: 12px;
+    }
+    
+    .dynamic-fields-modal .modal-content {
+        margin: 10px;
+        max-height: 95vh;
+    }
+    
+    .dynamic-fields-modal .modal-header {
+        padding: 15px 20px;
+    }
+    
+    .dynamic-fields-modal .modal-body {
+        padding: 20px;
+    }
+    
+    /* Single column layout - no grid adjustments needed */
 }

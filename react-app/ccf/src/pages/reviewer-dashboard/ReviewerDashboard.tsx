@@ -17,6 +17,7 @@ import ApplicationCycle from "../../types/applicationCycle-types";
 import { getCurrentCycle } from "../../backend/application-cycle";
 import Banner from "../../components/banner/Banner";
 import CoverPageModal from "../../components/applications/CoverPageModal";
+import { useNavigate } from "react-router-dom";
 
 interface FAQItem {
     id: string;
@@ -32,6 +33,7 @@ interface ReviewerProp {
 }
 
 function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.Element {
+    const navigate = useNavigate();
     const sidebarItems = getSidebarbyRole('reviewer');
     // State for expandable sections
     const [isApplicationCollapsed, setApplicationCollapsed] = useState(false);
@@ -65,8 +67,8 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     };
 
     const handleDueDateClick = (dueDate: string, applicationId: string) => {
-        // Deprecated: navigation to old review page. Open modal instead.
-        handleModalOpen(applicationId);
+        // Navigate to the review page for this application
+        navigate(`/reviewer/review?id=${applicationId}`);
     };
 
     const handleModalOpen = async (applicationId: string) => {

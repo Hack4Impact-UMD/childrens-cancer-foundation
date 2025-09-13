@@ -8,15 +8,23 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
     throw new Error('User must be authenticated to upload files');
   }
 
-  const MAX_PDF_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB in bytes
+  const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB in bytes
 
   console.log("file type:" + file.type);
-  if (file.size > MAX_PDF_SIZE_BYTES) {
-    throw new Error('PDF file size exceeds the 50MB limit.');
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    throw new Error('File size exceeds the 50MB limit.');
   }
 
-  if (file.type !== "application/pdf") {
-    throw new Error('File type not supported (ONLY pdf file type accepted).');
+  // Allow PDF, Word documents, and text files
+  const allowedTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain'
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('File type not supported. Only PDF, Word documents, and text files are accepted.');
   }
 
   if (!file) {

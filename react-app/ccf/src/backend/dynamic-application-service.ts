@@ -24,6 +24,7 @@ import {
   FormData
 } from '../types/form-template-types';
 import { getFormTemplate } from './form-template-service';
+import { uploadFileToStorage } from '../storage/storage';
 
 /**
  * Collection names
@@ -50,8 +51,20 @@ export async function submitDynamicApplication(
     // Extract key fields for compatibility with existing system
     const extractedData = extractLegacyFields(formData, template);
 
-    // Clean form data to remove File objects (Firestore can't store them)
-    const cleanedFormData = cleanFormDataForFirestore(formData);
+    // Upload file to Firebase Storage if provided
+    let uploadedFileName: string | undefined;
+    if (file) {
+      try {
+        uploadedFileName = await uploadFileToStorage(file);
+        console.log('File uploaded successfully:', uploadedFileName);
+      } catch (uploadError) {
+        console.error('File upload failed:', uploadError);
+        throw new Error(`File upload failed: ${uploadError instanceof Error ? uploadError.message : 'Unknown error'}`);
+      }
+    }
+
+    // Clean form data to remove File objects and replace with uploaded file names
+    const cleanedFormData = cleanFormDataForFirestore(formData, uploadedFileName);
 
     // Validate required fields
     if (!applicantId || !applicationCycle || !formTemplateId) {
@@ -78,8 +91,8 @@ export async function submitDynamicApplication(
       // Extracted fields for backward compatibility
       ...extractedData,
       
-      // File will be handled separately (similar to existing system)
-      file: file?.name || undefined
+      // Store the uploaded file hash
+      file: uploadedFileName || undefined
     };
 
     // Save the document with the ID already set
@@ -281,13 +294,13 @@ export function convertToLegacyFormat(application: DynamicApplication): any {
 /**
  * Clean form data to remove File objects and other non-Firestore-compatible types
  */
-function cleanFormDataForFirestore(formData: FormData): Record<string, any> {
+function cleanFormDataForFirestore(formData: FormData, uploadedFileName?: string): Record<string, any> {
   const cleaned: Record<string, any> = {};
   
   Object.entries(formData).forEach(([key, value]) => {
     if (value instanceof File) {
-      // Store file name instead of File object
-      cleaned[key] = value.name;
+      // Store the uploaded file hash instead of File object
+      cleaned[key] = uploadedFileName || value.name;
     } else if (value instanceof Date) {
       // Convert Date to string
       cleaned[key] = value.toISOString();
