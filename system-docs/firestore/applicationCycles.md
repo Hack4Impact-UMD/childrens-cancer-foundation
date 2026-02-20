@@ -9,7 +9,7 @@ interface ApplicationCycle {
   id: string;
   name: string;
   current: boolean;
-  stage: 'Applications Open' | 'Applications Closed' | 'Review' | 'Grading' | 'Final Decisions';
+  stage: 'Applications Open' | 'Applications Closed' | 'Review' | 'Deliberations' | 'Release Decisions';
   researchDeadline: any; // Firestore Timestamp
   nextGenDeadline: any; // Firestore Timestamp
   nonResearchDeadline: any; // Firestore Timestamp
