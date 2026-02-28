@@ -36,10 +36,9 @@ const AdminCoverPageModal = ({ application, isOpen, onClose }: CoverPageModalPro
                 }).catch((e) => {
                     console.error(e)
                 })
-                const reportDue = (currentAppCycle.name != application.applicationCycle) || currentAppCycle.stage == "Release Decisions"
+                const reportDue = (currentAppCycle.name !== application.applicationCycle) || currentAppCycle.stage === "Release Decisions"
                 if (application.applicationId && reportDue) {
                     getReportByApplicationID(application.applicationId).then(report => {
-                        console.log(report)
                         const fileId = report.pdf || report.file;
                         if (fileId) {
                             downloadPDFsByName([fileId]).then((links) => {
@@ -58,7 +57,7 @@ const AdminCoverPageModal = ({ application, isOpen, onClose }: CoverPageModalPro
                             console.error(e)
                         })
                     }).catch(err => {
-                        if (err.message == "Not Found") {
+                        if (err.message === "Not Found") {
                             setReportMsg("Post-Grant Report Not Submitted")
                         } else {
                             console.error(err)
