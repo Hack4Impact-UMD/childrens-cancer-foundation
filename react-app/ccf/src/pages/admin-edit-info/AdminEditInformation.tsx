@@ -8,6 +8,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { TextField, Button, CircularProgress, Snackbar, Box, Typography } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 import {
     updateCurrentCycleDeadlines,
@@ -22,9 +23,9 @@ import { getFAQs, initializeSampleFAQs, createNewFAQ } from "../../backend/faq-h
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
 
 function AdminEditInformation(): JSX.Element {
-    const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(dayjs());
-    const [reviewerDate, setReviewerDate] = useState<dayjs.Dayjs | null>(dayjs());
-    const [postGrantReportDate, setPostGrantReportDate] = useState<dayjs.Dayjs | null>(dayjs());
+    const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(null);
+    const [reviewerDate, setReviewerDate] = useState<Dayjs | null>(null);
+    const [postGrantReportDate, setPostGrantReportDate] = useState<Dayjs | null>(null);
     // Current stage of application cycle
     const [currentStage, setCurrentStage] = useState<string | null>(null);
     const [stageSaving, setStageSaving] = useState(false); // shows button spinner
@@ -39,7 +40,27 @@ function AdminEditInformation(): JSX.Element {
     const [newFAQQuestion, setNewFAQQuestion] = useState<string>('');
     const [newFAQAnswer, setNewFAQAnswer] = useState<string>('');
     const [isCreatingFAQ, setIsCreatingFAQ] = useState<boolean>(false);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
+    useEffect(() => {
+        const loadCycle = async () => {
+            const data = await getCurrentCycle();
+            if (data?.stage) {
+                setCurrentStage(data.stage);
+            }
+            if (data?.allApplicationsDeadline) {
+                setAllApplicationsDate(dayjs(data.allApplicationsDeadline));
+            }
+            if (data?.reviewerDeadline) {
+                setReviewerDate(dayjs(data.reviewerDeadline));
+            }
+            if (data?.postGrantReportDeadline) {
+                setPostGrantReportDate(dayjs(data.postGrantReportDeadline));
+            }
+        };
+        loadCycle();
+    }, []);
+    
     useEffect(() => {
         getFAQs().then(faqs => {
             setFAQData(faqs)
@@ -95,6 +116,11 @@ function AdminEditInformation(): JSX.Element {
     };
 
     const handleEndCurrentCycle = async () => {
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmEndCycle = async () => {
+        setConfirmDialogOpen(false);
         const newCycleName = window.prompt("Enter the name for the new application cycle (e.g., 2024-2025):");
         if (newCycleName) {
             const success = await endCurrentCycleAndStartNewOne(newCycleName);
@@ -102,6 +128,10 @@ function AdminEditInformation(): JSX.Element {
                 window.location.reload();
             }
         }
+    };
+
+    const cancelEndCycle = () => {
+        setConfirmDialogOpen(false);
     };
 
     const handleCreateNewFAQ = async () => {
@@ -232,7 +262,7 @@ function AdminEditInformation(): JSX.Element {
                     <div className="deadline-interactives">
                         <h2>Reviews:</h2>
                         <div className="interactive-date-selector">
-                            <h2>Reviewer Responses</h2>
+                            <h2>Reviewer Deadline</h2>
                             <div className="deadline-section">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
@@ -402,6 +432,26 @@ function AdminEditInformation(): JSX.Element {
                         >
                             End Current Cycle and Start New
                         </Button>
+
+                        <Dialog
+                            open={confirmDialogOpen}
+                            onClose={cancelEndCycle}
+                        >
+                            <DialogTitle>Confirm End of Current Cycle</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText>
+                                    Are you sure you want to end the current application cycle? This action cannot be undone and will start a new cycle.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={cancelEndCycle} color="primary">
+                                    Cancel
+                                </Button>
+                                <Button onClick={confirmEndCycle} color="secondary" autoFocus>
+                                    Confirm
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
                     </div>
                     <div>
                         <div className="editable-info-section">
