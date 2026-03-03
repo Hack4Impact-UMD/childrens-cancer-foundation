@@ -14,7 +14,7 @@ import { auth } from "../.."; // Adjust path as needed
 import { db } from "../.."
 import { getReviewsForReviewer } from "../../services/review-service";
 import ApplicationCycle from "../../types/applicationCycle-types";
-import { getCurrentCycle } from "../../backend/application-cycle";
+import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from "../../backend/application-cycle";
 import Banner from "../../components/banner/Banner";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 
@@ -93,11 +93,24 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
 
     // Fetch reviewer's assigned applications from Firebase using the new review service
     useEffect(() => {
-        getCurrentCycle().then((cycle) => {
-            setAppCycle(cycle)
+        getCurrentCycle().then(async (cycle) => {
+            const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+            setAppCycle(updatedCycle)
         }).catch((e) => {
             console.error(e)
         })
+
+        // Refetch cycle every 30 seconds to detect admin changes or deadline progression
+        const cycleRefreshInterval = setInterval(async () => {
+            try {
+                const cycle = await getCurrentCycle();
+                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                setAppCycle(updatedCycle);
+            } catch (error) {
+                console.error('Error refetching cycle:', error);
+            }
+        }, 30000);
+
         const fetchAssignedApplications = async () => {
             if (!currentUser) {
                 setError("User not authenticated");
@@ -197,6 +210,8 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
         };
 
         fetchAssignedApplications();
+
+        return () => clearInterval(cycleRefreshInterval);
     }, [currentUser]);
 
     return (

@@ -22,7 +22,7 @@ import { getFAQs, initializeSampleFAQs, createNewFAQ } from "../../backend/faq-h
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
 
 function AdminEditInformation(): JSX.Element {
-    const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
+    const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(dayjs());
     const [reviewerDate, setReviewerDate] = useState<dayjs.Dayjs | null>(null);
     const [postGrantReportDate, setPostGrantReportDate] = useState<dayjs.Dayjs | null>(null);
     // Current stage of application cycle

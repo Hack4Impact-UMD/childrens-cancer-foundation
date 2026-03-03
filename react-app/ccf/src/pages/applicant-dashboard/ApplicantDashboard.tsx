@@ -16,7 +16,7 @@ import { firstLetterCap } from "../../utils/stringfuncs"
 import CoverPageModal from "../../components/applications/CoverPageModal";
 import { FAQItem } from "../../types/faqTypes";
 import { getFAQs } from "../../backend/faq-handler";
-import { getCurrentCycle } from "../../backend/application-cycle";
+import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded, getDaysUntilDeadline } from "../../backend/application-cycle";
 import { getDecisionData } from "../../services/decision-data-service";
 import { getReportsByUser } from "../../backend/post-grant-reports";
 import ApplicationCycle from "../../types/applicationCycle-types";
@@ -61,9 +61,10 @@ function ApplicantUsersDashboard(): JSX.Element {
                     console.error('Error loading sidebar items:', e);
                 });
 
-                getCurrentCycle().then((cycle) => {
-                    setAppCycle(cycle)
-                    setApplicationsOpen(cycle.stage == "Applications Open")
+                getCurrentCycle().then(async (cycle) => {
+                    const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                    setAppCycle(updatedCycle)
+                    setApplicationsOpen(updatedCycle.stage === "Applications Open")
                 }).catch((e) => {
                     console.error(e)
                 })
@@ -134,6 +135,20 @@ function ApplicantUsersDashboard(): JSX.Element {
         };
 
         initializeData();
+
+        // Refetch cycle every 30 seconds to detect admin changes or deadline progression
+        const cycleRefreshInterval = setInterval(async () => {
+            try {
+                const cycle = await getCurrentCycle();
+                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                setAppCycle(updatedCycle);
+                setApplicationsOpen(updatedCycle.stage === "Applications Open");
+            } catch (error) {
+                console.error('Error refetching cycle:', error);
+            }
+        }, 30000);
+
+        return () => clearInterval(cycleRefreshInterval);
     }, []);
 
     const closeModal = () => {
@@ -184,8 +199,8 @@ function ApplicantUsersDashboard(): JSX.Element {
                         </h1>
                     </div>
                     {
-                        appCycle?.stage == "Applications Open" ?
-                            <Banner>{`REMINDER: Research applications due on ${appCycle?.researchDeadline.toLocaleDateString()}, Nextgen applications due on ${appCycle?.nextGenDeadline.toLocaleDateString()}, Nonresearch applications due on ${appCycle?.nonResearchDeadline.toLocaleDateString()}`}</Banner> :
+                        appCycle?.stage === "Applications Open" ?
+                            <Banner>{`REMINDER: Applications close in ${getDaysUntilDeadline(appCycle?.researchDeadline)} days. Research applications due on ${appCycle?.researchDeadline.toLocaleDateString()}, Nextgen applications due on ${appCycle?.nextGenDeadline.toLocaleDateString()}, Nonresearch applications due on ${appCycle?.nonResearchDeadline.toLocaleDateString()}`}</Banner> :
                             <Banner>ALERT: Applications Are Closed for this Year</Banner>
                     }
 

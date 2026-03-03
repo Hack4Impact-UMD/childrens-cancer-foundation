@@ -12,7 +12,7 @@ import { uploadResearchApplication } from '../../backend/applicant-form-submit';
 import { validateEmail, validatePhoneNumber } from '../../utils/validation';
 import { toast } from 'react-toastify';
 import { Modal } from '../../components/modal/modal';
-import { getCurrentCycle } from '../../backend/application-cycle';
+import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend/application-cycle';
 
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
@@ -84,9 +84,23 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [appOpen, setAppOpen] = useState<boolean>(false);
 
     useEffect(() => {
-        getCurrentCycle().then(cycle => {
-            setAppOpen(cycle.stage == "Applications Open")
+        getCurrentCycle().then(async cycle => {
+            const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+            setAppOpen(updatedCycle.stage === "Applications Open")
         })
+
+        // Refetch cycle every 30 seconds to detect admin changes or deadline progression
+        const cycleRefreshInterval = setInterval(async () => {
+            try {
+                const cycle = await getCurrentCycle();
+                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                setAppOpen(updatedCycle.stage === "Applications Open");
+            } catch (error) {
+                console.error('Error refetching cycle:', error);
+            }
+        }, 30000);
+
+        return () => clearInterval(cycleRefreshInterval);
     }, [])
 
     const goBack = () => {
