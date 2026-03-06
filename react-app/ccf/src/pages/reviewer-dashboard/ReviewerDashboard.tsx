@@ -14,7 +14,7 @@ import { auth } from "../.."; // Adjust path as needed
 import { db } from "../.."
 import { getReviewsForReviewer } from "../../services/review-service";
 import ApplicationCycle from "../../types/applicationCycle-types";
-import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from "../../backend/application-cycle";
+import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded, getDaysUntilDeadline } from "../../backend/application-cycle";
 import Banner from "../../components/banner/Banner";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 
@@ -226,9 +226,21 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                         <h1 className="dashboard-header">Reviewer Dashboard</h1>
                     </div>
 
-                    {appCycle?.stage == "Applications Open" ?
-                            <Banner>{`REMINDER: Reviews due on ${appCycle?.reviewerDeadline.toLocaleDateString()}`}</Banner> :
-                            <Banner>ALERT: Review Period Has Ended</Banner>}
+                    {appCycle?.stage === "Applications Open" && (
+                            <Banner>Awaiting Review Period to Begin</Banner>
+                        )}
+                        {appCycle?.stage === "Review" && (
+                            <Banner>{`REMINDER: Reviews due in ${getDaysUntilDeadline(appCycle.reviewerDeadline)} days on ${appCycle.reviewerDeadline.toLocaleDateString()}`}</Banner>
+                        )}
+                        {appCycle?.stage === "Deliberations" && (
+                            <Banner>Reviews are now locked. Deliberations are underway.</Banner>
+                        )}
+                        {appCycle?.stage === "Final Decisions" && (
+                            <Banner>Review Period Complete - Final Decisions are being made</Banner>
+                        )}
+                        {appCycle?.stage === "Applications Closed" && (
+                            <Banner>Awaiting Review Period to Begin</Banner>
+                        )}
 
                     <div className="dashboard-sections-content" style={{ flexGrow: 1 }}>
                         <div className="dashboard-section">
