@@ -50,7 +50,7 @@ function AdminEditInformation(): JSX.Element {
         "Applications Open",
         "Applications Closed",
         "Review",
-        "Grading",
+        "Deliberations",
         "Final Decisions"
     ];
 

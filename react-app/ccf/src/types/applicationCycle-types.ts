@@ -2,7 +2,7 @@ export default interface ApplicationCycle {
     id: string;
     name: string;
     current: boolean;
-    stage: 'Applications Open' | 'Applications Closed' | 'Review' | 'Grading' | 'Final Decisions';
+    stage: 'Applications Open' | 'Applications Closed' | 'Review' | 'Deliberations' | 'Final Decisions';
     researchDeadline: Date;
     nextGenDeadline: Date;
     nonResearchDeadline: Date;

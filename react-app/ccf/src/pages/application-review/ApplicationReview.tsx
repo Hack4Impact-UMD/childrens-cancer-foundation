@@ -20,6 +20,8 @@ import {
   updateReview,
   submitReview
 } from "../../services/review-service";
+import { getCurrentCycle } from "../../backend/application-cycle";
+import ApplicationCycle from "../../types/applicationCycle-types";
 import Button from "../../components/buttons/Button";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import { Modal } from "../../components/modal/modal";
@@ -43,6 +45,8 @@ function ApplicationReview(): JSX.Element {
   const [reviewer, setReviewer] = useState<any>(null);
   const [currentReview, setCurrentReview] = useState<Review | null>(null);
   const [overall, setOverall] = useState<string>("");
+  const [appCycle, setAppCycle] = useState<ApplicationCycle | null>(null);
+  const [isReviewLocked, setIsReviewLocked] = useState(false);
 
   const [feedback, setFeedback] = useState({
     significance: "",
@@ -64,6 +68,11 @@ function ApplicationReview(): JSX.Element {
 
       try {
         setLoading(true);
+
+        // Fetch current cycle to check if reviews are locked
+        const cycle = await getCurrentCycle();
+        setAppCycle(cycle);
+        setIsReviewLocked(cycle.stage === "Deliberations");
 
         // Fetch application data
         const applicationRef = doc(db, "applications", applicationId);
@@ -140,6 +149,11 @@ function ApplicationReview(): JSX.Element {
   const saveProgress = async () => {
     if (!currentReview?.id || !applicationId) return;
 
+    if (isReviewLocked) {
+      setSaveStatus('error');
+      return;
+    }
+
     try {
       setSaveStatus('saving');
 
@@ -164,6 +178,11 @@ function ApplicationReview(): JSX.Element {
 
   const submitReviewHandler = async () => {
     if (!currentReview?.id || !overall || !applicationId) {
+      return;
+    }
+
+    if (isReviewLocked) {
+      setSaveStatus('error');
       return;
     }
 
@@ -343,12 +362,17 @@ function ApplicationReview(): JSX.Element {
           </div>
 
           <div className="button-group">
-            <Button onClick={saveProgress} disabled={saveStatus === 'saving'}>
+            {isReviewLocked && (
+              <div style={{ color: '#dc3545', fontWeight: 'bold', marginBottom: '10px' }}>
+                Reviews are locked. Deliberations have begun.
+              </div>
+            )}
+            <Button onClick={saveProgress} disabled={saveStatus === 'saving' || isReviewLocked}>
               <div>{saveStatus === 'saving' ? 'Saving...' :
                 saveStatus === 'saved' ? 'Saved!' :
                   saveStatus === 'error' ? 'Error Saving' : 'Save Progress'}</div>
             </Button>
-            <Button onClick={submitReviewHandler} disabled={saveStatus === 'saving'} height="40px">
+            <Button onClick={submitReviewHandler} disabled={saveStatus === 'saving' || isReviewLocked} height="40px">
                 Submit
             </Button>
             {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}
