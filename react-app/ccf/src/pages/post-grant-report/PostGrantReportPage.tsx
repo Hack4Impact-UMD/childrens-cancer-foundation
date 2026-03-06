@@ -48,6 +48,16 @@ function PostGrantReportPage(): JSX.Element {
                 const sidebarItems = await getApplicantSidebarItems();
                 setSidebarItems(sidebarItems);
 
+                // Get cycle data and check stage first
+                const cycle = await getCurrentCycle();
+                setCurrentCycle(cycle);
+
+                // Check if we're in Final Decisions stage
+                if (cycle.stage !== "Final Decisions") {
+                    setError("Post-grant reports are not yet available. Please check back during the Final Decisions stage.");
+                    return;
+                }
+
                 // Get application data
                 const userApplications = await getUsersCurrentCycleAppplications();
                 const targetApplication = userApplications.find((app: any) => (app as any).id === applicationId);
@@ -91,10 +101,7 @@ function PostGrantReportPage(): JSX.Element {
                     }
                 }
 
-                // Get cycle data
-                const cycle = await getCurrentCycle();
-                setCurrentCycle(cycle);
-
+                // Set deadline if available
                 if (cycle.postGrantReportDeadline) {
                     setDeadline(cycle.postGrantReportDeadline);
                     const now = new Date();

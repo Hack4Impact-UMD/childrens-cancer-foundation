@@ -204,8 +204,8 @@ function ApplicantUsersDashboard(): JSX.Element {
                             <Banner>ALERT: Applications Are Closed for this Year</Banner>
                     }
 
-                    {/* Post-Grant Reports Section */}
-                    {acceptedApplications.length > 0 && (
+                    {/* Post-Grant Reports Section - Only visible in Final Decisions stage */}
+                    {acceptedApplications.length > 0 && appCycle?.stage === "Final Decisions" && (
                         <div className="post-grant-reports-section">
                             <div className="post-grant-reports-header">
                                 <h2>📋 Post-Grant Reports</h2>
@@ -297,7 +297,8 @@ function ApplicantUsersDashboard(): JSX.Element {
                                                         <p>{firstLetterCap((application as any).grantType)}</p>
                                                     </div>
                                                     <div className="ApplicantDashboard-application-status" onClick={() => { setOpenModal(application as Application) }}>
-                                                        <p>{firstLetterCap((application as any).decision)}</p>
+                                                        {/* Only show decision status if in Final Decisions stage */}
+                                                        <p>{appCycle?.stage === "Final Decisions" ? firstLetterCap((application as any).decision) : "Submitted"}</p>
                                                         <FaArrowRight className="application-status-icon" />
                                                     </div>
                                                     <CoverPageModal application={application as Application} isOpen={openModal == application} onClose={closeModal}></CoverPageModal>
