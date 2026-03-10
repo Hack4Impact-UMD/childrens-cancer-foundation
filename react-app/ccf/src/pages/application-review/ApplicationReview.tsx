@@ -167,11 +167,6 @@ function ApplicationReview(): JSX.Element {
   const saveProgress = async () => {
     if (!currentReview?.id || !applicationId) return;
 
-    if (isReviewLocked) {
-      setSaveStatus('error');
-      return;
-    }
-
     try {
       setSaveStatus('saving');
 
@@ -196,11 +191,6 @@ function ApplicationReview(): JSX.Element {
 
   const submitReviewHandler = async () => {
     if (!currentReview?.id || !overall || !applicationId) {
-      return;
-    }
-
-    if (isReviewLocked) {
-      setSaveStatus('error');
       return;
     }
 
