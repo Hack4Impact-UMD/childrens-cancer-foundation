@@ -199,8 +199,8 @@ function ApplicantUsersDashboard(): JSX.Element {
                         </h1>
                     </div>
                     {
-                        appCycle?.stage === "Applications Open" ?
-                            <Banner>{`REMINDER: Applications close in ${getDaysUntilDeadline(appCycle?.allApplicationsDeadline)} days. Applications due on ${appCycle?.allApplicationsDeadline.toLocaleDateString()}`}</Banner> :
+                        appCycle && appCycle.stage === "Applications Open" && appCycle.allApplicationsDeadline ?
+                            <Banner>{`REMINDER: Applications close in ${getDaysUntilDeadline(appCycle.allApplicationsDeadline)} days. Applications due on ${appCycle.allApplicationsDeadline.toLocaleDateString()}`}</Banner> :
                             <Banner>ALERT: Applications Are Closed for this Year</Banner>
                     }
 
