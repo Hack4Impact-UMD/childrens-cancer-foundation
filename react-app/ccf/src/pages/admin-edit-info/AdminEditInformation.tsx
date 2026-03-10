@@ -43,23 +43,20 @@ function AdminEditInformation(): JSX.Element {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
     useEffect(() => {
-        const loadCycle = async () => {
+    const loadCycle = async () => {
+        try {
             const data = await getCurrentCycle();
-            if (data?.stage) {
-                setCurrentStage(data.stage);
-            }
-            if (data?.allApplicationsDeadline) {
-                setAllApplicationsDate(dayjs(data.allApplicationsDeadline));
-            }
-            if (data?.reviewerDeadline) {
-                setReviewerDate(dayjs(data.reviewerDeadline));
-            }
-            if (data?.postGrantReportDeadline) {
-                setPostGrantReportDate(dayjs(data.postGrantReportDeadline));
-            }
-        };
-        loadCycle();
+            if (data?.stage) setCurrentStage(data.stage);
+            if (data?.allApplicationsDeadline) setAllApplicationsDate(dayjs(data.allApplicationsDeadline));
+            if (data?.reviewerDeadline) setReviewerDate(dayjs(data.reviewerDeadline));
+            if (data?.postGrantReportDeadline) setPostGrantReportDate(dayjs(data.postGrantReportDeadline));
+        } catch (error) {
+            console.error('Failed to load cycle data:', error);
+        }
+    };
+    loadCycle();
     }, []);
+
     
     useEffect(() => {
         getFAQs().then(faqs => {
@@ -88,16 +85,6 @@ function AdminEditInformation(): JSX.Element {
     }
 
     const sidebarItems = getSidebarbyRole("admin")
-
-    useEffect(() => {
-        const loadCycle = async () => {
-            const data = await getCurrentCycle();
-            if (data?.stage) {
-                setCurrentStage(data.stage);
-            }
-        };
-        loadCycle();
-    }, []);
 
     const handleStageChange = async (newStage: ApplicationCycle["stage"]) => {
         if (newStage === currentStage) return; // no-op
@@ -232,11 +219,13 @@ function AdminEditInformation(): JSX.Element {
 
                                         //debug
                                         if (success) {
-                                            console.log("Application deadlines updated.");
                                             setAppDeadlineMessage("Application Deadlines Updated!");
                                             setTimeout(() => setAppDeadlineMessage(null), 3000); // clear after 3 seconds
+                                        } else {
+                                            setAppDeadlineMessage("Failed to update deadlines. Please try again.");
                                         }
-                                    }}
+                                            setTimeout(() => setAppDeadlineMessage(null), 3000);
+                                        }}
                                     sx={{
                                         backgroundColor: '#79747E',
                                         fontFamily: 'Roboto, sans-serif',
@@ -301,10 +290,12 @@ function AdminEditInformation(): JSX.Element {
                                         });
 
                                         if (success) {
-                                            console.log("Reviewer deadline updated.");
                                             setRevDeadlineMessage("Reviewer Deadlines Updated!");
                                             setTimeout(() => setRevDeadlineMessage(null), 3000);
+                                        } else {
+                                            setRevDeadlineMessage("Failed to update reviewer deadlines. Please try again.");
                                         }
+                                        setTimeout(() => setRevDeadlineMessage(null), 3000);
                                     }}
                                     sx={{
                                         backgroundColor: '#79747E',
@@ -369,10 +360,12 @@ function AdminEditInformation(): JSX.Element {
                                         });
 
                                         if (success) {
-                                            console.log("Post-grant report deadline updated.");
                                             setPostGrantReportDeadlineMessage("Post-Grant Report Deadline Updated!");
                                             setTimeout(() => setPostGrantReportDeadlineMessage(null), 3000);
+                                        } else {
+                                            setPostGrantReportDeadlineMessage("Failed to update post-grant report deadlines. Please try again.");
                                         }
+                                        setTimeout(() => setRevDeadlineMessage(null), 3000);
                                     }}
                                     sx={{
                                         backgroundColor: '#79747E',
