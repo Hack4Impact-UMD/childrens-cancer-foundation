@@ -172,13 +172,9 @@ export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
 // Auto-update cycle stage if application deadline has passed
 export const checkAndUpdateCycleStageIfNeeded = async (cycle: ApplicationCycle): Promise<ApplicationCycle> => {
   try {
-    const now = new Date();
-    
-    if (cycle.stage === "Applications Open" && now > cycle.allApplicationsDeadline) {
-      await updateCycleStage("Applications Closed");
-      return { ...cycle, stage: "Applications Closed" };
-    }
-    
+    // Stage selection is admin-controlled.
+    // If an admin keeps stage at "Applications Open", applicants should still be able
+    // to submit even when the configured deadline has passed.
     return cycle;
   } catch (error) {
     console.error("Error checking cycle stage:", error);
