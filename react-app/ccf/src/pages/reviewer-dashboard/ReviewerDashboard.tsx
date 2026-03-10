@@ -229,7 +229,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                     {appCycle?.stage === "Applications Open" && (
                             <Banner>Awaiting Review Period to Begin</Banner>
                         )}
-                        {appCycle?.stage === "Review" && (
+                        {appCycle?.stage === "Review" && appCycle.reviewerDeadline && (
                             <Banner>{`REMINDER: Reviews due in ${getDaysUntilDeadline(appCycle.reviewerDeadline)} days on ${appCycle.reviewerDeadline.toLocaleDateString()}`}</Banner>
                         )}
                         {appCycle?.stage === "Deliberations" && (
