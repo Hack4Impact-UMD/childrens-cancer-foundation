@@ -21,10 +21,8 @@ import {
   submitReview
 } from "../../services/review-service";
 import { getCurrentCycle } from "../../backend/application-cycle";
-import ApplicationCycle from "../../types/applicationCycle-types";
 import Button from "../../components/buttons/Button";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
-import { Modal } from "../../components/modal/modal";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 
 function ApplicationReview(): JSX.Element {
@@ -42,10 +40,8 @@ function ApplicationReview(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [reviewer, setReviewer] = useState<any>(null);
   const [currentReview, setCurrentReview] = useState<Review | null>(null);
   const [overall, setOverall] = useState<string>("");
-  const [appCycle, setAppCycle] = useState<ApplicationCycle | null>(null);
   const [isReviewLocked, setIsReviewLocked] = useState(false);
 
   const [feedback, setFeedback] = useState({
@@ -59,20 +55,34 @@ function ApplicationReview(): JSX.Element {
 
   // Fetch application data and reviewer info
   useEffect(() => {
-    const fetchApplicationAndReviewer = async () => {
-      if (!applicationId || !currentUser) {
-        setError("Missing application ID or user not authenticated");
-        setLoading(false);
-        return;
-      }
+    if (!applicationId || !currentUser) {
+      setError("Missing application ID or user not authenticated");
+      setLoading(false);
+      return;
+    }
 
+    let isActive = true;
+
+    const refreshCycleLockState = async () => {
+      try {
+        const cycle = await getCurrentCycle();
+
+        if (!isActive) {
+          return;
+        }
+
+        setIsReviewLocked(cycle.stage === "Deliberations");
+      } catch (error) {
+        console.error("Error refetching cycle:", error);
+      }
+    };
+
+    const fetchApplicationAndReviewer = async () => {
       try {
         setLoading(true);
 
         // Fetch current cycle to check if reviews are locked
-        const cycle = await getCurrentCycle();
-        setAppCycle(cycle);
-        setIsReviewLocked(cycle.stage === "Deliberations");
+        await refreshCycleLockState();
 
         // Fetch application data
         const applicationRef = doc(db, "applications", applicationId);
@@ -103,8 +113,6 @@ function ApplicationReview(): JSX.Element {
         }
 
         const reviewerDoc = reviewerSnapshot.docs[0];
-        const reviewerData = { id: reviewerDoc.id, ...reviewerDoc.data() };
-        setReviewer(reviewerData);
 
         // Find existing review for this reviewer and application
         const existingReview = await findReviewForReviewerAndApplication(
@@ -136,6 +144,16 @@ function ApplicationReview(): JSX.Element {
     };
 
     fetchApplicationAndReviewer();
+
+    // Refetch cycle every 30 seconds to detect admin stage changes while page is open
+    const cycleRefreshInterval = setInterval(() => {
+      refreshCycleLockState();
+    }, 30000);
+
+    return () => {
+      isActive = false;
+      clearInterval(cycleRefreshInterval);
+    };
   }, [applicationId, currentUser]);
 
   const handleChange = (field: string, value: string) => {
@@ -265,7 +283,7 @@ function ApplicationReview(): JSX.Element {
             {application && (
               <div>
                 <h2>Title: {application.title}</h2>
-                <p>Applicant: {application.grantType == "nonresearch" ? (application as NonResearchApplication).requestor : (application as ResearchApplication).principalInvestigator}</p>
+                <p>Applicant: {application.grantType === "nonresearch" ? (application as NonResearchApplication).requestor : (application as ResearchApplication).principalInvestigator}</p>
                 <p>Type: {application.grantType}</p>
               </div>
             )}
