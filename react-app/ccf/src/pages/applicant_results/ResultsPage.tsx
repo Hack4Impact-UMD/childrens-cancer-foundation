@@ -51,12 +51,12 @@ function ResultsPage(): JSX.Element {
         <div>
             <Sidebar links={sidebarItems} />
             <div className="main-container">
-                <h1 className="main-header">Grant Results</h1>
+                <h1 className="global-header">Grant Results</h1>
                 <div className="form-container">
                     <div>
                     {decision?.isAccepted ? (
                         <div>
-                        <h1 className="decision-title">Congratulations!</h1>
+                        <h1 className="global-header">Congratulations!</h1>
                         <div>
                             <div className="letter-content">
                                 <p>We are delighted to inform you that your application has been selected for funding! Your proposal stood out for its innovation, potential impact, and clarity of your research goals. We are honored to support your work and look forward to the significant advancements your project promises to bring.</p>
@@ -77,7 +77,7 @@ function ResultsPage(): JSX.Element {
                         </div>
                     ) : (
                         <div>
-                        <h1 className="decision-title">Thank you.</h1>
+                        <h1 className="global-header">Thank you.</h1>
                         <div>
                             <div className="letter-content">
                                 <p>
