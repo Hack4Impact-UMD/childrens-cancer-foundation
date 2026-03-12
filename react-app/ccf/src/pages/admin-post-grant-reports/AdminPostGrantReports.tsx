@@ -11,6 +11,7 @@ import { ref, getDownloadURL } from "firebase/storage";
 import { getAllPostGrantReports } from "../../backend/post-grant-reports";
 import { storage } from "../../index";
 import { ApplicationInfo } from "../../types/application-types";
+import Header from "../../components/header/Header";
 
 interface PostGrantReportWithApplication extends PostGrantReport {
     applicationTitle?: string;
@@ -235,13 +236,7 @@ function AdminPostGrantReports(): JSX.Element {
             <Sidebar links={sidebarItems} />
             <div className="dashboard-container">
                 <div className="AdminPostGrantReports">
-                    <div className="ApplicantDashboard-header-container">
-                        <img src={logo} className="ApplicantDashboard-logo" alt="logo" />
-                        <h1 className="ApplicantDashboard-header">
-                            Post-Grant Reports Management
-                        </h1>
-                    </div>
-
+                    <Header title="Post-Grant Reports Management" />
                     <div className="search-filter-container">
                         <div className="search-bar">
                             <FaSearch className="search-icon" />

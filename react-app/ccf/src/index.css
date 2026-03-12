@@ -6,3 +6,19 @@
     --color-yellow: #F0C567;
     --color-blue: #003E83;
 }
+
+/* Standardized Page Header Styles */
+.page-header-container {
+  display: flex;
+  align-items: center;
+}
+
+.page-logo {
+  width: 75px;
+  margin-right: 20px;
+}
+
+.page-header {
+  font-size: 3rem;
+  color: #be0019;
+}

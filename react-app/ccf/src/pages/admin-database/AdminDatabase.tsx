@@ -15,6 +15,7 @@ import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
+import Header from "../../components/header/Header";
 
 function AdminApplicationsDatabase(): JSX.Element {
     const [applicationsData, setApplicationsData] = useState<{ [year: string]: Application[] }>({});
@@ -135,11 +136,7 @@ function AdminApplicationsDatabase(): JSX.Element {
 
             <div className="dashboard-container">
                 <div className="dashboard-content">
-                    <div className="dashboard-header-container">
-                        <img src={logo} alt="Logo" className="dashboard-logo" />
-                        <h1 className="dashboard-header">Administrator Dashboard</h1>
-                    </div>
-
+                    <Header title="Adminstrator Dashboard" />
                     <input
                         type="text"
                         placeholder="Search"
