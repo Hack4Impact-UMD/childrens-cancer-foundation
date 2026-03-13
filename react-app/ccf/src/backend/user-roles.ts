@@ -2,7 +2,7 @@ import {auth} from "../index"
 import { httpsCallable, getFunctions } from "firebase/functions"
 
 export const addReviewerRole = async (email: String) => {
-    const functions = getFunctions();
+    const functions = getFunctions(undefined, 'us-central1');
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
     await addReviewerRole({ email: email })
     .then((result) => {
