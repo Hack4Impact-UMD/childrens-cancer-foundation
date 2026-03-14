@@ -368,7 +368,7 @@ function AdminEditInformation(): JSX.Element {
                                         } else {
                                             setPostGrantReportDeadlineMessage("Failed to update post-grant report deadlines. Please try again.");
                                         }
-                                        setTimeout(() => setRevDeadlineMessage(null), 3000);
+                                        setTimeout(() => setPostGrantReportDeadlineMessage(null), 3000);
                                     }}
                                     sx={{
                                         backgroundColor: '#79747E',
