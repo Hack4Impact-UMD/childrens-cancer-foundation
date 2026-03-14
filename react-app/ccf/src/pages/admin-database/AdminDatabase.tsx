@@ -136,7 +136,7 @@ function AdminApplicationsDatabase(): JSX.Element {
 
             <div className="dashboard-container">
                 <div className="dashboard-content">
-                    <Header title="Adminstrator Dashboard" />
+                    <Header title="Administrator Dashboard" />
                     <input
                         type="text"
                         placeholder="Search"
@@ -178,7 +178,7 @@ function AdminApplicationsDatabase(): JSX.Element {
 
 
 
-                    {Object.keys(filteredApplications).length == 0 ? "No applications matching filters" :
+                    {Object.keys(filteredApplications).length === 0 ? "No applications matching filters" :
 
                         <div className="dashboard-sections-content">
                             {Object.keys(filteredApplications).sort((a, b) => Number(b) - Number(a)).map((year) => (
@@ -226,7 +226,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                             </div>
                                                                             <div className="detail-item">
                                                                                 <span className="detail-label">Principal Investigator/Requestor: </span>
-                                                                                <span className="detail-value">{app.grantType == "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
+                                                                                <span className="detail-value">{app.grantType === "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
                                                                             </div>
                                                                             <div className="detail-item">
                                                                                 <span className="detail-label">Institution: </span>
@@ -236,7 +236,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                         <div className="details-block">
                                                                             <div className="detail-item">
                                                                                 <span className="detail-label">Cancer Type: </span>
-                                                                                <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
+                                                                                <span className="detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
                                                                             </div>
                                                                             <div className="detail-item">
                                                                                 <span className="detail-label">Amount Requested: </span>
@@ -244,7 +244,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                             </div>
                                                                             <div className="detail-item">
                                                                                 <span className="detail-label">Continuation of Funding: </span>
-                                                                                <span className="detail-value">{app.grantType == "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
+                                                                                <span className="detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
                                                                             </div>
                                                                             <div className="detail-item">
                                                                                 <span className="detail-label">Status: </span>
@@ -264,7 +264,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                         Completed Application
                                                                     </button> */}
                                                                     </div>
-                                                                    <AdminCoverPageModal application={app} isOpen={openModal == app} onClose={closeModal}></AdminCoverPageModal>
+                                                                    <AdminCoverPageModal application={app} isOpen={openModal === app} onClose={closeModal}></AdminCoverPageModal>
                                                                 </div>
                                                             )}
                                                             <button className="expand-collapse-btn" onClick={() => toggleApplication(year, index)}>
