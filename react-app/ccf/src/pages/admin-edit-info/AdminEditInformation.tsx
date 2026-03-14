@@ -212,6 +212,7 @@ function AdminEditInformation(): JSX.Element {
                                 </LocalizationProvider>
                                 <Button
                                     variant="contained"
+                                    disabled={!allApplicationsDate}
                                     onClick={async () => {
                                         const success = await updateCurrentCycleDeadlines({
                                             allApplicationsDate
@@ -284,6 +285,7 @@ function AdminEditInformation(): JSX.Element {
                                 </LocalizationProvider>
                                 <Button
                                     variant="contained"
+                                    disabled={!reviewerDate}
                                     onClick={async () => {
                                         const success = await updateCurrentCycleDeadlines({
                                             reviewerDate
@@ -354,6 +356,7 @@ function AdminEditInformation(): JSX.Element {
                                 </LocalizationProvider>
                                 <Button
                                     variant="contained"
+                                    disabled={!postGrantReportDate}
                                     onClick={async () => {
                                         const success = await updateCurrentCycleDeadlines({
                                             postGrantReportDate
