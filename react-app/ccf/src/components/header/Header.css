@@ -1,14 +1,14 @@
-.AccountSettings-header-container {
+.dashboard-header-container {
   display: flex;
   align-items: center;
 }
 
-.AccountSettings-logo {
+.dashboard-logo {
   width: 75px;
   margin-right: 20px;
 }
 
-.AccountSettings-header {
+.dashboard-header {
   font-size: 3rem;
   color: #be0019;
 }
