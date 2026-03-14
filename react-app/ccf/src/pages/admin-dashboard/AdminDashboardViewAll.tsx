@@ -9,6 +9,7 @@ import MailtoLink from "../../components/MailtoLink";
 import sendIcon from "../../assets/email_send-solid.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { UserData } from "../../types/usertypes";
+import Header from "../../components/header/Header";
 
 function AdminDashboardViewAll(): JSX.Element {
     const sidebarItems = getSidebarbyRole("admin")
@@ -64,12 +65,7 @@ function AdminDashboardViewAll(): JSX.Element {
             <Sidebar links={sidebarItems} />
             <div className="dashboard-container">
                 <div className="AdminViewAll">
-                    <div className="ApplicantDashboard-header-container">
-                        <img src={logo} className="ApplicantDashboard-logo" alt="logo" />
-                        <h1 className="ApplicantDashboard-header">
-                            Administrator Dashboard
-                        </h1>
-                    </div>
+                    <Header title="Administrator Dashboard" />
 
                     <div className="search-filter-container">
                     <div className="search-bar">

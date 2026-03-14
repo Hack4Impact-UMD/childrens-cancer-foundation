@@ -16,7 +16,7 @@ function ErrorPage({ type }: ErrorProps): JSX.Element {
         return (
           <>
             <button onClick={goToHome} className = "logo-button"><img src={logo} alt="Logo" className = "logo"/></button>
-            <h1 className="big">404</h1>
+            <h1 className="global-header">404</h1>
             <p className="page-not-found">Oops... Page Not Found!</p>
             <p className="error-message">The page that you were looking for 
             does not exist or has been moved</p>
@@ -26,7 +26,7 @@ function ErrorPage({ type }: ErrorProps): JSX.Element {
         return (
           <>
             <button onClick={goToHome} className = "logo-button"><img src={logo} alt="Logo" className = "logo"/></button>
-            <h1 className="big">505</h1>
+            <h1 className="global-header">505</h1>
             <p className="page-not-found">Oops... Server Error!</p>
             <p className="error-message">Something went wrong.</p>
           </>
@@ -35,7 +35,7 @@ function ErrorPage({ type }: ErrorProps): JSX.Element {
         return (
           <>
           <button onClick={goToLogin} className = "logo-button"><img src={logo} alt="Logo" className = "logo"/></button>
-          <h1 className="big">401</h1>
+          <h1 className="global-header">401</h1>
           <p className="page-not-found">Unauthorized Access</p>
           <p className="error-message">You are not authorized to access this page. Please log in to continue.</p>
           </>

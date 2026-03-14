@@ -15,6 +15,7 @@ import {
   checkAndUpdateApplicationStatus
 } from '../../services/review-service';
 import { GrantApplication, Reviewer } from '../../types/application-types';
+import Header from "../../components/header/Header";
 
 // Interface definitions
 interface ExtendedGrantApplication extends GrantApplication {
@@ -624,10 +625,7 @@ const AssignReviewersPage: React.FC = () => {
 
       <div className="ar-assign-reviewers-container">
         <div className="ar-page-header">
-          <div className="ar-logo-container">
-            <img src={logo} alt="Logo" className="ar-logo" />
-            <h1>Assign Reviewers</h1>
-          </div>
+          <Header title="Assign Reviewers" />
         </div>
 
         {error && (

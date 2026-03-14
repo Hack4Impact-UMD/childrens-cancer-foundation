@@ -57,10 +57,10 @@ function ApplicantDecisions(): JSX.Element {
             try {
                 setLoading(true);
 
-                // Check if we're in Final Decisions stage
+                // Check if we're in Release Decisions stage
                 const currentCycle = await getCurrentCycle();
-                if (currentCycle.stage !== "Final Decisions") {
-                    setError("Decisions are not yet available. Please check back during the Final Decisions stage.");
+                if (currentCycle.stage !== "Release Decisions") {
+                    setError("Decisions are not yet available. Please check back during the Release Decisions stage.");
                     setLoading(false);
                     return;
                 }
