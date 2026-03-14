@@ -13,7 +13,7 @@ This page is designed for applicants to view the final funding decisions for the
 -   **`applicationCycles` collection:**
     -   **Purpose:** To control access to the decisions.
     -   **Function:** `getCurrentCycle()`
-    -   **Details:** On page load, this function is called to check if the `stage` of the current application cycle is "Final Decisions". If it is not, the user is shown a message and cannot view any decisions.
+    -   **Details:** On page load, this function is called to check if the `stage` of the current application cycle is "Release Decisions". If it is not, the user is shown a message and cannot view any decisions.
 
 -   **`applications` collection:**
     -   **Purpose:** To retrieve the list of applications submitted by the current user.
@@ -32,7 +32,7 @@ This page is designed for applicants to view the final funding decisions for the
 
 ## Data Flow Summary
 
-1.  **Stage Verification:** The page loads and first checks the `applicationCycles` collection to ensure the current stage is "Final Decisions".
+1.  **Stage Verification:** The page loads and first checks the `applicationCycles` collection to ensure the current stage is "Release Decisions".
 
 2.  **Data Fetching:**
     a.  If the stage is correct, the page fetches all of the current user's applications from the `applications` collection.

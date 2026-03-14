@@ -24,6 +24,6 @@ interface ApplicationCycle {
 ## Usage
 
 - **Current Cycle**: Only one cycle can have `current: true` at a time
-- **Stages**: The cycle progresses through different stages from application submission to final decisions
+- **Stages**: The cycle progresses through different stages from application submission to release decisions
 - **Deadlines**: Different deadlines for different grant types and review processes
 - **Post-Grant Reports**: After applications are accepted, applicants must submit post-grant reports by the specified deadline
