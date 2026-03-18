@@ -40,6 +40,7 @@
 .ApplicantDashboard-header {
     font-size: 2rem;
     color: #BE0019;
+    composes: global-header;
 }
 
 .ApplicantDashboard-sections-content {

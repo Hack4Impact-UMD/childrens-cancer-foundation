@@ -1,0 +1,14 @@
+.dashboard-header-container {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-logo {
+  width: 75px;
+  margin-right: 20px;
+}
+
+.dashboard-header {
+  font-size: 3rem;
+  color: #be0019;
+}

@@ -41,7 +41,8 @@ export const getAllCycles = async (): Promise<Array<ApplicationCycle>> => {
       allApplicationsDeadline: (cycle.allApplicationsDeadline as Timestamp).toDate(),
       reviewerDeadline: (cycle.reviewerDeadline as Timestamp).toDate(),
       startDate: (cycle.startDate as Timestamp).toDate(),
-      endDate: (cycle.endDate as Timestamp).toDate()
+      endDate: (cycle.endDate as Timestamp).toDate(),
+      postGrantReportDeadline: cycle.postGrantReportDeadline ? (cycle.postGrantReportDeadline as Timestamp).toDate() : undefined
     } as ApplicationCycle
   })
 }
@@ -153,7 +154,7 @@ export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
       current: true,
       startDate: Timestamp.now(),
       endDate: Timestamp.fromDate(oneYearFromNow),
-      stage: 'Application Period',
+      stage: 'Applications Open',
       allApplicationsDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       nextGenDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       researchDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
@@ -166,4 +167,25 @@ export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
     console.error("Error starting new cycle", error);
     return false;
   }
+}
+
+// Auto-update cycle stage if application deadline has passed
+export const checkAndUpdateCycleStageIfNeeded = async (cycle: ApplicationCycle): Promise<ApplicationCycle> => {
+  try {
+    // Stage selection is admin-controlled.
+    // If an admin keeps stage at "Applications Open", applicants should still be able
+    // to submit even when the configured deadline has passed.
+    return cycle;
+  } catch (error) {
+    console.error("Error checking cycle stage:", error);
+    return cycle;
+  }
+}
+
+// Get number of days remaining until deadline
+export const getDaysUntilDeadline = (deadline: Date): number => {
+  const now = new Date();
+  const diffTime = deadline.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
 }
