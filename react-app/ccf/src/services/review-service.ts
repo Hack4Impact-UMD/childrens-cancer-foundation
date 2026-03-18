@@ -15,6 +15,7 @@ import {
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { db } from "../index";
 import Review, { ReviewSummary } from "../types/review-types";
+import { getCurrentCycle } from "../backend/application-cycle";
 
 // Create a new review document in the reviews/{applicationId}/reviewers subcollection
 export const createReview = async (review: Omit<Review, 'id'>): Promise<string> => {
@@ -53,6 +54,12 @@ export const createReview = async (review: Omit<Review, 'id'>): Promise<string> 
 // Update an existing review
 export const updateReview = async (applicationId: string, reviewId: string, updates: Partial<Review>): Promise<void> => {
     try {
+        // Check if reviews are locked (stage is Deliberations)
+        const cycle = await getCurrentCycle();
+        if (cycle.stage === "Deliberations") {
+            throw new Error("Reviews cannot be modified during Deliberations stage.");
+        }
+
         const reviewRef = doc(db, "reviews", applicationId, "reviewers", reviewId);
         await updateDoc(reviewRef, {
             ...updates,
@@ -69,6 +76,12 @@ export const updateReview = async (applicationId: string, reviewId: string, upda
 // Submit a review (mark as completed)
 export const submitReview = async (applicationId: string, reviewId: string, score: number, feedback: Review['feedback']): Promise<void> => {
     try {
+        // Check if reviews are locked (stage is Deliberations)
+        const cycle = await getCurrentCycle();
+        if (cycle.stage === "Deliberations") {
+            throw new Error("Reviews cannot be submitted during Deliberations stage.");
+        }
+
         const reviewRef = doc(db, "reviews", applicationId, "reviewers", reviewId);
         await updateDoc(reviewRef, {
             score,

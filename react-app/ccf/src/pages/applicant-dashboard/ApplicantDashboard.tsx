@@ -16,7 +16,7 @@ import { firstLetterCap } from "../../utils/stringfuncs"
 import CoverPageModal from "../../components/applications/CoverPageModal";
 import { FAQItem } from "../../types/faqTypes";
 import { getFAQs } from "../../backend/faq-handler";
-import { getCurrentCycle } from "../../backend/application-cycle";
+import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded, getDaysUntilDeadline } from "../../backend/application-cycle";
 import { getDecisionData } from "../../services/decision-data-service";
 import { getReportsByUser } from "../../backend/post-grant-reports";
 import ApplicationCycle from "../../types/applicationCycle-types";
@@ -50,6 +50,57 @@ function ApplicantUsersDashboard(): JSX.Element {
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
+        // Track the last known stage so the interval can detect changes
+        let prevStage: string | undefined;
+
+        const fetchApplicationData = async () => {
+            const apps = await getUsersCurrentCycleAppplications();
+            const appsWithDecisions: ApplicationWithDecision[] = await Promise.all(
+                apps.map(async (app: any) => {
+                    try {
+                        const decision = await getDecisionData(app.id);
+
+                        let hasReportSubmitted = false;
+                        let submittedReport = null;
+
+                        const user = auth.currentUser;
+                        if (user) {
+                            const userReports = await getReportsByUser(user.uid);
+                            const existingReport = userReports.find(report => report.applicationId === app.id);
+                            if (existingReport) {
+                                hasReportSubmitted = true;
+                                submittedReport = existingReport;
+
+                                try {
+                                    const fileId = existingReport.pdf || existingReport.file;
+                                    if (fileId) {
+                                        const pdfUrl = await getPDFDownloadURL(fileId);
+                                        submittedReport.file = pdfUrl;
+                                    }
+                                } catch (error) {
+                                    console.error('Error getting PDF URL for dashboard:', error);
+                                }
+                            }
+                        }
+
+                        return {
+                            ...app,
+                            isAccepted: decision?.isAccepted === true,
+                            hasReportSubmitted,
+                            submittedReport
+                        };
+                    } catch (error) {
+                        return {
+                            ...app,
+                            isAccepted: false,
+                            hasReportSubmitted: false
+                        };
+                    }
+                })
+            );
+            setCompletedApplications(appsWithDecisions);
+        };
+
         const initializeData = async () => {
             try {
                 setLoading(true);
@@ -61,71 +112,20 @@ function ApplicantUsersDashboard(): JSX.Element {
                     console.error('Error loading sidebar items:', e);
                 });
 
-                getCurrentCycle().then((cycle) => {
-                    setAppCycle(cycle)
-                    setApplicationsOpen(cycle.stage == "Applications Open")
-                }).catch((e) => {
-                    console.error(e)
-                })
+                const cycle = await getCurrentCycle();
+                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                prevStage = updatedCycle.stage;
+                setAppCycle(updatedCycle);
+                setApplicationsOpen(updatedCycle.stage === "Applications Open");
 
                 // Fetch FAQ data
                 getFAQs().then((faqs) => {
-                    console.log('FAQ data loaded:', faqs);
                     setFAQData(faqs);
                 }).catch((e) => {
                     console.error('Error loading FAQ data:', e);
                 });
 
-                // Get user applications and check decisions
-                const apps = await getUsersCurrentCycleAppplications();
-
-                const appsWithDecisions: ApplicationWithDecision[] = await Promise.all(
-                    apps.map(async (app: any) => {
-                        try {
-                            const decision = await getDecisionData(app.id);
-
-                            // Use the same logic as PostGrantReportPage.tsx
-                            let hasReportSubmitted = false;
-                            let submittedReport = null;
-
-                            const user = auth.currentUser;
-                            if (user) {
-                                const userReports = await getReportsByUser(user.uid);
-                                const existingReport = userReports.find(report => report.applicationId === app.id);
-                                if (existingReport) {
-                                    hasReportSubmitted = true;
-                                    submittedReport = existingReport;
-
-                                    // Get the PDF URL for viewing
-                                    try {
-                                        const fileId = existingReport.pdf || existingReport.file;
-                                        if (fileId) {
-                                            const pdfUrl = await getPDFDownloadURL(fileId);
-                                            submittedReport.file = pdfUrl;
-                                        }
-                                    } catch (error) {
-                                        console.error('Error getting PDF URL for dashboard:', error);
-                                    }
-                                }
-                            }
-
-                            return {
-                                ...app,
-                                isAccepted: decision?.isAccepted === true,
-                                hasReportSubmitted,
-                                submittedReport
-                            };
-                        } catch (error) {
-                            return {
-                                ...app,
-                                isAccepted: false,
-                                hasReportSubmitted: false
-                            };
-                        }
-                    })
-                );
-
-                setCompletedApplications(appsWithDecisions);
+                await fetchApplicationData();
             } catch (error) {
                 console.error('Error initializing dashboard:', error);
             } finally {
@@ -134,6 +134,32 @@ function ApplicantUsersDashboard(): JSX.Element {
         };
 
         initializeData();
+
+        // In-flight guard prevents overlapping ticks if a fetch takes longer than the interval
+        let refreshInFlight = false;
+        const cycleRefreshInterval = setInterval(async () => {
+            if (refreshInFlight) return;
+            refreshInFlight = true;
+            try {
+                const cycle = await getCurrentCycle();
+                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                setAppCycle(updatedCycle);
+                setApplicationsOpen(updatedCycle.stage === "Applications Open");
+
+                // If the stage changed, re-fetch application/decision data so
+                // visibility-gated sections (post-grant reports, decision labels) stay accurate
+                if (updatedCycle.stage !== prevStage) {
+                    prevStage = updatedCycle.stage;
+                    await fetchApplicationData();
+                }
+            } catch (error) {
+                console.error('Error refetching cycle:', error);
+            } finally {
+                refreshInFlight = false;
+            }
+        }, 30000);
+
+        return () => clearInterval(cycleRefreshInterval);
     }, []);
 
     const closeModal = () => {
@@ -184,13 +210,13 @@ function ApplicantUsersDashboard(): JSX.Element {
                         </h1>
                     </div>
                     {
-                        appCycle?.stage == "Applications Open" ?
-                            <Banner>{`REMINDER: Research applications due on ${appCycle?.researchDeadline.toLocaleDateString()}, Nextgen applications due on ${appCycle?.nextGenDeadline.toLocaleDateString()}, Nonresearch applications due on ${appCycle?.nonResearchDeadline.toLocaleDateString()}`}</Banner> :
+                        appCycle && appCycle.stage === "Applications Open" && appCycle.allApplicationsDeadline ?
+                            <Banner>{`REMINDER: Applications close in ${getDaysUntilDeadline(appCycle.allApplicationsDeadline)} days. Applications due on ${appCycle.allApplicationsDeadline.toLocaleDateString()}`}</Banner> :
                             <Banner>ALERT: Applications Are Closed for this Year</Banner>
                     }
 
-                    {/* Post-Grant Reports Section */}
-                    {acceptedApplications.length > 0 && (
+                    {/* Post-Grant Reports Section - Only visible in Final Decisions stage */}
+                    {acceptedApplications.length > 0 && appCycle?.stage === "Final Decisions" && (
                         <div className="post-grant-reports-section">
                             <div className="post-grant-reports-header">
                                 <h2>📋 Post-Grant Reports</h2>
@@ -282,7 +308,8 @@ function ApplicantUsersDashboard(): JSX.Element {
                                                         <p>{firstLetterCap((application as any).grantType)}</p>
                                                     </div>
                                                     <div className="ApplicantDashboard-application-status" onClick={() => { setOpenModal(application as Application) }}>
-                                                        <p>{firstLetterCap((application as any).decision)}</p>
+                                                        {/* Only show decision status if in Final Decisions stage */}
+                                                        <p>{appCycle?.stage === "Final Decisions" ? firstLetterCap((application as any).decision) : "Submitted"}</p>
                                                         <FaArrowRight className="application-status-icon" />
                                                     </div>
                                                     <CoverPageModal application={application as Application} isOpen={openModal == application} onClose={closeModal}></CoverPageModal>

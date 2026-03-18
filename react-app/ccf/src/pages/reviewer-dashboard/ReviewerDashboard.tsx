@@ -14,7 +14,7 @@ import { auth } from "../.."; // Adjust path as needed
 import { db } from "../.."
 import { getReviewsForReviewer } from "../../services/review-service";
 import ApplicationCycle from "../../types/applicationCycle-types";
-import { getCurrentCycle } from "../../backend/application-cycle";
+import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded, getDaysUntilDeadline } from "../../backend/application-cycle";
 import Banner from "../../components/banner/Banner";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 
@@ -93,12 +93,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
 
     // Fetch reviewer's assigned applications from Firebase using the new review service
     useEffect(() => {
-        getCurrentCycle().then((cycle) => {
-            setAppCycle(cycle)
-        }).catch((e) => {
-            console.error(e)
-        })
-        const fetchAssignedApplications = async () => {
+        const fetchData = async () => {
             if (!currentUser) {
                 setError("User not authenticated");
                 setLoading(false);
@@ -107,6 +102,11 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
 
             try {
                 setLoading(true);
+
+                // Fetch cycle first so reviewerDeadline is available when building application list
+                const cycle = await getCurrentCycle();
+                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                setAppCycle(updatedCycle);
 
                 // First, get the reviewer document
                 const reviewersRef = collection(db, "reviewers");
@@ -142,9 +142,9 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                     if (appDoc.exists()) {
                         const appData = appDoc.data();
 
-                        // Format date for display
-                        const dueDateStr = appCycle?.reviewerDeadline
-                            ? new Date(appCycle.reviewerDeadline).toLocaleDateString('en-US', {
+                        // Format date for display using local cycle variable, not stale state
+                        const dueDateStr = updatedCycle.reviewerDeadline
+                            ? new Date(updatedCycle.reviewerDeadline).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
@@ -196,7 +196,20 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
             }
         };
 
-        fetchAssignedApplications();
+        fetchData();
+
+        // Refetch cycle every 30 seconds to detect admin changes or deadline progression
+        const cycleRefreshInterval = setInterval(async () => {
+            try {
+                const cycle = await getCurrentCycle();
+                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                setAppCycle(updatedCycle);
+            } catch (error) {
+                console.error('Error refetching cycle:', error);
+            }
+        }, 30000);
+
+        return () => clearInterval(cycleRefreshInterval);
     }, [currentUser]);
 
     return (
@@ -211,9 +224,21 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                         <h1 className="dashboard-header">Reviewer Dashboard</h1>
                     </div>
 
-                    {appCycle?.stage == "Applications Open" ?
-                            <Banner>{`REMINDER: Reviews due on ${appCycle?.reviewerDeadline.toLocaleDateString()}`}</Banner> :
-                            <Banner>ALERT: Review Period Has Ended</Banner>}
+                    {appCycle?.stage === "Applications Open" && (
+                            <Banner>Awaiting Review Period to Begin</Banner>
+                        )}
+                        {appCycle?.stage === "Review" && appCycle.reviewerDeadline && (
+                            <Banner>{`REMINDER: Reviews due in ${getDaysUntilDeadline(appCycle.reviewerDeadline)} days on ${appCycle.reviewerDeadline.toLocaleDateString()}`}</Banner>
+                        )}
+                        {appCycle?.stage === "Deliberations" && (
+                            <Banner>Reviews are now locked. Deliberations are underway.</Banner>
+                        )}
+                        {appCycle?.stage === "Final Decisions" && (
+                            <Banner>Review Period Complete - Final Decisions are being made</Banner>
+                        )}
+                        {appCycle?.stage === "Applications Closed" && (
+                            <Banner>Awaiting Review Period to Begin</Banner>
+                        )}
 
                     <div className="dashboard-sections-content" style={{ flexGrow: 1 }}>
                         <div className="dashboard-section">

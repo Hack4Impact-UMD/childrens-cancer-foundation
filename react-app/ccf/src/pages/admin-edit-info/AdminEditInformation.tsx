@@ -112,7 +112,10 @@ function AdminEditInformation(): JSX.Element {
         if (newCycleName) {
             const success = await endCurrentCycleAndStartNewOne(newCycleName);
             if (success) {
-                window.location.reload();
+                setStageSnack(`Successfully created new cycle "${newCycleName}"`);
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                setStageSnack("Failed to create new cycle");
             }
         }
     };
