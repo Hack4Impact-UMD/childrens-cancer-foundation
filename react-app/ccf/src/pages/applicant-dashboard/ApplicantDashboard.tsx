@@ -112,14 +112,11 @@ function ApplicantUsersDashboard(): JSX.Element {
                     console.error('Error loading sidebar items:', e);
                 });
 
-                getCurrentCycle().then(async (cycle) => {
-                    const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
-                    prevStage = updatedCycle.stage;
-                    setAppCycle(updatedCycle);
-                    setApplicationsOpen(updatedCycle.stage === "Applications Open");
-                }).catch((e) => {
-                    console.error(e);
-                });
+                const cycle = await getCurrentCycle();
+                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                prevStage = updatedCycle.stage;
+                setAppCycle(updatedCycle);
+                setApplicationsOpen(updatedCycle.stage === "Applications Open");
 
                 // Fetch FAQ data
                 getFAQs().then((faqs) => {
