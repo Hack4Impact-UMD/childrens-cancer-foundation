@@ -289,6 +289,7 @@ function ApplicationReview(): JSX.Element {
                 value={overall}
                 onChange={handleOverallScoreChange}
                 aria-label="Overall score selection"
+                disabled={isReviewLocked}
               >
                 <option value="">Enter score.</option>
                 {[1, 2, 3, 4, 5].map((score) => (
@@ -347,6 +348,7 @@ function ApplicationReview(): JSX.Element {
                   value={feedback[key as keyof typeof feedback] || ""}
                   onChange={(e) => handleChange(key, e.target.value)}
                   placeholder="Enter feedback."
+                  disabled={isReviewLocked}
                 />
               </div>
             ))}
@@ -365,6 +367,7 @@ function ApplicationReview(): JSX.Element {
                 value={feedback.internal || ""}
                 onChange={(e) => handleChange("internal", e.target.value)}
                 placeholder="Enter Internal Comments."
+                disabled={isReviewLocked}
               />
             </div>
           </div>
