@@ -9,7 +9,7 @@ interface ApplicationCycle {
   id: string;
   name: string;
   current: boolean;
-  stage: 'Applications Open' | 'Applications Closed' | 'Review' | 'Deliberations' | 'Final Decisions';
+  stage: 'Applications Open' | 'Applications Closed' | 'Review' | 'Deliberations' | 'Release Decisions';
   researchDeadline: any; // Firestore Timestamp
   nextGenDeadline: any; // Firestore Timestamp
   nonResearchDeadline: any; // Firestore Timestamp
@@ -24,6 +24,6 @@ interface ApplicationCycle {
 ## Usage
 
 - **Current Cycle**: Only one cycle can have `current: true` at a time
-- **Stages**: The cycle progresses through different stages from application submission to final decisions
+- **Stages**: The cycle progresses through different stages from application submission to release decisions
 - **Deadlines**: Different deadlines for different grant types and review processes
 - **Post-Grant Reports**: After applications are accepted, applicants must submit post-grant reports by the specified deadline

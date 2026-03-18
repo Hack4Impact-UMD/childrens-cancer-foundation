@@ -12,6 +12,7 @@ export default interface SidebarProps {
 }
 
 export const adminSidebar: SideBarTypes[] = [
+    { name: 'Application Cycle', path: '/admin/edit-information' },
     { name: 'Home', path: '/admin/dashboard' },
     { name: 'Account Settings', path: '/admin/settings' },
     { name: 'All Accounts', path: '/admin/all-accounts' },
@@ -19,7 +20,6 @@ export const adminSidebar: SideBarTypes[] = [
     { name: 'Whitelist Reviewers', path: '/admin/whitelist-reviewers' },
     { name: 'Assign Awards', path: '/admin/grant-awards' },
     { name: 'Post-Grant Reports', path: '/admin/post-grant-reports' },
-    { name: 'Application Cycle', path: '/admin/edit-information' },
     { name: 'Logout', path: '/login' }
 ];
 
@@ -48,7 +48,7 @@ export const getSidebarbyRole = (role: differentUserRoles): SideBarTypes[] => {
     }
 };
 
-// Dynamic sidebar for applicants that includes decisions link during Final Decisions stage
+// Dynamic sidebar for applicants that includes decisions link during Release Decisions stage
 export const getApplicantSidebarItems = async (): Promise<SideBarTypes[]> => {
     try {
         // Import here to avoid circular dependency
@@ -63,8 +63,8 @@ export const getApplicantSidebarItems = async (): Promise<SideBarTypes[]> => {
             { name: 'Account Settings', path: '/applicant/settings' }
         ];
 
-        // Add decisions link with exclamation icon if in Final Decisions stage
-        if (currentCycle.stage === "Final Decisions") {
+        // Add decisions link with exclamation icon if in Release Decisions stage
+        if (currentCycle.stage === "Release Decisions") {
             baseSidebar.splice(1, 0, { name: 'Decisions', path: '/applicant/decisions' });
         }
 

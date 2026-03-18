@@ -36,7 +36,7 @@ This page allows administrators to manage application cycle settings, deadlines,
   - Applications Closed
   - Review
   - Deliberations
-  - Final Decisions
+  - Release Decisions
 - **Stage Transitions**: Admins can progress through stages as the cycle advances
 - **Visual Feedback**: Current stage is highlighted and saved with loading indicators
 
