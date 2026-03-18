@@ -52,9 +52,9 @@ function PostGrantReportPage(): JSX.Element {
                 const cycle = await getCurrentCycle();
                 setCurrentCycle(cycle);
 
-                // Check if we're in Final Decisions stage
-                if (cycle.stage !== "Final Decisions") {
-                    setError("Post-grant reports are not yet available. Please check back during the Final Decisions stage.");
+                // Check if we're in Release Decisions stage
+                if (cycle.stage !== "Release Decisions") {
+                    setError("Post-grant reports are not yet available. Please check back during the Release Decisions stage.");
                     return;
                 }
 

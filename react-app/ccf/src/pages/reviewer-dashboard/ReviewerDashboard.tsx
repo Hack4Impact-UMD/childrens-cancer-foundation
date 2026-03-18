@@ -233,8 +233,8 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                         {appCycle?.stage === "Deliberations" && (
                             <Banner>Reviews are now locked. Deliberations are underway.</Banner>
                         )}
-                        {appCycle?.stage === "Final Decisions" && (
-                            <Banner>Review Period Complete - Final Decisions are being made</Banner>
+                        {appCycle?.stage === "Release Decisions" && (
+                            <Banner>Review Period Complete - Release Decisions are being made</Banner>
                         )}
                         {appCycle?.stage === "Applications Closed" && (
                             <Banner>Awaiting Review Period to Begin</Banner>
