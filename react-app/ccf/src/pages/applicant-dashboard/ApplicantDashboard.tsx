@@ -50,6 +50,57 @@ function ApplicantUsersDashboard(): JSX.Element {
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
+        // Track the last known stage so the interval can detect changes
+        let prevStage: string | undefined;
+
+        const fetchApplicationData = async () => {
+            const apps = await getUsersCurrentCycleAppplications();
+            const appsWithDecisions: ApplicationWithDecision[] = await Promise.all(
+                apps.map(async (app: any) => {
+                    try {
+                        const decision = await getDecisionData(app.id);
+
+                        let hasReportSubmitted = false;
+                        let submittedReport = null;
+
+                        const user = auth.currentUser;
+                        if (user) {
+                            const userReports = await getReportsByUser(user.uid);
+                            const existingReport = userReports.find(report => report.applicationId === app.id);
+                            if (existingReport) {
+                                hasReportSubmitted = true;
+                                submittedReport = existingReport;
+
+                                try {
+                                    const fileId = existingReport.pdf || existingReport.file;
+                                    if (fileId) {
+                                        const pdfUrl = await getPDFDownloadURL(fileId);
+                                        submittedReport.file = pdfUrl;
+                                    }
+                                } catch (error) {
+                                    console.error('Error getting PDF URL for dashboard:', error);
+                                }
+                            }
+                        }
+
+                        return {
+                            ...app,
+                            isAccepted: decision?.isAccepted === true,
+                            hasReportSubmitted,
+                            submittedReport
+                        };
+                    } catch (error) {
+                        return {
+                            ...app,
+                            isAccepted: false,
+                            hasReportSubmitted: false
+                        };
+                    }
+                })
+            );
+            setCompletedApplications(appsWithDecisions);
+        };
+
         const initializeData = async () => {
             try {
                 setLoading(true);
@@ -63,70 +114,21 @@ function ApplicantUsersDashboard(): JSX.Element {
 
                 getCurrentCycle().then(async (cycle) => {
                     const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
-                    setAppCycle(updatedCycle)
-                    setApplicationsOpen(updatedCycle.stage === "Applications Open")
+                    prevStage = updatedCycle.stage;
+                    setAppCycle(updatedCycle);
+                    setApplicationsOpen(updatedCycle.stage === "Applications Open");
                 }).catch((e) => {
-                    console.error(e)
-                })
+                    console.error(e);
+                });
 
                 // Fetch FAQ data
                 getFAQs().then((faqs) => {
-                    console.log('FAQ data loaded:', faqs);
                     setFAQData(faqs);
                 }).catch((e) => {
                     console.error('Error loading FAQ data:', e);
                 });
 
-                // Get user applications and check decisions
-                const apps = await getUsersCurrentCycleAppplications();
-
-                const appsWithDecisions: ApplicationWithDecision[] = await Promise.all(
-                    apps.map(async (app: any) => {
-                        try {
-                            const decision = await getDecisionData(app.id);
-
-                            // Use the same logic as PostGrantReportPage.tsx
-                            let hasReportSubmitted = false;
-                            let submittedReport = null;
-
-                            const user = auth.currentUser;
-                            if (user) {
-                                const userReports = await getReportsByUser(user.uid);
-                                const existingReport = userReports.find(report => report.applicationId === app.id);
-                                if (existingReport) {
-                                    hasReportSubmitted = true;
-                                    submittedReport = existingReport;
-
-                                    // Get the PDF URL for viewing
-                                    try {
-                                        const fileId = existingReport.pdf || existingReport.file;
-                                        if (fileId) {
-                                            const pdfUrl = await getPDFDownloadURL(fileId);
-                                            submittedReport.file = pdfUrl;
-                                        }
-                                    } catch (error) {
-                                        console.error('Error getting PDF URL for dashboard:', error);
-                                    }
-                                }
-                            }
-
-                            return {
-                                ...app,
-                                isAccepted: decision?.isAccepted === true,
-                                hasReportSubmitted,
-                                submittedReport
-                            };
-                        } catch (error) {
-                            return {
-                                ...app,
-                                isAccepted: false,
-                                hasReportSubmitted: false
-                            };
-                        }
-                    })
-                );
-
-                setCompletedApplications(appsWithDecisions);
+                await fetchApplicationData();
             } catch (error) {
                 console.error('Error initializing dashboard:', error);
             } finally {
@@ -136,15 +138,27 @@ function ApplicantUsersDashboard(): JSX.Element {
 
         initializeData();
 
-        // Refetch cycle every 30 seconds to detect admin changes or deadline progression
+        // In-flight guard prevents overlapping ticks if a fetch takes longer than the interval
+        let refreshInFlight = false;
         const cycleRefreshInterval = setInterval(async () => {
+            if (refreshInFlight) return;
+            refreshInFlight = true;
             try {
                 const cycle = await getCurrentCycle();
                 const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
                 setAppCycle(updatedCycle);
                 setApplicationsOpen(updatedCycle.stage === "Applications Open");
+
+                // If the stage changed, re-fetch application/decision data so
+                // visibility-gated sections (post-grant reports, decision labels) stay accurate
+                if (updatedCycle.stage !== prevStage) {
+                    prevStage = updatedCycle.stage;
+                    await fetchApplicationData();
+                }
             } catch (error) {
                 console.error('Error refetching cycle:', error);
+            } finally {
+                refreshInFlight = false;
             }
         }, 30000);
 
