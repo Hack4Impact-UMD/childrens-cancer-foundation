@@ -8,6 +8,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { TextField, Button, CircularProgress, Snackbar, Box, Typography } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 import {
     updateCurrentCycleDeadlines,
@@ -22,9 +23,9 @@ import { getFAQs, initializeSampleFAQs, createNewFAQ } from "../../backend/faq-h
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
 
 function AdminEditInformation(): JSX.Element {
-    const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
-    const [reviewerDate, setReviewerDate] = useState<dayjs.Dayjs | null>(null);
-    const [postGrantReportDate, setPostGrantReportDate] = useState<dayjs.Dayjs | null>(null);
+    const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(null);
+    const [reviewerDate, setReviewerDate] = useState<Dayjs | null>(null);
+    const [postGrantReportDate, setPostGrantReportDate] = useState<Dayjs | null>(null);
     // Current stage of application cycle
     const [currentStage, setCurrentStage] = useState<string | null>(null);
     const [stageSaving, setStageSaving] = useState(false); // shows button spinner
@@ -39,7 +40,24 @@ function AdminEditInformation(): JSX.Element {
     const [newFAQQuestion, setNewFAQQuestion] = useState<string>('');
     const [newFAQAnswer, setNewFAQAnswer] = useState<string>('');
     const [isCreatingFAQ, setIsCreatingFAQ] = useState<boolean>(false);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
+    useEffect(() => {
+    const loadCycle = async () => {
+        try {
+            const data = await getCurrentCycle();
+            if (data?.stage) setCurrentStage(data.stage);
+            if (data?.allApplicationsDeadline) setAllApplicationsDate(dayjs(data.allApplicationsDeadline));
+            if (data?.reviewerDeadline) setReviewerDate(dayjs(data.reviewerDeadline));
+            if (data?.postGrantReportDeadline) setPostGrantReportDate(dayjs(data.postGrantReportDeadline));
+        } catch (error) {
+            console.error('Failed to load cycle data:', error);
+        }
+    };
+    loadCycle();
+    }, []);
+
+    
     useEffect(() => {
         getFAQs().then(faqs => {
             setFAQData(faqs)
@@ -50,8 +68,8 @@ function AdminEditInformation(): JSX.Element {
         "Applications Open",
         "Applications Closed",
         "Review",
-        "Grading",
-        "Final Decisions"
+        "Deliberations",
+        "Release Decisions"
     ];
 
     const handleAllApplicationsChange = (newDate: Dayjs | null) => {
@@ -67,16 +85,6 @@ function AdminEditInformation(): JSX.Element {
     }
 
     const sidebarItems = getSidebarbyRole("admin")
-
-    useEffect(() => {
-        const loadCycle = async () => {
-            const data = await getCurrentCycle();
-            if (data?.stage) {
-                setCurrentStage(data.stage);
-            }
-        };
-        loadCycle();
-    }, []);
 
     const handleStageChange = async (newStage: ApplicationCycle["stage"]) => {
         if (newStage === currentStage) return; // no-op
@@ -95,6 +103,11 @@ function AdminEditInformation(): JSX.Element {
     };
 
     const handleEndCurrentCycle = async () => {
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmEndCycle = async () => {
+        setConfirmDialogOpen(false);
         const newCycleName = window.prompt("Enter the name for the new application cycle (e.g., 2024-2025):");
         if (newCycleName) {
             const success = await endCurrentCycleAndStartNewOne(newCycleName);
@@ -102,6 +115,10 @@ function AdminEditInformation(): JSX.Element {
                 window.location.reload();
             }
         }
+    };
+
+    const cancelEndCycle = () => {
+        setConfirmDialogOpen(false);
     };
 
     const handleCreateNewFAQ = async () => {
@@ -162,7 +179,7 @@ function AdminEditInformation(): JSX.Element {
                     <div className="deadline-interactives">
                         <h2>Applications:</h2>
                         <div className="interactive-date-selector">
-                            <h2>All Applications</h2>
+                            <h2>Application Deadline</h2>
                             <div className="deadline-section">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
@@ -195,6 +212,7 @@ function AdminEditInformation(): JSX.Element {
                                 </LocalizationProvider>
                                 <Button
                                     variant="contained"
+                                    disabled={!allApplicationsDate}
                                     onClick={async () => {
                                         const success = await updateCurrentCycleDeadlines({
                                             allApplicationsDate
@@ -202,11 +220,13 @@ function AdminEditInformation(): JSX.Element {
 
                                         //debug
                                         if (success) {
-                                            console.log("Application deadlines updated.");
                                             setAppDeadlineMessage("Application Deadlines Updated!");
                                             setTimeout(() => setAppDeadlineMessage(null), 3000); // clear after 3 seconds
+                                        } else {
+                                            setAppDeadlineMessage("Failed to update deadlines. Please try again.");
                                         }
-                                    }}
+                                            setTimeout(() => setAppDeadlineMessage(null), 3000);
+                                        }}
                                     sx={{
                                         backgroundColor: '#79747E',
                                         fontFamily: 'Roboto, sans-serif',
@@ -232,130 +252,143 @@ function AdminEditInformation(): JSX.Element {
                     <div className="deadline-interactives">
                         <h2>Reviews:</h2>
                         <div className="interactive-date-selector">
-                            <h2>Reviewer Responses</h2>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    value={reviewerDate}
-                                    onChange={handleReviewerDateChange}
-                                    enableAccessibleFieldDOMStructure={false}
+                            <h2>Reviewer Deadline</h2>
+                            <div className="deadline-section">
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DatePicker
+                                        value={reviewerDate}
+                                        onChange={handleReviewerDateChange}
+                                        enableAccessibleFieldDOMStructure={false}
+                                        sx={{
+                                            backgroundColor: '#79747E',
+                                        }}
+                                        slots={{
+                                            textField: (props: any) => (
+                                                <TextField
+                                                    {...props}
+                                                    sx={{
+                                                        '& .MuiInputBase-input': {
+                                                            textAlign: 'center',
+                                                            height: '8px',
+                                                            width: '150px',
+                                                            color: '#79747E',
+                                                        },
+                                                        '& .MuiOutlinedInput-notchedOutline': {
+                                                            border: '2px solid #79747E',
+                                                            borderRadius: '15px'
+                                                        },
+                                                    }}
+                                                />
+                                            ),
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                <Button
+                                    variant="contained"
+                                    disabled={!reviewerDate}
+                                    onClick={async () => {
+                                        const success = await updateCurrentCycleDeadlines({
+                                            reviewerDate
+                                        });
+
+                                        if (success) {
+                                            setRevDeadlineMessage("Reviewer Deadlines Updated!");
+                                            setTimeout(() => setRevDeadlineMessage(null), 3000);
+                                        } else {
+                                            setRevDeadlineMessage("Failed to update reviewer deadlines. Please try again.");
+                                        }
+                                        setTimeout(() => setRevDeadlineMessage(null), 3000);
+                                    }}
                                     sx={{
                                         backgroundColor: '#79747E',
+                                        fontFamily: 'Roboto, sans-serif',
+                                        textTransform: 'none',
+                                        height: '40px',
+                                        fontSize: '1.25rem',
+                                        fontWeight: 'normal',
+                                        borderRadius: '10px',
+                                        '&:hover': {
+                                            backgroundColor: '#003E83'
+                                        },
+                                        minWidth: 'auto !important',
+                                        width: 'auto !important',
+                                        whiteSpace: 'nowrap',
+                                        marginBottom: '10px',
+                                        marginTop: '10px',
                                     }}
-                                    slots={{
-                                        textField: (props: any) => (
-                                            <TextField
-                                                {...props}
-                                                sx={{
-                                                    '& .MuiInputBase-input': {
-                                                        textAlign: 'center',
-                                                        height: '8px',
-                                                        width: '150px',
-                                                        color: '#79747E',
-                                                    },
-                                                    '& .MuiOutlinedInput-notchedOutline': {
-                                                        border: '2px solid #79747E',
-                                                        borderRadius: '15px'
-                                                    },
-                                                }}
-                                            />
-                                        ),
-                                    }}
-
-                                />
-                            </LocalizationProvider>
+                                >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
+                            </div>
                         </div>
-                        <Button
-                            variant="contained"
-                            onClick={async () => {
-                                const success = await updateCurrentCycleDeadlines({
-                                    reviewerDate
-                                });
-
-                                //debug
-                                if (success) {
-                                    console.log("Reviewer deadline updated.");
-                                    setRevDeadlineMessage("Reviewer Deadlines Updated!");
-                                    setTimeout(() => setRevDeadlineMessage(null), 3000); // clear after 3 seconds
-                                }
-                            }}
-                            sx={{
-                                backgroundColor: '#79747E',
-                                fontFamiy: 'Roboto, sans-serif',
-                                textTransform: 'none',
-                                height: '40px',
-                                fontSize: '1.25rem',
-                                fontWeight: 'normal',
-                                borderRadius: '10px',
-                                '&:hover': {
-                                    backgroundColor: '#003E83'
-                                },
-                                marginBottom: '10px',
-                                marginTop: '10px'
-                            }}
-
-                        >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
                     </div>
                     <div className="deadline-interactives">
                         <h2>Post-Grant Reports:</h2>
                         <div className="interactive-date-selector">
                             <h2>Post-Grant Report Deadline</h2>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    value={postGrantReportDate}
-                                    onChange={handlePostGrantReportDateChange}
-                                    enableAccessibleFieldDOMStructure={false}
+                            <div className="deadline-section">
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DatePicker
+                                        value={postGrantReportDate}
+                                        onChange={handlePostGrantReportDateChange}
+                                        enableAccessibleFieldDOMStructure={false}
+                                        sx={{
+                                            backgroundColor: '#79747E',
+                                        }}
+                                        slots={{
+                                            textField: (props: any) => (
+                                                <TextField
+                                                    {...props}
+                                                    sx={{
+                                                        '& .MuiInputBase-input': {
+                                                            textAlign: 'center',
+                                                            height: '8px',
+                                                            width: '150px',
+                                                            color: '#79747E',
+                                                        },
+                                                        '& .MuiOutlinedInput-notchedOutline': {
+                                                            border: '2px solid #79747E',
+                                                            borderRadius: '15px'
+                                                        },
+                                                    }}
+                                                />
+                                            ),
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                <Button
+                                    variant="contained"
+                                    disabled={!postGrantReportDate}
+                                    onClick={async () => {
+                                        const success = await updateCurrentCycleDeadlines({
+                                            postGrantReportDate
+                                        });
+
+                                        if (success) {
+                                            setPostGrantReportDeadlineMessage("Post-Grant Report Deadline Updated!");
+                                            setTimeout(() => setPostGrantReportDeadlineMessage(null), 3000);
+                                        } else {
+                                            setPostGrantReportDeadlineMessage("Failed to update post-grant report deadlines. Please try again.");
+                                        }
+                                        setTimeout(() => setPostGrantReportDeadlineMessage(null), 3000);
+                                    }}
                                     sx={{
                                         backgroundColor: '#79747E',
+                                        fontFamily: 'Roboto, sans-serif',
+                                        textTransform: 'none',
+                                        height: '40px',
+                                        fontSize: '1.25rem',
+                                        fontWeight: 'normal',
+                                        borderRadius: '10px',
+                                        '&:hover': {
+                                            backgroundColor: '#003E83'
+                                        },
+                                        minWidth: 'auto !important',
+                                        width: 'auto !important',
+                                        whiteSpace: 'nowrap',
+                                        marginBottom: '10px',
+                                        marginTop: '10px',
                                     }}
-                                    slots={{
-                                        textField: (props: any) => (
-                                            <TextField
-                                                {...props}
-                                                sx={{
-                                                    '& .MuiInputBase-input': {
-                                                        textAlign: 'center',
-                                                        height: '8px',
-                                                        width: '150px',
-                                                        color: '#79747E',
-                                                    },
-                                                    '& .MuiOutlinedInput-notchedOutline': {
-                                                        border: '2px solid #79747E',
-                                                        borderRadius: '15px'
-                                                    },
-                                                }}
-                                            />
-                                        ),
-                                    }}
-                                />
-                            </LocalizationProvider>
-                            <Button
-                                variant="contained"
-                                onClick={async () => {
-                                    const success = await updateCurrentCycleDeadlines({
-                                        postGrantReportDate
-                                    });
-
-                                    if (success) {
-                                        console.log("Post-grant report deadline updated.");
-                                        setPostGrantReportDeadlineMessage("Post-Grant Report Deadline Updated!");
-                                        setTimeout(() => setPostGrantReportDeadlineMessage(null), 3000);
-                                    }
-                                }}
-                                sx={{
-                                    backgroundColor: '#79747E',
-                                    fontFamily: 'Roboto, sans-serif',
-                                    textTransform: 'none',
-                                    height: '40px',
-                                    fontSize: '1.25rem',
-                                    fontWeight: 'normal',
-                                    borderRadius: '10px',
-                                    '&:hover': {
-                                        backgroundColor: '#003E83'
-                                    },
-                                    marginBottom: '10px',
-                                    marginTop: '10px'
-                                }}
-                            >{postGrantReportDeadlineMessage ?? "Set Post-Grant Report Deadline"}</Button>
+                                >{postGrantReportDeadlineMessage ?? "Set Post-Grant Deadline"}</Button>
+                            </div>
                         </div>
                     </div>
                     <div className="stage-toggle-section">
@@ -395,6 +428,26 @@ function AdminEditInformation(): JSX.Element {
                         >
                             End Current Cycle and Start New
                         </Button>
+
+                        <Dialog
+                            open={confirmDialogOpen}
+                            onClose={cancelEndCycle}
+                        >
+                            <DialogTitle>Confirm End of Current Cycle</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText>
+                                    Are you sure you want to end the current application cycle? This action cannot be undone and will start a new cycle.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={cancelEndCycle} color="primary">
+                                    Cancel
+                                </Button>
+                                <Button onClick={confirmEndCycle} color="secondary" autoFocus>
+                                    Confirm
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
                     </div>
                     <div>
                         <div className="editable-info-section">

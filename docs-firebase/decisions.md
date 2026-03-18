@@ -1,6 +1,6 @@
 # decisions
 
-This collection stores the final decisions for each application.
+This collection stores the release decisions for each application.
 
 ## Fields
 
