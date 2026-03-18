@@ -21,6 +21,7 @@ import ApplicationCycle from "../../types/applicationCycle-types";
 import { FAQItem } from "../../types/faqTypes";
 import { getFAQs, initializeSampleFAQs, createNewFAQ } from "../../backend/faq-handler";
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
+import Header from "../../components/header/Header";
 
 function AdminEditInformation(): JSX.Element {
     const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(null);
@@ -166,12 +167,7 @@ function AdminEditInformation(): JSX.Element {
         <div>
             <Sidebar links={sidebarItems} />
             <div className="dashboard-container">
-                <div className="edit-info-dashboard-header-container">
-                    <img src={logo} className="edit-info-logo" alt="logo" />
-                    <h1 className="edit-info-header">
-                        Application Cycle
-                    </h1>
-                </div>
+                <Header title="Application Cycle" />
                 <div className="sections-container">
                     <div className="deadlines-section">
                         <div className="deadlines-header-container">

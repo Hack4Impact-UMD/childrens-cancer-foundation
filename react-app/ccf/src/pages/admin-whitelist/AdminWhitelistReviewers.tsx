@@ -8,6 +8,7 @@ import { db } from "../../index";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { WhitelistEntry, WhitelistFormData } from "../../types/whitelist-types";
 import { auth } from "../../index";
+import Header from "../../components/header/Header";
 
 function AdminWhitelistReviewers(): JSX.Element {
     const sidebarItems = getSidebarbyRole("admin");
@@ -166,13 +167,7 @@ function AdminWhitelistReviewers(): JSX.Element {
             <Sidebar links={sidebarItems} />
             <div className="dashboard-container">
                 <div className="AdminWhitelist">
-                    <div className="ApplicantDashboard-header-container">
-                        <img src={logo} className="ApplicantDashboard-logo" alt="logo" />
-                        <h1 className="ApplicantDashboard-header">
-                            Reviewer Whitelist Management
-                        </h1>
-                    </div>
-
+                    <Header title="Reviewer Whitelist Management" />
                     <div className="search-filter-container">
                         <div className="search-bar">
                             <FaSearch className="search-icon" />

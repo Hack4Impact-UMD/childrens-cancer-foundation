@@ -13,6 +13,7 @@ import { auth } from "../../index";
 import TextField from '@mui/material/TextField';
 import { InputAdornment, IconButton } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import Header from "../../components/header/Header";
 
 function AccountSettingsPage(): JSX.Element {
   const sidebarItems = getSidebarbyRole('admin');
@@ -141,10 +142,7 @@ function AccountSettingsPage(): JSX.Element {
       <div className="dashboard-container">
 
         <div className="AccountSettings">
-          <div className="AccountSettings-header-container">
-            <img src={logo} className="AccountSettings-logo" alt="logo" />
-            <h1 className="AccountSettings-header">Account Settings</h1>
-          </div>
+          <Header title="Account Settings" />
 
           <div className="AccountSettings-section">
             <div className="header-title">
