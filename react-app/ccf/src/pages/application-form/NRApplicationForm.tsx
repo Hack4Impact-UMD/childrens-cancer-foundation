@@ -43,6 +43,8 @@ function NRApplicationForm(): JSX.Element {
         getCurrentCycle().then(async cycle => {
             const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
             setAppOpen(updatedCycle.stage === "Applications Open")
+        }).catch(error => {
+            console.error('Error fetching initial cycle:', error);
         })
 
         // Refetch cycle every 30 seconds to detect admin changes or deadline progression
