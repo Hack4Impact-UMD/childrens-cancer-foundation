@@ -53,10 +53,10 @@ function CreateAccMenu() {
       </div>
       {isWideScreen && (
           <div className="imageContainer">
-            <img src={DrHanleyLabImage} alt="image" className="images" />
-            <img src={toretsky} alt="image" className="images" />
-            <div className="yellowOverlay">
-              <img src={yellowOverlay} alt="overlay" className="yellow" />
+            <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="createAcc-image" />
+            <img src={toretsky} alt="Researcher with patient" className="createAcc-image" />
+            <div className="createAcc-yellowOverlay">
+              <img src={yellowOverlay} alt="overlay" className="createAcc-yellow" />
             </div>
           </div>
         )}

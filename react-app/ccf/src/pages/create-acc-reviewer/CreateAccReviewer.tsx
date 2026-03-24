@@ -1,14 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccReviewer.css";
 import logo from '../../assets/ccf-logo.png';
+import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
+import toretsky from "../../assets/toretskywithpatient 1.png";
+import yellowOverlay from "../../assets/yellowoverlay.png";
 import { useEffect, useState } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { VALID_INSTITUTIONS, validateInstitution, checkEmailCreateAcc, checkPasswordRequirements as checkPasswordRequirementsUtil } from "../../utils/validation";
 import { addReviewerUser } from "../../users/usermanager";
 import { UserData } from "../../types/usertypes"
-import { db, storage, auth } from "../../index"
-import { ref, getDownloadURL } from "firebase/storage";
+import { db, auth } from "../../index"
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
@@ -19,10 +20,6 @@ function AccountPageReviewers(): JSX.Element {
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
   const [affiliation, setAffiliation] = useState("");
-
-  const [hanleyImage, setHanleyImage] = useState<string | undefined>(undefined);
-  const [toretskyImage, setToretskyImage] = useState<string | undefined>(undefined);
-  const [yellowOverlay, setYellowOverlay] = useState<string | undefined>(undefined);
 
   //password reqs
   const [specialChar, setSpecialChar] = useState(false);
@@ -38,32 +35,6 @@ function AccountPageReviewers(): JSX.Element {
   const [institutionError, setInstitutionError] = useState(false);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const loadImages = async () => {
-      try {
-        const hanleyRef = ref(storage, '/images/hanley.png');
-        const toretskyRef = ref(storage, '/images/toretsky.png');
-        const yellowRef = ref(storage, '/images/yellow-background.png');
-
-        const [hanleyUrl, toretskyUrl, yellowUrl] = await Promise.all([
-          getDownloadURL(hanleyRef),
-          getDownloadURL(toretskyRef),
-          getDownloadURL(yellowRef)
-        ]);
-
-        setHanleyImage(hanleyUrl);
-        setToretskyImage(toretskyUrl);
-        setYellowOverlay(yellowUrl);
-
-        console.log(hanleyUrl);
-      } catch (error) {
-        console.error('Error loading images:', error);
-      }
-    };
-
-    loadImages();
-  }, []);
 
   useEffect(() => { }, [
     firstName,
@@ -115,7 +86,6 @@ function AccountPageReviewers(): JSX.Element {
       }
     }
 
-    const functions = getFunctions();
     console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
 
     if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
@@ -371,19 +341,14 @@ function AccountPageReviewers(): JSX.Element {
         </div>
 
         <div className="right-container2">
-          {/* remove once given image */}
-          <div className="image-placeholder2"></div>
-        </div>
-      </div>
-
-      <div className="right-container2">
-        <div className="images-container">
-          <div className="stacked-images">
-            <img src={hanleyImage} alt="Lab research" className="research-image" />
-            <img src={toretskyImage} alt="Doctor with patient" className="research-image" />
-          </div>
-          <div className="yellow-overlay">
-            <img src={yellowOverlay} alt="" className="overlay-image" />
+          <div className="images-container">
+            <div className="stacked-images">
+              <img src={DrHanleyLabImage} alt="Lab research" className="research-image" />
+              <img src={toretsky} alt="Doctor with patient" className="research-image" />
+            </div>
+            <div className="yellow-overlay">
+              <img src={yellowOverlay} alt="" className="overlay-image" />
+            </div>
           </div>
         </div>
       </div>
