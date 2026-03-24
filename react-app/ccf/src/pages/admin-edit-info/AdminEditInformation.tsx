@@ -4,7 +4,7 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -665,7 +665,7 @@ function AdminEditInformation(): JSX.Element {
                                                     }
                                                 }}
                                             >
-                                                {editingAbout === id ? <SaveIcon fontSize="small" /> : <EditIcon fontSize="small" />}
+                                                {editingAbout === id ? <CloseIcon fontSize="small" /> : <EditIcon fontSize="small" />}
                                             </IconButton>
                                             <IconButton
                                                 size="small"

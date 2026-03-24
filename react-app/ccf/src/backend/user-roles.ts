@@ -1,4 +1,3 @@
-import {auth} from "../index"
 import { httpsCallable, getFunctions } from "firebase/functions"
 
 export const addReviewerRole = async (email: String) => {
@@ -14,7 +13,7 @@ export const addReviewerRole = async (email: String) => {
 }
 
 export const addApplicantRole = async (email: string) => {
-    const functions = getFunctions();
+    const functions = getFunctions(undefined, 'us-central1');
     const addApplicantRole = httpsCallable(functions, "addApplicantRole");
     await addApplicantRole({ email: email.trim() })
     .then((result) => {
@@ -27,7 +26,7 @@ export const addApplicantRole = async (email: string) => {
 }
 
 export const addAdminRole = async (email: String) => {
-    const functions = getFunctions();
+    const functions = getFunctions(undefined, 'us-central1');
     const addAdminRole = httpsCallable(functions, "addAdminRole");
     await addAdminRole({ email: email })
     .then((result) => {

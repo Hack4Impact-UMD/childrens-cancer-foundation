@@ -6,14 +6,13 @@ import { httpsCallable } from 'firebase/functions';
 
 // Function to add a new applicant user
 export const addApplicantUser = async (userData: UserData, password: string): Promise<void> => {
-  // var user: any = null
   let user: any = null;
-  const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);//.catch((e) => {
-  //   console.log("User could not be created: " + e);
-  //   throw e;
-  // });
+  const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password).catch((e) => {
+    console.log("User could not be created: " + e);
+    throw e;
+  });
+
   try {
-    // const addApplicantRole = httpsCallable(functions, "addApplicantRole");
     user = userCredential.user;
     await setDoc(doc(db, "applicants", user.uid), {
       firstName: userData.firstName,
@@ -24,12 +23,6 @@ export const addApplicantUser = async (userData: UserData, password: string): Pr
     });
     const addApplicantRole = httpsCallable(functions, "addApplicantRole");
     await addApplicantRole({ email: userData.email });
-      // .then((result) => {
-      //   console.log(result.data); // Success message from the function
-      // })
-      // .catch((error) => {
-      //   throw error
-      // });
   } catch (e) {
     if (user !== null) {
       await deleteUser(user);

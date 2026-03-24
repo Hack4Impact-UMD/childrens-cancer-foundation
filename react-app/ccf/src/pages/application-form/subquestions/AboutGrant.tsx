@@ -34,7 +34,7 @@ type AboutGrantProps = {
     };
   };
 
-function AboutGrant({ type, formData }: AboutGrantProps): JSX.Element {
+function AboutGrant({ type }: AboutGrantProps): JSX.Element {
   const [aboutContent, setAboutContent] = useState<string>("");
 
   useEffect(() => {
