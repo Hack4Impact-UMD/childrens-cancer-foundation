@@ -83,14 +83,21 @@
   border: none;
   border-radius: 20px;
   cursor: pointer;
-  margin: 10px 0;
+  margin: 10px auto;
   font-size: 16px;
   font-weight: 500;
 }
 
 .error {
   color: #BE0019;
+  width: 90%;
+  align-self: center;
+  text-align: left;
   margin-bottom: 10px;
+}
+
+.login-form > .MuiTextField-root {
+  align-self: center;
 }
 
 
@@ -148,6 +155,6 @@
   }
 
   .login-button {
-    width: 100%;
+    width: 90%;
   }
 }
