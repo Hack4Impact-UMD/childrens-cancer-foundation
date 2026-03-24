@@ -24,33 +24,40 @@
 
 .login-imageContainer {
   position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   height: 100%;
   width: 50%;
   max-width: 600px;
   margin-bottom: 20px;
   padding-left: 0 !important;
+  overflow: hidden;
 }
 
-.yellowOverlay {
+.login-yellowOverlay {
   position: absolute;
-  top: -4px;
-  left: 0;
-  width: 100%;
-  height: 100.5%;
+  inset: 0;
   z-index: 1;
+  pointer-events: none;
 }
 
-.yellow {
+.login-yellow {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: fill;
+  display: block;
 }
 
-.images {
+.login-image {
   width: 100%;
-  height: auto;
+  flex: 1;
+  height: 50%;
+  object-fit: cover;
+  display: block;
   z-index: 0;
-  margin-top: -4px;
 }
 
 .login-form {
