@@ -5,7 +5,7 @@ import { FaArrowDown, FaArrowUp, FaFileAlt } from "react-icons/fa";
 import logo from "../../assets/ccf-logo.png";
 import document from "../../assets/documentIcon.png";
 import { getFilteredApplications } from "../../backend/application-filters";
-import { getCurrentCycle } from "../../backend/application-cycle";
+import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from "../../backend/application-cycle";
 import { ApplicationDetails, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 import { getSidebarbyRole } from "../../types/sidebar-types";
@@ -25,8 +25,9 @@ function AllApplications(): JSX.Element {
 
   /*Make use of application box component instead, also retrieve applications from firebase*/
   useEffect(() => {
-    getCurrentCycle().then((cycle) => {
-      getFilteredApplications({ date: cycle.name }).then((apps) => {
+    getCurrentCycle().then(async (cycle) => {
+      const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+      getFilteredApplications({ date: updatedCycle.name }).then((apps) => {
         setApplicationsData(apps)
         setFilteredApplications(apps)
       })

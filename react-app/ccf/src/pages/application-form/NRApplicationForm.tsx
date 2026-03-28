@@ -8,9 +8,9 @@ import ReviewApplication from './subquestions/Review';
 import AboutGrant from './subquestions/AboutGrant';
 import { NonResearchApplication } from '../../types/application-types';
 import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
-import { getCurrentCycle } from '../../backend/application-cycle';
 import { toast } from 'react-toastify';
 import { validateEmail, validatePhoneNumber} from '../../utils/validation';
+import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend/application-cycle';
 
 function NRApplicationForm(): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
@@ -40,9 +40,25 @@ function NRApplicationForm(): JSX.Element {
     const [appOpen, setAppOpen] = useState<boolean>(false);
 
     useEffect(() => {
-        getCurrentCycle().then(cycle => {
-            setAppOpen(cycle.stage == "Applications Open")
+        getCurrentCycle().then(async cycle => {
+            const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+            setAppOpen(updatedCycle.stage === "Applications Open")
+        }).catch(error => {
+            console.error('Error fetching initial cycle:', error);
         })
+
+        // Refetch cycle every 30 seconds to detect admin changes or deadline progression
+        const cycleRefreshInterval = setInterval(async () => {
+            try {
+                const cycle = await getCurrentCycle();
+                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                setAppOpen(updatedCycle.stage === "Applications Open");
+            } catch (error) {
+                console.error('Error refetching cycle:', error);
+            }
+        }, 30000);
+
+        return () => clearInterval(cycleRefreshInterval);
     }, [])
 
     const goBack = () => {
