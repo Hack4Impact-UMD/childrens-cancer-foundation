@@ -3,11 +3,14 @@ import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
+import EditIcon from '@mui/icons-material/Edit';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
-import { TextField, Button, CircularProgress, Snackbar, Box, Typography } from '@mui/material';
+import { TextField, Button, CircularProgress, Snackbar, Box, Typography, IconButton } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 import {
@@ -20,8 +23,17 @@ import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { FAQItem } from "../../types/faqTypes";
 import { getFAQs, initializeSampleFAQs, createNewFAQ } from "../../backend/faq-handler";
+import { AboutPage, ApplicationAboutType } from "../../types/aboutTypes";
+import { getAboutPages, upsertAboutPage, getDefaultAboutPage } from "../../backend/about-handler";
+import MarkdownPreviewer from "../../components/markdown/Markdown";
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
 import Header from "../../components/header/Header";
+
+const buildAboutPages = (): Record<ApplicationAboutType, AboutPage> => ({
+    Research: getDefaultAboutPage("Research"),
+    NextGen: getDefaultAboutPage("NextGen"),
+    NonResearch: getDefaultAboutPage("NonResearch"),
+});
 
 function AdminEditInformation(): JSX.Element {
     const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(null);
@@ -43,6 +55,15 @@ function AdminEditInformation(): JSX.Element {
     const [isCreatingFAQ, setIsCreatingFAQ] = useState<boolean>(false);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
+    const [aboutPages, setAboutPages] = useState<Record<ApplicationAboutType, AboutPage>>(buildAboutPages);
+    const [aboutSaving, setAboutSaving] = useState<Record<ApplicationAboutType, boolean>>({
+        Research: false,
+        NextGen: false,
+        NonResearch: false,
+    });
+    const [editingAbout, setEditingAbout] = useState<ApplicationAboutType | null>(null);
+    const [aboutDraft, setAboutDraft] = useState<AboutPage | null>(null);
+
     useEffect(() => {
     const loadCycle = async () => {
         try {
@@ -62,7 +83,20 @@ function AdminEditInformation(): JSX.Element {
     useEffect(() => {
         getFAQs().then(faqs => {
             setFAQData(faqs)
-        })
+        });
+
+        const loadAboutPages = async () => {
+            const pages = await getAboutPages();
+            setAboutPages(() => {
+                const updated = buildAboutPages();
+                pages.forEach((p) => {
+                    updated[p.id] = p;
+                });
+                return updated;
+            });
+        };
+
+        loadAboutPages();
     }, []);
 
     const cycleStages: ApplicationCycle["stage"][] = [
@@ -160,6 +194,52 @@ function AdminEditInformation(): JSX.Element {
             setFAQData(updatedFaqs);
         } catch (error) {
             console.error('Error refreshing FAQs after deletion:', error);
+        }
+    };
+
+    const handleAboutChange = (id: ApplicationAboutType, content: string) => {
+        setAboutPages((prev) => ({
+            ...prev,
+            [id]: {
+                id,
+                title: prev[id]?.title ?? getDefaultAboutPage(id).title,
+                content,
+            },
+        }));
+    };
+
+    const handleSaveAbout = async (id: ApplicationAboutType) => {
+        const page = aboutPages[id];
+        if (!page) return;
+        setAboutSaving((prev) => ({ ...prev, [id]: true }));
+        try {
+            await upsertAboutPage(page);
+            setStageSnack(`Saved About content for ${id} application`);
+            setAboutDraft(null);
+            setEditingAbout(null);
+        } catch (error) {
+            console.error("Error saving About page:", error);
+            setStageSnack(`Failed to save About content for ${id}`);
+        } finally {
+            setAboutSaving((prev) => ({ ...prev, [id]: false }));
+        }
+    };
+
+    const handleResetAbout = async (id: ApplicationAboutType) => {
+        const fallback = getDefaultAboutPage(id);
+        const previous = aboutPages[id];
+        setAboutSaving((prev) => ({ ...prev, [id]: true }));
+        try {
+            await upsertAboutPage(fallback);
+            setAboutPages((prev) => ({ ...prev, [id]: fallback }));
+            setStageSnack(`Reset About content for ${id} to default`);
+            setEditingAbout(null);
+        } catch (error) {
+            console.error("Error resetting About page:", error);
+            setAboutPages((prev) => ({ ...prev, [id]: previous }));
+            setStageSnack(`Failed to reset About content for ${id}`);
+        } finally {
+            setAboutSaving((prev) => ({ ...prev, [id]: false }));
         }
     };
 
@@ -590,6 +670,121 @@ function AdminEditInformation(): JSX.Element {
                             )}
 
                             <EditableFAQComponent faqs={faqData} onFAQDeleted={handleFAQDeleted} />
+                        </div>
+
+                        <div className="editable-info-section">
+                            <h2>Edit About Pages (per application type):</h2>
+                            {(["Research", "NextGen", "NonResearch"] as ApplicationAboutType[]).map((id) => (
+                                <Box
+                                    key={id}
+                                    sx={{
+                                        border: '2px solid #ddd',
+                                        borderRadius: '10px',
+                                        padding: '20px',
+                                        marginBottom: '20px',
+                                        backgroundColor: '#f9f9f9'
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '10px',
+                                            width: '100%',
+                                        }}
+                                    >
+                                        <Typography variant="h6" sx={{ color: '#333' }}>
+                                            {id} About Page
+                                        </Typography>
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                gap: '8px',
+                                                alignItems: 'center',
+                                                marginRight: '100px',
+                                            }}
+                                        >
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => {
+                                                    if (editingAbout === id) {
+                                                        // Cancel: restore snapshot
+                                                        if (aboutDraft) {
+                                                            setAboutPages((prev) => ({ ...prev, [id]: aboutDraft }));
+                                                        }
+                                                        setAboutDraft(null);
+                                                        setEditingAbout(null);
+                                                    } else {
+                                                        // Open edit: snapshot current content
+                                                        setAboutDraft(aboutPages[id]);
+                                                        setEditingAbout(id);
+                                                    }
+                                                }}
+                                                title={editingAbout === id ? "Cancel edit" : "Edit About content"}
+                                                sx={{
+                                                    padding: '6px',
+                                                    backgroundColor: '#fff',
+                                                    border: '1px solid #1976d2',
+                                                    borderRadius: '4px',
+                                                    '&:hover': {
+                                                        backgroundColor: '#e3f2fd',
+                                                        borderColor: '#1565c0'
+                                                    }
+                                                }}
+                                            >
+                                                {editingAbout === id ? <CloseIcon fontSize="small" /> : <EditIcon fontSize="small" />}
+                                            </IconButton>
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleResetAbout(id)}
+                                                title="Reset to default content"
+                                                sx={{
+                                                    padding: '6px',
+                                                    backgroundColor: '#fff',
+                                                    border: '1px solid #d32f2f',
+                                                    borderRadius: '4px',
+                                                    '&:hover': {
+                                                        backgroundColor: '#ffebee',
+                                                        borderColor: '#b71c1c'
+                                                    }
+                                                }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Box>
+                                    </Box>
+                                    <MarkdownPreviewer
+                                        _previewOnly={editingAbout !== id}
+                                        _text={aboutPages[id]?.content ?? ""}
+                                        _minRows={8}
+                                        onChange={(text) => handleAboutChange(id, text)}
+                                    />
+                                    {editingAbout === id && (
+                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => handleSaveAbout(id)}
+                                                disabled={aboutSaving[id]}
+                                                sx={{
+                                                    backgroundColor: '#4CAF50',
+                                                    fontFamily: 'Roboto, sans-serif',
+                                                    textTransform: 'none',
+                                                    height: '36px',
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: 'normal',
+                                                    borderRadius: '8px',
+                                                    '&:hover': {
+                                                        backgroundColor: '#45a049'
+                                                    }
+                                                }}
+                                            >
+                                                {aboutSaving[id] ? 'Saving...' : 'Save Changes'}
+                                            </Button>
+                                        </Box>
+                                    )}
+                                </Box>
+                            ))}
                         </div>
                     </div>
                 </div>
