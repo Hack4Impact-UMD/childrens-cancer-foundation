@@ -27,6 +27,12 @@ import { getAboutPages, upsertAboutPage, getDefaultAboutPage } from "../../backe
 import MarkdownPreviewer from "../../components/markdown/Markdown";
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
 
+const buildAboutPages = (): Record<ApplicationAboutType, AboutPage> => ({
+    Research: getDefaultAboutPage("Research"),
+    NextGen: getDefaultAboutPage("NextGen"),
+    NonResearch: getDefaultAboutPage("NonResearch"),
+});
+
 function AdminEditInformation(): JSX.Element {
     const [allApplicationsDate, setAllApplicationsDate] = useState<Dayjs | null>(dayjs('2025-06-01'));
     const [reviewerDate, setReviewerDate] = useState<dayjs.Dayjs | null>(null);
@@ -46,17 +52,14 @@ function AdminEditInformation(): JSX.Element {
     const [newFAQAnswer, setNewFAQAnswer] = useState<string>('');
     const [isCreatingFAQ, setIsCreatingFAQ] = useState<boolean>(false);
 
-    const [aboutPages, setAboutPages] = useState<Record<ApplicationAboutType, AboutPage | null>>({
-        Research: null,
-        NextGen: null,
-        NonResearch: null,
-    });
+    const [aboutPages, setAboutPages] = useState<Record<ApplicationAboutType, AboutPage>>(buildAboutPages);
     const [aboutSaving, setAboutSaving] = useState<Record<ApplicationAboutType, boolean>>({
         Research: false,
         NextGen: false,
         NonResearch: false,
     });
     const [editingAbout, setEditingAbout] = useState<ApplicationAboutType | null>(null);
+    const [aboutDraft, setAboutDraft] = useState<AboutPage | null>(null);
 
     useEffect(() => {
         getFAQs().then(faqs => {
@@ -65,8 +68,8 @@ function AdminEditInformation(): JSX.Element {
 
         const loadAboutPages = async () => {
             const pages = await getAboutPages();
-            setAboutPages((prev) => {
-                const updated: Record<ApplicationAboutType, AboutPage | null> = { ...prev };
+            setAboutPages(() => {
+                const updated = buildAboutPages();
                 pages.forEach((p) => {
                     updated[p.id] = p;
                 });
@@ -178,7 +181,7 @@ function AdminEditInformation(): JSX.Element {
             ...prev,
             [id]: {
                 id,
-                title: prev[id]?.title ?? "",
+                title: prev[id]?.title ?? getDefaultAboutPage(id).title,
                 content,
             },
         }));
@@ -191,6 +194,7 @@ function AdminEditInformation(): JSX.Element {
         try {
             await upsertAboutPage(page);
             setStageSnack(`Saved About content for ${id} application`);
+            setAboutDraft(null);
             setEditingAbout(null);
         } catch (error) {
             console.error("Error saving About page:", error);
@@ -202,17 +206,16 @@ function AdminEditInformation(): JSX.Element {
 
     const handleResetAbout = async (id: ApplicationAboutType) => {
         const fallback = getDefaultAboutPage(id);
-        setAboutPages((prev) => ({
-            ...prev,
-            [id]: fallback,
-        }));
+        const previous = aboutPages[id];
         setAboutSaving((prev) => ({ ...prev, [id]: true }));
         try {
             await upsertAboutPage(fallback);
+            setAboutPages((prev) => ({ ...prev, [id]: fallback }));
             setStageSnack(`Reset About content for ${id} to default`);
             setEditingAbout(null);
         } catch (error) {
             console.error("Error resetting About page:", error);
+            setAboutPages((prev) => ({ ...prev, [id]: previous }));
             setStageSnack(`Failed to reset About content for ${id}`);
         } finally {
             setAboutSaving((prev) => ({ ...prev, [id]: false }));
@@ -652,7 +655,20 @@ function AdminEditInformation(): JSX.Element {
                                         >
                                             <IconButton
                                                 size="small"
-                                                onClick={() => setEditingAbout(editingAbout === id ? null : id)}
+                                                onClick={() => {
+                                                    if (editingAbout === id) {
+                                                        // Cancel: restore snapshot
+                                                        if (aboutDraft) {
+                                                            setAboutPages((prev) => ({ ...prev, [id]: aboutDraft }));
+                                                        }
+                                                        setAboutDraft(null);
+                                                        setEditingAbout(null);
+                                                    } else {
+                                                        // Open edit: snapshot current content
+                                                        setAboutDraft(aboutPages[id]);
+                                                        setEditingAbout(id);
+                                                    }
+                                                }}
                                                 title={editingAbout === id ? "Cancel edit" : "Edit About content"}
                                                 sx={{
                                                     padding: '6px',
