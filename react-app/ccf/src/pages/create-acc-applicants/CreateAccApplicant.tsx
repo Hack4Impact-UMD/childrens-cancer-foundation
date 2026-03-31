@@ -298,10 +298,10 @@ function AccountPageApplicants(): JSX.Element {
           <div className="images-container">
             <div className="stacked-images">
               <img src={DrHanleyLabImage} alt="Lab research" className="research-image" />
-              <img src={toretsky} alt="Doctor with patient" className="research-image" />
+              <img src={toretsky} aria-hidden="true" alt="Doctor with patient" className="research-image" />
             </div>
             <div className="yellow-overlay">
-              <img src={yellowOverlay} alt="" className="overlay-image" />
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="overlay-image" />
             </div>
           </div>
         </div>

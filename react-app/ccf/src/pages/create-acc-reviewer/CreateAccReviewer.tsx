@@ -347,7 +347,7 @@ function AccountPageReviewers(): JSX.Element {
               <img src={toretsky} alt="Doctor with patient" className="research-image" />
             </div>
             <div className="yellow-overlay">
-              <img src={yellowOverlay} alt="" className="overlay-image" />
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="overlay-image" />
             </div>
           </div>
         </div>

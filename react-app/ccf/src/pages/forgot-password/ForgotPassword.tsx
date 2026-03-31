@@ -120,7 +120,7 @@ function ForgotPassword() {
             <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="forgot-image" />
             <img src={toretsky} alt="Researcher with patient" className="forgot-image" />
             <div className="forgot-yellowOverlay">
-              <img src={yellowOverlay} alt="overlay" className="forgot-yellow" />
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="forgot-yellow" />
             </div>
           </div>
         )}
@@ -130,5 +130,4 @@ function ForgotPassword() {
 }
 
 export default ForgotPassword;
-
 

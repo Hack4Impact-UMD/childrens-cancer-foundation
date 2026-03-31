@@ -158,7 +158,7 @@ function Login() {
             <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="login-image" />
             <img src={toretsky} alt="Researcher with patient" className="login-image" />
             <div className="login-yellowOverlay">
-              <img src={yellowOverlay} alt="overlay" className="login-yellow" />
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="login-yellow" />
             </div>
           </div>
         )}

@@ -56,7 +56,7 @@ function CreateAccMenu() {
             <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="createAcc-image" />
             <img src={toretsky} alt="Researcher with patient" className="createAcc-image" />
             <div className="createAcc-yellowOverlay">
-              <img src={yellowOverlay} alt="overlay" className="createAcc-yellow" />
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="createAcc-yellow" />
             </div>
           </div>
         )}
