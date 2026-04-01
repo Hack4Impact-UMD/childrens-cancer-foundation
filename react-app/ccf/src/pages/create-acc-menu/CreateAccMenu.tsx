@@ -24,12 +24,12 @@ function CreateAccMenu() {
         };
       }, []);
   return (
-    <div className="container">
-      <div className="form">
-        <div className="logo">
-          <img src="/ccflogo.png" alt="Logo" className="logoImage" />
+    <div className="createAccMenu-container">
+      <div className="createAccMenu-form">
+        <div className="createAccMenu-logo">
+          <img src="/ccflogo.png" alt="Logo" className="createAccMenu-logoImage" />
         </div>
-        <h1 className="heading">Create Account</h1>
+        <h1 className="createAccMenu-heading">Create Account</h1>
         <p>Which account are you creating?</p>
         <Link to='/create-account-applicants' className="createAccLink">
         <Button 

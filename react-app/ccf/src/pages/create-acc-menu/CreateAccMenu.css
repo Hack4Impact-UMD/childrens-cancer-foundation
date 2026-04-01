@@ -1,4 +1,4 @@
-.container {
+.createAccMenu-container {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -11,7 +11,7 @@
     font-family: 'Roboto', sans-serif;
 }
 
-.form {
+.createAccMenu-form {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -25,23 +25,23 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.logo {
+.createAccMenu-logo {
     text-align: center;
     margin-bottom: 1rem;
 }
 
-.logoImage {
+.createAccMenu-logoImage {
     max-width: 80px;
 }
 
-.heading {
+.createAccMenu-heading {
     color: #BE0019;
     text-align: center;
     font-size: 24px;
     margin-bottom: 10px;
 }
 
-.form p {
+.createAccMenu-form p {
     text-align: center;
     margin-bottom: 30px;
 }
@@ -54,7 +54,7 @@
     align-self: center;
 }
 
-.form button {
+.createAccMenu-form button {
     width: 100%;
     background-color: #BE0019;
     color: #fff;
@@ -118,14 +118,14 @@
   }
 
 @media (max-width: 750px) {
-        .container {
+        .createAccMenu-container {
             min-height: auto;
             width: 100%;
             flex-direction: column;
             gap: 20px;
         }
 
-        .form {
+        .createAccMenu-form {
             width: 95%;
             max-width: none;
             margin-right: 0;
