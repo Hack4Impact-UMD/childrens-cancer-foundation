@@ -154,7 +154,7 @@ function Login() {
         </form>
 
         {isWideScreen && (
-          <div className="login-imageContainer">
+          <div aria-hidden="true" className="login-imageContainer">
             <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="login-image" />
             <img src={toretsky} alt="Researcher with patient" className="login-image" />
             <div className="login-yellowOverlay">
