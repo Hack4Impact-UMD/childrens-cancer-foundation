@@ -295,13 +295,13 @@ function AccountPageApplicants(): JSX.Element {
         </div>
 
         <div className="right-container2">
-          <div className="images-container">
-            <div className="stacked-images">
-              <img src={DrHanleyLabImage} aria-hidden="true" alt="Lab research" className="research-image" />
-              <img src={toretsky} aria-hidden="true" alt="Doctor with patient" className="research-image" />
+          <div className="createAccApplicant-imagesContainer">
+            <div className="createAccApplicant-stackedImages">
+              <img src={DrHanleyLabImage} aria-hidden="true" alt="Lab research" className="createAccApplicant-researchImage" />
+              <img src={toretsky} aria-hidden="true" alt="Doctor with patient" className="createAccApplicant-researchImage" />
             </div>
-            <div className="yellow-overlay">
-              <img src={yellowOverlay} alt="" aria-hidden="true" className="overlay-image" />
+            <div className="createAccApplicant-yellowOverlay">
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="createAccApplicant-overlayImage" />
             </div>
           </div>
         </div>
