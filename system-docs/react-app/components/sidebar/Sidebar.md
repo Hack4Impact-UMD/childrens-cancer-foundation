@@ -28,14 +28,14 @@ The sidebar component provides navigation for different user roles in the applic
 ### Applicant Sidebar
 - Home (Dashboard)
 - Account Settings
-- Decisions (shown during "Final Decisions" stage)
+- Decisions (shown during "Release Decisions" stage)
 - Post-Grant Report (shown for users with accepted applications)
 - Logout
 
 ## Dynamic Functionality
 
 ### Decisions Link
-- Appears during the "Final Decisions" stage of the application cycle
+- Appears during the "Release Decisions" stage of the application cycle
 - Allows applicants to view their application decisions
 - Includes visual indicators for new decisions
 
@@ -49,7 +49,7 @@ The sidebar component provides navigation for different user roles in the applic
 
 The `getApplicantSidebarItems()` function:
 1. Fetches the current application cycle
-2. Checks if the cycle is in "Final Decisions" stage
+2. Checks if the cycle is in "Release Decisions" stage
 3. Fetches user's applications for the current cycle
 4. Checks each application's decision status
 5. Dynamically builds the sidebar based on these conditions

@@ -68,7 +68,7 @@ function Login() {
           <div className="logo">
             <img src="/ccflogo.png" alt="Logo" className="logoImage" />
           </div>
-          <h1 className="heading">Welcome!</h1>
+          <h1 className="global-header">Welcome!</h1>
           <div className="loginText">
             <p>
               New to CCF?{" "}

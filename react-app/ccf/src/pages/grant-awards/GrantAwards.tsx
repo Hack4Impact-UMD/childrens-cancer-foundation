@@ -15,6 +15,7 @@ import {
 import { GrantAwardApplication } from '../../types/application-types';
 import { getAllCycles } from "../../backend/application-cycle";
 import ApplicationCycle from "../../types/applicationCycle-types";
+import Header from "../../components/header/Header";
 
 type SortField = 'name' | 'programType' | 'institution' | 'finalScore' | 'requested' | 'recommended';
 type SortDirection = 'asc' | 'desc';
@@ -497,12 +498,7 @@ function GrantAwards(): JSX.Element {
             <Sidebar links={sidebarItems} />
             <div className="dashboard-container">
                 <div className="AdminViewAll">
-                    <div className="ApplicantDashboard-header-container">
-                        <img src={logo} className="ApplicantDashboard-logo" alt="logo" />
-                        <h1 className="ApplicantDashboard-header">
-                            Award Recommendations
-                        </h1>
-                    </div>
+                    <Header title="Award Recommendation" />
 
                     <div className="ApplicantDashboard-sections-content">
                         <div className="accounts-table-container">

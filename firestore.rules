@@ -31,6 +31,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // About Pages collection rules
+    match /AboutPages/{aboutId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    
     // Applicants
     match /applicants/{applicantId} {
       allow read, write: if isAdmin() || isReviewer() || request.auth.uid == applicantId;

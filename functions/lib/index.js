@@ -130,29 +130,9 @@ exports.submitApplication = onCall(async (request) => {
         }
 
         const currentCycle = cycleSnapshot.docs[0].data();
-        const now = new Date();
-
         // Check if applications are open
         if (currentCycle.stage !== 'Applications Open') {
             throw new functions.https.HttpsError('failed-precondition', 'Applications are currently closed');
-        }
-
-        // Check deadline based on grant type
-        let deadline;
-        switch (grantType) {
-            case 'research':
-                deadline = currentCycle.researchDeadline.toDate();
-                break;
-            case 'nextgen':
-                deadline = currentCycle.nextGenDeadline.toDate();
-                break;
-            case 'nonresearch':
-                deadline = currentCycle.nonResearchDeadline.toDate();
-                break;
-        }
-
-        if (now > deadline) {
-            throw new functions.https.HttpsError('failed-precondition', `Deadline for ${grantType} applications has passed`);
         }
 
         // 6. Multiple applications are now allowed within the same cycle

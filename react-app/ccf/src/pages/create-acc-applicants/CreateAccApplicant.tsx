@@ -97,7 +97,7 @@ function AccountPageApplicants(): JSX.Element {
                 className="logo2"
                 alt="Circular logo with red borders encompassing 'The children's cancer Foundation, Inc.' and three individuals in the middle"
               />
-              <h1 className="header2">Create Account</h1>
+              <h1 className="global-header">Create Account</h1>
             </div>
 
             <form className="form-container2">
