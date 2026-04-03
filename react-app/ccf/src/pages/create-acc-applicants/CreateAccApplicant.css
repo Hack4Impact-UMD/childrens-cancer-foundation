@@ -34,13 +34,6 @@
   justify-content: center;
 }
 
-.createAccApplicant-imagePlaceholder {
-  background-color: var(--color-yellow);
-  border-radius: 10px;
-  margin-right: 5%;
-  height: 100%;
-}
-
 .createAccApplicant-imagesContainer {
   position: relative;
   width: 72%;
