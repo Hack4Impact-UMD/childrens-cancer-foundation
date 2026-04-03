@@ -214,7 +214,7 @@ function AccountPageApplicants(): JSX.Element {
               <label>Confirm Password*</label>
               <input
                 type="password"
-                placeholder="Enter password again"
+                placeholder="Confirm Password"
                 required
                 value={confirmPwd}
                 onChange={(e) => setConfirmPwd(e.target.value)}
