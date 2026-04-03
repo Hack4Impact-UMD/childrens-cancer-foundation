@@ -24,39 +24,47 @@
 
 .login-imageContainer {
   position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   height: 100%;
   width: 50%;
   max-width: 600px;
   margin-bottom: 20px;
   padding-left: 0 !important;
+  overflow: hidden;
 }
 
-.yellowOverlay {
+.login-yellowOverlay {
   position: absolute;
-  top: -4px;
-  left: 0;
-  width: 100%;
-  height: 100.5%;
+  inset: 0;
   z-index: 1;
+  pointer-events: none;
 }
 
-.yellow {
+.login-yellow {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: fill;
+  display: block;
 }
 
-.images {
+.login-image {
   width: 100%;
-  height: auto;
+  flex: 1;
+  height: 50%;
+  object-fit: cover;
+  display: block;
   z-index: 0;
-  margin-top: -4px;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   flex: 1;
   width: 50%;
   max-width: 500px;
@@ -75,7 +83,7 @@
   border-radius: 4px;
 }
 
-.login-button {
+.custom-button.login-button {
   width: 90%;
   padding: 12px;
   background-color: #BE0019;
@@ -83,14 +91,21 @@
   border: none;
   border-radius: 20px;
   cursor: pointer;
-  margin: 10px 0;
+  margin: 10px auto;
   font-size: 16px;
   font-weight: 500;
 }
 
 .error {
   color: #BE0019;
+  width: 90%;
+  align-self: center;
+  text-align: left;
   margin-bottom: 10px;
+}
+
+.login-form > .MuiTextField-root {
+  align-self: center;
 }
 
 
@@ -104,11 +119,18 @@
 }
 
 .logo {
-  text-align: center;
+  display: flex;
+  justify-content: center;
   margin-bottom: 1rem;
 }
 
+.login-form .global-header {
+  text-align: center;
+}
+
 .logoImage {
+  display: block;
+  margin: 0 auto;
   max-width: 100px;
 }
 
@@ -148,6 +170,6 @@
   }
 
   .login-button {
-    width: 100%;
+    width: 90%;
   }
 }

@@ -24,12 +24,12 @@ function CreateAccMenu() {
         };
       }, []);
   return (
-    <div className="container">
-      <div className="form">
-        <div className="logo">
-          <img src="/ccflogo.png" alt="Logo" className="logoImage" />
+    <div className="createAccMenu-container">
+      <div className="createAccMenu-form">
+        <div className="createAccMenu-logo">
+          <img src="/ccflogo.png" alt="Logo" className="createAccMenu-logoImage" />
         </div>
-        <h1 className="heading">Create Account</h1>
+        <h1 className="createAccMenu-heading">Create Account</h1>
         <p>Which account are you creating?</p>
         <Link to='/create-account-applicants' className="createAccLink">
         <Button 
@@ -53,10 +53,10 @@ function CreateAccMenu() {
       </div>
       {isWideScreen && (
           <div className="imageContainer">
-            <img src={DrHanleyLabImage} alt="image" className="images" />
-            <img src={toretsky} alt="image" className="images" />
-            <div className="yellowOverlay">
-              <img src={yellowOverlay} alt="overlay" className="yellow" />
+            <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="createAcc-image" />
+            <img src={toretsky} alt="Researcher with patient" className="createAcc-image" />
+            <div className="createAcc-yellowOverlay">
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="createAcc-yellow" />
             </div>
           </div>
         )}

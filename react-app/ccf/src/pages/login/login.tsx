@@ -154,11 +154,11 @@ function Login() {
         </form>
 
         {isWideScreen && (
-          <div className="login-imageContainer">
-            <img src={DrHanleyLabImage} alt="image" className="images" />
-            <img src={toretsky} alt="image" className="images" />
-            <div className="yellowOverlay">
-              <img src={yellowOverlay} alt="overlay" className="yellow" />
+          <div aria-hidden="true" className="login-imageContainer">
+            <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="login-image" />
+            <img src={toretsky} alt="Researcher with patient" className="login-image" />
+            <div className="login-yellowOverlay">
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="login-yellow" />
             </div>
           </div>
         )}

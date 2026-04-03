@@ -1,12 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccApplicant.css";
 import logo from '../../assets/ccf-logo.png';
+import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
+import toretsky from "../../assets/toretskywithpatient 1.png";
+import yellowOverlay from "../../assets/yellowoverlay.png";
 import { useEffect, useState } from "react";
 import { addApplicantUser } from "../../users/usermanager";
 import { UserData } from "../../types/usertypes";
-import { storage } from "../../index"
 import { VALID_INSTITUTIONS, validateInstitution, checkEmailCreateAcc, checkPasswordRequirements as checkPasswordRequirementsUtil } from "../../utils/validation";
-import { ref, getDownloadURL } from "firebase/storage";
 
 function AccountPageApplicants(): JSX.Element {
   //form inputs
@@ -31,10 +32,6 @@ function AccountPageApplicants(): JSX.Element {
 
   const [institutionError, setInstitutionError] = useState(false);
 
-  const [hanleyImage, setHanleyImage] = useState<string | undefined>(undefined);
-  const [toretskyImage, setToretskyImage] = useState<string | undefined>(undefined);
-  const [yellowOverlay, setYellowOverlay] = useState<string | undefined>(undefined);
-
   const navigate = useNavigate();
 
   useEffect(() => { }, [
@@ -47,32 +44,6 @@ function AccountPageApplicants(): JSX.Element {
     affiliation,
     pwdUnmatched,
   ]);
-
-  useEffect(() => {
-    const loadImages = async () => {
-      try {
-        const hanleyRef = ref(storage, '/images/hanley.png');
-        const toretskyRef = ref(storage, '/images/toretsky.png');
-        const yellowRef = ref(storage, '/images/yellow-background.png');
-
-        const [hanleyUrl, toretskyUrl, yellowUrl] = await Promise.all([
-          getDownloadURL(hanleyRef),
-          getDownloadURL(toretskyRef),
-          getDownloadURL(yellowRef)
-        ]);
-
-        setHanleyImage(hanleyUrl);
-        setToretskyImage(toretskyUrl);
-        setYellowOverlay(yellowUrl);
-
-        console.log(hanleyUrl);
-      } catch (error) {
-        console.error('Error loading images:', error);
-      }
-    };
-
-    loadImages();
-  }, []);
 
   const checkPasswordRequirements = (password: string) => {
     const { specialChar, capitalLetter, number } = checkPasswordRequirementsUtil(password);
@@ -241,24 +212,15 @@ function AccountPageApplicants(): JSX.Element {
               )}
 
               <label>Confirm Password*</label>
-              <div
-                className={
-                  !pwdUnmatched
-                    ? "confirm-pwd-container"
-                    : "confirm-pwd-container-exclaim"
-                }
-              >
-                <input
-                  type="password"
-                  placeholder="Enter password again"
-                  required
-                  value={confirmPwd}
-                  onChange={(e) => setConfirmPwd(e.target.value)}
-                  onKeyUp={checkConfirmPwd}
-                  className="input"
-                />
-                {pwdUnmatched && <p id="exclaim">!</p>}
-              </div>
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                required
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                onKeyUp={checkConfirmPwd}
+                className="input"
+              />
 
               {pwdUnmatched && (
                 <p className="validation">Passwords do not match</p>
@@ -333,13 +295,13 @@ function AccountPageApplicants(): JSX.Element {
         </div>
 
         <div className="right-container2">
-          <div className="images-container">
-            <div className="stacked-images">
-              <img src={hanleyImage} alt="Lab research" className="research-image" />
-              <img src={toretskyImage} alt="Doctor with patient" className="research-image" />
+          <div className="createAccApplicant-imagesContainer">
+            <div className="createAccApplicant-stackedImages">
+              <img src={DrHanleyLabImage} aria-hidden="true" alt="Lab research" className="createAccApplicant-researchImage" />
+              <img src={toretsky} aria-hidden="true" alt="Doctor with patient" className="createAccApplicant-researchImage" />
             </div>
-            <div className="yellow-overlay">
-              <img src={yellowOverlay} alt="" className="overlay-image" />
+            <div className="createAccApplicant-yellowOverlay">
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="createAccApplicant-overlayImage" />
             </div>
           </div>
         </div>

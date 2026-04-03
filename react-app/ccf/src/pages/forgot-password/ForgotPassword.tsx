@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { resetPassword } from "../../services/auth_login";
 import "./ForgotPassword.css";
@@ -56,7 +56,7 @@ function ForgotPassword() {
     setEmail(e.target.value);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       setIsWideScreen(window.innerWidth > 750);
     };
@@ -68,14 +68,14 @@ function ForgotPassword() {
   }, []);
 
   return (
-    <div className="container">
-      <div className="content">
-        <form className="form" onSubmit={handleSubmit}>
-          <div className="logo">
-            <img src="/ccflogo.png" alt="Logo" className="logoImage" />
+    <div className="forgot-container">
+      <div className="forgot-content">
+        <form className="forgot-form" onSubmit={handleSubmit}>
+          <div className="forgot-logo">
+            <img src="/ccflogo.png" alt="Logo" className="forgot-logoImage" />
           </div>
-          <h1 className="heading">Reset Password</h1>
-          <p className="description">
+          <h1 className="forgot-heading">Reset Password</h1>
+          <p className="forgot-description">
             Enter your email address and we'll send you a link to reset your password.
           </p>
           
@@ -94,13 +94,13 @@ function ForgotPassword() {
             }}
           />
 
-          {error && <p className="error">{error}</p>}
-          {message && <p className="success">{message}</p>}
+          {error && <p className="forgot-error">{error}</p>}
+          {message && <p className="forgot-success">{message}</p>}
           
           <Button 
             variant={"red"} 
             type={"submit"} 
-            className={"button"}
+            className={"forgot-button"}
             disabled={isLoading}
           >
             <>
@@ -108,19 +108,19 @@ function ForgotPassword() {
             </>
           </Button>
           
-          <div className="loginText">
-            <Link to="/login" className="backToLoginLink">
+          <div className="forgot-loginText">
+            <Link to="/login" className="forgot-backToLoginLink">
               <u>Back to Login</u>
             </Link>
           </div>
         </form>
 
         {isWideScreen && (
-          <div className="imageContainer">
-            <img src={DrHanleyLabImage} alt="image" className="images" />
-            <img src={toretsky} alt="image" className="images" />
-            <div className="yellowOverlay">
-              <img src={yellowOverlay} alt="overlay" className="yellow" />
+          <div className="forgot-imageContainer">
+            <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="forgot-image" />
+            <img src={toretsky} alt="Researcher with patient" className="forgot-image" />
+            <div className="forgot-yellowOverlay">
+              <img src={yellowOverlay} alt="" aria-hidden="true" className="forgot-yellow" />
             </div>
           </div>
         )}
@@ -130,5 +130,4 @@ function ForgotPassword() {
 }
 
 export default ForgotPassword;
-
 
