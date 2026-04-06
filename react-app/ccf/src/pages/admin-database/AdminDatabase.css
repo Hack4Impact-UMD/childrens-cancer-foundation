@@ -210,6 +210,11 @@
     object-fit: contain;
 }
 
+.year-section-icon {
+    box-shadow: none;
+    filter: none;
+}
+
 .single-application-box {
     border-radius: 8px;
     margin-bottom: 12px;
@@ -409,6 +414,14 @@
 .application-details {
     padding: 1rem 0 0;
     width: 100%;
+}
+
+.application-details-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px auto 0;
+    color: #003E83;
 }
   
 .expanded-header h3 {

@@ -193,7 +193,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                 <div key={year} className="dashboard-section">
                                     <div className="section-header" onClick={() => toggleYear(year)}>
                                         <div className="header-content">
-                                            <img src={document} alt="Document Icon" className="section-icon" />
+                                            <img src={document} alt="Application Icon" className="section-icon year-section-icon" />
                                             <h2>{year}</h2>
                                         </div>
                                         <button className="expand-collapse-btn">
@@ -277,6 +277,12 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                         Completed Application
                                                                     </button> */}
                                                                     </div>
+                                                                    <button
+                                                                        className="expand-collapse-btn application-details-toggle-btn"
+                                                                        onClick={() => toggleApplication(year, index)}
+                                                                    >
+                                                                        <FaArrowUp />
+                                                                    </button>
                                                                     <AdminCoverPageModal application={app} isOpen={openModal === app} onClose={closeModal}></AdminCoverPageModal>
                                                                 </div>
                                                             )}
