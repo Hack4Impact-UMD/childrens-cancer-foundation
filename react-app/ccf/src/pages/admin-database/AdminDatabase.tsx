@@ -201,14 +201,19 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                     const iconColor = isExpanded ? blueDocument : yellowDocument;
                                                     return (
                                                         <div key={index} className={`single-application-box ${isExpanded ? 'expanded' : ''}`}>
-                                                            <div className="application-header">
-                                                                <div className="application-info">
-                                                                    <img src={iconColor} alt="Document Icon" className="section-icon" />
-                                                                    <div className="application-info-text">
-                                                                        <p className="application-title">{app.title}</p>
-                                                                        <p className="subtext">{app.grantType} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
+                                                            <div className="application-summary-row">
+                                                                <div className="application-header">
+                                                                    <div className="application-info">
+                                                                        <img src={iconColor} alt="Document Icon" className="section-icon" />
+                                                                        <div className="application-info-text">
+                                                                            <p className="application-title">{app.title}</p>
+                                                                            <p className="subtext">{app.grantType} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
+                                                                <button className="expand-collapse-btn application-toggle-btn" onClick={() => toggleApplication(year, index)}>
+                                                                    {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
+                                                                </button>
                                                             </div>
 
                                                             {isExpanded && (
@@ -267,9 +272,6 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                     <AdminCoverPageModal application={app} isOpen={openModal === app} onClose={closeModal}></AdminCoverPageModal>
                                                                 </div>
                                                             )}
-                                                            <button className="expand-collapse-btn" onClick={() => toggleApplication(year, index)}>
-                                                                {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
-                                                            </button>
                                                         </div>
                                                     );
                                                 })}
