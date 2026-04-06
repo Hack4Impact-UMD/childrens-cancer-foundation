@@ -36,6 +36,14 @@ function AdminApplicationsDatabase(): JSX.Element {
         setOpenModal(null)
     }
 
+    const formatGrantType = (grantType: string) => {
+        if (grantType.toLowerCase() === "nextgen") {
+            return "NextGen";
+        }
+
+        return firstLetterCap(grantType);
+    }
+
     useEffect(() => {
         const fetchApplications = async () => {
             try {
@@ -207,7 +215,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                         <img src={iconColor} alt="Document Icon" className="section-icon" />
                                                                         <div className="application-info-text">
                                                                             <p className="application-title">{app.title}</p>
-                                                                            <p className="subtext">{app.grantType} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
+                                                                            <p className="subtext">{formatGrantType(app.grantType)} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
                                                                         </div>
                                                                     </div>
                                                                 </div>
