@@ -15,13 +15,15 @@ import { auth } from "../../index";
 import { FaCheckCircle, FaFileAlt } from "react-icons/fa";
 import { getPDFDownloadURL } from "../../storage/storage";
 import "../../post-grant-report/post-grant-report.css";
+import Header from "../../components/header/Header";
+
 
 function PostGrantReportPage(): JSX.Element {
     const { applicationId } = useParams<{ applicationId: string }>();
     const navigate = useNavigate();
 
     const [sidebarItems, setSidebarItems] = useState<any[]>([]);
-    const [uploadLabel, setUploadLabel] = useState<string>("Click to Upload");
+    const [uploadLabel, setUploadLabel] = useState<string>("Upload File");
     const [reportUploaded, setReportUploaded] = useState<boolean>(false);
     const [report, setReport] = useState<File | null>(null);
     const [currentCycle, setCurrentCycle] = useState<ApplicationCycle | null>(null);
@@ -123,7 +125,7 @@ function PostGrantReportPage(): JSX.Element {
 
     const updateReport = async (files: FileList) => {
         if (files?.length === 0) {
-            setUploadLabel("Click to Upload")
+            setUploadLabel("Upload File")
             setReportUploaded(false);
         }
         else if (files?.length === 1) {
@@ -140,7 +142,7 @@ function PostGrantReportPage(): JSX.Element {
         setReport(null);
         document.forms.namedItem("report-form")?.reset();
         setReportUploaded(false);
-        setUploadLabel("Click to Upload");
+        setUploadLabel("Upload File");
     }
 
     const handleInputChange = (field: string, value: string) => {
@@ -359,21 +361,14 @@ function PostGrantReportPage(): JSX.Element {
                 <Sidebar links={sidebarItems} />
                 <div className="dashboard-container">
                     <div className="PostGrantReport">
-                        <div className="PostGrantReport-header-container">
-                            <h1 className="PostGrantReport-header">
-                                Post Grant Report
-                            </h1>
-                            <button className="back-button" onClick={() => navigate('/applicant/dashboard')}>
-                                ← Back to Dashboard
-                            </button>
-                        </div>
+                        <Header title="Post-Grant Report" />
 
-                        {application && (
+                        {/* {application && (
                             <div className="application-info-section">
                                 <h2>Application: {application.title || `${application.grantType} Application`}</h2>
                                 <p><strong>Grant Type:</strong> {application.grantType}</p>
                             </div>
-                        )}
+                        )} */}
 
                         {deadline && (
                             <div className={`deadline-notice ${isOverdue ? 'overdue' : ''}`}>
@@ -390,87 +385,122 @@ function PostGrantReportPage(): JSX.Element {
                         <div className="PostGrantReport-sections-content">
                             <div className="PostGrantReport-section-box">
                                 <h2 className="PostGrantReport-section-title">
-                                    Post-Grant Report Requirements
+                                    Upload Document
                                 </h2>
-                                <div className="PostGrantReport-subsection">
-                                    <h3 className="header-title">In the Post-Grant Report, please submit a 2-3 page Word or PDF file which includes:</h3>
-                                    <ol>
-                                        <li>Research Title</li>
-                                        <li>Principal Investigator</li>
-                                        <li>Institution</li>
-                                        <li>Grant Start and End Dates</li>
-                                        <li>Initial Research Goal</li>
-                                        <li>Results/Findings, such as relevant graphs, charts, or images</li>
-                                        <li>Ongoing/Additional Plans, such as intent for future research using said findings and intent to submit abstracts on funded research to any research publications (crediting funding from CCF)</li>
-                                    </ol>
-                                </div>
 
                                 <div className="PostGrantReport-subsection">
-                                    <h3 className="header-title">Upload File (PDF Format)</h3>
+                                    <p>
+                                        Following the receipt of a CCF Research Grant, we ask that the awardee submits
+                                        a final report within 90 days of the conclusion of the grant period.
+                                        The report should be a 2-3 page Word or PDF file and include:
+                                    </p>
+
+                                <ul>
+                                    <li>Research Title</li>
+                                    <li>Principal Investigator</li>
+                                    <li>Institution</li>
+                                    <li>Grant Start/End date</li>
+                                    <li>Initial Research Goal</li>
+                                    <li>Results/Findings - Including relevant graphs, charts or images</li>
+                                    <li>
+                                        Ongoing/additional plans - such as intent for future research using said findings,
+                                        and intent to submit abstracts on funded research to any research publications
+                                        (crediting funding from CCF)
+                                    </li>
+                                </ul>
+                                </div>
+
+                                <div className="PostGrantReport-subsection center-upload">
                                     <div className="report-upload">
                                         <form id="report-form">
-                                            <label htmlFor="report-pdf" className="sr-only">Upload PDF report</label>
                                             <input
                                                 type='file'
                                                 accept="application/pdf"
                                                 id="report-pdf"
-                                                title="Upload PDF report"
-                                                onChange={e => (e.target.files) ? updateReport(e.target.files) : "Click to Upload"}
-                                                aria-label="Upload PDF report"
+                                                onChange={e => (e.target.files) ? updateReport(e.target.files) : ""}
                                             />
-                                            <label className="upload-label" htmlFor="report-pdf">{uploadLabel}</label>
-                                            {reportUploaded ? <button type="button" className="remove-upload" onClick={removeUpload}><strong>X</strong></button> : <></>}
-                                        </form>
-                                    </div>
+                                            <label className="upload-label" htmlFor="report-pdf">
+                                                {uploadLabel || "Upload File"}
+                                            </label>
+                                        {reportUploaded &&
+                                            <button
+                                                type="button"
+                                                className="remove-upload"
+                                                onClick={removeUpload}
+                                            >
+                                                X
+                                            </button>
+                                        }
+                                    </form>
+                                </div>
                                 </div>
 
                                 <div className="PostGrantReport-subsection">
                                     <h3 className="header-title">Attestation Information</h3>
-                                    <div className="attestation">
-                                        <div><label className="attestation-label">Awardee/Principal Investigator:</label></div>
-                                        <input
-                                            type="text"
-                                            placeholder="Full Legal Name"
-                                            value={formData.investigatorName}
-                                            onChange={(e) => handleInputChange("investigatorName", e.target.value)}
-                                            className="attestation-input"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="attestation">
-                                        <div><label className="attestation-label">Institution:</label></div>
-                                        <input
-                                            type="text"
-                                            placeholder="Institution Name"
-                                            value={formData.institutionName}
-                                            onChange={(e) => handleInputChange("institutionName", e.target.value)}
-                                            className="attestation-input"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="attestation">
-                                        <div><label className="attestation-label">Date:</label></div>
-                                        <input
-                                            type="date"
-                                            value={formData.attestationDate}
-                                            onChange={(e) => handleInputChange("attestationDate", e.target.value)}
-                                            className="attestation-input"
-                                            title="Attestation date"
-                                            required
-                                        />
-                                    </div>
+
+                                <div className="attestation">
+                                    <label className="attestation-label">
+                                        Awardee / Principal Investigator
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.investigatorName}
+                                        onChange={(e) =>
+                                            handleInputChange("investigatorName", e.target.value)
+                                        }
+                                        className="attestation-input"
+                                    />
+                                </div>
+
+                                <div className="attestation">
+                                    <label className="attestation-label">
+                                        Institution
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.institutionName}
+                                        onChange={(e) =>
+                                            handleInputChange("institutionName", e.target.value)
+                                        }
+                                        className="attestation-input"
+                                    />
+                                </div>
+
+                                <div className="attestation">
+                                    <label className="attestation-label">
+                                        Date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={formData.attestationDate}
+                                        onChange={(e) =>
+                                            handleInputChange("attestationDate", e.target.value)
+                                        }
+                                        className="attestation-input"
+                                    />
+                                </div>
+
                                 </div>
 
                                 <div className="PostGrantReport-submit">
-                                    <button className="cancel-button" onClick={() => navigate('/applicant/dashboard')}>Cancel</button>
-                                    <button
-                                        className="application-btn"
-                                        onClick={handleSubmit}
-                                        disabled={loading}
+                                    
+                                <button
+                                    className="application-btn"
+                                    onClick={handleSubmit}
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Submitting...' : 'Submit Report'}
+                                </button>
+
+                                <button
+                                        className="cancel-button"
+                                        onClick={() => navigate('/applicant/dashboard')}
                                     >
-                                        {loading ? 'Submitting...' : 'Submit Report'}
+                                        Cancel
                                     </button>
+
                                 </div>
+
                             </div>
                         </div>
                     </div>
