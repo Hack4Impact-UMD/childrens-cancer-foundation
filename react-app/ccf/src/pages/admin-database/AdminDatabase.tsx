@@ -139,7 +139,7 @@ function AdminApplicationsDatabase(): JSX.Element {
     };
 
     return (
-        <div>
+        <div className="admin-database-page">
             <Sidebar links={sidebarItems} />
 
             <div className="dashboard-container">
@@ -227,41 +227,41 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                             {isExpanded && (
                                                                 <div className="application-details">
                                                                     <hr className="divider" />
-                                                                    <div className="details-two-columns">
-                                                                        <div className="details-block">
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Application Title: </span>
-                                                                                <span className="detail-value">{app.title || " N/A"}</span>
+                                                                    <div className="admin-details-two-columns">
+                                                                        <div className="admin-details-block">
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Application Title: </span>
+                                                                                <span className="admin-detail-value">{app.title || " N/A"}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Application Type: </span>
-                                                                                <span className="detail-value">{app.grantType || " N/A"}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Application Type: </span>
+                                                                                <span className="admin-detail-value">{app.grantType || " N/A"}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Principal Investigator/Requestor: </span>
-                                                                                <span className="detail-value">{app.grantType === "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Principal Investigator/Requestor: </span>
+                                                                                <span className="admin-detail-value">{app.grantType === "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Institution: </span>
-                                                                                <span className="detail-value">{app.institution || " N/A"}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Institution: </span>
+                                                                                <span className="admin-detail-value">{app.institution || " N/A"}</span>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="details-block">
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Cancer Type: </span>
-                                                                                <span className="detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
+                                                                        <div className="admin-details-block">
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Cancer Type: </span>
+                                                                                <span className="admin-detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Amount Requested: </span>
-                                                                                <span className="detail-value">${app.amountRequested || " N/A"}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Amount Requested: </span>
+                                                                                <span className="admin-detail-value">${app.amountRequested || " N/A"}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Continuation of Funding: </span>
-                                                                                <span className="detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Continuation of Funding: </span>
+                                                                                <span className="admin-detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Status: </span>
-                                                                                <span className="detail-value">{firstLetterCap(app.decision)}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Status: </span>
+                                                                                <span className="admin-detail-value">{firstLetterCap(app.decision)}</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -277,12 +277,6 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                         Completed Application
                                                                     </button> */}
                                                                     </div>
-                                                                    <button
-                                                                        className="expand-collapse-btn application-details-toggle-btn"
-                                                                        onClick={() => toggleApplication(year, index)}
-                                                                    >
-                                                                        <FaArrowUp />
-                                                                    </button>
                                                                     <AdminCoverPageModal application={app} isOpen={openModal === app} onClose={closeModal}></AdminCoverPageModal>
                                                                 </div>
                                                             )}

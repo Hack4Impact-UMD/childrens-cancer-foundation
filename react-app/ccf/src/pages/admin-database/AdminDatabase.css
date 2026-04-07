@@ -203,19 +203,19 @@
     align-items: center;
 }
 
-.section-icon {
+.admin-database-page .section-icon {
     width: 40px;
     height: 40px;
     margin-right: 8px;
     object-fit: contain;
 }
 
-.year-section-icon {
+.admin-database-page .year-section-icon {
     box-shadow: none;
     filter: none;
 }
 
-.single-application-box {
+.admin-database-page .single-application-box {
     border-radius: 8px;
     margin-bottom: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -225,15 +225,16 @@
     height: auto;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     padding: 12px 16px;
 }
 
-.single-application-box:not(.expanded) {
+.admin-database-page .single-application-box:not(.expanded) {
     background-color: #003E83;
     color: white;
 }
 
-.single-application-box.expanded {
+.admin-database-page .single-application-box.expanded {
     background-color: #A1C5E4;
     max-height: 2000px;
     padding: 16px;
@@ -242,19 +243,19 @@
     height: auto;
     overflow: visible;
 }
-.single-application-box.expanded .application-title{
+.admin-database-page .single-application-box.expanded .application-title{
     color: #1E1E1E;
 }
 
-.single-application-box.expanded .subtext{
+.admin-database-page .single-application-box.expanded .subtext{
     color: #545454;
 }
 
-.single-application-box.expanded .application-header{
+.admin-database-page .single-application-box.expanded .application-header{
     margin-top: 0;
 }
 
-.application-summary-row {
+.admin-database-page .application-summary-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -262,7 +263,12 @@
     width: 100%;
 }
 
-.application-header {
+.admin-database-page .single-application-box.expanded .application-summary-row {
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.admin-database-page .application-header {
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -271,26 +277,26 @@
     margin-top: 0;
 }
 
-.application-info {
+.admin-database-page .application-info {
     display: flex;
     align-items: center;
     gap: 12px;
     min-width: 0;
 }
 
-.application-info .section-icon {
+.admin-database-page .application-info .section-icon {
     margin: 0;
     flex-shrink: 0;
 }
 
-.application-info-text {
+.admin-database-page .application-info-text {
     display: flex;
     flex-direction: column;
     justify-content: center;
     min-width: 0;
 }
 
-.application-toggle-btn {
+.admin-database-page .application-toggle-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -298,23 +304,23 @@
     flex-shrink: 0;
 }
 
-.single-application-box:not(.expanded) .application-toggle-btn {
+.admin-database-page .single-application-box:not(.expanded) .application-toggle-btn {
     color: white;
 }
 
-.single-application-box:not(.expanded) .application-title,
-.single-application-box:not(.expanded) .subtext {
+.admin-database-page .single-application-box:not(.expanded) .application-title,
+.admin-database-page .single-application-box:not(.expanded) .subtext {
     color: white;
 }
 
-.application-title {
+.admin-database-page .application-title {
     font-weight: 600;
     margin: 0;
     font-size: 16px;
     color: #1E1E1E;
 }
 
-.subtext {
+.admin-database-page .subtext {
     font-size: 14px;
     margin: 0;
     margin-top: 4px;
@@ -353,29 +359,11 @@
     color: #0056b3;
 }
 
-.divider {
+.admin-database-page .divider {
     border: none;
     height: 2px;
     background-color: #003E83;
     margin: 0 0 16px 0;
-}
-
-.detail-item {
-    margin-bottom: 16px;
-    gap: 8px;
-}
-
-.detail-label {
-    font-weight: 600;
-    margin: 0 0 4px 0;
-    font-size: 16px;
-    color: #333;
-}
-
-.detail-value {
-    margin: 0;
-    font-size: 16px;
-    color: #333;
 }
 
 .action-buttons {
@@ -411,17 +399,9 @@
     margin-left: 8px;
 }
 
-.application-details {
-    padding: 1rem 0 0;
+.admin-database-page .application-details {
+    padding: 0;
     width: 100%;
-}
-
-.application-details-toggle-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 8px auto 0;
-    color: #003E83;
 }
   
 .expanded-header h3 {
@@ -436,30 +416,44 @@
     margin-bottom: 1rem;
 }
 
-.details-two-columns {
+.admin-database-page .admin-details-two-columns {
     display: flex;
     gap: 2rem;
     flex-wrap: wrap;
 }
 
-.details-block {
+.admin-database-page .admin-details-block {
     flex: 1;
     min-width: 250px;
 }
 
-.detail-item {
+.admin-database-page .admin-detail-item {
     margin-bottom: 1rem;
     display: flex;
     flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px;
 }
 
-.detail-label {
-    display: block;
-    font-weight: 500;
+.admin-database-page .admin-detail-label {
+    display: inline;
+    font-weight: 600;
     color: #333;
-    margin-bottom: 0.25rem;
+    margin: 0;
+    font-size: 16px;
 }
 
-.detail-value {
+.admin-database-page .admin-detail-value {
     color: #555;
+    display: inline;
+    margin: 0;
+    font-size: 16px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    min-height: auto;
+    font-weight: 400;
+    line-height: 1.5;
 }
