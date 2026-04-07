@@ -368,7 +368,7 @@
 
 .action-buttons {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     gap: 16px;
     margin-top: 20px;
 }

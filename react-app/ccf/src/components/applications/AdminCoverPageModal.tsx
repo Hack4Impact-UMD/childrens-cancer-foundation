@@ -21,7 +21,6 @@ interface CoverPageModalProps {
 
 const AdminCoverPageModal = ({ application, isOpen, onClose }: CoverPageModalProps) => {
 
-    const [pdfLink, setPdfLink] = useState<any>();
     const [reportLink, setReportLink] = useState<any>();
     const [reportMsg, setReportMsg] = useState<string>("");
     const [decision, setDecision] = useState<Decision>();
@@ -29,13 +28,6 @@ const AdminCoverPageModal = ({ application, isOpen, onClose }: CoverPageModalPro
     useEffect(() => {
         if (isOpen) {
             getCurrentCycle().then(currentAppCycle => {
-                downloadPDFsByName([application.file]).then((links) => {
-                    if (links && links[0]) {
-                        setPdfLink(links[0])
-                    }
-                }).catch((e) => {
-                    console.error(e)
-                })
                 const reportDue = (currentAppCycle.name !== application.applicationCycle) || currentAppCycle.stage === "Release Decisions"
                 if (application.applicationId && reportDue) {
                     getReportByApplicationID(application.applicationId).then(report => {
@@ -78,7 +70,6 @@ const AdminCoverPageModal = ({ application, isOpen, onClose }: CoverPageModalPro
                 </div>
             </div>
             {decision ? <DecisionBox decision={decision}></DecisionBox> : ""}
-            <div className="application-pdf-link">{pdfLink ? <a target="_blank" href={pdfLink.url}>Application PDF</a> : ""}</div>
             <div className="post-grant-report-pdf-link">{reportLink ? <a target="_blank" href={reportLink.url}>Post Grant Report</a> : reportMsg}</div>
             <Review type={application.grantType} formData={application} hideFile={true}></Review>
         </div>

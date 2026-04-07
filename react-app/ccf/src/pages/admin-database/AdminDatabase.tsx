@@ -16,6 +16,7 @@ import { getFilteredApplications } from "../../backend/application-filters";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
 import Header from "../../components/header/Header";
+import { downloadPDFsByName } from "../../storage/storage";
 
 function AdminApplicationsDatabase(): JSX.Element {
     const [applicationsData, setApplicationsData] = useState<{ [year: string]: Application[] }>({});
@@ -131,10 +132,16 @@ function AdminApplicationsDatabase(): JSX.Element {
 
     const sidebarItems = getSidebarbyRole("admin");
 
-    // Function to open the application document
-    const openApplicationDocument = (url: string) => {
-        if (url) {
-            window.open(url, '_blank');
+    // Resolve Firebase storage file name to a public URL and open in new tab.
+    const openApplicationDocument = async (fileName: string) => {
+        if (!fileName) return;
+        try {
+            const links = await downloadPDFsByName([fileName]);
+            if (links && links[0]?.url) {
+                window.open(links[0].url, "_blank", "noopener,noreferrer");
+            }
+        } catch (error) {
+            console.error("Error opening application PDF:", error);
         }
     };
 
@@ -270,12 +277,10 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                             Cover Sheet Information
                                                                             <FaChevronRight className="button-icon" />
                                                                         </Button>
-                                                                        {/* <button
-                                                                        className="action-button completed-app"
-                                                                        onClick={() => openApplicationDocument(app.file)}
-                                                                    >
-                                                                        Completed Application
-                                                                    </button> */}
+                                                                        <Button className="action-button cover-sheet" onClick={(event) => { event.stopPropagation(); void openApplicationDocument(app.file); }}>
+                                                                            Application PDF
+                                                                            <FaChevronRight className="button-icon" />
+                                                                        </Button>
                                                                     </div>
                                                                     <AdminCoverPageModal application={app} isOpen={openModal === app} onClose={closeModal}></AdminCoverPageModal>
                                                                 </div>
