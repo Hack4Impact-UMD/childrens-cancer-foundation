@@ -2,20 +2,17 @@ import { useState, useEffect } from "react";
 import "./AdminDatabase.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { FaArrowDown, FaArrowUp, FaChevronRight } from "react-icons/fa";
-import logo from "../../assets/ccf-logo.png";
 import document from '../../assets/documentIcon.png';
 import yellowDocument from '../../assets/yellowDocumentIcon.png';
 import blueDocument from '../../assets/blueDocumentIcon.png';
 import { getSidebarbyRole } from "../../types/sidebar-types";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../..";
-import CoverPageModal from "../../components/applications/CoverPageModal";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
 import Header from "../../components/header/Header";
+import { downloadPDFsByName } from "../../storage/storage";
 
 function AdminApplicationsDatabase(): JSX.Element {
     const [applicationsData, setApplicationsData] = useState<{ [year: string]: Application[] }>({});
@@ -34,6 +31,14 @@ function AdminApplicationsDatabase(): JSX.Element {
 
     const closeModal = () => {
         setOpenModal(null)
+    }
+
+    const formatGrantType = (grantType: string) => {
+        if (grantType.toLowerCase() === "nextgen") {
+            return "NextGen";
+        }
+
+        return firstLetterCap(grantType);
     }
 
     useEffect(() => {
@@ -123,15 +128,21 @@ function AdminApplicationsDatabase(): JSX.Element {
 
     const sidebarItems = getSidebarbyRole("admin");
 
-    // Function to open the application document
-    const openApplicationDocument = (url: string) => {
-        if (url) {
-            window.open(url, '_blank');
+    // Resolve Firebase storage file name to a public URL and open in new tab.
+    const openApplicationDocument = async (fileName: string) => {
+        if (!fileName) return;
+        try {
+            const links = await downloadPDFsByName([fileName]);
+            if (links && links[0]?.url) {
+                window.open(links[0].url, "_blank", "noopener,noreferrer");
+            }
+        } catch (error) {
+            console.error("Error opening application PDF:", error);
         }
     };
 
     return (
-        <div>
+        <div className="admin-database-page">
             <Sidebar links={sidebarItems} />
 
             <div className="dashboard-container">
@@ -185,7 +196,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                 <div key={year} className="dashboard-section">
                                     <div className="section-header" onClick={() => toggleYear(year)}>
                                         <div className="header-content">
-                                            <img src={document} alt="Document Icon" className="section-icon" />
+                                            <img src={document} alt="Application Icon" className="section-icon year-section-icon" />
                                             <h2>{year}</h2>
                                         </div>
                                         <button className="expand-collapse-btn">
@@ -201,54 +212,59 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                     const iconColor = isExpanded ? blueDocument : yellowDocument;
                                                     return (
                                                         <div key={index} className={`single-application-box ${isExpanded ? 'expanded' : ''}`}>
-                                                            <div className="application-header">
-                                                                <div className="application-info">
-                                                                    <img src={iconColor} alt="Document Icon" className="section-icon" />
-                                                                    <div className="application-info-text">
-                                                                        <p className="application-title">{app.title}</p>
-                                                                        <p className="subtext">{app.grantType} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
+                                                            <div className="application-summary-row">
+                                                                <div className="application-header">
+                                                                    <div className="application-info">
+                                                                        <img src={iconColor} alt="Document Icon" className="section-icon" />
+                                                                        <div className="application-info-text">
+                                                                            <p className="application-title">{app.title}</p>
+                                                                            <p className="subtext">{formatGrantType(app.grantType)} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
+                                                                <button className="expand-collapse-btn application-toggle-btn" onClick={() => toggleApplication(year, index)}>
+                                                                    {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
+                                                                </button>
                                                             </div>
 
                                                             {isExpanded && (
                                                                 <div className="application-details">
                                                                     <hr className="divider" />
-                                                                    <div className="details-two-columns">
-                                                                        <div className="details-block">
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Application Title: </span>
-                                                                                <span className="detail-value">{app.title || " N/A"}</span>
+                                                                    <div className="admin-details-two-columns">
+                                                                        <div className="admin-details-block">
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Application Title: </span>
+                                                                                <span className="admin-detail-value">{app.title || " N/A"}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Application Type: </span>
-                                                                                <span className="detail-value">{app.grantType || " N/A"}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Application Type: </span>
+                                                                                <span className="admin-detail-value">{app.grantType || " N/A"}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Principal Investigator/Requestor: </span>
-                                                                                <span className="detail-value">{app.grantType === "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Principal Investigator/Requestor: </span>
+                                                                                <span className="admin-detail-value">{app.grantType === "research" ? ((app as ResearchApplication).principalInvestigator || " N/A") : ((app as NonResearchApplication).requestor || " N/A")}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Institution: </span>
-                                                                                <span className="detail-value">{app.institution || " N/A"}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Institution: </span>
+                                                                                <span className="admin-detail-value">{app.institution || " N/A"}</span>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="details-block">
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Cancer Type: </span>
-                                                                                <span className="detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
+                                                                        <div className="admin-details-block">
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Cancer Type: </span>
+                                                                                <span className="admin-detail-value">{app.grantType === "nextgen" ? " N/A" : ((app as ResearchApplication).typesOfCancerAddressed || " N/A")}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Amount Requested: </span>
-                                                                                <span className="detail-value">${app.amountRequested || " N/A"}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Amount Requested: </span>
+                                                                                <span className="admin-detail-value">${app.amountRequested || " N/A"}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Continuation of Funding: </span>
-                                                                                <span className="detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Continuation of Funding: </span>
+                                                                                <span className="admin-detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).continuation}</span>
                                                                             </div>
-                                                                            <div className="detail-item">
-                                                                                <span className="detail-label">Status: </span>
-                                                                                <span className="detail-value">{firstLetterCap(app.decision)}</span>
+                                                                            <div className="admin-detail-item">
+                                                                                <span className="admin-detail-label">Status: </span>
+                                                                                <span className="admin-detail-value">{firstLetterCap(app.decision)}</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -257,19 +273,14 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                             Cover Sheet Information
                                                                             <FaChevronRight className="button-icon" />
                                                                         </Button>
-                                                                        {/* <button
-                                                                        className="action-button completed-app"
-                                                                        onClick={() => openApplicationDocument(app.file)}
-                                                                    >
-                                                                        Completed Application
-                                                                    </button> */}
+                                                                        <Button className="action-button cover-sheet" onClick={(event) => { event.stopPropagation(); void openApplicationDocument(app.file); }}>
+                                                                            Application PDF
+                                                                            <FaChevronRight className="button-icon" />
+                                                                        </Button>
                                                                     </div>
                                                                     <AdminCoverPageModal application={app} isOpen={openModal === app} onClose={closeModal}></AdminCoverPageModal>
                                                                 </div>
                                                             )}
-                                                            <button className="expand-collapse-btn" onClick={() => toggleApplication(year, index)}>
-                                                                {isExpanded ? <FaArrowUp /> : <FaArrowDown />}
-                                                            </button>
                                                         </div>
                                                     );
                                                 })}
