@@ -2,14 +2,10 @@ import { useState, useEffect } from "react";
 import "./AdminDatabase.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { FaArrowDown, FaArrowUp, FaChevronRight } from "react-icons/fa";
-import logo from "../../assets/ccf-logo.png";
 import document from '../../assets/documentIcon.png';
 import yellowDocument from '../../assets/yellowDocumentIcon.png';
 import blueDocument from '../../assets/blueDocumentIcon.png';
 import { getSidebarbyRole } from "../../types/sidebar-types";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../..";
-import CoverPageModal from "../../components/applications/CoverPageModal";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
@@ -246,7 +242,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                             </div>
                                                                             <div className="admin-detail-item">
                                                                                 <span className="admin-detail-label">Principal Investigator/Requestor: </span>
-                                                                                <span className="admin-detail-value">{app.grantType === "research" ? (app as ResearchApplication).principalInvestigator : (app as NonResearchApplication).requestor || " N/A"}</span>
+                                                                                <span className="admin-detail-value">{app.grantType === "research" ? ((app as ResearchApplication).principalInvestigator || " N/A") : ((app as NonResearchApplication).requestor || " N/A")}</span>
                                                                             </div>
                                                                             <div className="admin-detail-item">
                                                                                 <span className="admin-detail-label">Institution: </span>
@@ -256,7 +252,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                         <div className="admin-details-block">
                                                                             <div className="admin-detail-item">
                                                                                 <span className="admin-detail-label">Cancer Type: </span>
-                                                                                <span className="admin-detail-value">{app.grantType === "nextgen" ? " N/A" : (app as ResearchApplication).typesOfCancerAddressed}</span>
+                                                                                <span className="admin-detail-value">{app.grantType === "nextgen" ? " N/A" : ((app as ResearchApplication).typesOfCancerAddressed || " N/A")}</span>
                                                                             </div>
                                                                             <div className="admin-detail-item">
                                                                                 <span className="admin-detail-label">Amount Requested: </span>

@@ -1,11 +1,10 @@
-import { ApplicationDetails, ResearchApplication, NonResearchApplication, Application } from "../../types/application-types";
+import { Application } from "../../types/application-types";
 import { Modal } from "../modal/modal";
 import './CoverPageModal.css'
 import '../../pages/application-form/subquestions/SubForm.css'
 import Review from "../../pages/application-form/subquestions/Review";
 import { useEffect, useState } from "react";
 import { downloadPDFsByName } from "../../storage/storage";
-import { PostGrantReport } from "../../types/post-grant-report-types";
 import { getReportByApplicationID } from "../../backend/post-grant-reports";
 import { getCurrentCycle } from "../../backend/application-cycle";
 import { Decision } from "../../types/decision-types";
@@ -70,7 +69,7 @@ const AdminCoverPageModal = ({ application, isOpen, onClose }: CoverPageModalPro
                 </div>
             </div>
             {decision ? <DecisionBox decision={decision}></DecisionBox> : ""}
-            <div className="post-grant-report-pdf-link">{reportLink ? <a target="_blank" href={reportLink.url}>Post Grant Report</a> : reportMsg}</div>
+            <div className="post-grant-report-pdf-link">{reportLink ? <a target="_blank" rel="noopener noreferrer" href={reportLink.url}>Post Grant Report</a> : reportMsg}</div>
             <Review type={application.grantType} formData={application} hideFile={true}></Review>
         </div>
     )
