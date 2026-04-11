@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { writePostGrantReport } from "../../post-grant-report/post-grant-report-submit";
 import { getCurrentCycle } from "../../backend/application-cycle";
-import { getUsersCurrentCycleAppplications } from "../../backend/application-filters";
+import { getUsersAllApplications } from "../../backend/application-filters";
 import { getDecisionData } from "../../services/decision-data-service";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { Application } from "../../types/application-types";
@@ -50,20 +50,15 @@ function PostGrantReportPage(): JSX.Element {
                 const sidebarItems = await getApplicantSidebarItems();
                 setSidebarItems(sidebarItems);
 
-                // Get cycle data and check stage first
-                const cycle = await getCurrentCycle();
+                // Load cycle and all user applications in parallel
+                const [cycle, userApplications] = await Promise.all([
+                    getCurrentCycle(),
+                    getUsersAllApplications(),
+                ]);
                 setCurrentCycle(cycle);
 
-                // Check if we're in Release Decisions stage
-                if (cycle.stage !== "Release Decisions") {
-                    setError("Post-grant reports are not yet available. Please check back during the Release Decisions stage.");
-                    return;
-                }
-
-                // Get application data
-                const userApplications = await getUsersCurrentCycleAppplications();
-                const targetApplication = userApplications.find((app: any) => (app as any).id === applicationId);
-
+                // Find the target application across all cycles
+                const targetApplication = userApplications.find((app: any) => app.id === applicationId);
                 if (!targetApplication) {
                     setError("Application not found.");
                     return;
@@ -87,10 +82,9 @@ function PostGrantReportPage(): JSX.Element {
                 const user = auth.currentUser;
                 if (user) {
                     const userReports = await getReportsByUser(user.uid);
-                    const existingReport = userReports.find(report => report.applicationId === applicationId);
+                    const existingReport = userReports.find(r => r.applicationId === applicationId);
                     if (existingReport) {
                         setSubmittedReport(existingReport);
-                        // Get the PDF download URL
                         try {
                             const fileId = existingReport.pdf || existingReport.file;
                             if (fileId) {
@@ -100,8 +94,11 @@ function PostGrantReportPage(): JSX.Element {
                         } catch (error) {
                             console.error('Error getting PDF URL:', error);
                         }
+                        return; // show read-only view regardless of cycle stage
                     }
                 }
+
+                // No submitted report — allow submission for any accepted application regardless of cycle stage
 
                 // Set deadline if available
                 if (cycle.postGrantReportDeadline) {

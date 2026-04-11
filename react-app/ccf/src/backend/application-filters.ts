@@ -1,6 +1,6 @@
 import { collection, query, where, getDocs, orderBy, Query, DocumentData } from 'firebase/firestore';
 import { auth, db } from '../index';
-import { Application, ApplicationDetails, ApplicationInfo, ApplicationQuestions, NonResearchApplication, ResearchApplication } from '../types/application-types';
+import { Application, ApplicationDetails, NonResearchApplication, ResearchApplication } from '../types/application-types';
 import { getCurrentCycle } from './application-cycle';
 
 export interface FilterOptions {
@@ -60,4 +60,16 @@ export async function getUsersCurrentCycleAppplications(): Promise<Array<Applica
         ...doc.data()
     })) as unknown as Array<Application>;
     return applications;
+}
+
+export async function getUsersAllApplications(): Promise<Array<Application>> {
+    const user = auth.currentUser;
+    const uid = user?.uid;
+    let q: Query<DocumentData> = collection(db, 'applications');
+    q = query(q, where("creatorId", "==", uid));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    })) as unknown as Array<Application>;
 }
