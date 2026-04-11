@@ -339,10 +339,15 @@ function ApplicantUsersDashboard(): JSX.Element {
                       .
                     </p>
                   )}
-                {appCycle?.postGrantReportDeadline && (
+                {appCycle?.postGrantReportDeadline &&
+                  allCycleAcceptedApplications.some(
+                    (a) =>
+                      !a.hasReportSubmitted &&
+                      (a as any).applicationCycle === appCycle.name,
+                  ) && (
                     <div className="deadline-info">
                       <p>
-                        <strong>Deadline:</strong>{" "}
+                        <strong>Current cycle deadline:</strong>{" "}
                         {appCycle.postGrantReportDeadline.toLocaleDateString()}{" "}
                         at 11:59 PM
                       </p>

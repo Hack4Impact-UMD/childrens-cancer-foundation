@@ -49,24 +49,23 @@ export async function getFilteredApplications(filters: FilterOptions): Promise<A
 }
 
 export async function getUsersCurrentCycleAppplications(): Promise<Array<Application>> {
-    const user = auth.currentUser
-    const uid = user?.uid
-    const currentCycle = await getCurrentCycle()
+    const user = auth.currentUser;
+    if (!user) throw new Error("User is not authenticated.");
+    const currentCycle = await getCurrentCycle();
     let q: Query<DocumentData> = collection(db, 'applications');
-    q = query(q, where("creatorId", "==", uid), where("applicationCycle", "==", currentCycle.name))
-    const querySnapshot = await getDocs(q)
-    const applications = querySnapshot.docs.map(doc => ({
+    q = query(q, where("creatorId", "==", user.uid), where("applicationCycle", "==", currentCycle.name));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
     })) as unknown as Array<Application>;
-    return applications;
 }
 
 export async function getUsersAllApplications(): Promise<Array<Application>> {
     const user = auth.currentUser;
-    const uid = user?.uid;
+    if (!user) throw new Error("User is not authenticated.");
     let q: Query<DocumentData> = collection(db, 'applications');
-    q = query(q, where("creatorId", "==", uid));
+    q = query(q, where("creatorId", "==", user.uid));
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
         id: doc.id,

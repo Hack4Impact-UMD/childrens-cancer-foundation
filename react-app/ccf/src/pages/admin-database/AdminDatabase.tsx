@@ -95,8 +95,10 @@ function AdminApplicationsDatabase(): JSX.Element {
         // Initialize expanded state for each application
         const initialExpandedState: { [key: string]: boolean } = {};
         Object.keys(applications).forEach((year) => {
-          applications[year].forEach((app, index) => {
-            initialExpandedState[`${year}-${index}`] = false;
+          applications[year].forEach((app) => {
+            if (app.applicationId) {
+              initialExpandedState[app.applicationId] = false;
+            }
           });
         });
         setExpandedApplications(initialExpandedState);
@@ -115,11 +117,10 @@ function AdminApplicationsDatabase(): JSX.Element {
     }));
   };
 
-  const toggleApplication = (year: string, index: number) => {
-    const key = `${year}-${index}`;
+  const toggleApplication = (applicationId: string) => {
     setExpandedApplications((prev) => ({
       ...prev,
-      [key]: !prev[key],
+      [applicationId]: !prev[applicationId],
     }));
   };
 
@@ -264,15 +265,15 @@ function AdminApplicationsDatabase(): JSX.Element {
                     {!collapseState[year] && (
                       <>
                         <div className="applications-container">
-                          {filteredApplications[year].map((app, index) => {
+                          {filteredApplications[year].map((app) => {
                             const isExpanded =
-                              expandedApplications[`${year}-${index}`];
+                              expandedApplications[app.applicationId ?? ""];
                             const iconColor = isExpanded
                               ? blueDocument
                               : yellowDocument;
                             return (
                               <div
-                                key={index}
+                                key={app.applicationId}
                                 className={`single-application-box ${isExpanded ? "expanded" : ""}`}
                               >
                                 <div className="application-summary-row">
@@ -300,7 +301,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                   <button
                                     className="expand-collapse-btn application-toggle-btn"
                                     onClick={() =>
-                                      toggleApplication(year, index)
+                                      toggleApplication(app.applicationId ?? "")
                                     }
                                   >
                                     {isExpanded ? (

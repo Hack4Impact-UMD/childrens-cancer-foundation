@@ -110,7 +110,7 @@ export const DecisionBox = ({
 
               {status === "accepted" &&
                 decision.fundingAmount &&
-                decision.fundingAmount >= 0 && (
+                decision.fundingAmount > 0 && (
                   <div className="funding-note">
                     {inAdminView
                       ? "This applicant has been approved for funding."

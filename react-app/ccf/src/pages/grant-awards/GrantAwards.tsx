@@ -236,6 +236,7 @@ function GrantAwards(): JSX.Element {
           recommended: "$0", // Will be populated from admin data
           comments: "", // Will be populated from admin data
           isAccepted: false,
+          decision: (data.decision as "pending" | "accepted" | "rejected") || "pending",
           title: data.title || "",
           applicationCycle: data.applicationCycle || "",
           submitTime: data.submitTime
@@ -335,6 +336,8 @@ function GrantAwards(): JSX.Element {
       const valueWithoutSign = value.replace("$", "").replace(/,/g, "");
       const recommendedAmount = Number(valueWithoutSign) || 0;
       appToUpdate.isAccepted = recommendedAmount > 0;
+      // Typing a positive amount = accepted; clearing to $0 = back to pending (undecided)
+      appToUpdate.decision = recommendedAmount > 0 ? "accepted" : "pending";
     }
     setApplications(updatedApplications);
   };
@@ -347,6 +350,9 @@ function GrantAwards(): JSX.Element {
     appToUpdate.isAccepted = !appToUpdate.isAccepted;
     if (!appToUpdate.isAccepted) {
       appToUpdate.recommended = "$0";
+      appToUpdate.decision = "rejected"; // explicit toggle-off = deliberate rejection
+    } else {
+      appToUpdate.decision = "accepted";
     }
     setApplications(updatedApplications);
   };
@@ -363,8 +369,7 @@ function GrantAwards(): JSX.Element {
       const recommendedAmount =
         parseFloat(appToUpdate.recommended.replace(/\$|,/g, "")) || 0;
 
-      // Derive decision string from isAccepted toggle to stay in sync
-      const decision = appToUpdate.isAccepted ? "accepted" : "pending";
+      const decision = appToUpdate.decision;
 
       // Update admin data (comments and funding decision) in separate collection
       await updateFundingDecision(
@@ -444,6 +449,13 @@ function GrantAwards(): JSX.Element {
     );
   };
 
+  // Prevent CSV formula injection: values starting with =, +, -, or @ are
+  // treated as formulas by Excel/Sheets. Prefixing with a tab defuses them.
+  const sanitizeCsvCell = (value: string): string => {
+    const escaped = value.replace(/"/g, '""');
+    return /^[=+\-@\t\r]/.test(escaped) ? `\t${escaped}` : escaped;
+  };
+
   const handleDownloadCSV = (data: GrantAwardApplication[]) => {
     const headerMap: { key: ColumnKey; label: string }[] = [
       { key: "title", label: "Title" },
@@ -475,41 +487,41 @@ function GrantAwards(): JSX.Element {
           .map((h) => {
             switch (h.key) {
               case "title":
-                return `"${(app.title || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.title || "")}"`;
               case "name":
-                return `"${app.name.replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.name)}"`;
               case "programType":
-                return `"${app.programType.replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.programType)}"`;
               case "institution":
-                return `"${app.institution.replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.institution)}"`;
               case "applicationCycle":
-                return `"${(app.applicationCycle || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.applicationCycle || "")}"`;
               case "submitTime":
-                return `"${(app.submitTime || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.submitTime || "")}"`;
               case "typesOfCancerAddressed":
-                return `"${(app.typesOfCancerAddressed || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.typesOfCancerAddressed || "")}"`;
               case "adminOfficialName":
-                return `"${(app.adminOfficialName || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.adminOfficialName || "")}"`;
               case "adminEmail":
-                return `"${(app.adminEmail || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.adminEmail || "")}"`;
               case "adminPhoneNumber":
-                return `"${(app.adminPhoneNumber || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.adminPhoneNumber || "")}"`;
               case "institutionEmail":
-                return `"${(app.institutionEmail || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.institutionEmail || "")}"`;
               case "requestor":
-                return `"${(app.requestor || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.requestor || "")}"`;
               case "timeframe":
-                return `"${(app.timeframe || "").replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.timeframe || "")}"`;
               case "finalScore":
                 return String(app.finalScore);
               case "requested":
-                return `"${String(app.requested).replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(String(app.requested))}"`;
               case "recommended":
-                return `"${String(app.recommended).replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(String(app.recommended))}"`;
               case "acceptance":
-                return `"${app.isAccepted ? "Accepted" : "Rejected"}"`;
+                return `"${app.decision === "accepted" ? "Accepted" : app.decision === "rejected" ? "Rejected" : "Pending"}"`;
               case "comments":
-                return `"${app.comments.replace(/"/g, '""')}"`;
+                return `"${sanitizeCsvCell(app.comments)}"`;
               default:
                 return "";
             }
@@ -940,7 +952,7 @@ function GrantAwards(): JSX.Element {
                           {visibleColumns.acceptance && (
                             <td>
                               <button
-                                className={`acceptance-toggle-btn ${app.isAccepted ? "accepted" : "rejected"}`}
+                                className={`acceptance-toggle-btn ${app.decision}`}
                                 onClick={() => handleAcceptanceToggle(app.id)}
                                 title={
                                   app.isAccepted
@@ -948,7 +960,7 @@ function GrantAwards(): JSX.Element {
                                     : "Click to accept"
                                 }
                               >
-                                {app.isAccepted ? "Accepted" : "Rejected"}
+                                {app.decision === "accepted" ? "Accepted" : app.decision === "rejected" ? "Rejected" : "Pending"}
                               </button>
                             </td>
                           )}
