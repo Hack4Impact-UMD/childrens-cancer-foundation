@@ -125,6 +125,7 @@ export interface GrantAwardApplication {
     recommended: string;
     comments: string;
     isAccepted: boolean;
+    decision: "pending" | "accepted" | "rejected";
     // Optional display fields for configurable columns
     title?: string;
     applicationCycle?: string;
