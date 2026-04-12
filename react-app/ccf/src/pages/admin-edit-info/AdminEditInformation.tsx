@@ -40,7 +40,7 @@ function AdminEditInformation(): JSX.Element {
     const [reviewerDate, setReviewerDate] = useState<Dayjs | null>(null);
     const [postGrantReportDate, setPostGrantReportDate] = useState<Dayjs | null>(null);
     // Current stage of application cycle
-    const [currentStage, setCurrentStage] = useState<string | null>(null);
+    const [currentStage, setCurrentStage] = useState<ApplicationCycle["stage"] | null>(null);
     const [stageSaving, setStageSaving] = useState(false); // shows button spinner
     const [stageSnack, setStageSnack] = useState<string | null>(null); // snackbar text
 
@@ -131,7 +131,7 @@ function AdminEditInformation(): JSX.Element {
 
         if (success) {
             setCurrentStage(newStage); // UI reflects change
-            setStageSnack(`Stage updated to "${newStage}"`);
+            setStageSnack(`Stage updated to "${newStage === "Review" ? "Reviews Open" : newStage === "Deliberations" ? "Reviews Closed" : newStage}"`);
         } else {
             setStageSnack("Failed to update stage");
         }
@@ -471,7 +471,7 @@ function AdminEditInformation(): JSX.Element {
                         </div>
                     </div>
                     <div className="stage-toggle-section">
-                        <h2>Current Stage: {currentStage ?? "Not set"}</h2>
+                        <h2>Current Stage: {currentStage ? currentStage === "Review" ? "Reviews Open" : currentStage === "Deliberations" ? "Reviews Closed" : currentStage : "Not set"}</h2>
                         <h2 className="stage-toggle-instruction">Select the current stage of the application cycle:</h2>
                         <div className="stage-buttons">
                             {cycleStages.map(stage => (
@@ -482,7 +482,7 @@ function AdminEditInformation(): JSX.Element {
                                     onClick={() => handleStageChange(stage)}
                                     endIcon={stageSaving && currentStage === stage ? <CircularProgress size={18} /> : null}
                                 >
-                                    {stage}
+                                    {stage === "Review" ? "Reviews Open" : stage === "Deliberations" ? "Reviews Closed" : stage}
                                 </Button>
                             ))}
                         </div>

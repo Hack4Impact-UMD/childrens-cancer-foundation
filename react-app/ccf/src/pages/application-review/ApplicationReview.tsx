@@ -375,7 +375,7 @@ function ApplicationReview(): JSX.Element {
           <div className="button-group">
             {isReviewLocked && (
               <div style={{ color: '#dc3545', fontWeight: 'bold', marginBottom: '10px' }}>
-                Reviews are locked. Deliberations have begun.
+                Reviews are locked. The cycle is now in Reviews Closed.
               </div>
             )}
             <Button onClick={saveProgress} disabled={saveStatus === 'saving' || isReviewLocked}>

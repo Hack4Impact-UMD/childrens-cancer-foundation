@@ -3,6 +3,7 @@ import "./ApplicantDashboard.css";
 import { useEffect, useState } from "react";
 import { FaArrowDown, FaArrowUp, FaFileAlt, FaArrowRight, FaCheckCircle, FaEye } from "react-icons/fa";
 import logo from "../../assets/ccf-logo.png";
+import document from "../../assets/documentIcon.png";
 import Button from "../../components/buttons/Button"
 import FAQComponent from "../../components/faq/FaqComp";
 import Sidebar from "../../components/sidebar/Sidebar";
@@ -266,8 +267,8 @@ function ApplicantUsersDashboard(): JSX.Element {
                     <div className="ApplicantDashboard-sections-content">
                         <div className="ApplicantDashboard-section">
                             <div className="ApplicantDashboard-section-header">
-                                <div className="header-title">
-                                    <FaFileAlt className="section-icon" />
+                                <div className="ApplicantDashboard-header-content">
+                                    <img src={document} alt="Document Icon" className="ApplicantDashboard-section-icon" />
                                     <h2>Applications</h2>
                                 </div>
 
@@ -331,8 +332,8 @@ function ApplicantUsersDashboard(): JSX.Element {
 
                         <div className="ApplicantDashboard-section">
                             <div className="ApplicantDashboard-section-header">
-                                <div className="header-title">
-                                    <FaFileAlt className="section-icon" />
+                                <div className="ApplicantDashboard-header-content">
+                                    <img src={document} alt="Document Icon" className="ApplicantDashboard-section-icon" />
                                     <h2>Frequently Asked Questions</h2>
                                 </div>
                                 <button onClick={toggleFAQ} className="expand-collapse-btn">
@@ -348,8 +349,8 @@ function ApplicantUsersDashboard(): JSX.Element {
 
                         <div className="ApplicantDashboard-section">
                             <div className="ApplicantDashboard-section-header">
-                                <div className="header-title">
-                                    <FaFileAlt className="section-icon" />
+                                <div className="ApplicantDashboard-header-content">
+                                    <img src={document} alt="Document Icon" className="ApplicantDashboard-section-icon" />
                                     <h2>Contact Us</h2>
                                 </div>
                                 <button onClick={toggleContact} className="expand-collapse-btn">

@@ -65,7 +65,7 @@ function AdminDashboardViewAll(): JSX.Element {
             <Sidebar links={sidebarItems} />
             <div className="dashboard-container">
                 <div className="AdminViewAll">
-                    <Header title="Administrator Dashboard" />
+                    <Header title="Account Management" />
 
                     <div className="search-filter-container">
                     <div className="search-bar">
