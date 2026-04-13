@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { writePostGrantReport } from "../../post-grant-report/post-grant-report-submit";
-import { getCurrentCycle } from "../../backend/application-cycle";
+import { getAllCycles } from "../../backend/application-cycle";
 import { getUsersAllApplications } from "../../backend/application-filters";
 import { getDecisionData } from "../../services/decision-data-service";
 import ApplicationCycle from "../../types/applicationCycle-types";
@@ -50,12 +50,13 @@ function PostGrantReportPage(): JSX.Element {
                 const sidebarItems = await getApplicantSidebarItems();
                 setSidebarItems(sidebarItems);
 
-                // Load cycle and all user applications in parallel
-                const [cycle, userApplications] = await Promise.all([
-                    getCurrentCycle(),
+                // Load all cycles and all user applications in parallel
+                const [allCycles, userApplications] = await Promise.all([
+                    getAllCycles(),
                     getUsersAllApplications(),
                 ]);
-                setCurrentCycle(cycle);
+                const currentCycle = allCycles.find(c => c.current) ?? null;
+                setCurrentCycle(currentCycle);
 
                 // Find the target application across all cycles
                 const targetApplication = userApplications.find((app: any) => app.id === applicationId);
@@ -100,11 +101,12 @@ function PostGrantReportPage(): JSX.Element {
 
                 // No submitted report — allow submission for any accepted application regardless of cycle stage
 
-                // Set deadline if available
-                if (cycle.postGrantReportDeadline) {
-                    setDeadline(cycle.postGrantReportDeadline);
+                // Resolve deadline from the application's own cycle, not the current cycle
+                const appCycle = allCycles.find(c => c.name === (targetApplication as any).applicationCycle);
+                if (appCycle?.postGrantReportDeadline) {
+                    setDeadline(appCycle.postGrantReportDeadline);
                     const now = new Date();
-                    setIsOverdue(now > cycle.postGrantReportDeadline);
+                    setIsOverdue(now > appCycle.postGrantReportDeadline);
                 }
 
             } catch (error) {
@@ -360,12 +362,12 @@ function PostGrantReportPage(): JSX.Element {
                     <div className="PostGrantReport">
                         <Header title="Post-Grant Report" />
 
-                        {/* {application && (
+                        {application && (
                             <div className="application-info-section">
                                 <h2>Application: {application.title || `${application.grantType} Application`}</h2>
                                 <p><strong>Grant Type:</strong> {application.grantType}</p>
                             </div>
-                        )} */}
+                        )}
 
                         {deadline && (
                             <div className={`deadline-notice ${isOverdue ? 'overdue' : ''}`}>
