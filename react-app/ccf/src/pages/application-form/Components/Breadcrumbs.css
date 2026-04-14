@@ -30,8 +30,8 @@
     content: "";
     position: absolute;
     top: 0.75rem;
-    left: calc(100% / 10);
-    right: calc(100% / 10);
+    left: var(--breadcrumb-connector-inset, 10%);
+    right: var(--breadcrumb-connector-inset, 10%);
     height: 4px;
     background-color: var(--color-blue);
     z-index: -1;
