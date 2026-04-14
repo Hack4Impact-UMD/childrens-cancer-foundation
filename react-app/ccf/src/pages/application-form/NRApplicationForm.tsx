@@ -153,7 +153,7 @@ function NRApplicationForm(): JSX.Element {
         if (formData.institutionPhoneNumber && formData.institutionPhoneNumber.trim() !== '') {
             const phoneError = validatePhoneNumber(formData.institutionPhoneNumber);
             if (phoneError) {
-                errors.push('Invalid phone number format');
+                errors.push(phoneError);
             }
         }
         
@@ -202,7 +202,7 @@ function NRApplicationForm(): JSX.Element {
     };
 
     return (
-        <div className="main-container">
+        <div className="application-form-main-container">
             <h1 className="main-header">Non-Research Grant</h1>
             <Breadcrumb currentPage={currentPage} pages={pages} />
 
@@ -213,7 +213,7 @@ function NRApplicationForm(): JSX.Element {
                 <button onClick={goBack} className="back-btn">Go Back</button>
 
                 {currentPage < totalPages ? (
-                    <button onClick={handleContinue} className="save-btn">Save and Continue</button>
+                    <button onClick={handleContinue} className="save-btn">{currentPage === 1 ? "Start" : "Save and Continue"}</button>
                 ) : (
                     <button
                         onClick={handleSubmit}

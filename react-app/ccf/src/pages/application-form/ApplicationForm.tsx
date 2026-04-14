@@ -9,7 +9,6 @@ import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
 import { ResearchApplication } from '../../types/application-types';
 import { uploadResearchApplication } from '../../backend/applicant-form-submit';
-import { validateEmail, validatePhoneNumber } from '../../utils/validation';
 import { toast } from 'react-toastify';
 import { Modal } from '../../components/modal/modal';
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend/application-cycle';
@@ -21,8 +20,8 @@ type ApplicationFormProps = {
 function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
     const pages = type === "Research"
-        ? ["Grant Proposal", "About Grant", "My Information", "Application Questions", "Review"]
-        : ["Grant Proposal", "About Grant", "My Information", "Application Questions", "Review"];
+        ? ["About Grant", "My Information", "Application Questions", "Grant Proposal", "Review"]
+        : ["About Grant", "My Information", "Application Questions", "Grant Proposal", "Review"];
     const totalPages = pages.length;
     const navigate = useNavigate();
     const requiredFields = [
@@ -35,15 +34,15 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         'einNumber', 'signaturePI', 'signatureDeptHead', 'file'
     ];
     const pageFields: { [key: number]: string[] } = {
-        1: ['file'],
-        3: ['title', 'principalInvestigator', 'institution',
+        2: ['title', 'principalInvestigator', 'institution',
             'department', 'departmentHead', 'institutionAddress', 'institutionCityStateZip',
             'institutionPhoneNumber', 'institutionEmail', 'typesOfCancerAddressed',
             'adminOfficialName', 'adminOfficialAddress', 'adminOfficialCityStateZip',
             'adminPhoneNumber', 'adminEmail'],
-        4: ['includedPublishedPaper', 'creditAgreement', 'patentApplied',
+        3: ['includedPublishedPaper', 'creditAgreement', 'patentApplied',
             'includedFundingInfo', 'amountRequested', 'dates',
             'einNumber', 'signaturePI', 'signatureDeptHead'],
+        4: ['file'],
     };
     const [formData, setFormData] = useState({
         title: '',
@@ -248,13 +247,13 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const renderPage = () => {
         switch (currentPage) {
             case 1:
-                return <GrantProposal type={type} formData={formData} setFormData={setFormData} />;
-            case 2:
                 return <AboutGrant type={type} formData={formData} />;
-            case 3:
+            case 2:
                 return <Information formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} />;
-            case 4:
+            case 3:
                 return <ApplicationQuestions formData={formData} setFormData={setFormData} />;
+            case 4:
+                return <GrantProposal type={type} formData={formData} setFormData={setFormData} />;
             case 5:
                 return <ReviewApplication type={type} formData={formData} />;
             default:
@@ -262,7 +261,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         }
     };
     return (
-        <div className="main-container">
+        <div className="application-form-main-container">
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -281,7 +280,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             <div className="btn-container">
                 <button onClick={goBack} className="back-btn">Go Back</button>
                 {currentPage < totalPages ? (
-                    <button onClick={handleContinue} className="save-btn">Save and Continue</button>
+                    <button onClick={handleContinue} className="save-btn">{currentPage === 1 ? "Start" : "Save and Continue"}</button>
                 ) : (
                     <button
                         onClick={handleSubmit}
