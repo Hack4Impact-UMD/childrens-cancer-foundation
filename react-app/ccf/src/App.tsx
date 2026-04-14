@@ -10,9 +10,6 @@ import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplic
 import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
 import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
 import ApplicantDecisions from "./pages/applicant-decisions/ApplicantDecisions";
-
-
-import Sidebar from "./components/sidebar/Sidebar";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
 import AdminApplicationsDatabase from "./pages/admin-database/AdminDatabase";
 import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
@@ -23,7 +20,6 @@ import PostGrantReport from './post-grant-report/post-grant-report';
 import PostGrantReportPage from './pages/post-grant-report/PostGrantReportPage';
 import DefaultRoute from './components/Routing/DefaultRoute'
 import ReviewerDashboard from "./pages/reviewer-dashboard/ReviewerDashboard";
-import faq_data from "./StaticData/FAQ-REVIEWER";
 import ApplicationForm from "./pages/application-form/ApplicationForm";
 import NRApplicationForm from "./pages/application-form/NRApplicationForm";
 import AdminDashboardViewAllAccounts from "./pages/admin-dashboard/AdminDashboardViewAll";
@@ -76,7 +72,7 @@ function App(): JSX.Element {
           }
         />
         <Route path="/reviewer/dashboard" element={
-          <ReviewerProtectedRoute element={<ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>} />
+          <ReviewerProtectedRoute element={<ReviewerDashboard email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>} />
         }>
         </Route>
         <Route
@@ -222,7 +218,7 @@ function App(): JSX.Element {
         />
 
         <Route path="/reviewer-dashboard" element={
-          <ReviewerProtectedRoute element={<ReviewerDashboard faqData={faq_data} email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>} />
+          <ReviewerProtectedRoute element={<ReviewerDashboard email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>} />
         }>
         </Route>
         <Route

@@ -27,22 +27,6 @@
 }
 
 
-.ApplicantDashboard-header-container {
-    display: flex;
-    align-items: center;
-}
-
-.ApplicantDashboard-logo {
-    width: 75px;
-    margin-right: 20px;
-}
-
-.ApplicantDashboard-header {
-    font-size: 2rem;
-    color: #BE0019;
-    composes: global-header;
-}
-
 .ApplicantDashboard-sections-content {
     background-color: #F0C567;
     padding: 20px;
@@ -191,24 +175,6 @@ ul {
 .dashboard-content.collapsed {
     margin-left: 60px;
     /* Collapsed sidebar width */
-}
-
-/* Dashboard header container */
-.ApplicantDashboard-header-container {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-}
-
-/* Logo and header styles */
-.ApplicantDashboard-logo {
-    width: 90px;
-    margin-right: 20px;
-}
-
-.ApplicantDashboard-header {
-    font-size: 2.5rem;
-    color: #BE0019;
 }
 
 /* Dashboard section container */

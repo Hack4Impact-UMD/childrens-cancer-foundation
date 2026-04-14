@@ -26,7 +26,7 @@ export const adminSidebar: SideBarTypes[] = [
 export const reviewerSidebar: SideBarTypes[] = [
     { name: 'Home', path: '/reviewer/dashboard' },
     { name: 'Account Settings', path: '/reviewer/settings' },
-    { name: 'All Applications', path: '/reviewer/dashboard/all-applications' },
+    { name: 'Application Database', path: '/reviewer/dashboard/all-applications' },
     { name: 'Logout', path: '/login' }
 ];
 
