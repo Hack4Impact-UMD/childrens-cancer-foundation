@@ -74,7 +74,7 @@ function ForgotPassword() {
           <div className="forgot-logo">
             <img src="/ccflogo.png" alt="Logo" className="forgot-logoImage" />
           </div>
-          <h1 className="forgot-heading">Reset Password</h1>
+          <h1 className="global-header">Reset Password</h1>
           <p className="forgot-description">
             Enter your email address and we'll send you a link to reset your password.
           </p>
