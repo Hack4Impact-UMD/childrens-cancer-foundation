@@ -29,9 +29,6 @@ export async function getFilteredApplications(filters: FilterOptions): Promise<A
             conditions.push(where('grantType', '==', filters.grantType));
         }
 
-        // Create the query with all conditions
-        q = query(q, ...conditions, orderBy('submitTime', 'desc'));
-
         // Execute the query
         const querySnapshot = await getDocs(q);
 
