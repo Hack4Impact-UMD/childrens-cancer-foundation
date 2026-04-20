@@ -105,12 +105,12 @@
     background-color: white;
     border: 2px solid #BE0019;
     border-radius: 8px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .reports-table {
     width: 100%;
-    border-collapse: separate;
     border-spacing: 0;
     font-size: 14px;
     font-family: Arial, Helvetica, sans-serif;

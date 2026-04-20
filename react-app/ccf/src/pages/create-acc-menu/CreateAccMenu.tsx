@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../login/login.css";
 import "./CreateAccMenu.css"
 import Button from "../../components/buttons/Button";
@@ -10,6 +10,7 @@ import yellowOverlay from "../../assets/yellowoverlay.png";
 import { useEffect } from "react";
 
 function CreateAccMenu() {
+    const navigate = useNavigate();
     const [isWideScreen, setIsWideScreen] = useState<boolean>(
         window.innerWidth > 750
       );
@@ -33,20 +34,18 @@ function CreateAccMenu() {
           </div>
           <h1 className="global-header">Create Account</h1>
           <p>Which account are you creating?</p>
-          <Link to='/create-account-applicants' className="createAccLink">
-          <Button 
-              variant="red" 
-              className="login-button">
+          <Button
+              variant="red"
+              className="login-button"
+              onClick={() => navigate("/create-account-applicants")}>
             Applicant
           </Button>
-          </Link>
-          <Link to='/create-account-reviewers' className="createAccLink">
-          <Button 
+          <Button
               variant="red"
-              className="login-button">
+              className="login-button"
+              onClick={() => navigate("/create-account-reviewers")}>
             Reviewer
           </Button>
-          </Link>
           <Link to="/login" className="backToLogin"><u>Back to log in</u></Link>
         </div>
         {isWideScreen && (

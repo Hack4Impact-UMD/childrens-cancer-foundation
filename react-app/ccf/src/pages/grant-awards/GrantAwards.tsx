@@ -377,11 +377,10 @@ function GrantAwards(): JSX.Element {
   const saveChangesToFirestore = async (applicationId: string) => {
     const appToUpdate = applications.find((a) => a.id === applicationId);
     const editedScore = editingScores[applicationId];
-    if (editedScore !== undefined && appToUpdate) {
-      appToUpdate.finalScore = editedScore;
-    }
     if (!appToUpdate) return;
     const appId = appToUpdate.id;
+
+    const scoreToSave = editedScore !== undefined ? editedScore : appToUpdate.finalScore;
 
     try {
       setSavingChanges((prev) => ({ ...prev, [appId]: true }));
@@ -404,8 +403,14 @@ function GrantAwards(): JSX.Element {
       const applicationRef = doc(db, "applications", appId);
       await updateDoc(applicationRef, {
         decision: decision,
-        averageScore: appToUpdate.finalScore,
+        averageScore: scoreToSave,
       });
+
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === appId ? { ...app, finalScore: scoreToSave } : app,
+        ),
+      );
 
       setSavingChanges((prev) => ({ ...prev, [appId]: false }));
 
@@ -950,9 +955,17 @@ function GrantAwards(): JSX.Element {
                                     : app.finalScore
                                 }
                                 onChange={(e) => {
-                                  setEditingScores({
-                                    ...editingScores,
-                                    [app.id]: parseFloat(e.target.value) || 0,
+                                  const raw = e.target.value;
+                                  setEditingScores((prev) => {
+                                    const next = { ...prev };
+                                    if (raw === "") {
+                                      delete next[app.id];
+                                      return next;
+                                    }
+                                    const parsed = Number(raw);
+                                    if (Number.isNaN(parsed)) return prev;
+                                    next[app.id] = parsed;
+                                    return next;
                                   });
                                 }}
                                 className="editable-input score-input"

@@ -43,11 +43,19 @@
 
 .top-controls {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 10px;
     align-items: center;
     margin-bottom: 12px;
 }
+@media (max-width: 1024px) {
+  .header-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
 
 .filter-group,
 .search-group,
