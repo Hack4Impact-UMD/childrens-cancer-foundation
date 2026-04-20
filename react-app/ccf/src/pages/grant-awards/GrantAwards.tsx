@@ -279,17 +279,33 @@ function GrantAwards(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const all = await getAllCycles();
-        setCycles(all);
-      } catch (e) {
-        console.error("Failed to load cycles", e);
-      } finally {
-        fetchApplications();
+  (async () => {
+    try {
+      const all = await getAllCycles();
+      setCycles(all);
+
+      // Find active cycle
+      const today = new Date();
+
+      const activeCycle = all.find((cycle) => {
+        const start = new Date(cycle.startDate);
+        const end = new Date(cycle.endDate);
+        return today >= start && today <= end;
+      });
+
+      if (activeCycle) {
+        setSelectedCycle(activeCycle.name);
+      } else {
+        setSelectedCycle("All");
       }
-    })();
-  }, [fetchApplications]);
+
+    } catch (e) {
+      console.error("Failed to load cycles", e);
+    } finally {
+      fetchApplications();
+    }
+  })();
+}, [fetchApplications]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

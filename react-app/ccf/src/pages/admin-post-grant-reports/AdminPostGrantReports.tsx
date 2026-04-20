@@ -143,7 +143,9 @@ function AdminPostGrantReports(): JSX.Element {
             app.institution?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             app.institutionEmail?.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesStatus = !statusFilter || app.reportStatus === statusFilter;
+        const matchesStatus = !statusFilter ||
+            (statusFilter === "submitted" && app.reportStatus === "submitted") ||
+            (statusFilter === "not-submitted" && app.reportStatus !== "submitted");
         const matchesGrantType = !grantTypeFilter || (app as any).grantType === grantTypeFilter;
 
         return matchesSearch && matchesStatus && matchesGrantType;
@@ -256,9 +258,7 @@ function AdminPostGrantReports(): JSX.Element {
                                 >
                                     <option value="">All Statuses</option>
                                     <option value="submitted">Submitted</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="overdue">Overdue</option>
-                                    <option value="no-report">No Report</option>
+                                    <option value="not-submitted">Not Submitted</option>
                                 </select>
                             </div>
                             <div className="filter">
@@ -348,25 +348,6 @@ function AdminPostGrantReports(): JSX.Element {
                                 )}
                             </tbody>
                         </table>
-                        </div>
-                    </div>
-
-                    <div className="summary-stats">
-                        <div className="stat-item">
-                            <span className="stat-label">Total Applications:</span>
-                            <span className="stat-value">{applicationsWithReports.length}</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-label">Reports Submitted:</span>
-                            <span className="stat-value">{applicationsWithReports.filter(app => app.reportStatus === 'submitted').length}</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-label">Pending Reports:</span>
-                            <span className="stat-value">{applicationsWithReports.filter(app => app.reportStatus === 'pending').length}</span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-label">Overdue Reports:</span>
-                            <span className="stat-value">{applicationsWithReports.filter(app => app.reportStatus === 'overdue').length}</span>
                         </div>
                     </div>
                 </div>

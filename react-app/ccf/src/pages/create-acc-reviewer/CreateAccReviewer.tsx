@@ -132,10 +132,9 @@ function AccountPageReviewers(): JSX.Element {
   };
 
   return (
-    <div>
-      <div className="box2">
-        <div className="left-container2">
-          <div className="content2">
+      <div className="login-container">
+        <div className="login-content">
+          <div className="login-form">
             <div className="header-container2">
               <img
                 src={logo}
@@ -338,21 +337,17 @@ function AccountPageReviewers(): JSX.Element {
               </button>
             </form>
           </div>
-        </div>
-
-        <div className="right-container2">
-          <div className="images-container">
-            <div className="stacked-images">
-              <img src={DrHanleyLabImage} alt="Lab research" className="research-image" />
-              <img src={toretsky} alt="Doctor with patient" className="research-image" />
+          <div className="login-imageContainer">
+              <div className="createAccApplicant-stackedImages">
+                <img src={DrHanleyLabImage} alt="Lab research" className="research-image" />
+                <img src={toretsky} alt="Doctor with patient" className="research-image" />
+              </div>
+              <div className="yellow-overlay">
+                <img src={yellowOverlay} alt="" aria-hidden="true" className="overlay-image" />
+              </div>
             </div>
-            <div className="yellow-overlay">
-              <img src={yellowOverlay} alt="" aria-hidden="true" className="overlay-image" />
-            </div>
-          </div>
         </div>
       </div>
-    </div>
   );
 }
 
