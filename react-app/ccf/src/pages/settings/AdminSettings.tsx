@@ -1,19 +1,12 @@
 
 import { useEffect, useState } from "react";
 import "./Settings.css";
-import logo from "../../assets/ccf-logo.png";
-import Sidebar from "../../components/sidebar/Sidebar";
 import "../reviewer-dashboard/ReviewerDashboard.css"
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { doc, getFirestore, updateDoc } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUserData, getCurrentUserClaims } from "../../services/auth_login";
 import { auth } from "../../index";
-import TextField from '@mui/material/TextField';
-import { InputAdornment, IconButton } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import Header from "../../components/header/Header";
+import { PasswordSettingsSection, SettingsPageLayout } from "./SettingsShared";
 
 function AccountSettingsPage(): JSX.Element {
   const sidebarItems = getSidebarbyRole('admin');
@@ -32,9 +25,6 @@ function AccountSettingsPage(): JSX.Element {
 
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
-
-  // To store the user collection name to use in saving personal information
-  const [userCollectionName, setUserCollectionName] = useState("");
 
   const navigate = useNavigate();
 
@@ -61,12 +51,6 @@ function AccountSettingsPage(): JSX.Element {
       try {
         if (user) {
           setUsername(user.email || "No email available");
-
-          // Get user claims
-          const claims = await getCurrentUserClaims();
-          if (typeof claims.role === 'string') {
-            setUserCollectionName(claims.role);
-          }
 
         } else {
           console.log("User is not authenticated");
@@ -136,190 +120,44 @@ function AccountSettingsPage(): JSX.Element {
     }
   }
 
+  const handlePasswordChange = (value: string) => {
+    setPwd(value);
+    const newRequirements = checkPasswordRequirements(value);
+    setSpecialChar(newRequirements.specialChar);
+    setCapitalLetter(newRequirements.capitalLetter);
+    setNumber(newRequirements.number);
+  };
+
   return (
-    <div>
-      <Sidebar links={sidebarItems} />
-      <div className="dashboard-container">
-
-        <div className="AccountSettings">
-          <Header title="Account Settings" />
-
-          <div className="AccountSettings-section">
-            <div className="header-title">
-              <h2>Account Settings</h2>
-            </div>
-            <div className="info-row-settings">
-              <label>Email</label>
-              <span className="username-text">
-                {username ? username : "No username available"}
-              </span>
-
-              <TextField
-                sx={{
-                  width: '40%'
-                }}
-                label="Current Password"
-                placeholder="Enter current password"
-                type={showCurrentPassword ? 'text' : 'password'}
-                variant="outlined"
-                required
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                onKeyUp={checkConfirmPwd}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowCurrentPassword}
-                        edge="end"
-                      >
-                        {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }} />
-
-              <TextField
-                sx={{
-                  width: '40%'
-                }}
-                label="New Password"
-                placeholder="Enter new password"
-                type={showNewPassword ? 'text' : 'password'}
-                variant="outlined"
-                required
-                value={pwd}
-                onChange={(e) => {
-                  setPwd(e.target.value);
-                  const newRequirements = checkPasswordRequirements(e.target.value);
-                  setSpecialChar(newRequirements.specialChar);
-                  setCapitalLetter(newRequirements.capitalLetter);
-                  setNumber(newRequirements.number);
-                }}
-                onFocus={() => setShowReqs(true)}
-                onBlur={() => setShowReqs(false)}
-                onKeyUp={checkConfirmPwd}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowNewPassword}
-                        edge="end"
-                      >
-                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }} />
-
-              {showReqs && (
-                <div className="pwd-reqs">
-                  <p>Password requires:</p>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={specialChar}
-                      readOnly
-                    />
-                    One special character
-                  </label>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={capitalLetter}
-                      readOnly
-                    />
-                    One capital letter
-                  </label>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={number}
-                      readOnly
-                    />
-                    One number
-                  </label>
-                </div>
-              )}
-
-              {(!specialChar || !number || !capitalLetter) && pwd && !showReqs && (
-                <p className="validation">
-                  At least one password requirement was not met
-                </p>
-              )}
-
-              <TextField
-                sx={{
-                  width: '40%'
-                }}
-                label="Confirm New Password"
-                placeholder="Confirm new password"
-                type={showConfirmPassword ? 'text' : 'password'}
-                variant="outlined"
-                required
-                value={confirmPwd}
-                onChange={(e) => setConfirmPwd(e.target.value)}
-                onKeyUp={checkConfirmPwd}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowConfirmPassword}
-                        edge="end"
-                      >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                error={pwdUnmatched}
-                helperText={pwdUnmatched && 'Passwords do not match'}
-              />
-
-              {updateError && (
-                <p className="error-message">{updateError}</p>
-              )}
-              {updateSuccess && (
-                <p className="success-message">Password updated successfully!</p>
-              )}
-              <button
-                type="submit"
-                className={
-                  !pwd ||
-                    (pwd && !confirmPwd) ||
-                    !specialChar ||
-                    !capitalLetter ||
-                    !number ||
-                    pwdUnmatched
-                    ? "disable-submit"
-                    : "signup-btn2"
-                }
-                onClick={handleSubmit}
-                disabled={
-                  !pwd ||
-                  (pwd && !confirmPwd) ||
-                  !specialChar ||
-                  !capitalLetter ||
-                  !number ||
-                  pwdUnmatched
-                }
-              >
-                Change Password
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <SettingsPageLayout sidebarItems={sidebarItems}>
+      <PasswordSettingsSection
+        username={username}
+        currentPassword={currentPassword}
+        pwd={pwd}
+        confirmPwd={confirmPwd}
+        showCurrentPassword={showCurrentPassword}
+        showNewPassword={showNewPassword}
+        showConfirmPassword={showConfirmPassword}
+        specialChar={specialChar}
+        capitalLetter={capitalLetter}
+        number={number}
+        showReqs={showReqs}
+        pwdUnmatched={pwdUnmatched}
+        updateError={updateError}
+        updateSuccess={updateSuccess}
+        onCurrentPasswordChange={setCurrentPassword}
+        onPwdChange={handlePasswordChange}
+        onConfirmPwdChange={setConfirmPwd}
+        onToggleCurrentPassword={handleClickShowCurrentPassword}
+        onToggleNewPassword={handleClickShowNewPassword}
+        onToggleConfirmPassword={handleClickShowConfirmPassword}
+        onFocusPwd={() => setShowReqs(true)}
+        onBlurPwd={() => setShowReqs(false)}
+        onConfirmPwdCheck={checkConfirmPwd}
+        onSubmit={handleSubmit}
+        usernameLabel="Email"
+      />
+    </SettingsPageLayout>
   );
 }
 
