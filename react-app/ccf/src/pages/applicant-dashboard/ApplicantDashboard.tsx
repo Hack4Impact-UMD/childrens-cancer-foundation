@@ -263,7 +263,7 @@ function ApplicantUsersDashboard(): JSX.Element {
                         <div className="ApplicantDashboard-section">
                             <div className="ApplicantDashboard-section-header">
                                 <div className="ApplicantDashboard-header-content">
-                                    <img src={document} alt="Document Icon" className="ApplicantDashboard-section-icon" />
+                                    <img src={document} alt="" aria-hidden="true" className="ApplicantDashboard-section-icon" />
                                     <h2>Applications</h2>
                                 </div>
 
@@ -328,7 +328,7 @@ function ApplicantUsersDashboard(): JSX.Element {
                         <div className="ApplicantDashboard-section">
                             <div className="ApplicantDashboard-section-header">
                                 <div className="ApplicantDashboard-header-content">
-                                    <img src={document} alt="Document Icon" className="ApplicantDashboard-section-icon" />
+                                    <img src={document} alt="" aria-hidden="true" className="ApplicantDashboard-section-icon" />
                                     <h2>Frequently Asked Questions</h2>
                                 </div>
                                 <button onClick={toggleFAQ} className="expand-collapse-btn">
@@ -345,7 +345,7 @@ function ApplicantUsersDashboard(): JSX.Element {
                         <div className="ApplicantDashboard-section">
                             <div className="ApplicantDashboard-section-header">
                                 <div className="ApplicantDashboard-header-content">
-                                    <img src={document} alt="Document Icon" className="ApplicantDashboard-section-icon" />
+                                    <img src={document} alt="" aria-hidden="true" className="ApplicantDashboard-section-icon" />
                                     <h2>Contact Us</h2>
                                 </div>
                                 <button onClick={toggleContact} className="expand-collapse-btn">
