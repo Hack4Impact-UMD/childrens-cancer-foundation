@@ -5,8 +5,6 @@ import {
   FaArrowUp,
   FaFileAlt,
   FaArrowRight,
-  FaCheckCircle,
-  FaEye,
 } from "react-icons/fa";
 import logo from "../../assets/ccf-logo.png";
 import Button from "../../components/buttons/Button";
@@ -299,46 +297,19 @@ function ApplicantUsersDashboard(): JSX.Element {
             <Banner>ALERT: Applications Are Closed for this Year</Banner>
           )}
 
-          {/* Post-Grant Reports Section - always visible for accepted applications */}
-          {allCycleAcceptedApplications.length > 0 && (
+          {/* Post-Grant Reports Section - only shows applications pending a report */}
+          {allCycleAcceptedApplications.filter((a) => !a.hasReportSubmitted).length > 0 && (
             <div className="post-grant-reports-section">
               <div className="post-grant-reports-header">
                 <h2>📋 Post-Grant Reports</h2>
-                <p>
-                  You have {allCycleAcceptedApplications.length} accepted
-                  application
-                  {allCycleAcceptedApplications.length > 1 ? "s" : ""}.
-                </p>
-                {allCycleAcceptedApplications.filter(
-                  (a) => !a.hasReportSubmitted,
-                ).length > 0 && (
+                {(() => {
+                  const pending = allCycleAcceptedApplications.filter((a) => !a.hasReportSubmitted);
+                  return (
                     <p>
-                      {
-                        allCycleAcceptedApplications.filter(
-                          (a) => !a.hasReportSubmitted,
-                        ).length
-                      }{" "}
-                      application
-                      {allCycleAcceptedApplications.filter(
-                        (a) => !a.hasReportSubmitted,
-                      ).length > 1
-                        ? "s"
-                        : ""}{" "}
-                      require
-                      {allCycleAcceptedApplications.filter(
-                        (a) => !a.hasReportSubmitted,
-                      ).length > 1
-                        ? ""
-                        : "s"}{" "}
-                      post-grant report
-                      {allCycleAcceptedApplications.filter(
-                        (a) => !a.hasReportSubmitted,
-                      ).length > 1
-                        ? "s"
-                        : ""}
-                      .
+                      {pending.length} application{pending.length > 1 ? "s" : ""} require{pending.length > 1 ? "" : "s"} a post-grant report{pending.length > 1 ? "s" : ""}.
                     </p>
-                  )}
+                  );
+                })()}
                 {appCycle?.postGrantReportDeadline &&
                   allCycleAcceptedApplications.some(
                     (a) =>
@@ -360,27 +331,17 @@ function ApplicantUsersDashboard(): JSX.Element {
                   )}
               </div>
               <div className="post-grant-reports-list">
-                {allCycleAcceptedApplications.map((application, index) => (
-                  <div key={index} className="post-grant-report-item">
-                    <div className="report-item-info">
-                      <FaFileAlt className="report-icon" />
-                      <span className="report-title">
-                        {(application as any).title ||
-                          `${firstLetterCap((application as any).grantType)} Application`}
-                      </span>
-                    </div>
-                    {application.hasReportSubmitted ? (
-                      <button
-                        className="post-grant-report-btn submitted"
-                        onClick={() =>
-                          navigate(
-                            `/applicant/post-grant-report/${(application as any).id}`,
-                          )
-                        }
-                      >
-                        View Submitted Report ✓
-                      </button>
-                    ) : (
+                {allCycleAcceptedApplications
+                  .filter((a) => !a.hasReportSubmitted)
+                  .map((application, index) => (
+                    <div key={index} className="post-grant-report-item">
+                      <div className="report-item-info">
+                        <FaFileAlt className="report-icon" />
+                        <span className="report-title">
+                          {(application as any).title ||
+                            `${firstLetterCap((application as any).grantType)} Application`}
+                        </span>
+                      </div>
                       <button
                         className="post-grant-report-btn"
                         onClick={() =>
@@ -391,9 +352,8 @@ function ApplicantUsersDashboard(): JSX.Element {
                       >
                         Submit Report
                       </button>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
               </div>
             </div>
           )}
