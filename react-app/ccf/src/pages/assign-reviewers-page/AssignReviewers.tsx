@@ -387,22 +387,30 @@ const AssignReviewersPage: React.FC = () => {
       if (!reviewerId) return;
 
       // If application is in-progress, it means reviews have been created and confirmed
-      if (application.status === 'in-progress') {
+      if (application.status === 'in-progress' || application.status === 'completed') {
         // Check if review has been started - if so, warn user
         const review = await findReviewForReviewerAndApplication(applicationId, reviewerId);
-        if (review && review.status !== 'not-started') {
-          if (!window.confirm('This reviewer has already started their review. Removing them will delete their progress. Are you sure?')) {
-            return;
+        if (review) {
+          if (review.status !== 'not-started') {
+            if (!window.confirm('This reviewer has already started their review. Removing them will delete their progress. Are you sure?')) {
+              setLoading(false);
+              return;
+            }
           }
         }
 
         // TODO: Implement review deletion from reviews/{applicationId}/reviewers/{reviewId}
         // For now, we'll just warn the user that this functionality is limited
-        return;
+        // return;
       }
 
+      const reviewerRef = doc(db, 'reviewers', reviewerId);
+      await updateDoc(reviewerRef, {
+        assignedApplications: arrayRemove(applicationId)
+      });
+
       // For not-started applications, just remove from local state (no reviews created yet)
-      setApplications(applications.map(app => {
+      setApplications(prevApps => prevApps.map(app => {
         if (app.document_id === applicationId) {
           const updatedApp = { ...app };
           if (type === 'primary') {
@@ -413,21 +421,25 @@ const AssignReviewersPage: React.FC = () => {
             updatedApp.secondaryReviewStatus = undefined;
           }
 
-          // Keep status as not-started if no reviewers assigned
+          // If no reviewers are left, reset status to not-started
           if (!updatedApp.primaryReviewerId && !updatedApp.secondaryReviewerId) {
             updatedApp.status = 'not-started';
           }
-
           return updatedApp;
         }
         return app;
       }));
 
+      setError(null);
     } catch (err) {
       console.error('Error removing reviewer:', err);
-      setError('Failed to remove reviewer. Please try again.');
+      setError('Failed to fully unassign reviewer. Please check your connection.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  
 
   const viewReview = (applicationId: string) => {
     // Navigate to a review summary page with the application ID
