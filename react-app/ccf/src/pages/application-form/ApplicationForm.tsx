@@ -278,14 +278,15 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             </h1>
             {renderPage()}
             <div className="btn-container">
-                <button onClick={goBack} className="back-btn">Go Back</button>
+                <button type="button" onClick={goBack} className="back-btn">Go Back</button>
                 {currentPage < totalPages ? (
-                    <button onClick={handleContinue} className="save-btn">{currentPage === 1 ? "Start" : "Save and Continue"}</button>
+                    <button type="button" onClick={handleContinue} className="save-btn">{currentPage === 1 ? "Start" : "Save and Continue"}</button>
                 ) : (
                     <button
+                        type="button"
                         onClick={handleSubmit}
-                        className={`save-btn ${!appOpen ? (!isFormValid() ? 'warning' : '') : 'disabled'}`}
-                        disabled={(!appOpen && isFormValid())}
+                        className={`save-btn${appOpen && isFormValid() ? '' : ' disabled'}`}
+                        aria-disabled={!(appOpen && isFormValid())}
                     >
                         Save and Submit
                     </button>
