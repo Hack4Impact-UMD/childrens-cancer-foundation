@@ -87,10 +87,9 @@ function AccountPageApplicants(): JSX.Element {
   };
 
   return (
-    <div>
-      <div className="box2">
-        <div className="left-container2">
-          <div className="content2">
+      <div className="login-container">
+        <div className="login-content">
+        <div className="login-form">
             <div className="header-container2">
               <img
                 src={logo}
@@ -292,10 +291,7 @@ function AccountPageApplicants(): JSX.Element {
               </button>
             </form>
           </div>
-        </div>
-
-        <div className="right-container2">
-          <div className="createAccApplicant-imagesContainer">
+          <div className="login-imageContainer">
             <div className="createAccApplicant-stackedImages">
               <img src={DrHanleyLabImage} aria-hidden="true" alt="Lab research" className="createAccApplicant-researchImage" />
               <img src={toretsky} aria-hidden="true" alt="Doctor with patient" className="createAccApplicant-researchImage" />
@@ -306,7 +302,6 @@ function AccountPageApplicants(): JSX.Element {
           </div>
         </div>
       </div>
-    </div>
   );
 }
 
