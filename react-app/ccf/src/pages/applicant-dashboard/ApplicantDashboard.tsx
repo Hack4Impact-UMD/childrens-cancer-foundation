@@ -18,6 +18,7 @@ import {
   getApplicantSidebarItems,
   SideBarTypes,
 } from "../../types/sidebar-types";
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import {
   getUsersCurrentCycleAppplications,
   getUsersAllApplications,
@@ -38,6 +39,7 @@ import ApplicationCycle from "../../types/applicationCycle-types";
 import { auth } from "../../index";
 import { PostGrantReport } from "../../types/post-grant-report-types";
 import { getPDFDownloadURL } from "../../storage/storage";
+import { db } from '../../index';
 
 type ApplicationWithDecision = Application & {
   isAccepted?: boolean;
@@ -175,6 +177,24 @@ function ApplicantUsersDashboard(): JSX.Element {
       setAllCycleAcceptedApplications(accepted);
     };
 
+    const fetchDraftApplications = async () => {
+      const user = auth.currentUser; 
+      if (!user) return; 
+
+      const draftsQuery = query(
+        collection(db, 'applications'),
+        where('creatorId', '==', user.uid), 
+        where('status', '==', 'draft')
+      );
+      const draftsSnapshot = await getDocs(draftsQuery);
+      const drafts = draftsSnapshot.docs.map(d => ({
+        id: d.id, 
+        ...d.data()
+      })) as unknown as Application[];
+
+      setInProgressApplications(drafts);
+    }
+
     const initializeData = async () => {
       try {
         setLoading(true);
@@ -206,6 +226,7 @@ function ApplicantUsersDashboard(): JSX.Element {
         await Promise.all([
           fetchApplicationData(),
           fetchAllCyclePostGrantData(),
+          fetchDraftApplications(),
         ]);
       } catch (error) {
         console.error("Error initializing dashboard:", error);
@@ -385,13 +406,22 @@ function ApplicantUsersDashboard(): JSX.Element {
                             <div
                               key={index}
                               className="ApplicantDashboard-single-application-box"
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => {
+                                const route = application.grantType === 'nonresearch'
+                                  ? '/applicant/application-form/nonresearch'
+                                  : application.grantType === 'nextgen'
+                                  ? '/applicant/application-form/nextgen'
+                                  : '/applicant/application-form/research';
+                                navigate(`${route}?draftId=${application.id}`);
+                              }}
                             >
                               <div className="application-info">
                                 <FaFileAlt className="application-icon" />
-                                <p>{application.applicationType}</p>
+                                <p>{firstLetterCap(application.grantType)} - Draft</p>
                               </div>
                               <div className="ApplicantDashboard-application-status">
-                                <p>{application.status}</p>
+                                <p>In Progress</p>
                                 <FaArrowRight className="application-status-icon" />
                               </div>
                             </div>
