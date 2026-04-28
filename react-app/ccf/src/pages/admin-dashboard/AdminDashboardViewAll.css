@@ -36,10 +36,19 @@
 
 .AdminViewAll .search-bar input {
     border: none;
-    outline: none;
     width: 100%;
     padding: 5px;
     background-color: transparent;
+}
+
+.AdminViewAll .search-bar:focus-within {
+    box-shadow: 0 0 0 3px rgba(0, 62, 131, 0.35);
+}
+
+.AdminViewAll .search-bar input:focus-visible {
+    outline: 2px solid #003E83;
+    outline-offset: 2px;
+    border-radius: 6px;
 }
 
 .AdminViewAll .filters {
@@ -54,6 +63,13 @@
     border: 1px solid #ddd;
     border-radius: 10px;
     background-color: #D9D9D9;
+}
+
+.AdminViewAll .filter select:focus-visible {
+    outline: 2px solid #003E83;
+    outline-offset: 2px;
+    border-color: #003E83;
+    box-shadow: 0 0 0 3px rgba(0, 62, 131, 0.2);
 }
 
 .AdminViewAll .accounts-table-container {
@@ -92,6 +108,12 @@
 
 .AdminViewAll .send-email-button:hover {
     background-color: #0056b3;
+}
+
+.AdminViewAll .send-email-button:focus-visible {
+    outline: 3px solid #111827;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.75), 0 0 0 6px rgba(0, 62, 131, 0.55);
 }
 
 .AdminViewAll .accounts-header h2 {
@@ -134,6 +156,12 @@
     width: 16px;
     height: 16px;
     cursor: pointer;
+}
+
+.AdminViewAll .accounts-table td input[type="checkbox"]:focus-visible {
+    outline: 2px solid #003E83;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(0, 62, 131, 0.2);
 }
 
 @media (max-width: 900px) {
