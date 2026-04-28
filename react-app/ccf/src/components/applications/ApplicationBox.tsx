@@ -55,20 +55,22 @@ const ApplicationBox = ({
                     <p>{applicationType}{principalInvestigator ? ` - ${principalInvestigator}` : ''}</p>
                 </div>
             </div>
-            <button
-                className="due-date-button"
-                onClick={handleClick}
-            >
-                {dueDate}
-                <FaArrowRight className="arrow" />
-            </button>
-            <button
-                className="modal-button"
-                onClick={handleModalOpen}
-            >
-                <FaEye />
-                View Details
-            </button>
+            <div className="application-actions">
+                <button
+                    className="due-date-button"
+                    onClick={handleClick}
+                >
+                    {dueDate}
+                    <FaArrowRight className="arrow" />
+                </button>
+                <button
+                    className="modal-button"
+                    onClick={handleModalOpen}
+                >
+                    <FaEye />
+                    View Details
+                </button>
+            </div>
         </div>
     );
 }
