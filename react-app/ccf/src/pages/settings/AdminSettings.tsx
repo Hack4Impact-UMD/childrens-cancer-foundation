@@ -11,7 +11,7 @@ import { PasswordSettingsSection, SettingsPageLayout } from "./SettingsShared";
 function AccountSettingsPage(): JSX.Element {
   const sidebarItems = getSidebarbyRole('admin');
   // User information
-  const [username, setUsername] = useState<string | null>("");
+  const [email, setEmail] = useState<string | null>("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
@@ -50,7 +50,7 @@ function AccountSettingsPage(): JSX.Element {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (user) {
-          setUsername(user.email || "No email available");
+          setEmail(user.email || "No email available");
 
         } else {
           console.log("User is not authenticated");
@@ -131,7 +131,7 @@ function AccountSettingsPage(): JSX.Element {
   return (
     <SettingsPageLayout sidebarItems={sidebarItems}>
       <PasswordSettingsSection
-        username={username}
+        email={email}
         currentPassword={currentPassword}
         pwd={pwd}
         confirmPwd={confirmPwd}
@@ -155,7 +155,6 @@ function AccountSettingsPage(): JSX.Element {
         onBlurPwd={() => setShowReqs(false)}
         onConfirmPwdCheck={checkConfirmPwd}
         onSubmit={handleSubmit}
-        usernameLabel="Email"
       />
     </SettingsPageLayout>
   );

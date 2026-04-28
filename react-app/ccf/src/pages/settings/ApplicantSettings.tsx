@@ -17,7 +17,7 @@ import {
 function AccountSettingsPage(): JSX.Element {
   const [sidebarItems, setSidebarItems] = useState<SideBarTypes[]>(getSidebarbyRole('applicant'));
   // User information
-  const [username, setUsername] = useState<string | null>("");
+  const [email, setEmail] = useState<string | null>("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [pwd, setPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
@@ -72,7 +72,7 @@ function AccountSettingsPage(): JSX.Element {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (user) {
-          setUsername(user.email || "No email available");
+          setEmail(user.email || "No email available");
 
           // Get user data
           const userData = await getCurrentUserData();
@@ -206,7 +206,7 @@ function AccountSettingsPage(): JSX.Element {
       />
 
       <PasswordSettingsSection
-        username={username}
+        email={email}
         currentPassword={currentPassword}
         pwd={pwd}
         confirmPwd={confirmPwd}

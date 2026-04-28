@@ -26,7 +26,7 @@ interface PersonalInformationSectionProps {
 }
 
 interface PasswordSettingsSectionProps {
-  username: string | null;
+  email: string | null;
   currentPassword: string;
   pwd: string;
   confirmPwd: string;
@@ -50,7 +50,7 @@ interface PasswordSettingsSectionProps {
   onBlurPwd: () => void;
   onConfirmPwdCheck: () => void;
   onSubmit: (e: React.FormEvent) => Promise<void>;
-  usernameLabel?: string;
+  emailLabel?: string;
 }
 
 export function SettingsPageLayout({
@@ -121,7 +121,7 @@ export function PersonalInformationSection({
 }
 
 export function PasswordSettingsSection({
-  username,
+  email,
   currentPassword,
   pwd,
   confirmPwd,
@@ -145,7 +145,7 @@ export function PasswordSettingsSection({
   onBlurPwd,
   onConfirmPwdCheck,
   onSubmit,
-  usernameLabel = "Username",
+  emailLabel = "Email",
 }: PasswordSettingsSectionProps): JSX.Element {
   const canSubmit =
     !!pwd && !!confirmPwd && specialChar && capitalLetter && number && !pwdUnmatched;
@@ -156,8 +156,8 @@ export function PasswordSettingsSection({
         <h2>Account Settings</h2>
       </div>
       <div className="info-row-settings">
-        <label>{usernameLabel}</label>
-        <span className="username-text">{username || "No username available"}</span>
+        <label>{emailLabel}</label>
+        <span className="username-text">{email || "No email available"}</span>
 
         <TextField
           sx={{ width: "40%" }}
