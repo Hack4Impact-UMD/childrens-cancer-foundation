@@ -76,6 +76,7 @@ function AdminDashboardViewAll(): JSX.Element {
                                     placeholder="Search"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
+                                    aria-label="Search accounts"
                                 />
                             </div>
                             <div className="filters">
@@ -83,6 +84,7 @@ function AdminDashboardViewAll(): JSX.Element {
                                     <select
                                         value={affiliationFilter}
                                         onChange={(e) => setAffiliationFilter(e.target.value)}
+                                        aria-label="Filter accounts by institution"
                                     >
                                         <option value="">Institution</option>
                                         {uniqueAffiliations.map(aff => (
@@ -96,6 +98,7 @@ function AdminDashboardViewAll(): JSX.Element {
                                     <select
                                         value={roleFilter}
                                         onChange={(e) => setRoleFilter(e.target.value)}
+                                        aria-label="Filter accounts by role"
                                     >
                                         <option value="">Role</option>
                                         {roles.map(role => (
