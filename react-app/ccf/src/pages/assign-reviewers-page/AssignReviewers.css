@@ -12,6 +12,17 @@
   transition: margin-left 0.3s ease;
 }
 
+.ar-pending-reassignment-status {
+  text-align: center;
+  padding: 10px;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  color: #856404;
+  font-weight: bold;
+  font-size: 14px;
+}
+
 .sidebar.collapsed+.ar-assign-reviewers-container {
   margin-left: 70px;
 }

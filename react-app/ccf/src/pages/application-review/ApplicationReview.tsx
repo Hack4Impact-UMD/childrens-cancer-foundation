@@ -383,7 +383,20 @@ function ApplicationReview(): JSX.Element {
                 saveStatus === 'saved' ? 'Saved!' :
                   saveStatus === 'error' ? 'Error Saving' : 'Save Progress'}</div>
             </Button>
-            <Button onClick={submitReviewHandler} disabled={saveStatus === 'saving' || isReviewLocked} height="40px">
+            <Button 
+              onClick={submitReviewHandler} 
+              disabled={
+                saveStatus === 'saving' || 
+                isReviewLocked || 
+                !overall || 
+                !feedback.significance.trim() ||
+                !feedback.approach.trim() ||
+                !feedback.feasibility.trim() ||
+                !feedback.investigator.trim() ||
+                !feedback.summary.trim()
+              } 
+              height="40px"
+            >
                 Submit
             </Button>
             {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}

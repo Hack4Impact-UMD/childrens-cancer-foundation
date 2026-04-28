@@ -4,7 +4,7 @@ import Sidebar from '../../components/sidebar/Sidebar';
 import Button from '../../components/buttons/Button';
 import logo from "../../assets/ccf-logo.png";
 import './AssignReviewers.css';
-import { collection, getDocs, doc, updateDoc, getDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, getDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import { db } from "../.."; // Assuming you have a firebase config file
 import { useNavigate } from 'react-router-dom';
 import { getSidebarbyRole } from '../../types/sidebar-types';
@@ -136,6 +136,7 @@ const AssignReviewersPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [currentApplicationId, setCurrentApplicationId] = useState<string | null>(null);
   const [reviewerType, setReviewerType] = useState<'primary' | 'secondary' | null>(null);
+  const [pendingReassignments, setPendingReassignments] = useState<Set<string>>(new Set());
 
   // Fetch applications and reviewers from Firebase
   useEffect(() => {
@@ -369,6 +370,12 @@ const AssignReviewersPage: React.FC = () => {
         )
       );
 
+      setPendingReassignments(prev => {
+        const next = new Set(prev);
+        next.delete(applicationId);
+        return next;
+      });
+
       setLoading(false);
 
     } catch (err) {
@@ -397,11 +404,10 @@ const AssignReviewersPage: React.FC = () => {
               return;
             }
           }
+          // delete review document from reviews/{applicationId}/reviewers/{reviewId}
+          const reviewDocRef = doc(db, 'reviews', applicationId, 'reviewers', review.id!);
+          await deleteDoc(reviewDocRef);
         }
-
-        // TODO: Implement review deletion from reviews/{applicationId}/reviewers/{reviewId}
-        // For now, we'll just warn the user that this functionality is limited
-        // return;
       }
 
       const reviewerRef = doc(db, 'reviewers', reviewerId);
@@ -429,6 +435,10 @@ const AssignReviewersPage: React.FC = () => {
         }
         return app;
       }));
+
+      if (application.status === 'in-progress' || application.status === 'completed') {
+        setPendingReassignments(prev => new Set(prev).add(applicationId));
+      }
 
       setError(null);
     } catch (err) {
@@ -620,9 +630,27 @@ const AssignReviewersPage: React.FC = () => {
 
               {/* Show assigned status for in-progress */}
               {status === 'in-progress' && (
-                <div className="ar-assigned-status">
-                  Reviewers Assigned
-                </div>
+                pendingReassignments.has(app.document_id) ? (
+                  <>
+                    <div className="ar-pending-reassignment-status">
+                      Reviewers Updated — Press Button to Reassign
+                    </div>
+                    <Button
+                      variant="blue"
+                      width="100%"
+                      height="40px"
+                      borderRadius="8px"
+                      onClick={() => confirmReviewers(app.document_id)}
+                      disabled={!app.primaryReviewerId || !app.secondaryReviewerId || loading}
+                    >
+                      {loading ? 'Reassigning...' : 'Reassign Reviewers'}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="ar-assigned-status">
+                    Reviewers Assigned
+                  </div>
+                )
               )}
             </div>
           </div>
