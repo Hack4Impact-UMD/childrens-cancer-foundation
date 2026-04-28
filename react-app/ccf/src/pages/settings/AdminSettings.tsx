@@ -21,7 +21,6 @@ function AccountSettingsPage(): JSX.Element {
   const [capitalLetter, setCapitalLetter] = useState(false);
   const [number, setNumber] = useState(false);
   const [showReqs, setShowReqs] = useState(false);
-  const [pwdUnmatched, setPwdUnmatched] = useState(false);
 
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
@@ -72,18 +71,13 @@ function AccountSettingsPage(): JSX.Element {
     };
   };
 
-  const checkConfirmPwd = () => {
-    if (confirmPwd !== "") {
-      confirmPwd === pwd ? setPwdUnmatched(false) : setPwdUnmatched(true);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdateError(null);
     setUpdateSuccess(false);
+    const pwdMismatch = pwd !== confirmPwd;
 
-    if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
+    if (!specialChar || !capitalLetter || !number || pwdMismatch) {
       console.log("Failed to submit. One requirement was not met.");
       return;
     }
@@ -142,7 +136,6 @@ function AccountSettingsPage(): JSX.Element {
         capitalLetter={capitalLetter}
         number={number}
         showReqs={showReqs}
-        pwdUnmatched={pwdUnmatched}
         updateError={updateError}
         updateSuccess={updateSuccess}
         onCurrentPasswordChange={setCurrentPassword}
@@ -153,7 +146,6 @@ function AccountSettingsPage(): JSX.Element {
         onToggleConfirmPassword={handleClickShowConfirmPassword}
         onFocusPwd={() => setShowReqs(true)}
         onBlurPwd={() => setShowReqs(false)}
-        onConfirmPwdCheck={checkConfirmPwd}
         onSubmit={handleSubmit}
       />
     </SettingsPageLayout>

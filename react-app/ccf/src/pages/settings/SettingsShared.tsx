@@ -37,7 +37,6 @@ interface PasswordSettingsSectionProps {
   capitalLetter: boolean;
   number: boolean;
   showReqs: boolean;
-  pwdUnmatched: boolean;
   updateError: string | null;
   updateSuccess: boolean;
   onCurrentPasswordChange: (value: string) => void;
@@ -48,7 +47,6 @@ interface PasswordSettingsSectionProps {
   onToggleConfirmPassword: () => void;
   onFocusPwd: () => void;
   onBlurPwd: () => void;
-  onConfirmPwdCheck: () => void;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   emailLabel?: string;
 }
@@ -132,7 +130,6 @@ export function PasswordSettingsSection({
   capitalLetter,
   number,
   showReqs,
-  pwdUnmatched,
   updateError,
   updateSuccess,
   onCurrentPasswordChange,
@@ -143,12 +140,13 @@ export function PasswordSettingsSection({
   onToggleConfirmPassword,
   onFocusPwd,
   onBlurPwd,
-  onConfirmPwdCheck,
   onSubmit,
   emailLabel = "Email",
 }: PasswordSettingsSectionProps): JSX.Element {
+  const pwdMismatch = pwd !== confirmPwd;
+  const showPwdMismatch = confirmPwd.length > 0 && pwdMismatch;
   const canSubmit =
-    !!pwd && !!confirmPwd && specialChar && capitalLetter && number && !pwdUnmatched;
+    !!pwd && !!confirmPwd && specialChar && capitalLetter && number && !pwdMismatch;
 
   return (
     <div className="AccountSettings-section">
@@ -168,7 +166,6 @@ export function PasswordSettingsSection({
           required
           value={currentPassword}
           onChange={(e) => onCurrentPasswordChange(e.target.value)}
-          onKeyUp={onConfirmPwdCheck}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -195,7 +192,6 @@ export function PasswordSettingsSection({
           onChange={(e) => onPwdChange(e.target.value)}
           onFocus={onFocusPwd}
           onBlur={onBlurPwd}
-          onKeyUp={onConfirmPwdCheck}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -242,7 +238,6 @@ export function PasswordSettingsSection({
           required
           value={confirmPwd}
           onChange={(e) => onConfirmPwdChange(e.target.value)}
-          onKeyUp={onConfirmPwdCheck}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -256,8 +251,8 @@ export function PasswordSettingsSection({
               </InputAdornment>
             ),
           }}
-          error={pwdUnmatched}
-          helperText={pwdUnmatched && "Passwords do not match"}
+          error={showPwdMismatch}
+          helperText={showPwdMismatch && "Passwords do not match"}
         />
 
         {updateError && <p className="error-message">{updateError}</p>}
