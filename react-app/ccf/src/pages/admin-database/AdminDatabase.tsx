@@ -121,13 +121,17 @@ function AdminApplicationsDatabase(): JSX.Element {
     };
 
     const filteredApplications = Object.keys(applicationsData).reduce((acc, year) => {
-        const filtered = applicationsData[year].filter(app =>
-            (filters.applicationCycle ? year === filters.applicationCycle : true) &&
-            (filters.decision ? app.decision === filters.decision : true) &&
-            (filters.grantType ? app.grantType?.toLowerCase().includes(filters.grantType.toLowerCase()) : true) &&
-            (filters.institution ? app.institution === filters.institution : true) &&
-            (searchTerm ? app.title?.toLowerCase().includes(searchTerm.toLowerCase()) : true)
-        );
+        const filtered = applicationsData[year].filter(app => {
+            const normalizedDecision = formatDecision(app.decision).toLowerCase();
+
+            return (
+                (filters.applicationCycle ? year === filters.applicationCycle : true) &&
+                (filters.decision ? normalizedDecision === filters.decision : true) &&
+                (filters.grantType ? app.grantType?.toLowerCase().includes(filters.grantType.toLowerCase()) : true) &&
+                (filters.institution ? app.institution === filters.institution : true) &&
+                (searchTerm ? app.title?.toLowerCase().includes(searchTerm.toLowerCase()) : true)
+            );
+        });
 
         if (filtered.length) {
             acc[year] = filtered;
