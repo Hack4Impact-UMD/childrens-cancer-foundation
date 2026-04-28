@@ -495,6 +495,10 @@ function AdminEditInformation(): JSX.Element {
                                 </Button>
                             ))}
                         </div>
+                        <p style={{ marginTop: "12px", color: "#555" }}>
+                            Once the application deadline passes, the cycle will automatically move to Applications Closed.
+                            If you manually switch it back to Applications Open after that, applications will stay open until you change the stage again or set a new application deadline.
+                        </p>
                         <Button
                             variant="contained"
                             onClick={handleEndCurrentCycle}

@@ -8,11 +8,34 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getApplicationReviews = exports.getReviewers = exports.submitApplication = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
+exports.getApplicationReviews = exports.getReviewers = exports.submitApplication = exports.syncCurrentCycleStage = exports.addAdminRole = exports.addApplicantRole = exports.addReviewerRole = exports.helloWorld = void 0;
 const functions = require("firebase-functions");
 const { onRequest, onCall } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 admin.initializeApp();
+const hasDeadlinePassed = (deadlineValue) => {
+    if (!deadlineValue) {
+        return false;
+    }
+    const deadlineDate = typeof deadlineValue.toDate === "function"
+        ? deadlineValue.toDate()
+        : new Date(deadlineValue);
+    return Date.now() > deadlineDate.getTime();
+};
+const syncCurrentCycleStageIfNeeded = async (cycleDoc) => {
+    const currentCycle = cycleDoc.data();
+    if (currentCycle.stage === 'Applications Open' &&
+        currentCycle.applicationsReopenedManually !== true &&
+        hasDeadlinePassed(currentCycle.allApplicationsDeadline)) {
+        await cycleDoc.ref.update({
+            stage: 'Applications Closed',
+            applicationsReopenedManually: false
+        });
+        currentCycle.stage = 'Applications Closed';
+        currentCycle.applicationsReopenedManually = false;
+    }
+    return currentCycle;
+};
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -77,6 +100,25 @@ exports.addAdminRole = onCall((request) => {
     });
 });
 
+exports.syncCurrentCycleStage = onCall(async (request) => {
+    if (!request.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+    }
+    const cycleSnapshot = await admin.firestore()
+        .collection('applicationCycles')
+        .where('current', '==', true)
+        .limit(1)
+        .get();
+    if (cycleSnapshot.empty) {
+        throw new functions.https.HttpsError('failed-precondition', 'No active application cycle found');
+    }
+    const currentCycle = await syncCurrentCycleStageIfNeeded(cycleSnapshot.docs[0]);
+    return {
+        stage: currentCycle.stage,
+        applicationsReopenedManually: currentCycle.applicationsReopenedManually === true
+    };
+});
+
 // Secure Application Submission Function
 exports.submitApplication = onCall(async (request) => {
     try {
@@ -129,7 +171,8 @@ exports.submitApplication = onCall(async (request) => {
             throw new functions.https.HttpsError('failed-precondition', 'No active application cycle found');
         }
 
-        const currentCycle = cycleSnapshot.docs[0].data();
+        const currentCycleDoc = cycleSnapshot.docs[0];
+        const currentCycle = await syncCurrentCycleStageIfNeeded(currentCycleDoc);
         // Check if applications are open
         if (currentCycle.stage !== 'Applications Open') {
             throw new functions.https.HttpsError('failed-precondition', 'Applications are currently closed');

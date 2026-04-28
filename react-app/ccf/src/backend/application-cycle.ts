@@ -1,7 +1,43 @@
 import { collection, getDocs, updateDoc, doc, Timestamp, where, limit, query, addDoc } from "firebase/firestore";
-import { db } from "../index";
+import { httpsCallable } from "firebase/functions";
+import { db, functions } from "../index";
 import dayjs from "dayjs";
 import ApplicationCycle from "../types/applicationCycle-types"
+
+const buildApplicationCycle = (docSnap: any): ApplicationCycle => {
+  const cycle = docSnap.data();
+
+  return {
+    id: docSnap.id,
+    ...cycle,
+    applicationsReopenedManually: cycle.applicationsReopenedManually === true,
+    researchDeadline: (cycle.allApplicationsDeadline || cycle.researchDeadline as Timestamp).toDate(),
+    nonResearchDeadline: (cycle.allApplicationsDeadline || cycle.nonResearchDeadline as Timestamp).toDate(),
+    nextGenDeadline: (cycle.allApplicationsDeadline || cycle.nextGenDeadline as Timestamp).toDate(),
+    allApplicationsDeadline: (cycle.allApplicationsDeadline as Timestamp).toDate(),
+    reviewerDeadline: (cycle.reviewerDeadline as Timestamp).toDate(),
+    startDate: (cycle.startDate as Timestamp).toDate(),
+    endDate: (cycle.endDate as Timestamp).toDate(),
+    postGrantReportDeadline: cycle.postGrantReportDeadline ? (cycle.postGrantReportDeadline as Timestamp).toDate() : undefined
+  } as ApplicationCycle;
+};
+
+const hasDeadlinePassed = (deadline?: Date): boolean => {
+  return !!deadline && Date.now() > deadline.getTime();
+};
+
+const shouldAutoCloseApplications = (cycle: ApplicationCycle): boolean => {
+  return (
+    cycle.stage === "Applications Open" &&
+    !cycle.applicationsReopenedManually &&
+    hasDeadlinePassed(cycle.allApplicationsDeadline)
+  );
+};
+
+const syncCurrentCycleStage = async (): Promise<void> => {
+  const syncCycleStage = httpsCallable(functions, "syncCurrentCycleStage");
+  await syncCycleStage();
+};
 
 export const getCurrentCycle = async (): Promise<ApplicationCycle> => {
   const q = query(collection(db, "applicationCycles"), where("current", "==", true), limit(1))
@@ -12,18 +48,7 @@ export const getCurrentCycle = async (): Promise<ApplicationCycle> => {
     throw new Error("No current application cycle found");
   }
 
-  const cycle = snap.docs[0].data()
-  return {
-    ...cycle,
-    researchDeadline: (cycle.allApplicationsDeadline || cycle.researchDeadline as Timestamp).toDate(),
-    nonResearchDeadline: (cycle.allApplicationsDeadline || cycle.nonResearchDeadline as Timestamp).toDate(),
-    nextGenDeadline: (cycle.allApplicationsDeadline || cycle.nextGenDeadline as Timestamp).toDate(),
-    allApplicationsDeadline: (cycle.allApplicationsDeadline as Timestamp).toDate(),
-    reviewerDeadline: (cycle.reviewerDeadline as Timestamp).toDate(),
-    startDate: (cycle.startDate as Timestamp).toDate(),
-    endDate: (cycle.endDate as Timestamp).toDate(),
-    postGrantReportDeadline: cycle.postGrantReportDeadline ? (cycle.postGrantReportDeadline as Timestamp).toDate() : undefined
-  } as ApplicationCycle
+  return checkAndUpdateCycleStageIfNeeded(buildApplicationCycle(snap.docs[0]));
 }
 
 
@@ -31,20 +56,7 @@ export const getAllCycles = async (): Promise<Array<ApplicationCycle>> => {
   const q = query(collection(db, "applicationCycles"))
 
   const snap = await getDocs(q);
-  return snap.docs.map((d) => {
-    const cycle = d.data()
-    return {
-      ...cycle,
-      researchDeadline: (cycle.allApplicationsDeadline || cycle.researchDeadline as Timestamp).toDate(),
-      nonResearchDeadline: (cycle.allApplicationsDeadline || cycle.nonResearchDeadline as Timestamp).toDate(),
-      nextGenDeadline: (cycle.allApplicationsDeadline || cycle.nextGenDeadline as Timestamp).toDate(),
-      allApplicationsDeadline: (cycle.allApplicationsDeadline as Timestamp).toDate(),
-      reviewerDeadline: (cycle.reviewerDeadline as Timestamp).toDate(),
-      startDate: (cycle.startDate as Timestamp).toDate(),
-      endDate: (cycle.endDate as Timestamp).toDate(),
-      postGrantReportDeadline: cycle.postGrantReportDeadline ? (cycle.postGrantReportDeadline as Timestamp).toDate() : undefined
-    } as ApplicationCycle
-  })
+  return snap.docs.map((d) => buildApplicationCycle(d))
 }
 
 export const updateCycleStage = async (newStage: ApplicationCycle["stage"]): Promise<boolean> => {
@@ -58,9 +70,12 @@ export const updateCycleStage = async (newStage: ApplicationCycle["stage"]): Pro
     }
 
     const docRef = snapshot.docs[0].ref;
+    const currentCycle = buildApplicationCycle(snapshot.docs[0]);
 
     await updateDoc(docRef, {
-      stage: newStage
+      stage: newStage,
+      applicationsReopenedManually:
+        newStage === "Applications Open" && hasDeadlinePassed(currentCycle.allApplicationsDeadline)
     });
 
     return true;
@@ -109,6 +124,7 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
       updateData.nextGenDeadline = timestamp;
       updateData.researchDeadline = timestamp;
       updateData.nonResearchDeadline = timestamp;
+      updateData.applicationsReopenedManually = false;
     }
 
     // for backwards compatibility
@@ -120,6 +136,7 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
         updateData.nextGenDeadline = timestamp;
         updateData.researchDeadline = timestamp;
         updateData.nonResearchDeadline = timestamp;
+        updateData.applicationsReopenedManually = false;
       }
     }
 
@@ -155,6 +172,7 @@ export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
       startDate: Timestamp.now(),
       endDate: Timestamp.fromDate(oneYearFromNow),
       stage: 'Applications Open',
+      applicationsReopenedManually: false,
       allApplicationsDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       nextGenDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
       researchDeadline: Timestamp.fromDate(dayjs().add(6, 'month').hour(23).minute(59).toDate()),
@@ -171,14 +189,22 @@ export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
 
 // Auto-update cycle stage if application deadline has passed
 export const checkAndUpdateCycleStageIfNeeded = async (cycle: ApplicationCycle): Promise<ApplicationCycle> => {
+  const closedCycle: ApplicationCycle = {
+    ...cycle,
+    stage: "Applications Closed",
+    applicationsReopenedManually: false
+  };
+
   try {
-    // Stage selection is admin-controlled.
-    // If an admin keeps stage at "Applications Open", applicants should still be able
-    // to submit even when the configured deadline has passed.
-    return cycle;
+    if (!shouldAutoCloseApplications(cycle)) {
+      return cycle;
+    }
+
+    await syncCurrentCycleStage();
+    return closedCycle;
   } catch (error) {
     console.error("Error checking cycle stage:", error);
-    return cycle;
+    return closedCycle;
   }
 }
 
