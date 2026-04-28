@@ -149,6 +149,7 @@ function GrantAwards(): JSX.Element {
   }>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [columnsOpen, setColumnsOpen] = useState<boolean>(false);
+  const [editingScores, setEditingScores] = useState<Record<string, number>>({});
   const [visibleColumns, setVisibleColumns] = useState<
     Record<ColumnKey, boolean>
   >({
@@ -359,6 +360,10 @@ function GrantAwards(): JSX.Element {
 
   const saveChangesToFirestore = async (applicationId: string) => {
     const appToUpdate = applications.find((a) => a.id === applicationId);
+    const editedScore = editingScores[applicationId];
+    if (editedScore !== undefined && appToUpdate) {
+      appToUpdate.finalScore = editedScore;
+    }
     if (!appToUpdate) return;
     const appId = appToUpdate.id;
 
@@ -383,6 +388,7 @@ function GrantAwards(): JSX.Element {
       const applicationRef = doc(db, "applications", appId);
       await updateDoc(applicationRef, {
         decision: decision,
+        averageScore: appToUpdate.finalScore,
       });
 
       setSavingChanges((prev) => ({ ...prev, [appId]: false }));
@@ -612,30 +618,6 @@ function GrantAwards(): JSX.Element {
 
           <div className="ApplicantDashboard-sections-content">
             <div className="accounts-table-container">
-              <div className="section-header">
-                <h2>CURRENT APPLICATIONS</h2>
-                <div className="header-actions">
-                  <span className="download-text">Download as CSV</span>
-                  <button
-                    className="download-btn"
-                    onClick={() => handleDownloadCSV(sortedApplications)}
-                    title="Download CSV"
-                    aria-label="Download applications as CSV"
-                  >
-                    <FaDownload />
-                  </button>
-                  <span className="refresh-text">Refresh Scores</span>
-                  <button
-                    className="refresh-btn"
-                    onClick={refreshScores}
-                    disabled={loading}
-                    title="Refresh application scores"
-                    aria-label="Refresh application scores"
-                  >
-                    <FaSync className={loading ? "spinning" : ""} />
-                  </button>
-                </div>
-              </div>
               <div className="top-controls">
                 <div className="filter-group">
                   <label htmlFor="cycle-select">Cycle:</label>
@@ -675,6 +657,7 @@ function GrantAwards(): JSX.Element {
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
+                
                 <div
                   className={`columns-group ${columnsOpen ? "columns-open" : ""}`}
                 >
@@ -742,6 +725,29 @@ function GrantAwards(): JSX.Element {
                     </div>
                   )}
                 </div>
+                <div className="section-header">
+                <div className="header-actions">
+                  <span className="download-text">Download as CSV</span>
+                  <button
+                    className="download-btn"
+                    onClick={() => handleDownloadCSV(sortedApplications)}
+                    title="Download CSV"
+                    aria-label="Download applications as CSV"
+                  >
+                    <FaDownload />
+                  </button>
+                  <span className="refresh-text">Refresh Scores</span>
+                  <button
+                    className="refresh-btn"
+                    onClick={refreshScores}
+                    disabled={loading}
+                    title="Refresh application scores"
+                    aria-label="Refresh application scores"
+                  >
+                    <FaSync className={loading ? "spinning" : ""} />
+                  </button>
+                </div>
+              </div>
               </div>
               {loading ? (
                 <div className="loading-indicator">Loading applications...</div>
@@ -922,9 +928,18 @@ function GrantAwards(): JSX.Element {
                               <input
                                 type="number"
                                 step="0.1"
-                                value={app.finalScore}
-                                readOnly
-                                className="editable-input score-input readonly"
+                                value={
+                                  editingScores[app.id] !== undefined
+                                    ? editingScores[app.id]
+                                    : app.finalScore
+                                }
+                                onChange={(e) => {
+                                  setEditingScores({
+                                    ...editingScores,
+                                    [app.id]: parseFloat(e.target.value) || 0,
+                                  });
+                                }}
+                                className="editable-input score-input"
                                 title="Final Average Score"
                                 aria-label={`Final average score for ${app.name}`}
                               />

@@ -279,7 +279,8 @@ function AdminPostGrantReports(): JSX.Element {
                     </div>
 
                     <div className="reports-table-container">
-                        <table className="reports-table">
+                        <div className="reports-table-wrapper">
+                            <table className="reports-table">
                             <thead>
                                 <tr>
                                     {/* <th>Application ID</th> */}
@@ -347,6 +348,7 @@ function AdminPostGrantReports(): JSX.Element {
                                 )}
                             </tbody>
                         </table>
+                        </div>
                     </div>
 
                     <div className="summary-stats">
