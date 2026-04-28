@@ -1,13 +1,14 @@
 .ccf-dashboard-banner {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 0 20px;
-  margin: 0 0 20px;
+  gap: 18px;
+  padding: 0;
+  margin: 0;
+  min-height: 88px;
 }
 
 .ccf-dashboard-banner-logo {
-  width: 90px;
+  width: 84px;
   height: auto;
   flex-shrink: 0;
 }
@@ -16,22 +17,22 @@
   margin: 0;
   color: #be0019;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(2.5rem, 3vw, 3rem);
+  font-size: clamp(2.25rem, 3vw, 2.75rem);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 
 @media (max-width: 768px) {
   .ccf-dashboard-banner {
-    gap: 16px;
-    padding: 0 16px;
+    gap: 14px;
+    min-height: 72px;
   }
 
   .ccf-dashboard-banner-logo {
-    width: 72px;
+    width: 64px;
   }
 
   .ccf-dashboard-banner-title {
-    font-size: clamp(2rem, 7vw, 2.5rem);
+    font-size: clamp(1.9rem, 7vw, 2.35rem);
   }
 }

@@ -1,5 +1,4 @@
 import "./AdminDashboardViewAll.css";
-import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
@@ -10,6 +9,7 @@ import sendIcon from "../../assets/email_send-solid.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { UserData } from "../../types/usertypes";
 import Header from "../../components/header/Header";
+import "../../components/dashboard-layout/DashboardLayout.css";
 
 function AdminDashboardViewAll(): JSX.Element {
     const sidebarItems = getSidebarbyRole("admin")
@@ -63,50 +63,50 @@ function AdminDashboardViewAll(): JSX.Element {
     return (
         <div>
             <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-                <div className="AdminViewAll">
+            <div className="dashboard-page">
+                <div className="dashboard-page-stack AdminViewAll">
                     <Header title="Account Management" />
 
-                    <div className="search-filter-container">
-                    <div className="search-bar">
-                        <FaSearch className="search-icon" />
-                        <input
-                            type="text"
-                            placeholder="Search"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="filters">
-                        <div className="filter">
-                            <select
-                                value={affiliationFilter}
-                                onChange={(e) => setAffiliationFilter(e.target.value)}
-                            >
-                                <option value="">Institution</option>
-                                {uniqueAffiliations.map(aff => (
-                                    <option key={aff} value={aff}>
-                                        {aff}
-                                    </option>
-                                ))}
-                            </select>
+                    <div className="AdminViewAll-sections-content">
+                        <div className="search-filter-container">
+                            <div className="search-bar">
+                                <FaSearch className="search-icon" />
+                                <input
+                                    type="text"
+                                    placeholder="Search"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <div className="filters">
+                                <div className="filter">
+                                    <select
+                                        value={affiliationFilter}
+                                        onChange={(e) => setAffiliationFilter(e.target.value)}
+                                    >
+                                        <option value="">Institution</option>
+                                        {uniqueAffiliations.map(aff => (
+                                            <option key={aff} value={aff}>
+                                                {aff}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="filter">
+                                    <select
+                                        value={roleFilter}
+                                        onChange={(e) => setRoleFilter(e.target.value)}
+                                    >
+                                        <option value="">Role</option>
+                                        {roles.map(role => (
+                                            <option key={role} value={role}>
+                                                {role}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div className="filter">
-                            <select
-                                value={roleFilter}
-                                onChange={(e) => setRoleFilter(e.target.value)}
-                            >
-                                <option value="">Role</option>
-                                {roles.map(role => (
-                                    <option key={role} value={role}>
-                                        {role}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                    <div className="ApplicantDashboard-sections-content">
                         <div className="accounts-table-container">
                             <div className="accounts-header">
                                 <h2>ALL ACCOUNTS</h2>
@@ -153,7 +153,7 @@ function AdminDashboardViewAll(): JSX.Element {
                                             })
                                             .filter(account => {
                                                 return roleFilter === "" ||
-                                                    (account.role && account.role.toLowerCase() == roleFilter.toLowerCase());
+                                                    (account.role && account.role.toLowerCase() === roleFilter.toLowerCase());
                                             })
                                             .map((account) => (
                                                 <tr key={account.id}>

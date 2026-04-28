@@ -1,7 +1,7 @@
 
 import "./ApplicantDashboard.css";
 import { useEffect, useState } from "react";
-import { FaArrowDown, FaArrowUp, FaFileAlt, FaArrowRight, FaCheckCircle, FaEye } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaFileAlt, FaArrowRight } from "react-icons/fa";
 import document from "../../assets/documentIcon.png";
 import Button from "../../components/buttons/Button"
 import FAQComponent from "../../components/faq/FaqComp";
@@ -9,6 +9,7 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import ContactUs from "../../components/contact/ContactUs";
 import Banner from "../../components/banner/Banner";
 import Header from "../../components/header/Header";
+import "../../components/dashboard-layout/DashboardLayout.css";
 import { useNavigate } from "react-router-dom";
 import { getSidebarbyRole, getApplicantSidebarItems, SideBarTypes } from '../../types/sidebar-types';
 import { getUsersCurrentCycleAppplications } from "../../backend/application-filters";
@@ -43,12 +44,12 @@ function ApplicantUsersDashboard(): JSX.Element {
     const toggleContact = () => setContactCollapsed(!isContactCollapsed);
 
     const [completedApplications, setCompletedApplications] = useState<ApplicationWithDecision[]>();
-    const [inProgressApplications, setInProgressApplications] = useState<Application[]>([]);
+    const [inProgressApplications] = useState<Application[]>([]);
     const [openModal, setOpenModal] = useState<Application | null>();
     const [faqData, setFAQData] = useState<FAQItem[]>([]);
     const [appCycle, setAppCycle] = useState<ApplicationCycle>();
     const [applicationsOpen, setApplicationsOpen] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         // Track the last known stage so the interval can detect changes
@@ -172,38 +173,11 @@ function ApplicantUsersDashboard(): JSX.Element {
     // Get accepted applications that need post-grant reports
     const acceptedApplications = completedApplications?.filter(app => app.isAccepted) || [];
     const applicationsNeedingReports = acceptedApplications.filter(app => !app.hasReportSubmitted);
-    const submittedReports = acceptedApplications.filter(app => app.hasReportSubmitted);
-
-    const formatDate = (dateString: string | Date | undefined | null) => {
-        if (!dateString) {
-            return 'N/A';
-        }
-
-        try {
-            if (typeof dateString === 'string') {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) {
-                    return 'Invalid Date';
-                }
-                return date.toLocaleDateString();
-            }
-
-            if (dateString instanceof Date) {
-                return dateString.toLocaleDateString();
-            }
-
-            return 'Invalid Date';
-        } catch (error) {
-            console.error('Error formatting date:', error);
-            return 'Error';
-        }
-    };
-
     return (
         <div>
             <Sidebar links={sidebarItems} />
-            <div className={"dashboard-container"} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <div className="ApplicantDashboard">
+            <div className="dashboard-page">
+                <div className="dashboard-page-stack ApplicantDashboard">
                     <Header title="Applicant Dashboard" />
                     {
                         appCycle && appCycle.stage === "Applications Open" && appCycle.allApplicationsDeadline ?
@@ -308,7 +282,7 @@ function ApplicantUsersDashboard(): JSX.Element {
                                                         <p>{appCycle?.stage === "Release Decisions" ? firstLetterCap((application as any).decision) : "Submitted"}</p>
                                                         <FaArrowRight className="application-status-icon" />
                                                     </div>
-                                                    <CoverPageModal application={application as Application} isOpen={openModal == application} onClose={closeModal}></CoverPageModal>
+                                                    <CoverPageModal application={application as Application} isOpen={openModal === application} onClose={closeModal}></CoverPageModal>
                                                 </div>
                                             ))}
                                             <hr className="red-line" />

@@ -16,6 +16,7 @@ import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded, getDaysUntilDeadline
 import Banner from "../../components/banner/Banner";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 import Header from "../../components/header/Header";
+import "../../components/dashboard-layout/DashboardLayout.css";
 
 interface ReviewerProp {
     email: string;
@@ -199,9 +200,8 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
     return (
         <div>
             <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-
-                <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+            <div className="dashboard-page">
+                <div className="dashboard-page-stack ReviewerDashboard">
 
                     <Header title="Reviewer Dashboard" />
 
@@ -221,11 +221,11 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                             <Banner>Awaiting Review Period to Begin</Banner>
                         )}
 
-                    <div className="dashboard-sections-content" style={{ flexGrow: 1 }}>
-                        <div className="dashboard-section">
-                            <div className="section-header">
-                                <div className="header-content">
-                                    <img src={document} alt="Document Icon" className="section-icon" />
+                    <div className="ReviewerDashboard-sections-content">
+                        <div className="ReviewerDashboard-section">
+                            <div className="ReviewerDashboard-section-header">
+                                <div className="ReviewerDashboard-header-content">
+                                    <img src={document} alt="Document Icon" className="ReviewerDashboard-section-icon" />
                                     <h2>Applications to Review</h2>
                                 </div>
                                 <button onClick={toggleApplication} className="expand-collapse-btn">
@@ -234,7 +234,7 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                             </div>
 
                             {!isApplicationCollapsed && (
-                                <div className="applications-container">
+                                <div className="ReviewerDashboard-applications-container">
                                     {loading ? (
                                         <div className="loading-message">Loading your assigned applications...</div>
                                     ) : error ? (
@@ -256,7 +256,7 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                                                             onModalOpen={handleModalOpen}
                                                         />
                                                     ))}
-                                                    <hr className="red-line" />
+                                                    <hr className="ReviewerDashboard-red-line" />
                                                 </>
                                             )}
 
@@ -275,7 +275,7 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                                                             onModalOpen={handleModalOpen}
                                                         />
                                                     ))}
-                                                    <hr className="red-line" />
+                                                    <hr className="ReviewerDashboard-red-line" />
                                                 </>
                                             )}
 
@@ -310,10 +310,10 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                             )}
                         </div>
 
-                        <div className="dashboard-section">
-                            <div className="section-header">
-                                <div className="header-content">
-                                    <img src={document} alt="Document Icon" className="section-icon" />
+                        <div className="ReviewerDashboard-section">
+                            <div className="ReviewerDashboard-section-header">
+                                <div className="ReviewerDashboard-header-content">
+                                    <img src={document} alt="Document Icon" className="ReviewerDashboard-section-icon" />
                                     <h2>Contact Us</h2>
                                 </div>
                                 <button onClick={toggleContact} className="expand-collapse-btn">
@@ -321,7 +321,7 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                                 </button>
                             </div>
                             {!isContactCollapsed && (
-                                <div className="contact-box">
+                                <div className="ReviewerDashboard-contact-box">
                                     <div className="contact-method">
                                         <div className="contact-method-header">
                                             <img src={Email} alt="Email Icon" className="contact-icon" />

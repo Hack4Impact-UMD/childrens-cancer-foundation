@@ -33,12 +33,20 @@ function AdminApplicationsDatabase(): JSX.Element {
         setOpenModal(null)
     }
 
-    const formatGrantType = (grantType: string) => {
+    const formatGrantType = (grantType?: string) => {
+        if (!grantType) {
+            return "Unknown";
+        }
+
         if (grantType.toLowerCase() === "nextgen") {
             return "NextGen";
         }
 
         return firstLetterCap(grantType);
+    }
+
+    const formatDecision = (decision?: string) => {
+        return decision ? firstLetterCap(decision) : "Pending";
     }
 
     useEffect(() => {
@@ -52,7 +60,7 @@ function AdminApplicationsDatabase(): JSX.Element {
 
                 apps.forEach((data) => {
                     // Extract the year from timestamp or application cycle field
-                    const year = data.applicationCycle
+                    const year = data.applicationCycle || "Unknown"
 
                     // Map Firestore data to Application interface
                     const application: Application = data as Application
@@ -63,7 +71,9 @@ function AdminApplicationsDatabase(): JSX.Element {
                     applications[year].push(application);
 
                     // Add to unique sets
-                    institutions.add(application.institution);
+                    if (application.institution) {
+                        institutions.add(application.institution);
+                    }
                     years.add(year);
                 });
 
@@ -114,9 +124,9 @@ function AdminApplicationsDatabase(): JSX.Element {
         const filtered = applicationsData[year].filter(app =>
             (filters.applicationCycle ? year === filters.applicationCycle : true) &&
             (filters.decision ? app.decision === filters.decision : true) &&
-            (filters.grantType ? app.grantType.toLowerCase().includes(filters.grantType.toLowerCase()) : true) &&
+            (filters.grantType ? app.grantType?.toLowerCase().includes(filters.grantType.toLowerCase()) : true) &&
             (filters.institution ? app.institution === filters.institution : true) &&
-            (searchTerm ? app.title.toLowerCase().includes(searchTerm.toLowerCase()) : true)
+            (searchTerm ? app.title?.toLowerCase().includes(searchTerm.toLowerCase()) : true)
         );
 
         if (filtered.length) {
@@ -217,8 +227,8 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                     <div className="application-info">
                                                                         <img src={iconColor} alt="Document Icon" className="section-icon" />
                                                                         <div className="application-info-text">
-                                                                            <p className="application-title">{app.title}</p>
-                                                                            <p className="subtext">{formatGrantType(app.grantType)} - {app.decision.charAt(0).toUpperCase() + app.decision.slice(1)}</p>
+                                                                            <p className="application-title">{app.title || "Untitled Application"}</p>
+                                                                            <p className="subtext">{formatGrantType(app.grantType)} - {formatDecision(app.decision)}</p>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -264,7 +274,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                                             </div>
                                                                             <div className="admin-detail-item">
                                                                                 <span className="admin-detail-label">Status: </span>
-                                                                                <span className="admin-detail-value">{firstLetterCap(app.decision)}</span>
+                                                                                <span className="admin-detail-value">{formatDecision(app.decision)}</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>

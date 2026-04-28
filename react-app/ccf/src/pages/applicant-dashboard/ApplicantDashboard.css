@@ -1,41 +1,24 @@
 .ApplicantDashboard {
     font-family: Arial, sans-serif;
     color: #333;
-}
-
-.dashboard-container {
     display: flex;
-    min-height: 100vh;
-    background-color: #f3f4f6;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
 }
-
-.dashboard-sidebar {
-    width: 256px;
-    background-color: #003e83;
-    margin-right: 20px;
-    padding: 1rem;
-    position: relative;
-    transition: 0.3s ease;
-}
-
-.dashboard-sidebar.collapsed {
-    width: 10px;
-}
-
-.dashboard-sidebar.collapsed .sidebar-nav {
-    opacity: 0;
-}
-
 
 .ApplicantDashboard-sections-content {
     background-color: #F0C567;
-    padding: 20px;
-    border-radius: 8px;
-    min-height: 100vh;
+    padding: 24px;
+    border-radius: 12px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .ApplicantDashboard-section {
-    margin-top: 20px;
+    margin-top: 0;
     padding: 20px;
     background-color: #ffffff;
     border-radius: 8px;
@@ -43,19 +26,26 @@
 }
 
 .ApplicantDashboard-application-box {
-    padding: 10px;
+    padding: 16px;
     border: 5px solid #BE0019;
     border-radius: 8px;
     background-color: white;
 }
 
-.ApplicantDashboard-buttons {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 10px;
+.ApplicantDashboard-application-box h3 {
+    margin: 0 0 16px;
+    font-size: 1.125rem;
 }
 
-.expand-collapse-btn {
+.ApplicantDashboard-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: flex-start;
+    margin-top: 20px;
+}
+
+.ApplicantDashboard .expand-collapse-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -64,118 +54,25 @@
     color: #6e7f91;
 }
 
-.expand-collapse-btn:hover {
+.ApplicantDashboard .expand-collapse-btn:hover {
     color: #6e7f91;
 }
 
-ul {
+.ApplicantDashboard ul {
     padding-left: 20px;
 }
 
-.completed-applications,
-.in-progress-applications {
+.ApplicantDashboard .completed-applications,
+.ApplicantDashboard .in-progress-applications {
     margin-bottom: 20px;
 }
 
-.red-line {
+.ApplicantDashboard .red-line {
     border: 1.5px solid #BE0019;
     border-radius: 2px;
     display: block;
     width: 50%;
-    margin: 10px auto;
-}
-
-.ApplicantDashboard-single-application-box {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-radius: 8px;
-    background-color: #003E83;
-    margin-bottom: 20px;
-    height: 50px;
-}
-
-.ApplicantDashboard-single-application-box p {
-    color: white;
-}
-
-.application-info {
-    display: flex;
-    align-items: center;
-}
-
-.application-icon {
-    background-color: #F0C567;
-    margin-right: 10px;
-}
-
-.ApplicantDashboard-application-status {
-    display: flex;
-    border: #D9D9D980;
-    background-color: #D9D9D980;
-    padding: 10px;
-    width: 300px;
-    height: 30px;
-    border-radius: 8px;
-    justify-content: center;
-    text-align: center;
-    align-items: center;
-    cursor: pointer;
-}
-
-.ApplicantDashboard-application-status:hover {
-    background-color: rgba(217, 217, 217, 0.7);
-}
-
-.application-status-icon {
-    margin-left: 10px;
-    color: white;
-
-}
-
-/* Main container for the dashboard and sidebar */
-.dashboard-container {
-    display: flex;
-    min-height: 100vh;
-    /* Ensures the full height aligns with the sidebar */
-}
-
-/* Sidebar-adjusted dashboard content */
-.dashboard-content {
-    flex-grow: 1;
-    /* Allows the content area to expand fully */
-    margin-left: 250px;
-    /* Default sidebar width */
-    transition: margin-left 0.3s ease;
-    /* Smooth transition for collapse */
-    padding: 20px;
-    /* Consistent padding for the dashboard */
-    background-color: #f3f4f6;
-    /* Matches the overall page styling */
-}
-
-/* Adjust when the sidebar is collapsed */
-.dashboard-content.collapsed {
-    margin-left: 60px;
-    /* Collapsed sidebar width */
-}
-
-/* Dashboard section container */
-.ApplicantDashboard-sections-content {
-    background-color: #F0C567;
-    padding: 20px;
-    border-radius: 8px;
-    flex-grow: 1;
-}
-
-/* Individual section styling */
-.ApplicantDashboard-section {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
 }
 
 .ApplicantDashboard-section-header {
@@ -204,29 +101,16 @@ ul {
     object-fit: contain;
 }
 
-/* Collapsible expand/collapse button */
-.expand-collapse-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    color: #6e7f91;
-}
-
-.expand-collapse-btn:hover {
-    color: #6e7f91;
-}
-
-/* Application status boxes */
 .ApplicantDashboard-single-application-box {
     align-items: center;
     display: flex;
     justify-content: space-between;
-    padding: 10px;
+    gap: 16px;
+    padding: 14px 16px;
     border-radius: 8px;
     background-color: #003E83;
-    margin-bottom: 20px;
-    height: 50px;
+    margin-bottom: 16px;
+    min-height: 64px;
 }
 
 .ApplicantDashboard-single-application-box p {
@@ -234,30 +118,36 @@ ul {
     margin: 0;
 }
 
-.application-info {
+.ApplicantDashboard .application-info {
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
-.application-icon {
+.ApplicantDashboard .application-icon {
     background-color: #F0C567;
-    margin-right: 10px;
     padding: 5px;
     border-radius: 4px;
 }
 
-/* Status display within application cards */
 .ApplicantDashboard-application-status {
     display: flex;
     background-color: rgba(217, 217, 217, 0.5);
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px 16px;
+    min-width: 220px;
+    min-height: 44px;
     justify-content: center;
     text-align: center;
     align-items: center;
+    cursor: pointer;
 }
 
-.application-status-icon {
+.ApplicantDashboard-application-status:hover {
+    background-color: rgba(217, 217, 217, 0.7);
+}
+
+.ApplicantDashboard .application-status-icon {
     margin-left: 10px;
     color: white;
 }
@@ -520,4 +410,30 @@ ul {
 
 .pdf-link:hover {
     text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+    .ApplicantDashboard-sections-content {
+        padding: 20px;
+    }
+
+    .ApplicantDashboard-buttons {
+        flex-direction: column;
+    }
+
+    .ApplicantDashboard-buttons > * {
+        width: 100% !important;
+    }
+
+    .ApplicantDashboard-single-application-box,
+    .post-grant-report-item,
+    .submitted-report-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ApplicantDashboard-application-status {
+        min-width: 0;
+        width: 100%;
+    }
 }

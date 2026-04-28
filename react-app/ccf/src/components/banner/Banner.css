@@ -4,13 +4,16 @@
     justify-content: space-between;
     background-color: #BE0019;
     color: white;
-    padding: 20px;
-    margin: 5px;
-    font-size: 24px;
-    border-radius: 4px;
-    min-height: 100px;
-    border: 6px white;
-    border-style: double;
+    gap: 16px;
+    padding: 18px 20px;
+    margin: 0;
+    font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+    font-weight: 700;
+    line-height: 1.35;
+    border-radius: 12px;
+    min-height: 88px;
+    border: 6px double white;
+    box-sizing: border-box;
 }
 
 .textContainer {
@@ -21,13 +24,25 @@
     align-items: center;
 }
 
-.text {
-    font-size: 32px;
+.closeButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
-.closeButton {
-    font-size: 18px;
-    max-width: 10px;
-    cursor: pointer;
-    margin: 10px;
+.closeButton svg {
+    font-size: 22px;
+}
+
+@media (max-width: 768px) {
+    .banner {
+        padding: 16px;
+        min-height: 76px;
+    }
 }
