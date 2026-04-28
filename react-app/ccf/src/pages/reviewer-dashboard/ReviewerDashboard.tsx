@@ -136,6 +136,11 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
 
                 // Process each review
                 for (const review of reviews) {
+                    // skip reviews from past cycles
+                    if (review.cycle && review.cycle !== updatedCycle.id) {
+                        continue;
+                    }
+
                     // Fetch application data for each review
                     const appDoc = await getDoc(doc(db, "applications", review.applicationId));
 
