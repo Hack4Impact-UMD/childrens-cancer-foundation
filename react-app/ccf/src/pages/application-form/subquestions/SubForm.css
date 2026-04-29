@@ -5,44 +5,44 @@
 .form-container {
     border: solid var(--color-red);
     border-width: 5px;
-    width: 100%;
-    max-height: 100vh;
+    width: min(1120px, 94%);
     display: flex;
-    justify-content: space-between;
-    overflow-y: scroll;
-    overflow-x: auto;
-    padding-top: 10px;
-    padding-bottom: 20px;
-    padding-left: 75px;
-    padding-right: 75px;
+    justify-content: center;
+    align-items: flex-start;
+    max-height: 68vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px 32px 28px;
     border-radius: 10px;
-    margin-top: 2%;
-    margin-bottom: 1%;
-    gap: 100px;
+    margin: 2% auto 1%;
+    gap: 40px;
+    box-sizing: border-box;
+    flex-wrap: wrap;
 }
 
 .review-form-container {
-    overflow-y: visible;
+    max-height: 68vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     border: solid var(--color-red);
     border-width: 5px;
-    max-width: 100%;
+    width: min(1120px, 94%);
     /* max-height: 100vh; */
     display: flex;
-    justify-content: space-between;
-    padding-top: 10px;
-    padding-bottom: 20px;
-    padding-left: 75px;
-    padding-right: 75px;
+    justify-content: center;
+    padding: 24px 32px 28px;
     border-radius: 10px;
-    margin-top: 2%;
-    margin-bottom: 1%;
-    gap: 100px;
+    margin: 2% auto 1%;
+    gap: 40px;
+    box-sizing: border-box;
 }
 
 .proposal-text {
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: 8px;
+    margin-bottom: 8px;
     text-align: left;
+    width: 100%;
+    line-height: 1.5;
 }
 
 .upload-btn1 {
@@ -53,7 +53,7 @@
     padding-bottom: 27px;
     border-radius: 20px;
     border: transparent;
-    width: 235px;
+    width: min(100%, 320px);
     height: 31px;
     font-size: 15px;
     text-align: left;
@@ -61,7 +61,8 @@
 
 .text-label {
     margin-top: 20px;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    line-height: 1.45;
 }
 
 .indent {
@@ -70,33 +71,41 @@
 
 .text-input {
     border-radius: 20px;
-    padding: 15px;
-    width: 38vw;
+    padding: 14px 16px;
+    width: 100%;
+    max-width: 100%;
     background-color: #eeee;
+    box-sizing: border-box;
 }
 
 .text-input2 {
     border-radius: 20px;
-    padding: 15px;
-    width: 38vw;
+    padding: 14px 16px;
+    width: 100%;
+    max-width: 100%;
     height: 200px;
     background-color: #eeee;
+    box-sizing: border-box;
 }
 
 .left-container {
-    width: 50%;
+    width: 100%;
+    min-width: 0;
 }
 
 .right-container {
-    width: 50%;
+    width: 100%;
+    min-width: 0;
 }
 
 .radio-opts {
-    width: 65%;
+    width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 28px;
+    flex-wrap: wrap;
     margin-bottom: 30px;
-    margin-top: 30px;
+    margin-top: 16px;
 }
 
 .radio-opt .radio-label {
@@ -105,6 +114,9 @@
 
 .cont-current-funds {
     display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
 }
 
 .sub-radio-opts {
@@ -123,16 +135,16 @@
 .single-col-form-container {
     border: solid var(--color-red);
     border-width: 5px;
-    width: 100%;
+    width: min(1120px, 94%);
     height: 100%;
-    padding-top: 50px;
-    padding-bottom: 30px;
-    padding-left: 75px;
-    padding-right: 75px;
+    max-height: 68vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 40px 32px 30px;
     border-radius: 10px;
-    margin-top: 2%;
-    margin-bottom: 1%;
+    margin: 2% auto 1%;
     gap: 100px;
+    box-sizing: border-box;
 }
 
 .list {
@@ -207,6 +219,24 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.signature-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.signature-field {
+    flex: 1;
+    min-width: 0;
+}
+
+.signature-row-bottom {
+    margin-top: 0;
 }
 
 .checkbox-row {
@@ -400,9 +430,13 @@
 
 /* Enhanced modal styling */
 .review-form-container {
-    width: 100%;
-    margin: 0;
-    padding: 0;
+    width: min(1120px, 94%);
+    margin: 2% auto 1%;
+    padding: 24px 32px 28px;
+    max-width: none;
+    max-height: 68vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .proposal-text {
@@ -425,5 +459,26 @@
 
     100% {
         background-position: -200% 0;
+    }
+}
+
+@media (min-width: 901px) {
+    .left-container,
+    .right-container {
+        width: calc(50% - 20px);
+    }
+}
+
+@media (max-width: 900px) {
+    .form-container,
+    .review-form-container,
+    .single-col-form-container {
+        padding: 18px 16px 22px;
+        gap: 20px;
+    }
+
+    .signature-row {
+        flex-direction: column;
+        align-items: stretch;
     }
 }

@@ -15,9 +15,9 @@ export const checkEmailCreateAcc = (email: string): boolean => {
 
 // validating phone number
 export const validatePhoneNumber = (phone: string): string | null => {
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+    const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(phone)) {
-        return "Invalid phone number format.";
+        return "Invalid phone number format: Please format phone numbers as XXXXXXXXXX (without parentheses or dashes)";
     }
     return null;
 }; 

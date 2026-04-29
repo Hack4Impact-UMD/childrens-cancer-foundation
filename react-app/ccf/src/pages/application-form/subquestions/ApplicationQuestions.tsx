@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./SubForm.css";
 import { ApplicationQuestionsProps } from "../../../types/application-types";
 
@@ -29,7 +28,7 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
           </div>
 
           <div className="radio-opt">
-            <input type="radio" name="includedPublishedPaper" value="N/A" checked={formData.published === "N/A"} onChange={handleChange}/>
+            <input type="radio" name="includedPublishedPaper" value="N/A" checked={formData.includedPublishedPaper === "N/A"} onChange={handleChange}/>
             <label className="radio-label">N/A</label>
           </div>
         </div>
@@ -170,6 +169,11 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
               />
               <label className="text-label">I certify that everything in this cover sheet and included in the Grant Application is true to the best of my knowledge. I have read and recommend this Grant Proposal for CCF's consideration.</label>
             </div>
+          </div>
+        </div>
+
+        <div className="signature-row signature-row-bottom">
+          <div className="signature-field">
             <p className="text-label">Signature of Principal Investigator(s) *</p>
             <input 
               type="text" 
@@ -180,6 +184,8 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
               required 
               className="text-input" 
             />
+          </div>
+          <div className="signature-field">
             <p className="text-label">Signature of Department Head *</p>
             <input 
               type="text" 

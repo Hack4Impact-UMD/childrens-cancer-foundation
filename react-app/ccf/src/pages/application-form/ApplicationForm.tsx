@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import './ApplicationForm.css';
 import Breadcrumb from './Components/Breadcrumbs';
 import { useNavigate } from 'react-router-dom';
@@ -9,10 +10,12 @@ import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
 import { ResearchApplication } from '../../types/application-types';
 import { uploadResearchApplication } from '../../backend/applicant-form-submit';
-import { validateEmail, validatePhoneNumber } from '../../utils/validation';
 import { toast } from 'react-toastify';
 import { Modal } from '../../components/modal/modal';
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend/application-cycle';
+import { auth } from '../..';
+import { collection, addDoc, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { db } from '../..';
 
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
@@ -21,8 +24,8 @@ type ApplicationFormProps = {
 function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
     const pages = type === "Research"
-        ? ["Grant Proposal", "About Grant", "My Information", "Application Questions", "Review"]
-        : ["Grant Proposal", "About Grant", "My Information", "Application Questions", "Review"];
+        ? ["About Grant", "My Information", "Application Questions", "Grant Proposal", "Review"]
+        : ["About Grant", "My Information", "Application Questions", "Grant Proposal", "Review"];
     const totalPages = pages.length;
     const navigate = useNavigate();
     const requiredFields = [
@@ -35,15 +38,15 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         'einNumber', 'signaturePI', 'signatureDeptHead', 'file'
     ];
     const pageFields: { [key: number]: string[] } = {
-        1: ['file'],
-        3: ['title', 'principalInvestigator', 'institution',
+        2: ['title', 'principalInvestigator', 'institution',
             'department', 'departmentHead', 'institutionAddress', 'institutionCityStateZip',
             'institutionPhoneNumber', 'institutionEmail', 'typesOfCancerAddressed',
             'adminOfficialName', 'adminOfficialAddress', 'adminOfficialCityStateZip',
             'adminPhoneNumber', 'adminEmail'],
-        4: ['includedPublishedPaper', 'creditAgreement', 'patentApplied',
+        3: ['includedPublishedPaper', 'creditAgreement', 'patentApplied',
             'includedFundingInfo', 'amountRequested', 'dates',
             'einNumber', 'signaturePI', 'signatureDeptHead'],
+        4: ['file'],
     };
     const [formData, setFormData] = useState({
         title: '',
@@ -82,8 +85,15 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
     const [appOpen, setAppOpen] = useState<boolean>(false);
+    const [draftId, setDraftId] = useState<string | null>(null);
+    const location = useLocation();
 
     useEffect(() => {
+        const savedDraft = localStorage.getItem('researchApplicationDraft');
+        if (savedDraft) {
+            setFormData(JSON.parse(savedDraft));
+        }
+
         getCurrentCycle().then(async cycle => {
             const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
             setAppOpen(updatedCycle.stage === "Applications Open")
@@ -105,14 +115,91 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         return () => clearInterval(cycleRefreshInterval);
     }, [])
 
-    const goBack = () => {
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const existingDraftId = params.get('draftId');
+        if (!existingDraftId) return;
+
+        const loadDraft = async () => {
+            try {
+                const draftDoc = await getDoc(doc(db, 'applications', existingDraftId));
+                if (draftDoc.exists()) {
+                    const data = draftDoc.data();
+                    setDraftId(existingDraftId);
+                    setFormData(prev => ({ ...prev, ...data }));
+                    setCurrentPage(2); // Skip past the About Grant page
+                }
+            } catch (err) {
+                console.error('Error loading draft:', err);
+                toast.error('Failed to load saved application.');
+            }
+        };
+
+        loadDraft();
+    }, [location.search]);
+
+    const goBack = async () => {
         if (currentPage > 1) {
+            await saveDraft();
             setCurrentPage(currentPage - 1);
         } else {
+            await saveDraft();
             navigate('/applicant/dashboard');
         }
     };
-    const handleContinue = () => {
+
+    const saveAndExit = async () => {
+        await saveDraft();
+        toast.success('Progress saved!');
+        navigate('/applicant/dashboard');
+    };
+
+    const handleStart = async () => {
+        if (draftId) {
+            // already have a draft, just advance
+            setCurrentPage(2);
+            return;
+        }
+        try {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                toast.error('You must be logged in to start an application.');
+                return;
+            }
+
+            const draftRef = await addDoc(collection(db, 'applications'), {
+                status: 'draft', 
+                grantType: type === 'NextGen' ? 'nextgen' : 'research', 
+                creatorId: currentUser.uid, 
+                applicantEmail: currentUser.email, 
+                createdAt: new Date().toISOString(), 
+                lastUpdated: new Date().toISOString(),
+                ...formData
+            });
+
+            console.log('Draft created with ID:', draftRef.id);
+            setDraftId(draftRef.id);
+            setCurrentPage(2);
+        } catch (err) {
+            console.error('Error creating draft:', err);
+            toast.error('Failed to start application. Please try again.');
+        }
+    };
+
+    const saveDraft = async (data = formData) => {
+        if (!draftId) return;
+        try {
+            await updateDoc(doc(db, 'applications', draftId), {
+                ...data,
+                status: 'draft',
+                lastUpdated: new Date().toISOString()
+            });
+        } catch (err) {
+            console.error('Error saving draft:', err);
+        }
+    };
+
+    const handleContinue = async () => {
         const fieldsForCurrentPage = pageFields[currentPage] || [];
         const isPageValid = fieldsForCurrentPage.every(field => {
             const value = (formData as any)[field];
@@ -122,8 +209,11 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         if (!isPageValid) {
             toast.warn("Please fill out all required fields. You will not be able to submit until all fields are complete.");
         }
+
+        await saveDraft();
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
+
     const handleSubmit = async () => {
         const invalidSections: { [key: string]: string[] } = {};
 
@@ -203,6 +293,13 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
 
                 if (result.success) {
                     toast.success('Application submitted successfully!');
+                    localStorage.removeItem('researchApplicationDraft');
+                    if (draftId) {
+                        await updateDoc(doc(db, 'applications', draftId), {
+                            status: 'submitted', 
+                            lastUpdated: new Date().toISOString()
+                        });
+                    }
                     navigate('/applicant/dashboard');
                 } else {
                     toast.error('Failed to submit application. Please try again.');
@@ -248,13 +345,13 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const renderPage = () => {
         switch (currentPage) {
             case 1:
-                return <GrantProposal type={type} formData={formData} setFormData={setFormData} />;
-            case 2:
                 return <AboutGrant type={type} formData={formData} />;
-            case 3:
+            case 2:
                 return <Information formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} />;
-            case 4:
+            case 3:
                 return <ApplicationQuestions formData={formData} setFormData={setFormData} />;
+            case 4:
+                return <GrantProposal type={type} formData={formData} setFormData={setFormData} />;
             case 5:
                 return <ReviewApplication type={type} formData={formData} />;
             default:
@@ -262,7 +359,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         }
     };
     return (
-        <div className="main-container">
+        <div className="application-form-main-container">
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -279,14 +376,16 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             </h1>
             {renderPage()}
             <div className="btn-container">
-                <button onClick={goBack} className="back-btn">Go Back</button>
+                <button type="button" onClick={goBack} className="back-btn">Go Back</button>
+                <button type="button" onClick={saveAndExit} className="back-btn">Save and Exit</button>
                 {currentPage < totalPages ? (
-                    <button onClick={handleContinue} className="save-btn">Save and Continue</button>
+                    <button type="button" onClick={currentPage === 1 ? handleStart : handleContinue} className="save-btn">{currentPage === 1 ? "Start" : "Save and Continue"}</button>
                 ) : (
                     <button
+                        type="button"
                         onClick={handleSubmit}
-                        className={`save-btn ${!appOpen ? (!isFormValid() ? 'warning' : '') : 'disabled'}`}
-                        disabled={(!appOpen && isFormValid())}
+                        className={`save-btn${appOpen && isFormValid() ? '' : ' disabled'}`}
+                        aria-disabled={!(appOpen && isFormValid())}
                     >
                         Save and Submit
                     </button>
