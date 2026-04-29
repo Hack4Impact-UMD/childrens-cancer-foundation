@@ -56,14 +56,16 @@ function AdminApplicationsDatabase(): JSX.Element {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const apps = await getFilteredApplications({});
+        const allApps = await getFilteredApplications({});
+        const apps = allApps.filter(
+          (app) => (app as any).status !== "draft" && app.applicationCycle,
+        );
         // Group applications by year
         const applications: { [year: string]: Application[] } = {};
         const institutions = new Set<string>();
         const years = new Set<string>();
 
         apps.forEach((data) => {
-          // Extract the year from timestamp or application cycle field
           const year = data.applicationCycle;
 
           // Map Firestore data to Application interface
@@ -131,9 +133,9 @@ function AdminApplicationsDatabase(): JSX.Element {
           (filters.applicationCycle
             ? year === filters.applicationCycle
             : true) &&
-          (filters.decision ? app.decision === filters.decision : true) &&
+          (filters.decision ? (app.decision ?? "") === filters.decision : true) &&
           (filters.grantType
-            ? app.grantType
+            ? (app.grantType ?? "")
                 .toLowerCase()
                 .includes(filters.grantType.toLowerCase())
             : true) &&
@@ -290,10 +292,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                         </p>
                                         <p className="subtext">
                                           {formatGrantType(app.grantType)} -{" "}
-                                          {app.decision
-                                            .charAt(0)
-                                            .toUpperCase() +
-                                            app.decision.slice(1)}
+                                          {firstLetterCap(app.decision ?? "")}
                                         </p>
                                       </div>
                                     </div>
