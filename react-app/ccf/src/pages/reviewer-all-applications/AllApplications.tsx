@@ -55,7 +55,7 @@ function AllApplications(): JSX.Element {
         <div className="dashboard-content">
           <div className="dashboard-header-container">
             <img src={logo} alt="Logo" className="dashboard-logo" />
-            <h1 className="dashboard-header">All Applications</h1>
+            <h1 className="dashboard-header">Application Database</h1>
           </div>
 
           <input

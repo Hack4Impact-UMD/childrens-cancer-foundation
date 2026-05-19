@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { FaFileAlt, FaArrowUp, FaArrowDown } from "react-icons/fa";
-import logo from "../../assets/ccf-logo.png";
+import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import Phone from '../../assets/call.png';
 import Email from '../../assets/mail.png';
 import document from '../../assets/documentIcon.png';
 import "./ReviewerDashboard.css";
 import Sidebar from "../../components/sidebar/Sidebar";
-import FAQComponent from "../../components/faq/FaqComp";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationBox, { type Application } from "../../components/applications/ApplicationBox";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
@@ -17,25 +15,19 @@ import ApplicationCycle from "../../types/applicationCycle-types";
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded, getDaysUntilDeadline } from "../../backend/application-cycle";
 import Banner from "../../components/banner/Banner";
 import CoverPageModal from "../../components/applications/CoverPageModal";
-
-interface FAQItem {
-    id: string;
-    question: string;
-    answer: string;
-}
+import Header from "../../components/header/Header";
+import "../../components/dashboard-layout/DashboardLayout.css";
 
 interface ReviewerProp {
-    faqData: FAQItem[];
     email: string;
     phone: string;
     hours: string;
 }
 
-function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.Element {
+function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
     const sidebarItems = getSidebarbyRole('reviewer');
     // State for expandable sections
     const [isApplicationCollapsed, setApplicationCollapsed] = useState(false);
-    const [isFAQCollapsed, setFAQCollapsed] = useState(true);
     const [isContactCollapsed, setContactCollapsed] = useState(false);
 
     // State for applications
@@ -50,19 +42,12 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [currentModalApplication, setCurrentModalApplication] = useState<any>(null);
 
-    // State for FAQ
-    const [openFAQIndex, setOpenFAQIndex] = useState<number | null>(null);
-
     // Auth context for current user
     const { currentUser } = auth;
 
     // Toggle functions
     const toggleApplication = () => setApplicationCollapsed(!isApplicationCollapsed);
-    const toggleFAQ = () => setFAQCollapsed(!isFAQCollapsed);
     const toggleContact = () => setContactCollapsed(!isContactCollapsed);
-    const handleQuestionClick = (index: number) => {
-        setOpenFAQIndex(openFAQIndex === index ? null : index);
-    };
 
     const handleDueDateClick = (dueDate: string, applicationId: string) => {
         // Navigate to review page with application ID
@@ -220,14 +205,10 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
     return (
         <div>
             <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
+            <div className="dashboard-page">
+                <div className="dashboard-page-stack ReviewerDashboard">
 
-                <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-
-                    <div className="dashboard-header-container">
-                        <img src={logo} alt="Logo" className="dashboard-logo" />
-                        <h1 className="dashboard-header">Reviewer Dashboard</h1>
-                    </div>
+                    <Header title="Reviewer Dashboard" />
 
                     {appCycle?.stage === "Applications Open" && (
                             <Banner>Awaiting Review Period to Begin</Banner>
@@ -245,11 +226,11 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                             <Banner>Awaiting Review Period to Begin</Banner>
                         )}
 
-                    <div className="dashboard-sections-content" style={{ flexGrow: 1 }}>
-                        <div className="dashboard-section">
-                            <div className="section-header">
-                                <div className="header-content">
-                                    <img src={document} alt="Document Icon" className="section-icon" />
+                    <div className="ReviewerDashboard-sections-content">
+                        <div className="ReviewerDashboard-section">
+                            <div className="ReviewerDashboard-section-header">
+                                <div className="ReviewerDashboard-header-content">
+                                    <img src={document} alt="Document Icon" className="ReviewerDashboard-section-icon" />
                                     <h2>Applications to Review</h2>
                                 </div>
                                 <button onClick={toggleApplication} className="expand-collapse-btn">
@@ -258,7 +239,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                             </div>
 
                             {!isApplicationCollapsed && (
-                                <div className="applications-container">
+                                <div className="ReviewerDashboard-applications-container">
                                     {loading ? (
                                         <div className="loading-message">Loading your assigned applications...</div>
                                     ) : error ? (
@@ -280,7 +261,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                                                             onModalOpen={handleModalOpen}
                                                         />
                                                     ))}
-                                                    <hr className="red-line" />
+                                                    <hr className="ReviewerDashboard-red-line" />
                                                 </>
                                             )}
 
@@ -299,7 +280,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                                                             onModalOpen={handleModalOpen}
                                                         />
                                                     ))}
-                                                    <hr className="red-line" />
+                                                    <hr className="ReviewerDashboard-red-line" />
                                                 </>
                                             )}
 
@@ -334,27 +315,10 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                             )}
                         </div>
 
-                        <div className="dashboard-section">
-                            <div className="section-header">
-                                <div className="header-content">
-                                    <img src={document} alt="Document Icon" className="section-icon" />
-                                    <h2>Frequently Asked Questions</h2>
-                                </div>
-                                <button onClick={toggleFAQ} className="expand-collapse-btn">
-                                    {isFAQCollapsed ? <FaArrowDown /> : <FaArrowUp />}
-                                </button>
-                            </div>
-                            {!isFAQCollapsed && (
-                                <div className="faq-content-wrapper">
-                                    <FAQComponent faqs={faqData} />
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="dashboard-section">
-                            <div className="section-header">
-                                <div className="header-content">
-                                    <img src={document} alt="Document Icon" className="section-icon" />
+                        <div className="ReviewerDashboard-section">
+                            <div className="ReviewerDashboard-section-header">
+                                <div className="ReviewerDashboard-header-content">
+                                    <img src={document} alt="Document Icon" className="ReviewerDashboard-section-icon" />
                                     <h2>Contact Us</h2>
                                 </div>
                                 <button onClick={toggleContact} className="expand-collapse-btn">
@@ -362,7 +326,7 @@ function ReviewerDashboard({ faqData, email, phone, hours }: ReviewerProp): JSX.
                                 </button>
                             </div>
                             {!isContactCollapsed && (
-                                <div className="contact-box">
+                                <div className="ReviewerDashboard-contact-box">
                                     <div className="contact-method">
                                         <div className="contact-method-header">
                                             <img src={Email} alt="Email Icon" className="contact-icon" />

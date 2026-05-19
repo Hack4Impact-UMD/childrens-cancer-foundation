@@ -1,0 +1,29 @@
+.dashboard-page {
+  margin-left: 250px;
+  min-height: 100vh;
+  padding: 28px 24px 32px;
+  background-color: #f3f4f6;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed + .dashboard-page {
+  margin-left: 60px;
+}
+
+.dashboard-page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: calc(100vh - 60px);
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding: 20px 16px 24px;
+  }
+
+  .dashboard-page-stack {
+    gap: 16px;
+  }
+}

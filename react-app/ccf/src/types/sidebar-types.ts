@@ -15,7 +15,7 @@ export const adminSidebar: SideBarTypes[] = [
     { name: 'Application Cycle', path: '/admin/edit-information' },
     { name: 'Home', path: '/admin/dashboard' },
     { name: 'Account Settings', path: '/admin/settings' },
-    { name: 'All Accounts', path: '/admin/all-accounts' },
+    { name: 'View All Accounts', path: '/admin/all-accounts' },
     { name: 'Assign Reviewers', path: '/admin/assign-reviewers' },
     { name: 'Whitelist Reviewers', path: '/admin/whitelist-reviewers' },
     { name: 'Assign Awards', path: '/admin/grant-awards' },
@@ -26,7 +26,7 @@ export const adminSidebar: SideBarTypes[] = [
 export const reviewerSidebar: SideBarTypes[] = [
     { name: 'Home', path: '/reviewer/dashboard' },
     { name: 'Account Settings', path: '/reviewer/settings' },
-    { name: 'All Applications', path: '/reviewer/dashboard/all-applications' },
+    { name: 'Application Database', path: '/reviewer/dashboard/all-applications' },
     { name: 'Logout', path: '/login' }
 ];
 

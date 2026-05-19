@@ -63,12 +63,12 @@
     align-items: center;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    gap: 24px;
     padding: 40px;
     border-radius: 20px;
     background-color: #003E83;
     margin-bottom: 20px;
-    height: 50px;
+    min-height: 50px;
 }
 
 .single-application-box p {
@@ -79,6 +79,20 @@
 .application-info {
     display: flex;
     align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+.application-text {
+    min-width: 0;
+}
+
+.application-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    flex-shrink: 0;
 }
 
 .application-icon {
@@ -92,6 +106,7 @@
 .due-date-button {
     display: flex;
     align-items: center;
+    justify-content: center;
     background-color: rgba(217, 217, 217, 0.5);
     border: none;
     border-radius: 8px;
@@ -100,7 +115,8 @@
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s ease;
-    width: 30%;
+    min-width: 235px;
+    white-space: nowrap;
 }
 
 .due-date-button:hover {
@@ -114,6 +130,7 @@
 .modal-button {
     display: flex;
     align-items: center;
+    justify-content: center;
     background-color: #F0C567;
     border: none;
     border-radius: 8px;
@@ -123,8 +140,9 @@
     font-size: 14px;
     font-weight: 500;
     transition: all 0.2s ease;
-    width: fit-content;
+    min-width: 135px;
     gap: 8px;
+    white-space: nowrap;
 }
 
 .modal-button:hover {
@@ -154,4 +172,27 @@
 .application-status-icon {
     margin-left: 10px;
     color: white;
+}
+
+@media (max-width: 900px) {
+    .single-application-box {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 24px;
+    }
+
+    .application-info,
+    .application-actions {
+        width: 100%;
+    }
+
+    .application-actions {
+        flex-direction: column;
+    }
+
+    .due-date-button,
+    .modal-button {
+        width: 100%;
+        min-width: 0;
+    }
 }

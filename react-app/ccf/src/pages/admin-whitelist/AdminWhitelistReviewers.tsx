@@ -167,7 +167,7 @@ function AdminWhitelistReviewers(): JSX.Element {
             <Sidebar links={sidebarItems} />
             <div className="dashboard-container">
                 <div className="AdminWhitelist">
-                    <Header title="Reviewer Whitelist Management" />
+                    <Header title="Whitelist Reviewers" />
                     <div className="search-filter-container">
                         <div className="search-bar">
                             <FaSearch className="search-icon" />

@@ -84,23 +84,6 @@
     font-family:Arial, Helvetica, sans-serif;
 }
 
-.dashboard-header-container {
-    display: flex;
-    align-items: center;
-}
-
-.dashboard-logo {
-    width: 90px;
-    margin-left: 20px;
-    margin-right: 20px;
-}
-
-.dashboard-header {
-    font-size: 45px;
-    color: #BE0019;
-    font-family:Arial, Helvetica, sans-serif;
-}
-
 .dashboard-content {
     flex-grow: 1; 
     margin-left: 0px; 

@@ -1,14 +1,38 @@
-.dashboard-header-container {
+.ccf-dashboard-banner {
   display: flex;
   align-items: center;
+  gap: 18px;
+  padding: 0;
+  margin: 0;
+  min-height: 88px;
 }
 
-.dashboard-logo {
-  width: 75px;
-  margin-right: 20px;
+.ccf-dashboard-banner-logo {
+  width: 84px;
+  height: auto;
+  flex-shrink: 0;
 }
 
-.dashboard-header {
-  font-size: 3rem;
+.ccf-dashboard-banner-title {
+  margin: 0;
   color: #be0019;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(2.25rem, 3vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+@media (max-width: 768px) {
+  .ccf-dashboard-banner {
+    gap: 14px;
+    min-height: 72px;
+  }
+
+  .ccf-dashboard-banner-logo {
+    width: 64px;
+  }
+
+  .ccf-dashboard-banner-title {
+    font-size: clamp(1.9rem, 7vw, 2.35rem);
+  }
 }

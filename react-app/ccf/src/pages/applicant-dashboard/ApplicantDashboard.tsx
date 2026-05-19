@@ -1,17 +1,19 @@
 import "./ApplicantDashboard.css";
 import { useEffect, useState } from "react";
+import document from "../../assets/documentIcon.png";
 import {
   FaArrowDown,
   FaArrowUp,
   FaFileAlt,
   FaArrowRight,
 } from "react-icons/fa";
-import logo from "../../assets/ccf-logo.png";
 import Button from "../../components/buttons/Button";
 import FAQComponent from "../../components/faq/FaqComp";
 import Sidebar from "../../components/sidebar/Sidebar";
 import ContactUs from "../../components/contact/ContactUs";
 import Banner from "../../components/banner/Banner";
+import Header from "../../components/header/Header";
+import "../../components/dashboard-layout/DashboardLayout.css";
 import { useNavigate } from "react-router-dom";
 import {
   getSidebarbyRole,
@@ -301,15 +303,9 @@ function ApplicantUsersDashboard(): JSX.Element {
   return (
     <div>
       <Sidebar links={sidebarItems} />
-      <div
-        className={"dashboard-container"}
-        style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
-      >
-        <div className="ApplicantDashboard">
-          <div className="ApplicantDashboard-header-container">
-            <img src={logo} className="ApplicantDashboard-logo" alt="logo" />
-            <h1 className="ApplicantDashboard-header">Applicant Dashboard</h1>
-          </div>
+      <div className="dashboard-page">
+        <div className="dashboard-page-stack ApplicantDashboard">
+          <Header title="Applicant Dashboard" />
           {appCycle &&
           appCycle.stage === "Applications Open" &&
           appCycle.allApplicationsDeadline ? (
@@ -382,10 +378,11 @@ function ApplicantUsersDashboard(): JSX.Element {
           <div className="ApplicantDashboard-sections-content">
             <div className="ApplicantDashboard-section">
               <div className="ApplicantDashboard-section-header">
-                <div className="header-title">
-                  <FaFileAlt className="section-icon" />
+                <div className="ApplicantDashboard-header-content">
+                  <img src={document} alt="" aria-hidden="true" className="ApplicantDashboard-section-icon" />
                   <h2>Applications</h2>
                 </div>
+
 
                 <button
                   onClick={toggleApplication}

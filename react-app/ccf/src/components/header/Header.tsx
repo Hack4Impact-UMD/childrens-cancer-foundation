@@ -7,9 +7,9 @@ interface HeaderProps {
 
 function Header({ title }: HeaderProps): JSX.Element {
   return (
-    <div className="dashboard-header-container">
-      <img src={logo} className="dashboard-logo" alt="logo" />
-      <h1 className="dashboard-header">{title}</h1>
+    <div className="ccf-dashboard-banner">
+      <img src={logo} className="ccf-dashboard-banner-logo" alt="CCF logo" />
+      <h1 className="ccf-dashboard-banner-title">{title}</h1>
     </div>
   );
 }
