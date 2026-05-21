@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
-import logo from "../../assets/ccf-logo.png";
 import Sidebar from "../../components/sidebar/Sidebar";
+import Header from "../../components/header/Header";
+import "../../components/dashboard-layout/DashboardLayout.css";
 import { SideBarTypes } from "../../types/sidebar-types";
 import TextField from "@mui/material/TextField";
 import { InputAdornment, IconButton } from "@mui/material";
@@ -9,6 +10,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 interface SettingsPageLayoutProps {
   sidebarItems: SideBarTypes[];
   children: ReactNode;
+  title?: string;
 }
 
 interface PersonalInfoField {
@@ -54,16 +56,14 @@ interface PasswordSettingsSectionProps {
 export function SettingsPageLayout({
   sidebarItems,
   children,
+  title = "Account Settings",
 }: SettingsPageLayoutProps): JSX.Element {
   return (
     <div>
       <Sidebar links={sidebarItems} />
-      <div className="dashboard-container">
-        <div className="AccountSettings">
-          <div className="AccountSettings-header-container">
-            <img src={logo} className="AccountSettings-logo" alt="logo" />
-            <h1 className="AccountSettings-header">Account Settings</h1>
-          </div>
+      <div className="dashboard-page">
+        <div className="dashboard-page-stack">
+          <Header title={title} />
           <div className="AccountSettings-sections-content">{children}</div>
         </div>
       </div>

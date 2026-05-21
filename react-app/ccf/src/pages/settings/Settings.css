@@ -1,40 +1,9 @@
-body {
-  font-family: "Lato", sans-serif;
-  background-color: white;
-
-}
-
-.AccountSettings-page {
-  display: flex;
-}
-
-.AccountSettings {
-  font-family: "Lato", sans-serif;
-  color: #333;
-  box-sizing: border-box;
-  padding: 30px;
-  gap: 40px;
-  display: flex;
-  flex-direction: column;
-}
-
-.AccountSettings-header-container {
-  display: flex;
-  align-items: center;
-}
-
-.AccountSettings-logo {
-  width: 75px;
-  margin-right: 20px;
-}
-
-.AccountSettings-header {
-  font-size: 3rem;
-  color: #be0019;
-}
+/* Settings page chrome is provided by .dashboard-page + .dashboard-page-stack
+   (see DashboardLayout.css) and the shared <Header /> component, so this file
+   only styles the inner sections. */
 
 .AccountSettings-sections-content {
-  border-radius: 8px;
+  border-radius: var(--ccf-radius);
   display: flex;
   flex-direction: column;
   gap: 40px;
@@ -42,10 +11,11 @@ body {
 
 .AccountSettings-section {
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border: 6px solid #f0c567;
+  border-radius: var(--ccf-radius);
+  box-shadow: var(--ccf-shadow-sm);
+  border: var(--ccf-section-border);
   flex-direction: column;
+  background-color: var(--ccf-surface);
 }
 
 .AccountSettings-buttons {
