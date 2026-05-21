@@ -1,7 +1,5 @@
 import { ReactNode } from "react";
-import Sidebar from "../../components/sidebar/Sidebar";
-import Header from "../../components/header/Header";
-import "../../components/dashboard-layout/DashboardLayout.css";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { SideBarTypes } from "../../types/sidebar-types";
 import TextField from "@mui/material/TextField";
 import { InputAdornment, IconButton } from "@mui/material";
@@ -59,15 +57,9 @@ export function SettingsPageLayout({
   title = "Account Settings",
 }: SettingsPageLayoutProps): JSX.Element {
   return (
-    <div>
-      <Sidebar links={sidebarItems} />
-      <div className="dashboard-page">
-        <div className="dashboard-page-stack">
-          <Header title={title} />
-          <div className="AccountSettings-sections-content">{children}</div>
-        </div>
-      </div>
-    </div>
+    <RoleDashboardShell sidebarItems={sidebarItems} title={title}>
+      <div className="AccountSettings-sections-content">{children}</div>
+    </RoleDashboardShell>
   );
 }
 

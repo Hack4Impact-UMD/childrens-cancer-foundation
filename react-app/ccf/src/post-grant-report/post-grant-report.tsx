@@ -5,7 +5,7 @@ import { getCurrentCycle } from "../backend/application-cycle";
 import { getUsersCurrentCycleAppplications } from "../backend/application-filters";
 import { getDecisionData } from "../services/decision-data-service";
 import ApplicationCycle from "../types/applicationCycle-types";
-import Sidebar from "../components/sidebar/Sidebar";
+import RoleDashboardShell from "../components/dashboard-layout/RoleDashboardShell";
 import { getApplicantSidebarItems } from "../types/sidebar-types";
 
 function PostGrantReport(): JSX.Element {
@@ -163,45 +163,34 @@ function PostGrantReport(): JSX.Element {
 
   if (loading) {
     return (
-      <div>
-        <Sidebar links={sidebarItems} />
-        <div className="dashboard-container">
-          <div className="PostGrantReport">
-            <div className="PostGrantReport-header-container">
-              <h1 className="PostGrantReport-header">Post Grant Results</h1>
-            </div>
-            <div className="loading-message">Loading...</div>
-          </div>
-        </div>
-      </div>
+      <RoleDashboardShell
+        sidebarItems={sidebarItems}
+        title="Post-Grant Report"
+        stackClassName="PostGrantReport"
+      >
+        <div className="loading-message">Loading...</div>
+      </RoleDashboardShell>
     );
   }
 
   if (error) {
     return (
-      <div>
-        <Sidebar links={sidebarItems} />
-        <div className="dashboard-container">
-          <div className="PostGrantReport">
-            <div className="PostGrantReport-header-container">
-              <h1 className="PostGrantReport-header">Post Grant Results</h1>
-            </div>
-            <div className="error-message">{error}</div>
-          </div>
-        </div>
-      </div>
+      <RoleDashboardShell
+        sidebarItems={sidebarItems}
+        title="Post-Grant Report"
+        stackClassName="PostGrantReport"
+      >
+        <div className="error-message">{error}</div>
+      </RoleDashboardShell>
     );
   }
 
   return (
-    <div>
-      <Sidebar links={sidebarItems} />
-      <div className="dashboard-container">
-        <div className="PostGrantReport">
-          <div className="PostGrantReport-header-container">
-            <h1 className="PostGrantReport-header">Post Grant Results</h1>
-          </div>
-
+    <RoleDashboardShell
+      sidebarItems={sidebarItems}
+      title="Post-Grant Report"
+      stackClassName="PostGrantReport"
+    >
           {deadline && (
             <div className={`deadline-notice ${isOverdue ? "overdue" : ""}`}>
               <h3>Deadline Information</h3>
@@ -333,9 +322,7 @@ function PostGrantReport(): JSX.Element {
               </button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+    </RoleDashboardShell>
   );
 }
 

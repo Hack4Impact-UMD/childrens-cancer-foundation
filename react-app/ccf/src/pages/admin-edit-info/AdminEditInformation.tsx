@@ -1,6 +1,5 @@
 import "./AdminEditInformation.css";
-import logo from "../../assets/ccf-logo.png";
-import Sidebar from "../../components/sidebar/Sidebar";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { useState, useEffect } from "react";
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import EditIcon from '@mui/icons-material/Edit';
@@ -27,7 +26,6 @@ import { AboutPage, ApplicationAboutType } from "../../types/aboutTypes";
 import { getAboutPages, upsertAboutPage, getDefaultAboutPage } from "../../backend/about-handler";
 import MarkdownPreviewer from "../../components/markdown/Markdown";
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
-import Header from "../../components/header/Header";
 
 const buildAboutPages = (): Record<ApplicationAboutType, AboutPage> => ({
     Research: getDefaultAboutPage("Research"),
@@ -253,10 +251,8 @@ function AdminEditInformation(): JSX.Element {
     };
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-                <Header title="Application Cycle" />
+        <>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Application Cycle">
                 <div className="sections-container">
                     <div className="deadlines-section">
                         <div className="deadlines-header-container">
@@ -802,14 +798,14 @@ function AdminEditInformation(): JSX.Element {
                     </div>
                 </div>
 
-            </div>
+            </RoleDashboardShell>
             <Snackbar
                 open={!!stageSnack}
                 autoHideDuration={3000}
                 onClose={() => setStageSnack(null)}
                 message={stageSnack}
             />
-        </div>
+        </>
     )
 }
 

@@ -1,162 +1,36 @@
+/* Section chrome (yellow shelf, white cards, headers, dividers, expand button)
+   lives in DashboardLayout.css via the shared .dashboard-* classes.
+   This file only styles reviewer-specific content. */
+
 .ReviewerDashboard {
     display: flex;
     flex-direction: column;
     gap: 20px;
     min-width: 0;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-.ReviewerDashboard-sections-content {
-    background-color: #F0C567;
-    padding: 24px;
-    border-radius: 12px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.ReviewerDashboard-section {
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.ReviewerDashboard-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-}
-
-.ReviewerDashboard-header-content {
-    display: flex;
-    align-items: center;
-}
-
-.ReviewerDashboard-header-content h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #000000;
-}
-
-.ReviewerDashboard-section-icon {
-    width: 40px;
-    height: 40px;
-    margin-right: 8px;
-    object-fit: contain;
-}
-
-.ReviewerDashboard .expand-collapse-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    color: #6e7f91;
-}
-
-.ReviewerDashboard .expand-collapse-btn:hover {
-    color: #6e7f91;
 }
 
 .ReviewerDashboard-applications-container {
     padding: 16px;
-    border: 5px solid #BE0019;
-    border-radius: 8px;
-    background-color: white;
+    border: 5px solid var(--ccf-red);
+    border-radius: var(--ccf-radius);
+    background-color: var(--ccf-surface);
 }
 
 .ReviewerDashboard-applications-container h3 {
     margin: 0 0 16px;
     font-size: 1.3rem;
     font-weight: 700;
-    color: #000000;
-}
-
-.ReviewerDashboard-red-line {
-    border: 1.5px solid #BE0019;
-    border-radius: 2px;
-    display: block;
-    width: 50%;
-    margin: 20px auto;
+    color: #000;
 }
 
 .loading-message,
 .error-message,
 .no-applications {
     padding: 20px 8px;
-    color: #333;
+    color: var(--ccf-text);
 }
 
 .error-message {
-    color: #BE0019;
+    color: var(--ccf-red);
     font-weight: 600;
-}
-
-.ReviewerDashboard-contact-box {
-    border: 3px solid #BE0019;
-    padding: 30px;
-    border-radius: 8px;
-    background-color: #ffffff;
-    display: flex;
-    justify-content: space-between;
-    gap: 24px;
-}
-
-.ReviewerDashboard .contact-method {
-    flex: 1;
-}
-
-.ReviewerDashboard .contact-method-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.ReviewerDashboard .contact-icon {
-    width: 24px;
-    height: 24px;
-    margin-bottom: 3px;
-    margin-right: 7px;
-    color: #000000;
-    font-size: 1.2rem;
-}
-
-.ReviewerDashboard .contact-method-title {
-    font-size: 1.1rem;
-    color: #000000;
-    margin: 0;
-}
-
-.ReviewerDashboard .contact-text {
-    margin-bottom: 4px;
-    color: #333;
-    display: flex;
-    align-items: center;
-}
-
-.ReviewerDashboard .contact-link {
-    color: #000000;
-    text-decoration: underline;
-    margin-right: 10px;
-}
-
-.ReviewerDashboard .contact-link:hover {
-    text-decoration: underline;
-}
-
-.ReviewerDashboard .contact-hours {
-    font-size: 0.85rem;
-    color: #666;
-    margin-left: 7px;
-    display: inline-block;
-}
-
-@media (max-width: 900px) {
-    .ReviewerDashboard-contact-box {
-        flex-direction: column;
-        padding: 20px;
-    }
 }

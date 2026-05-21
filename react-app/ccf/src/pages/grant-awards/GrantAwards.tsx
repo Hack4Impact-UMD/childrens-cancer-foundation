@@ -8,8 +8,7 @@ import {
   FaTimes,
   FaSync,
 } from "react-icons/fa";
-import Sidebar from "../../components/sidebar/Sidebar";
-import logo from "../../assets/ccf-logo.png";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../..";
 import { getSidebarbyRole } from "../../types/sidebar-types";
@@ -25,7 +24,6 @@ import {
 import { GrantAwardApplication } from "../../types/application-types";
 import { getAllCycles } from "../../backend/application-cycle";
 import ApplicationCycle from "../../types/applicationCycle-types";
-import Header from "../../components/header/Header";
 
 type SortField =
   | "name"
@@ -631,13 +629,13 @@ function GrantAwards(): JSX.Element {
   });
 
   return (
-    <div>
-      <Sidebar links={sidebarItems} />
-      <div className="dashboard-container">
-        <div className="AdminViewAll">
-          <Header title="Award Recommendation" />
-
-          <div className="ApplicantDashboard-sections-content">
+    <>
+      <RoleDashboardShell
+        sidebarItems={sidebarItems}
+        title="Award Recommendation"
+        stackClassName="AdminViewAll"
+      >
+          <div className="dashboard-sections-content">
             <div className="accounts-table-container">
               <div className="top-controls">
                 <div className="filter-group">
@@ -1049,8 +1047,7 @@ function GrantAwards(): JSX.Element {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+      </RoleDashboardShell>
 
       <CommentModal
         isOpen={commentModal.isOpen}
@@ -1058,7 +1055,7 @@ function GrantAwards(): JSX.Element {
         onClose={closeCommentModal}
         onSave={handleCommentsChange}
       />
-    </div>
+    </>
   );
 }
 

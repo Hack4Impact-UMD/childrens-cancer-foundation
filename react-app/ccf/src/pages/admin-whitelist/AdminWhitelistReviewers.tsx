@@ -1,6 +1,4 @@
 import "./AdminWhitelistReviewers.css";
-import logo from "../../assets/ccf-logo.png";
-import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
 import { FaSearch, FaPlus, FaTrash } from "react-icons/fa";
 import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
@@ -8,7 +6,7 @@ import { db } from "../../index";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { WhitelistEntry, WhitelistFormData } from "../../types/whitelist-types";
 import { auth } from "../../index";
-import Header from "../../components/header/Header";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 
 function AdminWhitelistReviewers(): JSX.Element {
     const sidebarItems = getSidebarbyRole("admin");
@@ -163,11 +161,11 @@ function AdminWhitelistReviewers(): JSX.Element {
     });
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-                <div className="AdminWhitelist">
-                    <Header title="Whitelist Reviewers" />
+        <RoleDashboardShell
+            sidebarItems={sidebarItems}
+            title="Whitelist Reviewers"
+            stackClassName="AdminWhitelist"
+        >
                     <div className="search-filter-container">
                         <div className="search-bar">
                             <FaSearch className="search-icon" />
@@ -358,9 +356,7 @@ function AdminWhitelistReviewers(): JSX.Element {
                             </table>
                         )}
                     </div>
-                </div>
-            </div>
-        </div>
+        </RoleDashboardShell>
     );
 }
 

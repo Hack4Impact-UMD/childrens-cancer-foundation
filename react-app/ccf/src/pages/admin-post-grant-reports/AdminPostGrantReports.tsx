@@ -1,6 +1,4 @@
 import "./AdminPostGrantReports.css";
-import logo from "../../assets/ccf-logo.png";
-import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
 import { FaSearch, FaEye, FaDownload } from "react-icons/fa";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -11,7 +9,7 @@ import { ref, getDownloadURL } from "firebase/storage";
 import { getAllPostGrantReports } from "../../backend/post-grant-reports";
 import { storage } from "../../index";
 import { ApplicationInfo } from "../../types/application-types";
-import Header from "../../components/header/Header";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 
 interface PostGrantReportWithApplication extends PostGrantReport {
     applicationTitle?: string;
@@ -224,21 +222,22 @@ function AdminPostGrantReports(): JSX.Element {
 
     if (loading) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="loading">Loading post-grant reports...</div>
-                </div>
-            </div>
+            <RoleDashboardShell
+                sidebarItems={sidebarItems}
+                title="Post-Grant Reports Management"
+                stackClassName="AdminPostGrantReports"
+            >
+                <div className="loading">Loading post-grant reports...</div>
+            </RoleDashboardShell>
         );
     }
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-                <div className="AdminPostGrantReports">
-                    <Header title="Post-Grant Reports Management" />
+        <RoleDashboardShell
+            sidebarItems={sidebarItems}
+            title="Post-Grant Reports Management"
+            stackClassName="AdminPostGrantReports"
+        >
                     <div className="search-filter-container">
                         <div className="search-bar">
                             <FaSearch className="search-icon" />
@@ -350,9 +349,7 @@ function AdminPostGrantReports(): JSX.Element {
                         </table>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+        </RoleDashboardShell>
     );
 }
 

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import "./ApplicationReview.css";
-import Sidebar from "../../components/sidebar/Sidebar";
-import logo from "../../assets/ccf-logo.png";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../..";
 import { getSidebarbyRole } from "../../types/sidebar-types";
@@ -172,58 +171,31 @@ function ApplicationReviewReadOnly(): JSX.Element {
 
     if (loading) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="dashboard-content">
-                        <div className="dashboard-header-container">
-                            <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Application Review</h1>
-                        </div>
-                        <div className="applications-container">
-                            <p>Loading application data...</p>
-                        </div>
-                    </div>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
+                <div className="applications-container">
+                    <p>Loading application data...</p>
                 </div>
-            </div>
+            </RoleDashboardShell>
         );
     }
 
     if (error) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="dashboard-content">
-                        <div className="dashboard-header-container">
-                            <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Application Review</h1>
-                        </div>
-                        <div className="applications-container">
-                            <p className="error-message">{error}</p>
-                        </div>
-                    </div>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
+                <div className="applications-container">
+                    <p className="error-message">{error}</p>
                 </div>
-            </div>
+            </RoleDashboardShell>
         );
     }
 
     if (!application) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="dashboard-content">
-                        <div className="dashboard-header-container">
-                            <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Application Review</h1>
-                        </div>
-                        <div className="applications-container">
-                            <p>No application data available</p>
-                        </div>
-                    </div>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
+                <div className="applications-container">
+                    <p>No application data available</p>
                 </div>
-            </div>
+            </RoleDashboardShell>
         );
     }
 
@@ -232,22 +204,13 @@ function ApplicationReviewReadOnly(): JSX.Element {
     const currentStatus = getCurrentStatus();
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-                <div className="dashboard-content">
-                    <div className="internal-header">
-                        <div className="dashboard-header-container">
-                            <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Application Review - Read Only</h1>
-                        </div>
-                        <button
-                            className="back-button"
-                            onClick={() => window.history.back()}
-                        >
-                            Back
-                        </button>
-                    </div>
+        <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review — Read Only">
+                    <button
+                        className="back-button"
+                        onClick={() => window.history.back()}
+                    >
+                        Back
+                    </button>
 
                     <div className="applications-container">
                         {application && (
@@ -348,10 +311,8 @@ function ApplicationReviewReadOnly(): JSX.Element {
                                 </div>
                             )}
                     </div>
-                </div>
                 {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}
-            </div>
-        </div>
+        </RoleDashboardShell>
     );
 }
 

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./ApplicationReview.css";
-import Sidebar from "../../components/sidebar/Sidebar";
-import logo from "../../assets/ccf-logo.png";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import {
   collection,
@@ -216,59 +215,32 @@ function ApplicationReview(): JSX.Element {
 
   if (loading) {
     return (
-      <div>
-        <Sidebar links={sidebarItems} />
-        <div className="dashboard-container">
-          <div className="dashboard-content">
-            <div className="dashboard-header-container">
-              <img src={logo} alt="Logo" className="dashboard-logo" />
-              <h1 className="dashboard-header">Application Review</h1>
-            </div>
-            <div className="applications-container">
-              <p>Loading application data...</p>
-            </div>
-          </div>
+      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
+        <div className="applications-container">
+          <p>Loading application data...</p>
         </div>
-      </div>
+      </RoleDashboardShell>
     );
   }
 
   if (error) {
     return (
-      <div>
-        <Sidebar links={sidebarItems} />
-        <div className="dashboard-container">
-          <div className="dashboard-content">
-            <div className="dashboard-header-container">
-              <img src={logo} alt="Logo" className="dashboard-logo" />
-              <h1 className="dashboard-header">Application Review</h1>
-            </div>
-            <div className="applications-container">
-              <p className="error-message">{error}</p>
-              <button
-                className="save-button"
-                onClick={() => navigate("/reviewer/dashboard")}
-              >
-                Return to Dashboard
-              </button>
-            </div>
-          </div>
+      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
+        <div className="applications-container">
+          <p className="error-message">{error}</p>
+          <button
+            className="save-button"
+            onClick={() => navigate("/reviewer/dashboard")}
+          >
+            Return to Dashboard
+          </button>
         </div>
-      </div>
+      </RoleDashboardShell>
     );
   }
 
   return (
-    <div>
-      <Sidebar links={sidebarItems} />
-
-      <div className="dashboard-container">
-        <div className="dashboard-content">
-          <div className="dashboard-header-container">
-            <img src={logo} alt="Logo" className="dashboard-logo" />
-            <h1 className="dashboard-header">Application Review</h1>
-          </div>
-
+    <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
           <div className="applications-container">
             {application && (
               <div>
@@ -401,9 +373,7 @@ function ApplicationReview(): JSX.Element {
             </Button>
             {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}
           </div>
-        </div>
-      </div>
-    </div>
+    </RoleDashboardShell>
   );
 }
 

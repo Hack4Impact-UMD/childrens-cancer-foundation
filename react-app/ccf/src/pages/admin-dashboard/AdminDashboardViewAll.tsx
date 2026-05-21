@@ -1,5 +1,4 @@
 import "./AdminDashboardViewAll.css";
-import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { collection, getDocs } from "firebase/firestore";
@@ -8,8 +7,7 @@ import MailtoLink from "../../components/MailtoLink";
 import sendIcon from "../../assets/email_send-solid.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { UserData } from "../../types/usertypes";
-import Header from "../../components/header/Header";
-import "../../components/dashboard-layout/DashboardLayout.css";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 
 function AdminDashboardViewAll(): JSX.Element {
     const sidebarItems = getSidebarbyRole("admin")
@@ -61,12 +59,11 @@ function AdminDashboardViewAll(): JSX.Element {
     }, []);
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-page">
-                <div className="dashboard-page-stack AdminViewAll">
-                    <Header title="Account Management" />
-
+        <RoleDashboardShell
+            sidebarItems={sidebarItems}
+            title="Account Management"
+            stackClassName="AdminViewAll"
+        >
                     <div className="AdminViewAll-sections-content">
                         <div className="search-filter-container">
                             <div className="search-bar">
@@ -187,9 +184,7 @@ function AdminDashboardViewAll(): JSX.Element {
                             )}
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+        </RoleDashboardShell>
     );
 }
 

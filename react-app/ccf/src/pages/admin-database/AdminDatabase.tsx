@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import "./AdminDatabase.css";
-import Sidebar from "../../components/sidebar/Sidebar";
 import { FaArrowDown, FaArrowUp, FaChevronRight } from "react-icons/fa";
 import document from "../../assets/documentIcon.png";
 import yellowDocument from "../../assets/yellowDocumentIcon.png";
 import blueDocument from "../../assets/blueDocumentIcon.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import {
   Application,
   NonResearchApplication,
@@ -15,7 +15,6 @@ import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
-import Header from "../../components/header/Header";
 import { downloadPDFsByName } from "../../storage/storage";
 
 function AdminApplicationsDatabase(): JSX.Element {
@@ -172,12 +171,11 @@ function AdminApplicationsDatabase(): JSX.Element {
   };
 
   return (
-    <div className="admin-database-page">
-      <Sidebar links={sidebarItems} />
-
-      <div className="dashboard-container">
-        <div className="dashboard-content">
-          <Header title="Administrator Dashboard" />
+    <RoleDashboardShell
+      sidebarItems={sidebarItems}
+      title="Administrator Dashboard"
+      stackClassName="admin-database-page"
+    >
           <input
             type="text"
             placeholder="Search"
@@ -438,9 +436,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                 ))}
             </div>
           )}
-        </div>
-      </div>
-    </div>
+    </RoleDashboardShell>
   );
 }
 

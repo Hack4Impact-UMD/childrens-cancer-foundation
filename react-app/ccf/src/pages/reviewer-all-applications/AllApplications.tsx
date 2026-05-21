@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import "./AllApplications.css";
-import Sidebar from "../../components/sidebar/Sidebar";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { FaArrowDown, FaArrowUp, FaFileAlt } from "react-icons/fa";
-import logo from "../../assets/ccf-logo.png";
 import document from "../../assets/documentIcon.png";
 import { getFilteredApplications } from "../../backend/application-filters";
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from "../../backend/application-cycle";
@@ -48,16 +47,7 @@ function AllApplications(): JSX.Element {
 
 
   return (
-    <div>
-      <Sidebar links={sidebarItems} />
-
-      <div className="dashboard-container">
-        <div className="dashboard-content">
-          <div className="dashboard-header-container">
-            <img src={logo} alt="Logo" className="dashboard-logo" />
-            <h1 className="dashboard-header">Application Database</h1>
-          </div>
-
+    <RoleDashboardShell sidebarItems={sidebarItems} title="Application Database">
           <input
             type="text"
             placeholder="Search"
@@ -125,9 +115,7 @@ function AllApplications(): JSX.Element {
               </div>
             )
           )}
-        </div>
-      </div>
-    </div>
+    </RoleDashboardShell>
   );
 }
 

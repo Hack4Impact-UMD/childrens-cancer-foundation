@@ -7,7 +7,7 @@ import { getDecisionData } from "../../services/decision-data-service";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { Application } from "../../types/application-types";
 import Confetti from 'react-confetti';
-import Sidebar from "../../components/sidebar/Sidebar";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { getApplicantSidebarItems } from "../../types/sidebar-types";
 import { checkIfReportSubmitted, getReportsByUser } from "../../backend/post-grant-reports";
 import { PostGrantReport } from "../../types/post-grant-report-types";
@@ -15,7 +15,6 @@ import { auth } from "../../index";
 import { FaCheckCircle, FaFileAlt } from "react-icons/fa";
 import { getPDFDownloadURL } from "../../storage/storage";
 import "../../post-grant-report/post-grant-report.css";
-import Header from "../../components/header/Header";
 
 
 function PostGrantReportPage(): JSX.Element {
@@ -222,54 +221,42 @@ function PostGrantReportPage(): JSX.Element {
 
     if (loading) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="PostGrantReport">
-                        <div className="PostGrantReport-header-container">
-                            <h1 className="PostGrantReport-header">Post Grant Report</h1>
-                        </div>
-                        <div className="loading-message">Loading...</div>
-                    </div>
-                </div>
-            </div>
+            <RoleDashboardShell
+                sidebarItems={sidebarItems}
+                title="Post-Grant Report"
+                stackClassName="PostGrantReport"
+            >
+                <div className="loading-message">Loading...</div>
+            </RoleDashboardShell>
         );
     }
 
     if (error) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="PostGrantReport">
-                        <div className="PostGrantReport-header-container">
-                            <h1 className="PostGrantReport-header">Post Grant Report</h1>
-                        </div>
-                        <div className="error-message">{error}</div>
-                        <button className="back-button" onClick={() => navigate('/applicant/dashboard')}>
-                            Back to Dashboard
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <RoleDashboardShell
+                sidebarItems={sidebarItems}
+                title="Post-Grant Report"
+                stackClassName="PostGrantReport"
+            >
+                <div className="error-message">{error}</div>
+                <button className="back-button" onClick={() => navigate('/applicant/dashboard')}>
+                    Back to Dashboard
+                </button>
+            </RoleDashboardShell>
         );
     }
 
     // If report is already submitted, show submission details
     if (submittedReport) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="PostGrantReport">
-                        <div className="PostGrantReport-header-container">
-                            <h1 className="PostGrantReport-header">
-                                Post Grant Report - Already Submitted
-                            </h1>
-                            <button className="back-button" onClick={() => navigate('/applicant/dashboard')}>
-                                ← Back to Dashboard
-                            </button>
-                        </div>
+            <RoleDashboardShell
+                sidebarItems={sidebarItems}
+                title="Post-Grant Report — Already Submitted"
+                stackClassName="PostGrantReport"
+            >
+                <button className="back-button" onClick={() => navigate('/applicant/dashboard')}>
+                    ← Back to Dashboard
+                </button>
 
                         {application && (
                             <div className="application-info-section">
@@ -347,21 +334,18 @@ function PostGrantReportPage(): JSX.Element {
                                 <p><strong>Note:</strong> This report has been successfully submitted and cannot be edited. If you need to make changes, please contact the administrator.</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
+            </RoleDashboardShell>
         );
     }
 
     return (
         <>
             {showConfetti && <Confetti />}
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="PostGrantReport">
-                        <Header title="Post-Grant Report" />
-
+            <RoleDashboardShell
+                sidebarItems={sidebarItems}
+                title="Post-Grant Report"
+                stackClassName="PostGrantReport"
+            >
                         {application && (
                             <div className="application-info-section">
                                 <h2>Application: {application.title || `${application.grantType} Application`}</h2>
@@ -502,9 +486,7 @@ function PostGrantReportPage(): JSX.Element {
 
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
+            </RoleDashboardShell>
         </>
     );
 }

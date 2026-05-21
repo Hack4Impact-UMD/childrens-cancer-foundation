@@ -1,19 +1,13 @@
 import "./ApplicantDashboard.css";
 import { useEffect, useState } from "react";
 import document from "../../assets/documentIcon.png";
-import {
-  FaArrowDown,
-  FaArrowUp,
-  FaFileAlt,
-  FaArrowRight,
-} from "react-icons/fa";
+import { FaFileAlt, FaArrowRight } from "react-icons/fa";
 import Button from "../../components/buttons/Button";
 import FAQComponent from "../../components/faq/FaqComp";
-import Sidebar from "../../components/sidebar/Sidebar";
 import ContactUs from "../../components/contact/ContactUs";
 import Banner from "../../components/banner/Banner";
-import Header from "../../components/header/Header";
-import "../../components/dashboard-layout/DashboardLayout.css";
+import DashboardSection from "../../components/dashboard-layout/DashboardSection";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { useNavigate } from "react-router-dom";
 import {
   getSidebarbyRole,
@@ -53,15 +47,6 @@ function ApplicantUsersDashboard(): JSX.Element {
   const [sidebarItems, setSidebarItems] = useState<SideBarTypes[]>(
     getSidebarbyRole("applicant"),
   );
-
-  const [isApplicationCollapsed, setApplicationCollapsed] = useState(false);
-  const [isFAQCollapsed, setFAQCollapsed] = useState(true);
-  const [isContactCollapsed, setContactCollapsed] = useState(true);
-
-  const toggleApplication = () =>
-    setApplicationCollapsed(!isApplicationCollapsed);
-  const toggleFAQ = () => setFAQCollapsed(!isFAQCollapsed);
-  const toggleContact = () => setContactCollapsed(!isContactCollapsed);
 
   const [completedApplications, setCompletedApplications] =
     useState<ApplicationWithDecision[]>();
@@ -301,12 +286,12 @@ function ApplicantUsersDashboard(): JSX.Element {
   };
 
   return (
-    <div>
-      <Sidebar links={sidebarItems} />
-      <div className="dashboard-page">
-        <div className="dashboard-page-stack ApplicantDashboard">
-          <Header title="Applicant Dashboard" />
-          {appCycle &&
+    <RoleDashboardShell
+      sidebarItems={sidebarItems}
+      title="Applicant Dashboard"
+      stackClassName="ApplicantDashboard"
+    >
+      {appCycle &&
           appCycle.stage === "Applications Open" &&
           appCycle.allApplicationsDeadline ? (
             <Banner>{`REMINDER: Applications close in ${getDaysUntilDeadline(appCycle.allApplicationsDeadline)} days. Applications due on ${appCycle.allApplicationsDeadline.toLocaleDateString()}`}</Banner>
@@ -375,25 +360,12 @@ function ApplicantUsersDashboard(): JSX.Element {
             </div>
           )}
 
-          <div className="ApplicantDashboard-sections-content">
-            <div className="ApplicantDashboard-section">
-              <div className="ApplicantDashboard-section-header">
-                <div className="ApplicantDashboard-header-content">
-                  <img src={document} alt="" aria-hidden="true" className="ApplicantDashboard-section-icon" />
-                  <h2>Applications</h2>
-                </div>
-
-
-                <button
-                  onClick={toggleApplication}
-                  className="expand-collapse-btn"
-                >
-                  {isApplicationCollapsed ? <FaArrowDown /> : <FaArrowUp />}
-                </button>
-              </div>
-
-              {!isApplicationCollapsed && (
-                <div className="ApplicantDashboard-application-box">
+          <div className="dashboard-sections-content">
+            <DashboardSection
+              title="Applications"
+              icon={<img src={document} alt="" aria-hidden="true" className="dashboard-section-icon" />}
+            >
+              <div className="ApplicantDashboard-application-box">
                   {inProgressApplications &&
                     Object.keys(inProgressApplications).length > 0 && (
                       <>
@@ -424,7 +396,7 @@ function ApplicantUsersDashboard(): JSX.Element {
                             </div>
                           ),
                         )}
-                        <hr className="red-line" />
+                        <hr className="dashboard-section-divider" />
                       </>
                     )}
 
@@ -466,7 +438,7 @@ function ApplicantUsersDashboard(): JSX.Element {
                             ></CoverPageModal>
                           </div>
                         ))}
-                        <hr className="red-line" />
+                        <hr className="dashboard-section-divider" />
                       </>
                     )}
 
@@ -504,44 +476,29 @@ function ApplicantUsersDashboard(): JSX.Element {
                     </Button>
                   </div>
                 </div>
-              )}
-            </div>
+            </DashboardSection>
 
-            <div className="ApplicantDashboard-section">
-              <div className="ApplicantDashboard-section-header">
-                <div className="header-title">
-                  <FaFileAlt className="section-icon" />
-                  <h2>Frequently Asked Questions</h2>
-                </div>
-                <button onClick={toggleFAQ} className="expand-collapse-btn">
-                  {isFAQCollapsed ? <FaArrowDown /> : <FaArrowUp />}
-                </button>
-              </div>
-              {!isFAQCollapsed && <FAQComponent faqs={faqData} />}
-            </div>
+            <DashboardSection
+              title="Frequently Asked Questions"
+              icon={<FaFileAlt className="dashboard-section-icon" />}
+              defaultCollapsed
+            >
+              <FAQComponent faqs={faqData} />
+            </DashboardSection>
 
-            <div className="ApplicantDashboard-section">
-              <div className="ApplicantDashboard-section-header">
-                <div className="header-title">
-                  <FaFileAlt className="section-icon" />
-                  <h2>Contact Us</h2>
-                </div>
-                <button onClick={toggleContact} className="expand-collapse-btn">
-                  {isContactCollapsed ? <FaArrowDown /> : <FaArrowUp />}
-                </button>
-              </div>
-              {!isContactCollapsed && (
-                <ContactUs
-                  email={"contact@ccf.org"}
-                  phone={"111-222-3333"}
-                  hours={"Monday - Friday 10AM - 5PM"}
-                />
-              )}
-            </div>
+            <DashboardSection
+              title="Contact Us"
+              icon={<FaFileAlt className="dashboard-section-icon" />}
+              defaultCollapsed
+            >
+              <ContactUs
+                email={"contact@ccf.org"}
+                phone={"111-222-3333"}
+                hours={"Monday - Friday 10AM - 5PM"}
+              />
+            </DashboardSection>
           </div>
-        </div>
-      </div>
-    </div>
+    </RoleDashboardShell>
   );
 }
 
