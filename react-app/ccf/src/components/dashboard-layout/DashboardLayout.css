@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--ccf-stack-gap);
-  min-height: calc(100vh - 60px);
+  
   min-width: 0;
 }
 
