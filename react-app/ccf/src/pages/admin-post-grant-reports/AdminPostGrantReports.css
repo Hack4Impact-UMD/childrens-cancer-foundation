@@ -1,9 +1,5 @@
-.AdminPostGrantReports {
-    width: 100%;
-    min-height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-}
+/* Page frame is provided by RoleDashboardShell + .dashboard-page-stack.
+   Use this class only as a scoping hook for page-specific overrides. */
 
 .ApplicantDashboard-header-container {
     display: flex;
@@ -288,14 +284,6 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .AdminPostGrantReports {
-        padding: 15px;
-    }
-
-    .ApplicantDashboard-header {
-        font-size: 2rem;
-    }
-
     .search-filter-container {
         flex-direction: column;
         align-items: stretch;
