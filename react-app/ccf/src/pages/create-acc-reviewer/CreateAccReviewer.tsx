@@ -132,7 +132,7 @@ function AccountPageReviewers(): JSX.Element {
   };
 
   return (
-      <div className="login-container">
+      <div className="login-container createAcc-page">
         <div className="login-content">
           <div className="login-form">
             <div className="header-container2">
