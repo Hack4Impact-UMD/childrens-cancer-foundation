@@ -636,7 +636,7 @@ function GrantAwards(): JSX.Element {
         stackClassName="AdminViewAll"
       >
           <div className="dashboard-sections-content">
-            <div className="accounts-table-container">
+            <div className="accounts-table-container ccf-table-container">
               <div className="top-controls">
                 <div className="filter-group">
                   <label htmlFor="cycle-select">Cycle:</label>
@@ -771,8 +771,8 @@ function GrantAwards(): JSX.Element {
               {loading ? (
                 <div className="loading-indicator">Loading applications...</div>
               ) : (
-                <div className="table-scroll-wrapper">
-                  <table className="applications-table">
+                <div className="table-scroll-wrapper ccf-table-scroll">
+                  <table className="applications-table ccf-table">
                     <thead>
                       <tr>
                         {visibleColumns.title && <th>Title</th>}

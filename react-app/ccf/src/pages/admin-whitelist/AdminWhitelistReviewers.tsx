@@ -166,18 +166,21 @@ function AdminWhitelistReviewers(): JSX.Element {
             title="Whitelist Reviewers"
             stackClassName="AdminWhitelist"
         >
-                    <div className="search-filter-container">
-                        <div className="search-bar">
-                            <FaSearch className="search-icon" />
-                            <input
-                                type="text"
-                                placeholder="Search by email or name"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                <div className="dashboard-sections-content">
+                    <div className="ccf-toolbar">
+                        <div className="ccf-toolbar-row">
+                            <div className="ccf-toolbar-search">
+                                <FaSearch className="ccf-toolbar-search-icon" />
+                                <input
+                                    type="text"
+                                    placeholder="Search by email or name"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
                         </div>
-                        <div className="filters">
-                            <div className="filter">
+                        <div className="ccf-toolbar-row">
+                            <div className="ccf-toolbar-filters">
                                 <select
                                     value={affiliationFilter}
                                     onChange={(e) => setAffiliationFilter(e.target.value)}
@@ -190,8 +193,6 @@ function AdminWhitelistReviewers(): JSX.Element {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
-                            <div className="filter">
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -202,12 +203,14 @@ function AdminWhitelistReviewers(): JSX.Element {
                                     <option value="pending">Pending</option>
                                 </select>
                             </div>
-                            <button
-                                className="add-button"
-                                onClick={() => setShowAddForm(true)}
-                            >
-                                <FaPlus /> Add Email
-                            </button>
+                            <div className="ccf-toolbar-actions">
+                                <button
+                                    className="add-button"
+                                    onClick={() => setShowAddForm(true)}
+                                >
+                                    <FaPlus /> Add Email
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -286,7 +289,7 @@ function AdminWhitelistReviewers(): JSX.Element {
                         </div>
                     )}
 
-                    <div className="whitelist-table-container">
+                    <div className="ccf-table-container">
                         <div className="whitelist-header">
                             <h2>Whitelisted Emails ({filteredEntries.length})</h2>
                             <div className="whitelist-stats">
@@ -306,7 +309,8 @@ function AdminWhitelistReviewers(): JSX.Element {
                                 {searchTerm || affiliationFilter || statusFilter ? 'No entries match your filters.' : 'No emails in the whitelist yet.'}
                             </div>
                         ) : (
-                            <table className="whitelist-table">
+                            <div className="ccf-table-scroll">
+                            <table className="ccf-table">
                                 <thead>
                                     <tr>
                                         <th>Email</th>
@@ -354,8 +358,10 @@ function AdminWhitelistReviewers(): JSX.Element {
                                     ))}
                                 </tbody>
                             </table>
+                            </div>
                         )}
                     </div>
+                </div>
         </RoleDashboardShell>
     );
 }

@@ -238,18 +238,21 @@ function AdminPostGrantReports(): JSX.Element {
             title="Post-Grant Reports Management"
             stackClassName="AdminPostGrantReports"
         >
-                    <div className="search-filter-container">
-                        <div className="search-bar">
-                            <FaSearch className="search-icon" />
-                            <input
-                                type="text"
-                                placeholder="Search by Application ID, Title, PI, Institution, or Email"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                <div className="dashboard-sections-content">
+                    <div className="ccf-toolbar">
+                        <div className="ccf-toolbar-row">
+                            <div className="ccf-toolbar-search">
+                                <FaSearch className="ccf-toolbar-search-icon" />
+                                <input
+                                    type="text"
+                                    placeholder="Search by Application ID, Title, PI, Institution, or Email"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
                         </div>
-                        <div className="filters">
-                            <div className="filter">
+                        <div className="ccf-toolbar-row">
+                            <div className="ccf-toolbar-filters">
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -259,8 +262,6 @@ function AdminPostGrantReports(): JSX.Element {
                                     <option value="submitted">Submitted</option>
                                     <option value="not-submitted">Not Submitted</option>
                                 </select>
-                            </div>
-                            <div className="filter">
                                 <select
                                     value={grantTypeFilter}
                                     onChange={(e) => setGrantTypeFilter(e.target.value)}
@@ -277,9 +278,9 @@ function AdminPostGrantReports(): JSX.Element {
                         </div>
                     </div>
 
-                    <div className="reports-table-container">
-                        <div className="reports-table-wrapper">
-                            <table className="reports-table">
+                    <div className="ccf-table-container">
+                        <div className="ccf-table-scroll">
+                            <table className="ccf-table">
                             <thead>
                                 <tr>
                                     {/* <th>Application ID</th> */}
@@ -349,6 +350,7 @@ function AdminPostGrantReports(): JSX.Element {
                         </table>
                         </div>
                     </div>
+                </div>
         </RoleDashboardShell>
     );
 }

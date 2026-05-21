@@ -99,3 +99,168 @@
     padding: 20px;
   }
 }
+
+/* Shared toolbar for search + filters + actions sitting above a table.
+   Row 1: search input (with absolutely-positioned icon — input padding-left
+   keeps the icon from overlapping the placeholder).
+   Row 2: filter selects on the left, action buttons on the right.
+   Used by AdminWhitelistReviewers, AdminPostGrantReports, AdminDashboardViewAll. */
+
+.ccf-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ccf-toolbar-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ccf-toolbar-search {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+}
+
+.ccf-toolbar-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.ccf-toolbar-search input {
+  width: 100%;
+  padding: 10px 12px 10px 40px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: var(--ccf-surface);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ccf-toolbar-search input:focus {
+  outline: none;
+  border-color: var(--ccf-red);
+  box-shadow: 0 0 0 3px rgba(190, 0, 25, 0.12);
+}
+
+.ccf-toolbar-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+  align-items: center;
+}
+
+.ccf-toolbar-filters select {
+  padding: 9px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: var(--ccf-surface);
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 160px;
+  box-sizing: border-box;
+}
+
+.ccf-toolbar-filters select:focus {
+  outline: none;
+  border-color: var(--ccf-red);
+  box-shadow: 0 0 0 3px rgba(190, 0, 25, 0.12);
+}
+
+.ccf-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Shared table chrome — modeled on the Award Recommendations table so every
+   table across the app renders the same way (white card, gray header, soft
+   row separators, horizontal scroll with branded scrollbar). */
+
+.ccf-table-container {
+  background-color: var(--ccf-surface);
+  border-radius: var(--ccf-radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ccf-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.ccf-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.ccf-table-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.ccf-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--ccf-red);
+  border-radius: 4px;
+}
+
+.ccf-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9c0015;
+}
+
+.ccf-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.ccf-table th,
+.ccf-table td {
+  padding: 16px 24px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.ccf-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: var(--ccf-text);
+}
+
+.ccf-table th:first-child,
+.ccf-table td:first-child {
+  padding-left: 20px;
+}
+
+.ccf-table th:last-child,
+.ccf-table td:last-child {
+  padding-right: 20px;
+}
+
+/* Alternating row tint + hover, matching the Award Recommendations table.
+   Applied to td (not tr) so it wins over any tr-level background tokens. */
+.ccf-table tbody tr:nth-child(odd) td {
+  background-color: #ffffff;
+}
+
+.ccf-table tbody tr:nth-child(even) td {
+  background-color: #fff8e1;
+}
+
+.ccf-table tbody tr:hover td {
+  background-color: #fff3c4;
+}

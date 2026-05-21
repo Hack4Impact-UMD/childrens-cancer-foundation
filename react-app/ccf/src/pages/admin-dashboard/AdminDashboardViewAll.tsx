@@ -65,39 +65,39 @@ function AdminDashboardViewAll(): JSX.Element {
             stackClassName="AdminViewAll"
         >
                     <div className="AdminViewAll-sections-content">
-                        <div className="search-filter-container">
-                            <div className="search-bar">
-                                <FaSearch className="search-icon" />
-                                <input
-                                    type="text"
-                                    placeholder="Search"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    aria-label="Search accounts"
-                                />
+                        <div className="ccf-toolbar">
+                            <div className="ccf-toolbar-row">
+                                <div className="ccf-toolbar-search">
+                                    <FaSearch className="ccf-toolbar-search-icon" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search by name, institution, or email"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        aria-label="Search accounts"
+                                    />
+                                </div>
                             </div>
-                            <div className="filters">
-                                <div className="filter">
+                            <div className="ccf-toolbar-row">
+                                <div className="ccf-toolbar-filters">
                                     <select
                                         value={affiliationFilter}
                                         onChange={(e) => setAffiliationFilter(e.target.value)}
                                         aria-label="Filter accounts by institution"
                                     >
-                                        <option value="">Institution</option>
+                                        <option value="">All Institutions</option>
                                         {uniqueAffiliations.map(aff => (
                                             <option key={aff} value={aff}>
                                                 {aff}
                                             </option>
                                         ))}
                                     </select>
-                                </div>
-                                <div className="filter">
                                     <select
                                         value={roleFilter}
                                         onChange={(e) => setRoleFilter(e.target.value)}
                                         aria-label="Filter accounts by role"
                                     >
-                                        <option value="">Role</option>
+                                        <option value="">All Roles</option>
                                         {roles.map(role => (
                                             <option key={role} value={role}>
                                                 {role}
@@ -107,13 +107,13 @@ function AdminDashboardViewAll(): JSX.Element {
                                 </div>
                             </div>
                         </div>
-                        <div className="accounts-table-container">
+                        <div className="ccf-table-container">
                             <div className="accounts-header">
                                 <h2>ALL ACCOUNTS</h2>
 
                                 {/* Only send email to selected accounts using MailtoLink */}
                                 <MailtoLink
-                                    to={selectedEmails}                                    
+                                    to={selectedEmails}
                                     subject="Important Update from CCF"
                                     body="Hello, This is a message from the CCF admin team. Please check your account for updates. Thank you!"
                                 >
@@ -126,7 +126,8 @@ function AdminDashboardViewAll(): JSX.Element {
                             {loading ? (
                                 <div className="loading-message">Loading accounts...</div>
                             ) : (
-                                <table className="accounts-table">
+                                <div className="ccf-table-scroll">
+                                <table className="ccf-table">
                                     <thead>
                                         <tr>
                                             <th></th>
@@ -181,6 +182,7 @@ function AdminDashboardViewAll(): JSX.Element {
                                             ))}
                                     </tbody>
                                 </table>
+                                </div>
                             )}
                         </div>
                     </div>

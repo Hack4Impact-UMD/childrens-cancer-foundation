@@ -14,70 +14,11 @@
     gap: 20px;
 }
 
-.AdminViewAll .search-filter-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
+/* Search bar / filter chrome is provided by the shared .ccf-toolbar classes
+   (see DashboardLayout.css). Page-specific styles only below. */
 
-.AdminViewAll .search-bar {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 10px 12px;
-    background-color: #D9D9D9;
-    border-radius: 10px;
-}
-
-.AdminViewAll .search-icon {
-    color: #888;
-    margin-right: 8px;
-}
-
-.AdminViewAll .search-bar input {
-    border: none;
-    width: 100%;
-    padding: 5px;
-    background-color: transparent;
-}
-
-.AdminViewAll .search-bar:focus-within {
-    box-shadow: 0 0 0 3px rgba(0, 62, 131, 0.35);
-}
-
-.AdminViewAll .search-bar input:focus-visible {
-    outline: 2px solid #003E83;
-    outline-offset: 2px;
-    border-radius: 6px;
-}
-
-.AdminViewAll .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.AdminViewAll .filter select {
-    min-width: 180px;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    background-color: #D9D9D9;
-}
-
-.AdminViewAll .filter select:focus-visible {
-    outline: 2px solid #003E83;
-    outline-offset: 2px;
-    border-color: #003E83;
-    box-shadow: 0 0 0 3px rgba(0, 62, 131, 0.2);
-}
-
-.AdminViewAll .accounts-table-container {
-    background-color: #fff;
-    border: 2px solid #c41230;
-    border-radius: 8px;
-    overflow: hidden;
-}
+/* Table chrome is provided by the shared .ccf-table-container / .ccf-table /
+   .ccf-table-scroll classes (see DashboardLayout.css). Page-specific styles only. */
 
 .AdminViewAll .accounts-header {
     background-color: #f9f9f9;
@@ -122,43 +63,13 @@
     font-weight: 600;
 }
 
-.AdminViewAll .accounts-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.AdminViewAll .accounts-table th,
-.AdminViewAll .accounts-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.AdminViewAll .accounts-table th {
-    background-color: #f9f5e7;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.AdminViewAll .accounts-table tbody tr:nth-child(odd) {
-    background-color: #fff;
-}
-
-.AdminViewAll .accounts-table tbody tr:nth-child(even) {
-    background-color: #fff8e1;
-}
-
-.AdminViewAll .accounts-table tbody tr:hover {
-    background-color: #fff3c4;
-}
-
-.AdminViewAll .accounts-table td input[type="checkbox"] {
+.AdminViewAll .ccf-table td input[type="checkbox"] {
     width: 16px;
     height: 16px;
     cursor: pointer;
 }
 
-.AdminViewAll .accounts-table td input[type="checkbox"]:focus-visible {
+.AdminViewAll .ccf-table td input[type="checkbox"]:focus-visible {
     outline: 2px solid #003E83;
     outline-offset: 2px;
     box-shadow: 0 0 0 3px rgba(0, 62, 131, 0.2);
