@@ -3,6 +3,7 @@
   background-color: #fff;
   width: 100%;
   margin: 0;
+  box-sizing: border-box;
 }
 
 .header-row {
@@ -10,17 +11,9 @@
   align-items: center;
   gap: 1.5rem;
   margin-bottom: 2.5rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-}
-
-.section-icon {
-  width: 56px !important;
-  height: 56px !important;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  padding: 0 0 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
 }
 
 .title {
@@ -161,11 +154,6 @@
 
   .subtitle {
     font-size: 1rem;
-  }
-
-  .section-icon {
-    width: 48px !important;
-    height: 48px !important;
   }
 
   .pdf-link {

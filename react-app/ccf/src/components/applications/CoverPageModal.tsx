@@ -5,7 +5,6 @@ import '../../pages/application-form/subquestions/SubForm.css'
 import Review from "../../pages/application-form/subquestions/Review";
 import { useEffect, useState } from "react";
 import { downloadPDFsByName } from "../../storage/storage";
-import blueDocument from '../../assets/blueDocumentIcon.png';
 
 interface CoverPageModalProps {
   application: Application;
@@ -32,7 +31,6 @@ const CoverPageModal = ({ application, isOpen, onClose }: CoverPageModalProps) =
   const researchCoverPage = (
     <div className="cover-page-modal-child">
       <div className="header-row">
-        <img src={blueDocument} alt="Document Icon" className="section-icon" />
         <div>
           <h2 className="title">{application.title}</h2>
           <p className="subtitle">{application.grantType}</p>
