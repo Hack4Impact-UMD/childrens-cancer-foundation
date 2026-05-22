@@ -254,6 +254,7 @@ function AdminEditInformation(): JSX.Element {
         <>
             <RoleDashboardShell sidebarItems={sidebarItems} title="Application Cycle">
                 <div className="sections-container">
+                <div className="application-cycle-card">
                     <div className="deadlines-section">
                         <div className="deadlines-header-container">
                             <MoreTimeIcon />
@@ -537,7 +538,6 @@ function AdminEditInformation(): JSX.Element {
                             </DialogActions>
                         </Dialog>
                     </div>
-                    <div>
                         <div className="editable-info-section">
                             <h2>Update Frequently Asked Questions:</h2>
 
@@ -795,7 +795,7 @@ function AdminEditInformation(): JSX.Element {
                                 </Box>
                             ))}
                         </div>
-                    </div>
+                </div>
                 </div>
 
             </RoleDashboardShell>

@@ -1,10 +1,9 @@
 import "./AdminDashboardViewAll.css";
 import { useState, useEffect } from "react";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaPaperPlane } from "react-icons/fa";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../index";
 import MailtoLink from "../../components/MailtoLink";
-import sendIcon from "../../assets/email_send-solid.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { UserData } from "../../types/usertypes";
 import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
@@ -117,9 +116,23 @@ function AdminDashboardViewAll(): JSX.Element {
                                     subject="Important Update from CCF"
                                     body="Hello, This is a message from the CCF admin team. Please check your account for updates. Thank you!"
                                 >
-                                    <button className="send-email-button">
-                                    <img src={sendIcon} alt="Send Email"></img>
-                                    Send Email
+                                    <button
+                                        type="button"
+                                        className="send-email-button"
+                                        disabled={selectedEmails.length === 0}
+                                        title={
+                                            selectedEmails.length === 0
+                                                ? "Select one or more accounts to email"
+                                                : `Email ${selectedEmails.length} selected account${selectedEmails.length === 1 ? "" : "s"}`
+                                        }
+                                    >
+                                        <FaPaperPlane aria-hidden="true" />
+                                        <span>
+                                            Send Email
+                                            {selectedEmails.length > 0 && (
+                                                <span className="send-email-count">{selectedEmails.length}</span>
+                                            )}
+                                        </span>
                                     </button>
                                 </MailtoLink>
                             </div>

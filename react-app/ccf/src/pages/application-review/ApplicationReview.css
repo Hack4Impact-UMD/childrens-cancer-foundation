@@ -126,155 +126,17 @@
     color: white;
   }
   
-  .dashboard-container {
-    display: flex;
-    min-height: 100vh;
-    background-color: #f3f4f6;
-  }
+  /* Legacy dashboard-container / dashboard-sidebar / dashboard-* frame styles
+     have been removed. The shell + DashboardLayout.css now provide page chrome.
+     Only page-specific styles remain below. */
   
-  .dashboard-sidebar {
-    width: 256px;
-    background-color: #003e83;
-    margin-right: 20px;
-    padding: 1rem;
-    position: relative;
-    transition: 0.3s ease;
-  }
-  
-  .dashboard-sidebar.collapsed {
-    width: 10px;
-  }
-  
-  .dashboard-sidebar.collapsed .sidebar-nav {
-    opacity: 0;
-  }
-  
-  .collapse-arrow {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: Arial, Helvetica, sans-serif;
-    z-index: 1;
-    transition: transform 0.3s ease;
-  }
-  
-  .collapse-arrow:hover {
-    opacity: 0.8;
-  }
-  
-  .sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    transition: opacity 0.3s ease;
-  }
-  
-  .dashboard-main {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    padding: 2rem;
-    max-width: 100%;
-    margin: 0 auto;
-    font-family: Arial, Helvetica, sans-serif;
-  }
-  
-  .dashboard-header-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-  
-  .dashboard-logo {
-    width: 90px;
-    margin-left: 20px;
-    margin-right: 20px;
-  }
-  
-  .dashboard-header {
-    font-size: 45px;
-    color: #be0019;
-    font-family: Arial, Helvetica, sans-serif;
-  }
-  
-  .dashboard-content {
-    flex-grow: 1;
-    margin-left: 0px;
-    transition: margin-left 0.3s ease;
-    padding: 0;
-    margin-top: 20px;
-    background-color: #f3f4f6;
-  }
-  
-  .dashboard-sections-content {
-    background-color: #f0c567;
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 8px;
-    flex-grow: 1;
-    font-family: Arial, Helvetica, sans-serif;
-  }
-  
-  .dashboard-section {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-family: Arial, Helvetica, sans-serif;
-  }
-  
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    font-family: Arial, Helvetica, sans-serif;
-  }
-  
-  .header-content {
-    display: flex;
-    align-items: center;
-  }
-  
-  .header-content h2 {
-    font-size: 1.5rem;
-    font-family: Arial, Helvetica, sans-serif;
-    margin: 0;
-    font-weight: 700;
-    color: #000000;
-  }
-  
-  .expand-collapse-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    color: #6e7f91;
-  }
-  
-  .expand-collapse-btn:hover {
-    color: #6e7f91;
-  }
-  
-  .applications-container h3 {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #000000;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-  }
-  
+  /* Mirrors the .ccf-table-container card style on Account Management — 20px
+     padding, sits directly inside the page-stack without extra outer margin. */
   .applications-container {
     background-color: white;
     border: 2px solid #d72626;
-    border-radius: 4px;
-    padding: 30px;
-    margin: 20px 20px 0 20px;
+    border-radius: 8px;
+    padding: 20px;
   }
   
   .buttons {

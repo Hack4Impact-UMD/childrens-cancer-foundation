@@ -14,8 +14,31 @@
   border-radius: var(--ccf-radius);
   box-shadow: var(--ccf-shadow-sm);
   border: var(--ccf-section-border);
-  flex-direction: column;
   background-color: var(--ccf-surface);
+  /* flex + gap so every child (header / fields / button) is spaced uniformly
+     regardless of which optional rows (email, pwd-reqs, validation) are present. */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Reset the per-element margins so the parent's gap is the only thing creating
+   vertical rhythm — otherwise Change Password (with the extra email row) ends up
+   taller than Personal Information. */
+.AccountSettings-section > .header-title {
+  margin-bottom: 0;
+}
+
+.AccountSettings-section .settings-email-row {
+  margin: 0;
+}
+
+.AccountSettings-section .settings-field-grid {
+  padding-bottom: 0;
+}
+
+.AccountSettings-section .button-message-container {
+  margin-top: 0;
 }
 
 .AccountSettings-buttons {
