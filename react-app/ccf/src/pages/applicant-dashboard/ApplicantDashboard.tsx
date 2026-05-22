@@ -1,7 +1,6 @@
 import "./ApplicantDashboard.css";
 import { useEffect, useState } from "react";
-import document from "../../assets/documentIcon.png";
-import { FaFileAlt, FaArrowRight } from "react-icons/fa";
+import { FaFileAlt, FaArrowRight, FaClipboardList, FaQuestionCircle, FaEnvelope } from "react-icons/fa";
 import Button from "../../components/buttons/Button";
 import FAQComponent from "../../components/faq/FaqComp";
 import ContactUs from "../../components/contact/ContactUs";
@@ -363,7 +362,7 @@ function ApplicantUsersDashboard(): JSX.Element {
           <div className="dashboard-sections-content">
             <DashboardSection
               title="Applications"
-              icon={<img src={document} alt="" aria-hidden="true" className="dashboard-section-icon" />}
+              icon={<FaClipboardList className="dashboard-section-icon" />}
             >
               <div className="ApplicantDashboard-application-box">
                   {inProgressApplications &&
@@ -477,7 +476,7 @@ function ApplicantUsersDashboard(): JSX.Element {
 
             <DashboardSection
               title="Frequently Asked Questions"
-              icon={<FaFileAlt className="dashboard-section-icon" />}
+              icon={<FaQuestionCircle className="dashboard-section-icon" />}
               defaultCollapsed
             >
               <FAQComponent faqs={faqData} />
@@ -485,7 +484,7 @@ function ApplicantUsersDashboard(): JSX.Element {
 
             <DashboardSection
               title="Contact Us"
-              icon={<FaFileAlt className="dashboard-section-icon" />}
+              icon={<FaEnvelope className="dashboard-section-icon" />}
               defaultCollapsed
             >
               <ContactUs

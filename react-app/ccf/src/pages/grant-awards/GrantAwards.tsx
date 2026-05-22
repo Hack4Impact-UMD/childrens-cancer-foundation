@@ -7,6 +7,7 @@ import {
   FaComments,
   FaTimes,
   FaSync,
+  FaSearch,
 } from "react-icons/fa";
 import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
@@ -295,7 +296,7 @@ function GrantAwards(): JSX.Element {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (columnsOpen && !target.closest(".columns-group")) {
+      if (columnsOpen && !target.closest(".ga-columns-wrap")) {
         setColumnsOpen(false);
       }
     };
@@ -601,133 +602,118 @@ function GrantAwards(): JSX.Element {
         stackClassName="AdminViewAll"
       >
           <div className="dashboard-sections-content">
-            <div className="accounts-table-container ccf-table-container">
-              <div className="top-controls">
-                <div className="filter-group">
-                  <label htmlFor="cycle-select">Cycle:</label>
-                  <select
-                    id="cycle-select"
-                    value={selectedCycle}
-                    onChange={(e) => setSelectedCycle(e.target.value)}
-                  >
-                    <option value={"All"}>All</option>
-                    {cycleOptions.map((cn) => (
-                      <option key={cn} value={cn}>
-                        {cn}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="filter-group">
-                  <label htmlFor="type-select">Type:</label>
-                  <select
-                    id="type-select"
-                    value={selectedProgramType}
-                    onChange={(e) =>
-                      setSelectedProgramType(e.target.value as any)
-                    }
-                  >
-                    <option value={"All"}>All</option>
-                    <option value={"research"}>research</option>
-                    <option value={"nextgen"}>nextgen</option>
-                    <option value={"nonresearch"}>nonresearch</option>
-                  </select>
-                </div>
-                <div className="search-group">
-                  <input
-                    type="text"
-                    placeholder="Search by name, program type, or institution"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                
-                <div
-                  className={`columns-group ${columnsOpen ? "columns-open" : ""}`}
-                >
-                  <button
-                    type="button"
-                    className="columns-toggle"
-                    aria-haspopup="true"
-                    onClick={() => setColumnsOpen((o) => !o)}
-                  >
-                    <span>Columns</span>
-                  </button>
-                  {columnsOpen && (
-                    <div className="columns-dropdown">
-                      <div className="columns-dropdown-header">
-                        Select columns to show
-                      </div>
-                      <div
-                        className="columns-menu"
-                        onClick={(e) => e.stopPropagation()}
+            <div className="ccf-table-container">
+              <div className="ccf-toolbar">
+                <div className="ccf-toolbar-row">
+                  <div className="ccf-toolbar-search">
+                    <FaSearch className="ccf-toolbar-search-icon" />
+                    <input
+                      type="text"
+                      placeholder="Search by name, program type, or institution"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <div className="ccf-toolbar-actions">
+                    <div className="ga-columns-wrap">
+                      <button
+                        type="button"
+                        className={`ga-action-btn${columnsOpen ? " ga-columns-open" : ""}`}
+                        aria-haspopup="true"
+                        onClick={() => setColumnsOpen((o) => !o)}
                       >
-                        {(
-                          [
-                            { key: "title", label: "Title" },
-                            { key: "name", label: "Name" },
-                            { key: "programType", label: "Program Type" },
-                            { key: "institution", label: "Institution" },
-                            { key: "applicationCycle", label: "Cycle" },
-                            {
-                              key: "typesOfCancerAddressed",
-                              label: "Types of Cancer Addressed",
-                            },
-                            { key: "finalScore", label: "Final Score" },
-                            { key: "requested", label: "Requested" },
-                            { key: "recommended", label: "Recommended" },
-                            { key: "acceptance", label: "Acceptance" },
-                            { key: "comments", label: "Comments" },
-                            { key: "save", label: "Save" },
-                          ] as { key: ColumnKey; label: string }[]
-                        ).map((c) => (
-                          <label key={c.key} className="column-toggle">
-                            <input
-                              type="checkbox"
-                              checked={visibleColumns[c.key]}
-                              onChange={(e) =>
-                                setVisibleColumns((prev) => ({
-                                  ...prev,
-                                  [c.key]: e.target.checked,
-                                }))
-                              }
-                            />
-                            <span>{c.label}</span>
-                          </label>
-                        ))}
-                      </div>
+                        Columns
+                      </button>
+                      {columnsOpen && (
+                        <div
+                          className="ga-columns-menu"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="ga-columns-header">
+                            Select columns to show
+                          </div>
+                          {(
+                            [
+                              { key: "title", label: "Title" },
+                              { key: "name", label: "Name" },
+                              { key: "programType", label: "Program Type" },
+                              { key: "institution", label: "Institution" },
+                              { key: "applicationCycle", label: "Cycle" },
+                              { key: "typesOfCancerAddressed", label: "Types of Cancer Addressed" },
+                              { key: "finalScore", label: "Final Score" },
+                              { key: "requested", label: "Requested" },
+                              { key: "recommended", label: "Recommended" },
+                              { key: "acceptance", label: "Acceptance" },
+                              { key: "comments", label: "Comments" },
+                              { key: "save", label: "Save" },
+                            ] as { key: ColumnKey; label: string }[]
+                          ).map((c) => (
+                            <label key={c.key} className="ga-column-item">
+                              <input
+                                type="checkbox"
+                                checked={visibleColumns[c.key]}
+                                onChange={(e) =>
+                                  setVisibleColumns((prev) => ({
+                                    ...prev,
+                                    [c.key]: e.target.checked,
+                                  }))
+                                }
+                              />
+                              <span>{c.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
+                    <button
+                      className="ga-action-btn"
+                      onClick={() => handleDownloadCSV(sortedApplications)}
+                      title="Download CSV"
+                      aria-label="Download applications as CSV"
+                    >
+                      <FaDownload /> Export CSV
+                    </button>
+                    <button
+                      className="ga-action-btn ga-action-btn-muted"
+                      onClick={refreshScores}
+                      disabled={loading}
+                      title="Refresh application scores"
+                      aria-label="Refresh application scores"
+                    >
+                      <FaSync className={loading ? "spinning" : ""} /> Refresh
+                    </button>
+                  </div>
                 </div>
-                <div className="section-header">
-                <div className="header-actions">
-                  <span className="download-text">Download as CSV</span>
-                  <button
-                    className="download-btn"
-                    onClick={() => handleDownloadCSV(sortedApplications)}
-                    title="Download CSV"
-                    aria-label="Download applications as CSV"
-                  >
-                    <FaDownload />
-                  </button>
-                  <span className="refresh-text">Refresh Scores</span>
-                  <button
-                    className="refresh-btn"
-                    onClick={refreshScores}
-                    disabled={loading}
-                    title="Refresh application scores"
-                    aria-label="Refresh application scores"
-                  >
-                    <FaSync className={loading ? "spinning" : ""} />
-                  </button>
+                <div className="ccf-toolbar-row">
+                  <div className="ccf-toolbar-filters">
+                    <select
+                      id="cycle-select"
+                      value={selectedCycle}
+                      onChange={(e) => setSelectedCycle(e.target.value)}
+                    >
+                      <option value={"All"}>All Cycles</option>
+                      {cycleOptions.map((cn) => (
+                        <option key={cn} value={cn}>{cn}</option>
+                      ))}
+                    </select>
+                    <select
+                      id="type-select"
+                      value={selectedProgramType}
+                      onChange={(e) => setSelectedProgramType(e.target.value as any)}
+                    >
+                      <option value={"All"}>All Types</option>
+                      <option value={"research"}>Research</option>
+                      <option value={"nextgen"}>NextGen</option>
+                      <option value={"nonresearch"}>Non-Research</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
               </div>
               {loading ? (
                 <div className="loading-indicator">Loading applications...</div>
               ) : (
-                <div className="table-scroll-wrapper ccf-table-scroll">
-                  <table className="applications-table ccf-table">
+                <div className="ccf-table-scroll">
+                  <table className="ccf-table">
                     <thead>
                       <tr>
                         {visibleColumns.title && <th>Title</th>}
