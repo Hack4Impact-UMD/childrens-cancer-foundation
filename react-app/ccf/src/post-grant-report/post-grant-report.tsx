@@ -13,9 +13,7 @@ function PostGrantReport(): JSX.Element {
   const [uploadLabel, setUploadLabel] = useState<string>("Click to Upload");
   const [reportUploaded, setReportUploaded] = useState<boolean>(false);
   const [report, setReport] = useState<File | null>(null);
-  const [currentCycle, setCurrentCycle] = useState<ApplicationCycle | null>(
-    null,
-  );
+  const [, setCurrentCycle] = useState<ApplicationCycle | null>(null);
   const [deadline, setDeadline] = useState<Date | null>(null);
   const [isOverdue, setIsOverdue] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);

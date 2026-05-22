@@ -1,6 +1,5 @@
 import { Decision } from "../../types/decision-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
-import { useEffect, useState } from "react";
 // import Confetti from "react-confetti";
 import "./decisionBox.css";
 import { useNavigate } from "react-router-dom";
@@ -12,36 +11,6 @@ export const DecisionBox = ({
   decision: Decision;
   inAdminView?: boolean;
 }) => {
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [windowDimensions, setWindowDimensions] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
-
-  console.log(decision);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    if (decision.isAccepted === true) {
-      setShowConfetti(true);
-      const timer = setTimeout(() => {
-        setShowConfetti(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [decision.isAccepted]);
-
   const getDecisionStatus = () => {
     // Use isAccepted boolean field to determine status
     if (decision.isAccepted === true) {

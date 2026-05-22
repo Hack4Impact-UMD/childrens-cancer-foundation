@@ -44,7 +44,6 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
 
 export const downloadPDFByName = async (name: string): Promise<{ name: string, url: string }> => {
   try {
-    const files: Array<{ name: string, url: string }> = [];
     const fileRef = ref(storage, `pdfs/${name}`);
     const downloadURL = await getDownloadURL(fileRef);
     return { name, url: downloadURL }

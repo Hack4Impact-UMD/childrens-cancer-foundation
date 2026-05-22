@@ -14,7 +14,6 @@ import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../..";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import {
-  getReviewsForApplicationAdmin,
   checkAndUpdateApplicationStatus,
 } from "../../services/review-service";
 import {

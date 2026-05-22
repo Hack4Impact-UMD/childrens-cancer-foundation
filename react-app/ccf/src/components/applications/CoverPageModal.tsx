@@ -1,4 +1,4 @@
-import { ApplicationDetails, ResearchApplication, NonResearchApplication, Application } from "../../types/application-types";
+import { Application } from "../../types/application-types";
 import { Modal } from "../modal/modal";
 import './CoverPageModal.css'
 import '../../pages/application-form/subquestions/SubForm.css'
@@ -26,7 +26,7 @@ const CoverPageModal = ({ application, isOpen, onClose }: CoverPageModalProps) =
         console.error(e)
       })
     }
-  }, [isOpen])
+  }, [isOpen, application.file])
 
   const researchCoverPage = (
     <div className="cover-page-modal-child">

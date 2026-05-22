@@ -58,7 +58,7 @@ function ApplicantUsersDashboard(): JSX.Element {
   const [faqData, setFAQData] = useState<FAQItem[]>([]);
   const [appCycle, setAppCycle] = useState<ApplicationCycle>();
   const [applicationsOpen, setApplicationsOpen] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     // Track the last known stage so the interval can detect changes
@@ -259,31 +259,6 @@ function ApplicantUsersDashboard(): JSX.Element {
 
   const navigate = useNavigate();
 
-  const formatDate = (dateString: string | Date | undefined | null) => {
-    if (!dateString) {
-      return "N/A";
-    }
-
-    try {
-      if (typeof dateString === "string") {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-          return "Invalid Date";
-        }
-        return date.toLocaleDateString();
-      }
-
-      if (dateString instanceof Date) {
-        return dateString.toLocaleDateString();
-      }
-
-      return "Invalid Date";
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return "Error";
-    }
-  };
-
   return (
     <RoleDashboardShell
       sidebarItems={sidebarItems}
@@ -432,7 +407,7 @@ function ApplicantUsersDashboard(): JSX.Element {
                             </div>
                             <CoverPageModal
                               application={application as Application}
-                              isOpen={openModal == application}
+                              isOpen={openModal === application}
                               onClose={closeModal}
                             ></CoverPageModal>
                           </div>

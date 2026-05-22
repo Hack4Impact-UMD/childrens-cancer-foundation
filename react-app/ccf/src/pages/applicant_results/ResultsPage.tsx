@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import "./ResultsPage.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { getSidebarbyRole, getApplicantSidebarItems, SideBarTypes } from "../../types/sidebar-types";
-import { Decision } from "../../types/decision-types";
 import { ReviewSummary } from "../../types/review-types"; 
 import { getReviewsForApplication } from "../../services/review-service"; 
 import { useNavigate } from "react-router-dom";

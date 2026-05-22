@@ -9,7 +9,7 @@ import { Application } from "../../types/application-types";
 import Confetti from 'react-confetti';
 import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { getApplicantSidebarItems } from "../../types/sidebar-types";
-import { checkIfReportSubmitted, getReportsByUser } from "../../backend/post-grant-reports";
+import { getReportsByUser } from "../../backend/post-grant-reports";
 import { PostGrantReport } from "../../types/post-grant-report-types";
 import { auth } from "../../index";
 import { FaCheckCircle, FaFileAlt } from "react-icons/fa";
@@ -25,7 +25,7 @@ function PostGrantReportPage(): JSX.Element {
     const [uploadLabel, setUploadLabel] = useState<string>("Upload File");
     const [reportUploaded, setReportUploaded] = useState<boolean>(false);
     const [report, setReport] = useState<File | null>(null);
-    const [currentCycle, setCurrentCycle] = useState<ApplicationCycle | null>(null);
+    const [, setCurrentCycle] = useState<ApplicationCycle | null>(null);
     const [deadline, setDeadline] = useState<Date | null>(null);
     const [isOverdue, setIsOverdue] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);

@@ -8,7 +8,7 @@ export const getReportByApplicationID = async (id: string): Promise<PostGrantRep
     const querySnapshot = await getDocs(q)
     const reports: Array<PostGrantReport> = []
     querySnapshot.docs.forEach((doc) => reports.push(doc.data() as unknown as PostGrantReport))
-    if (reports.length == 0) {
+    if (reports.length === 0) {
         throw Error("Not Found")
     }
     return reports[0]

@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import "./SubForm.css";
-import { uploadFileToStorage } from "../../../storage/storage";
 
 type GrantProposalProps = {
   type: "Research" | "NextGen";

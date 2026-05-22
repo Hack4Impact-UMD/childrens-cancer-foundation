@@ -51,13 +51,6 @@ export const getSidebarbyRole = (role: differentUserRoles): SideBarTypes[] => {
 // Dynamic sidebar for applicants that includes decisions link during Release Decisions stage
 export const getApplicantSidebarItems = async (): Promise<SideBarTypes[]> => {
     try {
-        // Import here to avoid circular dependency
-        const { getCurrentCycle } = await import('../backend/application-cycle');
-        const { getUsersCurrentCycleAppplications } = await import('../backend/application-filters');
-        const { getDecisionData } = await import('../services/decision-data-service');
-
-        const currentCycle = await getCurrentCycle();
-
         const baseSidebar: SideBarTypes[] = [
             { name: 'Home', path: '/applicant/dashboard' },
             { name: 'Account Settings', path: '/applicant/settings' }

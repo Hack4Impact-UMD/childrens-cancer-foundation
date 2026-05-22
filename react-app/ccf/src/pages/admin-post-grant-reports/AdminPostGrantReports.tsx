@@ -1,7 +1,7 @@
 import "./AdminPostGrantReports.css";
 import { useState, useEffect } from "react";
 import { FaSearch, FaEye, FaDownload } from "react-icons/fa";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../index";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { PostGrantReport } from "../../types/post-grant-report-types";
@@ -57,7 +57,6 @@ function AdminPostGrantReports(): JSX.Element {
                 const decisionDataMap = await getMultipleDecisionData(applicationIds);
 
                 const applicationsWithReportStatus: ApplicationWithReportStatus[] = [];
-                const currentDate = new Date();
 
                 // Process all applications and filter for accepted ones
                 for (const doc of applicationsSnapshot.docs) {

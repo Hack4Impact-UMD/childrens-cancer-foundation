@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import "./ApplicationReview.css";
 import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../..";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { getReviewsForApplicationAdmin } from "../../services/review-service";
-import Review, { ReviewSummary } from "../../types/review-types";
+import { ReviewSummary } from "../../types/review-types";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 
@@ -121,12 +121,6 @@ function ApplicationReviewReadOnly(): JSX.Element {
 
         fetchApplicationData();
     }, [applicationId]);
-
-    const openApplicationViewer = () => {
-        if (application?.file) {
-            window.open(application.file, '_blank');
-        }
-    };
 
     const getCurrentFeedback = (): FeedbackData | null => {
         if (activeReviewer === 'primary') {
