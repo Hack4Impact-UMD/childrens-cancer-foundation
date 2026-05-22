@@ -173,6 +173,7 @@ function AdminWhitelistReviewers(): JSX.Element {
                                 <FaSearch className="ccf-toolbar-search-icon" />
                                 <input
                                     type="text"
+                                    aria-label="Search reviewers by email or name"
                                     placeholder="Search by email or name"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}

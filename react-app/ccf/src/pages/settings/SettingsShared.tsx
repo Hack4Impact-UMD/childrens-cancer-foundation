@@ -229,15 +229,15 @@ export function PasswordSettingsSection({
       {showReqs && (
         <div className="pwd-reqs">
           <p>Password requires:</p>
-          <label id="checkbox">
+          <label className="checkbox">
             <input type="checkbox" name="options" value="Yes" checked={specialChar} readOnly />
             One special character
           </label>
-          <label id="checkbox">
+          <label className="checkbox">
             <input type="checkbox" name="options" value="Yes" checked={capitalLetter} readOnly />
             One capital letter
           </label>
-          <label id="checkbox">
+          <label className="checkbox">
             <input type="checkbox" name="options" value="Yes" checked={number} readOnly />
             One number
           </label>

@@ -244,6 +244,7 @@ function AdminPostGrantReports(): JSX.Element {
                                 <FaSearch className="ccf-toolbar-search-icon" />
                                 <input
                                     type="text"
+                                    aria-label="Search applications"
                                     placeholder="Search by Application ID, Title, PI, Institution, or Email"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}

@@ -151,7 +151,10 @@ function AllApplications(): JSX.Element {
                 <div
                   key={coverSheet.applicationId ?? index}
                   className="single-application-box clickable"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setOpenModal(coverSheet)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpenModal(coverSheet); } }}
                 >
                   <div className="application-summary-row">
                     <div className="application-header">

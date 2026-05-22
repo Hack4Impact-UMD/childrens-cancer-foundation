@@ -619,12 +619,15 @@ function GrantAwards(): JSX.Element {
                         type="button"
                         className={`ga-action-btn${columnsOpen ? " ga-columns-open" : ""}`}
                         aria-haspopup="true"
+                        aria-expanded={columnsOpen}
+                        aria-controls="ga-columns-dropdown"
                         onClick={() => setColumnsOpen((o) => !o)}
                       >
                         Columns
                       </button>
                       {columnsOpen && (
                         <div
+                          id="ga-columns-dropdown"
                           className="ga-columns-menu"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -687,6 +690,7 @@ function GrantAwards(): JSX.Element {
                   <div className="ccf-toolbar-filters">
                     <select
                       id="cycle-select"
+                      aria-label="Cycle"
                       value={selectedCycle}
                       onChange={(e) => setSelectedCycle(e.target.value)}
                     >
@@ -697,6 +701,7 @@ function GrantAwards(): JSX.Element {
                     </select>
                     <select
                       id="type-select"
+                      aria-label="Program Type"
                       value={selectedProgramType}
                       onChange={(e) => setSelectedProgramType(e.target.value as any)}
                     >

@@ -81,7 +81,7 @@
   font-size: smaller;
 }
 
-.pwd-reqs label#checkbox {
+.pwd-reqs label.checkbox {
   display: block;
   margin-bottom: 10px;
 }
@@ -92,12 +92,12 @@
   font-size: 0.75em;
 }
 
-#checkbox {
+.checkbox {
   margin-top: 10px;
   font-size: smaller;
 }
 
-.pwd-reqs #checkbox input[type="checkbox"] {
+.pwd-reqs .checkbox input[type="checkbox"] {
   margin-left: 10px;
   vertical-align: middle;
   margin-right: 10px;

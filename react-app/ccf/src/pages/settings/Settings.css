@@ -182,7 +182,7 @@ label {
   font-size: smaller;
 }
 
-.pwd-reqs label#checkbox {
+.pwd-reqs label.checkbox {
   display: block;
   margin-bottom: 10px;
 }
@@ -194,7 +194,7 @@ label {
   margin-left: 30px;
 }
 
-#checkbox {
+.checkbox {
   margin-top: 10px;
   font-size: smaller;
 }
@@ -215,7 +215,7 @@ label {
   border-radius: 2px;
 }
 
-.pwd-reqs #checkbox input[type="checkbox"] {
+.pwd-reqs .checkbox input[type="checkbox"] {
   margin-left: 10px;
   vertical-align: middle;
   margin-right: 10px;
