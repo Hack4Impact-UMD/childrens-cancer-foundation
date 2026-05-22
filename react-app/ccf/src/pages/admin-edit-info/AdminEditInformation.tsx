@@ -21,7 +21,7 @@ import {
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { FAQItem } from "../../types/faqTypes";
-import { getFAQs, initializeSampleFAQs, createNewFAQ } from "../../backend/faq-handler";
+import { getFAQs, createNewFAQ } from "../../backend/faq-handler";
 import { AboutPage, ApplicationAboutType } from "../../types/aboutTypes";
 import { getAboutPages, upsertAboutPage, getDefaultAboutPage } from "../../backend/about-handler";
 import MarkdownPreviewer from "../../components/markdown/Markdown";
@@ -543,36 +543,6 @@ function AdminEditInformation(): JSX.Element {
 
                             {/* FAQ Management Buttons */}
                             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                                <Button
-                                    variant="contained"
-                                    onClick={async () => {
-                                        try {
-                                            await initializeSampleFAQs();
-                                            // Refresh FAQ data
-                                            const updatedFaqs = await getFAQs();
-                                            setFAQData(updatedFaqs);
-                                            alert('Sample FAQs initialized successfully!');
-                                        } catch (error) {
-                                            console.error('Error initializing FAQs:', error);
-                                            alert('Error initializing FAQs. Please try again.');
-                                        }
-                                    }}
-                                    sx={{
-                                        backgroundColor: '#79747E',
-                                        fontFamily: 'Roboto, sans-serif',
-                                        textTransform: 'none',
-                                        height: '40px',
-                                        fontSize: '1rem',
-                                        fontWeight: 'normal',
-                                        borderRadius: '10px',
-                                        '&:hover': {
-                                            backgroundColor: '#003E83'
-                                        }
-                                    }}
-                                >
-                                    Initialize Sample FAQs
-                                </Button>
-
                                 <Button
                                     variant="contained"
                                     onClick={() => setShowNewFAQForm(!showNewFAQForm)}

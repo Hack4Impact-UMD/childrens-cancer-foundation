@@ -46,14 +46,7 @@ type ColumnKey =
   | "save"
   | "title"
   | "applicationCycle"
-  | "submitTime"
-  | "typesOfCancerAddressed"
-  | "adminOfficialName"
-  | "adminEmail"
-  | "adminPhoneNumber"
-  | "institutionEmail"
-  | "requestor"
-  | "timeframe";
+  | "typesOfCancerAddressed";
 
 interface CommentModalProps {
   isOpen: boolean;
@@ -163,14 +156,7 @@ function GrantAwards(): JSX.Element {
     // optional off by default
     title: false,
     applicationCycle: false,
-    submitTime: false,
     typesOfCancerAddressed: false,
-    adminOfficialName: false,
-    adminEmail: false,
-    adminPhoneNumber: false,
-    institutionEmail: false,
-    requestor: false,
-    timeframe: false,
   });
 
   const sidebarItems = getSidebarbyRole("admin");
@@ -488,14 +474,7 @@ function GrantAwards(): JSX.Element {
       { key: "programType", label: "Program Type" },
       { key: "institution", label: "Institution" },
       { key: "applicationCycle", label: "Cycle" },
-      { key: "submitTime", label: "Submitted" },
       { key: "typesOfCancerAddressed", label: "Types of Cancer Addressed" },
-      { key: "adminOfficialName", label: "Admin Official Name" },
-      { key: "adminEmail", label: "Admin Email" },
-      { key: "adminPhoneNumber", label: "Admin Phone" },
-      { key: "institutionEmail", label: "Institution Email" },
-      { key: "requestor", label: "Requestor" },
-      { key: "timeframe", label: "Timeframe" },
       { key: "finalScore", label: "Final Avg. Score" },
       { key: "requested", label: "Requested" },
       { key: "recommended", label: "Recommended" },
@@ -521,22 +500,8 @@ function GrantAwards(): JSX.Element {
                 return `"${sanitizeCsvCell(app.institution)}"`;
               case "applicationCycle":
                 return `"${sanitizeCsvCell(app.applicationCycle || "")}"`;
-              case "submitTime":
-                return `"${sanitizeCsvCell(app.submitTime || "")}"`;
               case "typesOfCancerAddressed":
                 return `"${sanitizeCsvCell(app.typesOfCancerAddressed || "")}"`;
-              case "adminOfficialName":
-                return `"${sanitizeCsvCell(app.adminOfficialName || "")}"`;
-              case "adminEmail":
-                return `"${sanitizeCsvCell(app.adminEmail || "")}"`;
-              case "adminPhoneNumber":
-                return `"${sanitizeCsvCell(app.adminPhoneNumber || "")}"`;
-              case "institutionEmail":
-                return `"${sanitizeCsvCell(app.institutionEmail || "")}"`;
-              case "requestor":
-                return `"${sanitizeCsvCell(app.requestor || "")}"`;
-              case "timeframe":
-                return `"${sanitizeCsvCell(app.timeframe || "")}"`;
               case "finalScore":
                 return String(app.finalScore);
               case "requested":
@@ -704,20 +669,10 @@ function GrantAwards(): JSX.Element {
                             { key: "programType", label: "Program Type" },
                             { key: "institution", label: "Institution" },
                             { key: "applicationCycle", label: "Cycle" },
-                            { key: "submitTime", label: "Submitted" },
                             {
                               key: "typesOfCancerAddressed",
                               label: "Types of Cancer Addressed",
                             },
-                            {
-                              key: "adminOfficialName",
-                              label: "Admin Official",
-                            },
-                            { key: "adminEmail", label: "Admin Email" },
-                            { key: "adminPhoneNumber", label: "Admin Phone" },
-                            { key: "institutionEmail", label: "Inst. Email" },
-                            { key: "requestor", label: "Requestor" },
-                            { key: "timeframe", label: "Timeframe" },
                             { key: "finalScore", label: "Final Score" },
                             { key: "requested", label: "Requested" },
                             { key: "recommended", label: "Recommended" },
@@ -801,22 +756,9 @@ function GrantAwards(): JSX.Element {
                           </th>
                         )}
                         {visibleColumns.applicationCycle && <th>Cycle</th>}
-                        {visibleColumns.submitTime && <th>Submitted</th>}
                         {visibleColumns.typesOfCancerAddressed && (
                           <th>Types of Cancer Addressed</th>
                         )}
-                        {visibleColumns.adminOfficialName && (
-                          <th>Admin Official Name</th>
-                        )}
-                        {visibleColumns.adminEmail && <th>Admin Email</th>}
-                        {visibleColumns.adminPhoneNumber && (
-                          <th>Admin Phone</th>
-                        )}
-                        {visibleColumns.institutionEmail && (
-                          <th>Institution Email</th>
-                        )}
-                        {visibleColumns.requestor && <th>Requestor</th>}
-                        {visibleColumns.timeframe && <th>Timeframe</th>}
                         {visibleColumns.finalScore && (
                           <th
                             onClick={() => handleSort("finalScore")}
@@ -882,11 +824,6 @@ function GrantAwards(): JSX.Element {
                               {app.applicationCycle || "—"}
                             </td>
                           )}
-                          {visibleColumns.submitTime && (
-                            <td className={!app.submitTime ? "cell-empty" : ""}>
-                              {app.submitTime || "—"}
-                            </td>
-                          )}
                           {visibleColumns.typesOfCancerAddressed && (
                             <td
                               className={
@@ -894,48 +831,6 @@ function GrantAwards(): JSX.Element {
                               }
                             >
                               {app.typesOfCancerAddressed || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.adminOfficialName && (
-                            <td
-                              className={
-                                !app.adminOfficialName ? "cell-empty" : ""
-                              }
-                            >
-                              {app.adminOfficialName || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.adminEmail && (
-                            <td className={!app.adminEmail ? "cell-empty" : ""}>
-                              {app.adminEmail || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.adminPhoneNumber && (
-                            <td
-                              className={
-                                !app.adminPhoneNumber ? "cell-empty" : ""
-                              }
-                            >
-                              {app.adminPhoneNumber || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.institutionEmail && (
-                            <td
-                              className={
-                                !app.institutionEmail ? "cell-empty" : ""
-                              }
-                            >
-                              {app.institutionEmail || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.requestor && (
-                            <td className={!app.requestor ? "cell-empty" : ""}>
-                              {app.requestor || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.timeframe && (
-                            <td className={!app.timeframe ? "cell-empty" : ""}>
-                              {app.timeframe || "—"}
                             </td>
                           )}
                           {visibleColumns.finalScore && (

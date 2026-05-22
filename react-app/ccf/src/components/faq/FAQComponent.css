@@ -50,20 +50,26 @@
     align-items: center;
     width: 100%;
     padding: 0px 10px;
+    gap: 12px;
     position: relative;
     z-index: 1;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 .faq-question-content {
     display: flex;
     align-items: center;
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
     gap: 12px;
 }
 
 .faq-question-text {
-    flex: 1;
+    flex: 1 1 0;
     min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .expand-icon {
@@ -84,7 +90,6 @@
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
-    margin-left: auto;
 }
 
 .markdown-preview-light {
