@@ -99,8 +99,10 @@
     background-color: #F0C567;
     margin-right: 10px;
     color: #003E83;
-    padding: 5px;
+    padding: 6px;
     border-radius: 4px;
+    font-size: 24px;
+    flex-shrink: 0;
 }
 
 .due-date-button {

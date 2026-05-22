@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import document from '../../assets/documentIcon.png';
+import { FaClipboardList, FaEnvelope } from "react-icons/fa";
 import "./ReviewerDashboard.css";
 import ContactUs from "../../components/contact/ContactUs";
 import DashboardSection from "../../components/dashboard-layout/DashboardSection";
@@ -218,7 +218,7 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                     <div className="dashboard-sections-content">
                         <DashboardSection
                             title="Applications to Review"
-                            icon={<img src={document} alt="" aria-hidden="true" className="dashboard-section-icon" />}
+                            icon={<FaClipboardList className="dashboard-section-icon" />}
                         >
                             <div className="ReviewerDashboard-applications-container">
                                     {loading ? (
@@ -297,7 +297,7 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
 
                         <DashboardSection
                             title="Contact Us"
-                            icon={<img src={document} alt="" aria-hidden="true" className="dashboard-section-icon" />}
+                            icon={<FaEnvelope className="dashboard-section-icon" />}
                         >
                             <ContactUs email={email} phone={phone} hours={hours} />
                         </DashboardSection>
