@@ -307,7 +307,7 @@ function AdminPostGrantReports(): JSX.Element {
                                     filteredApplications.map((app) => (
                                         <tr key={app.applicationId}>
                                             {/* <td className="application-id-cell">{app.applicationId?.toString() || 'N/A'}</td> */}
-                                            <td>{app.title || 'N/A'}</td>
+                                            <td><div className="pgr-title-cell">{app.title || 'N/A'}</div></td>
                                             <td>{app.principalInvestigator || 'N/A'}</td>
                                             <td>{app.institution || 'N/A'}</td>
                                             <td>{(app as any).grantType || 'N/A'}</td>

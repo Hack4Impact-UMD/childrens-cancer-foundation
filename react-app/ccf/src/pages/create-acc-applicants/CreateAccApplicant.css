@@ -120,9 +120,8 @@
 }
 
 .pwd-reqs {
-  width: 75%;
+  width: 100%;
   margin-top: 10px;
-  margin-left: 30px;
   color: #545454;
 }
 
@@ -140,7 +139,6 @@
   color: var(--color-red);
   margin-top: 5px;
   font-size: 0.75em;
-  margin-left: 30px;
 }
 
 #checkbox {

@@ -17,16 +17,24 @@
 }
 
 .ApplicantDashboard-application-box h3 {
-    margin: 0 0 16px;
-    font-size: 1.125rem;
+    margin: 0 0 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #666;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
 .ApplicantDashboard-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-    justify-content: flex-start;
     margin-top: 20px;
+}
+
+.ApplicantDashboard-buttons > * {
+    flex: 1;
+    min-width: 140px;
 }
 
 .ApplicantDashboard ul {
@@ -63,21 +71,23 @@
 
 .ApplicantDashboard .application-icon {
     background-color: #F0C567;
-    padding: 5px;
+    padding: 6px;
     border-radius: 4px;
+    font-size: 22px;
+    flex-shrink: 0;
 }
 
 .ApplicantDashboard-application-status {
     display: flex;
     background-color: rgba(217, 217, 217, 0.5);
     border-radius: 8px;
-    padding: 10px 16px;
-    min-width: 220px;
-    min-height: 44px;
+    padding: 8px 14px;
+    min-width: 140px;
     justify-content: center;
     text-align: center;
     align-items: center;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .ApplicantDashboard-application-status:hover {

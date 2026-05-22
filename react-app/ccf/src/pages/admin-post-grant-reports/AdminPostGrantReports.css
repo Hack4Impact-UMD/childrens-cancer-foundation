@@ -33,6 +33,14 @@
 /* Table chrome is provided by the shared .ccf-table-container / .ccf-table /
    .ccf-table-scroll classes (see DashboardLayout.css). Page-specific styles only. */
 
+.pgr-title-cell {
+    max-width: 280px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
 .application-id-cell {
     font-family: 'Courier New', monospace;
     font-weight: 600;

@@ -54,11 +54,6 @@
     width: 100%;
 }
 
-.deadlines-section {
-    display: flex;
-    flex-direction: column;
-}
-
 .deadlines-header-container {
     display: flex;
     flex-direction: row;
@@ -110,7 +105,7 @@
     font-size: 20px !important;
     color: #003E83;
     white-space: nowrap;
-    min-width: auto;
+    width: 260px;
     flex-shrink: 0;
 }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { verifyPasswordResetCode, confirmPasswordReset } from "firebase/auth";
 import { auth } from "../../index";
+import { checkPasswordRequirements as checkPasswordRequirementsUtil } from "../../utils/validation";
 import "./EmailActionHandler.css";
 import Button from "../../components/buttons/Button";
 import { TextField, InputAdornment, IconButton } from '@mui/material';
@@ -20,6 +21,11 @@ function EmailActionHandler() {
     const [isVerifying, setIsVerifying] = useState<boolean>(true);
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+    const [specialChar, setSpecialChar] = useState(false);
+    const [capitalLetter, setCapitalLetter] = useState(false);
+    const [number, setNumber] = useState(false);
+    const [minLength, setMinLength] = useState(false);
+    const [showReqs, setShowReqs] = useState(false);
 
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword);
@@ -64,8 +70,8 @@ function EmailActionHandler() {
             return;
         }
 
-        if (newPassword.length < 6) {
-            setError('Password must be at least 6 characters long.');
+        if (!minLength || !specialChar || !capitalLetter || !number) {
+            setError('Password does not meet all requirements.');
             return;
         }
 
@@ -101,6 +107,11 @@ function EmailActionHandler() {
         const { name, value } = e.target;
         if (name === 'newPassword') {
             setNewPassword(value);
+            const reqs = checkPasswordRequirementsUtil(value);
+            setSpecialChar(reqs.specialChar);
+            setCapitalLetter(reqs.capitalLetter);
+            setNumber(reqs.number);
+            setMinLength(reqs.minLength);
         } else if (name === 'confirmPassword') {
             setConfirmPassword(value);
         }
@@ -187,6 +198,8 @@ function EmailActionHandler() {
                         type={showPassword ? 'text' : 'password'}
                         variant="outlined"
                         onChange={handleInputChange}
+                        onFocus={() => setShowReqs(true)}
+                        onBlur={() => setShowReqs(false)}
                         value={newPassword}
                         required
                         disabled={isLoading}
@@ -205,9 +218,19 @@ function EmailActionHandler() {
                         }}
                         sx={{
                             width: '90%',
-                            paddingBottom: '20px'
+                            paddingBottom: showReqs ? '8px' : '20px'
                         }}
                     />
+
+                    {showReqs && (
+                        <div className="eah-pwd-reqs">
+                            <p>Password requires:</p>
+                            <label><input type="checkbox" checked={minLength} readOnly /> More than 6 characters</label>
+                            <label><input type="checkbox" checked={specialChar} readOnly /> One special character</label>
+                            <label><input type="checkbox" checked={capitalLetter} readOnly /> One capital letter</label>
+                            <label><input type="checkbox" checked={number} readOnly /> One number</label>
+                        </div>
+                    )}
 
                     <TextField
                         id="confirm-password"

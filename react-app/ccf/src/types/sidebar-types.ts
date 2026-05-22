@@ -63,13 +63,6 @@ export const getApplicantSidebarItems = async (): Promise<SideBarTypes[]> => {
             { name: 'Account Settings', path: '/applicant/settings' }
         ];
 
-        // Add decisions link with exclamation icon if in Release Decisions stage
-        if (currentCycle.stage === "Release Decisions") {
-            baseSidebar.splice(1, 0, { name: 'Decisions', path: '/applicant/decisions' });
-        }
-
-        // Post-grant reports are now shown in the main dashboard instead of sidebar
-
         baseSidebar.push({ name: 'Logout', path: '/login' });
 
         return baseSidebar;

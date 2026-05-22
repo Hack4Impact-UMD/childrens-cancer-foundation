@@ -9,7 +9,6 @@ import "./App.css";
 import AccountPageApplicants from "./pages/create-acc-applicants/CreateAccApplicant";
 import AccountPageReviewers from "./pages/create-acc-reviewer/CreateAccReviewer";
 import ApplicantUsersDashboard from "./pages/applicant-dashboard/ApplicantDashboard";
-import ApplicantDecisions from "./pages/applicant-decisions/ApplicantDecisions";
 import AdminProtectedRoute from './components/Routing/AdminProtectedRoute';
 import AdminApplicationsDatabase from "./pages/admin-database/AdminDatabase";
 import ApplicantProtectedRoute from './components/Routing/ApplicantProtectedRoute';
@@ -96,13 +95,6 @@ function App(): JSX.Element {
             <ApplicantProtectedRoute element={<ApplicantUsersDashboard />} />
           }
         />
-        <Route
-          path="/applicant/decisions"
-          element={
-            <ApplicantProtectedRoute element={<ApplicantDecisions />} />
-          }
-        />
-
         <Route
           path="/applicant/results"
           element={

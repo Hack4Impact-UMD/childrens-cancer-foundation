@@ -109,6 +109,30 @@
     text-decoration: underline;
 }
 
+.eah-pwd-reqs {
+    width: 90%;
+    margin-bottom: 16px;
+    color: #545454;
+    font-size: 0.875rem;
+}
+
+.eah-pwd-reqs p {
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.eah-pwd-reqs label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.eah-pwd-reqs input[type="checkbox"] {
+    margin-right: 10px;
+    accent-color: #003E83;
+    transform: scale(1.25);
+    vertical-align: middle;
+}
+
 /* Responsive design for smaller screens */
 @media (max-width: 600px) {
     .container {

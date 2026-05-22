@@ -446,7 +446,6 @@ function ApplicantUsersDashboard(): JSX.Element {
                   <div className="ApplicantDashboard-buttons">
                     <Button
                       disabled={!applicationsOpen}
-                      width="25%"
                       height="46px"
                       onClick={() => {
                         navigate("/applicant/application-form/nextgen");
@@ -456,7 +455,6 @@ function ApplicantUsersDashboard(): JSX.Element {
                     </Button>
                     <Button
                       disabled={!applicationsOpen}
-                      width="25%"
                       height="46px"
                       onClick={() => {
                         navigate("/applicant/application-form/research");
@@ -466,7 +464,6 @@ function ApplicantUsersDashboard(): JSX.Element {
                     </Button>
                     <Button
                       disabled={!applicationsOpen}
-                      width="25%"
                       height="46px"
                       onClick={() => {
                         navigate("/applicant/application-form/nonresearch");

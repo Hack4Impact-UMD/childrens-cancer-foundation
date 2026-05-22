@@ -521,7 +521,7 @@ const AssignReviewersPage: React.FC = () => {
             </div>
           </div>
           <span className="ar-expand-icon">
-            {app.expanded ? <FaArrowUp color="#1e3a8a" /> : <FaArrowDown color="white" />}
+            {app.expanded ? <FaArrowUp /> : <FaArrowDown />}
           </span>
         </div>
 
@@ -550,7 +550,7 @@ const AssignReviewersPage: React.FC = () => {
                       className="ar-add-reviewer"
                       onClick={() => openReviewerModal(app.document_id, 'primary')}
                     >
-                      +
+                      + Assign
                     </button>
                   </div>
                 )}

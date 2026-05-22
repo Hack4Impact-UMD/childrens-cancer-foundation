@@ -37,12 +37,14 @@
 }
 
 .faq-answer {
-    margin-top: 5px;
+    margin-top: 0;
     font-size: 16px;
     color: #333;
     text-align: left;
-    width: 95%;
-    border: 2px solid #b71c1c !important;
+    width: 100%;
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    box-sizing: border-box;
 }
 
 .faq-question-header {
@@ -96,7 +98,8 @@
     border-radius: 4px;
     padding: 12px;
     margin-top: 8px;
-    min-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .markdown-preview-light .markdown-previewer {
