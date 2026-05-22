@@ -1,109 +1,64 @@
-.search-input, .filter-dropdown {
-    border: 1px solid #ccc;
-    padding: 8px;
-    border-radius: 4px; 
-    width: 100%;
-    font-size: 16px;
-    margin-left: 1%;
-    margin-right: 1%;
-    margin-top: 1%;
-}
+/* Page frame, section chrome, and toolbar styling (.dashboard-sections-content,
+   .dashboard-section, .ccf-toolbar, .ccf-toolbar-search, .ccf-toolbar-filters)
+   come from RoleDashboardShell + DashboardLayout.css. Page-specific styles only
+   below. */
 
-.search-input:focus, .filter-dropdown:focus {
-    outline: none;
-}
-
-.filter-container {
-    display: flex;
-    gap: 10px; 
-    margin-bottom: 16px;
-}
-
-.filter-dropdown {
-    min-width: 150px;
-}
-
-.filter-dropdown:hover {
-    cursor: pointer;
-}
-
-/* Page frame and section chrome (.dashboard-container, .dashboard-sections-content,
-   .dashboard-section, .dashboard-content, etc.) come from RoleDashboardShell +
-   DashboardLayout.css now. Page-specific styles only below. */
-
-.section-header {
+.admin-database-page .section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    font-family:Arial, Helvetica, sans-serif;
+    cursor: pointer;
 }
 
-.header-content {
+.admin-database-page .header-content {
     display: flex;
     align-items: center;
 }
 
-.header-content h2 {
+.admin-database-page .header-content h2 {
     font-size: 1.5rem;
-    font-family:Arial, Helvetica, sans-serif;
     margin: 0;
     font-weight: 700;
-    color: #000000;
+    color: #000;
 }
 
-.expand-collapse-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    color: #6e7f91;
-}
-
-.expand-collapse-btn:hover {
-    color: #6e7f91;
-}
-
-.applications-container h3 {
+.admin-database-page .applications-container h3 {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #000000;
+    color: #000;
     margin-top: 1rem;
     margin-bottom: 1rem;
 }
 
-.applications-container {
-    padding: 10px;
-    border: 5px solid #BE0019;
+.admin-database-page .applications-container {
+    padding: 12px;
+    border: 5px solid var(--ccf-red);
     border-radius: 8px;
     background-color: white;
-    margin-bottom: 1%;
-}
-
-.buttons {
+    margin-bottom: 0;
+    box-sizing: border-box;
     display: flex;
-    justify-content: space-around;
-    margin-top: 10px;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    overflow: hidden;
 }
 
-.application-btn {
-    background-color: #003E83;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 1rem;
-    width: 25%;
-}
-
-.application-btn:hover {
-    background-color: #163256;
-}
-
-.header-title {
+.admin-database-page .admin-database-year-list {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.admin-database-page .empty-state {
+    padding: 24px;
+    background-color: var(--ccf-surface);
+    border-radius: var(--ccf-radius);
+    text-align: center;
+    color: var(--ccf-text-muted);
+    font-size: 15px;
 }
 
 .admin-database-page .section-icon {
@@ -120,9 +75,9 @@
 
 .admin-database-page .single-application-box {
     border-radius: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     overflow: hidden;
     width: 100%;
     height: auto;
@@ -130,6 +85,7 @@
     flex-direction: column;
     align-items: stretch;
     padding: 12px 16px;
+    box-sizing: border-box;
 }
 
 .admin-database-page .single-application-box:not(.expanded) {
@@ -230,36 +186,11 @@
     color: #545454;
 }
 
-.application-icon {
+.admin-database-page .application-icon {
     margin-right: 10px;
-    color: #003E83;
+    color: var(--ccf-blue);
     padding: 5px;
     border-radius: 4px;
-}
-
-.application-status {
-    display: flex;
-    border: #D9D9D980;
-    background-color: #D9D9D980;
-    padding: 10px;
-    width: 300px;
-    height: 30px;
-    border-radius: 8px;
-    justify-content: center;
-    text-align: center;
-    align-items: center;
-}
-
-.application-status-icon {
-    margin-left: 10px;
-    color: white;
-}
-
-.expand-collapse-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #0056b3;
 }
 
 .admin-database-page .divider {
@@ -269,14 +200,14 @@
     margin: 0 0 16px 0;
 }
 
-.action-buttons {
+.admin-database-page .action-buttons {
     display: flex;
     flex-direction: column;
     gap: 16px;
     margin-top: 20px;
 }
 
-.action-button {
+.admin-database-page .action-button {
     flex: 1;
     padding: 12px;
     border-radius: 20px;
@@ -290,33 +221,22 @@
     transition: background-color 0.2s ease;
 }
 
-.cover-sheet {
-    background-color: #003E83;
+.admin-database-page .cover-sheet {
+    background-color: var(--ccf-blue);
 }
 
-.completed-app {
-    background-color: #003E83;
+.admin-database-page .cover-sheet:hover {
+    background-color: #002a5c;
 }
 
-.button-icon {
+.admin-database-page .button-icon {
     margin-left: 8px;
 }
 
 .admin-database-page .application-details {
     padding: 0;
     width: 100%;
-}
-  
-.expanded-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.expanded-subtitle {
-    color: #666;
-    font-size: 0.95rem;
-    margin-bottom: 1rem;
+    min-width: 0;
 }
 
 .admin-database-page .admin-details-two-columns {

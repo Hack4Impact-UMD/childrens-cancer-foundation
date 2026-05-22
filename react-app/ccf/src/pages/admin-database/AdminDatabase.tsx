@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import "./AdminDatabase.css";
-import { FaArrowDown, FaArrowUp, FaChevronRight } from "react-icons/fa";
-import document from "../../assets/documentIcon.png";
+import { FaArrowDown, FaArrowUp, FaChevronRight, FaSearch } from "react-icons/fa";
 import yellowDocument from "../../assets/yellowDocumentIcon.png";
 import blueDocument from "../../assets/blueDocumentIcon.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
@@ -176,71 +175,84 @@ function AdminApplicationsDatabase(): JSX.Element {
       title="Administrator Dashboard"
       stackClassName="admin-database-page"
     >
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
+      <div className="dashboard-sections-content">
+          <div className="ccf-toolbar">
+            <div className="ccf-toolbar-row">
+              <div className="ccf-toolbar-search">
+                <FaSearch className="ccf-toolbar-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search by application title"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  aria-label="Search applications"
+                />
+              </div>
+            </div>
+            <div className="ccf-toolbar-row">
+              <div className="ccf-toolbar-filters">
+                <select
+                  value={filters.applicationCycle}
+                  onChange={(e) =>
+                    setFilters({ ...filters, applicationCycle: e.target.value })
+                  }
+                  aria-label="Filter by application cycle"
+                >
+                  <option value="">Application Cycle</option>
+                  {availableYears.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
 
-          <div className="filter-container">
-            <select
-              className="filter-dropdown"
-              onChange={(e) =>
-                setFilters({ ...filters, applicationCycle: e.target.value })
-              }
-            >
-              <option value="">Application Cycle</option>
-              {availableYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
+                <select
+                  value={filters.decision}
+                  onChange={(e) =>
+                    setFilters({ ...filters, decision: e.target.value })
+                  }
+                  aria-label="Filter by decision"
+                >
+                  <option value="">Decision</option>
+                  <option value="accepted">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="pending">Pending</option>
+                </select>
 
-            <select
-              className="filter-dropdown"
-              onChange={(e) =>
-                setFilters({ ...filters, decision: e.target.value })
-              }
-            >
-              <option value="">Decision</option>
-              <option value="accepted">Approved</option>
-              <option value="rejected">Rejected</option>
-              <option value="pending">Pending</option>
-            </select>
+                <select
+                  value={filters.grantType}
+                  onChange={(e) =>
+                    setFilters({ ...filters, grantType: e.target.value })
+                  }
+                  aria-label="Filter by grant type"
+                >
+                  <option value="">Grant Type</option>
+                  <option value="research">Research</option>
+                  <option value="nextgen">Next Gen</option>
+                </select>
 
-            <select
-              className="filter-dropdown"
-              onChange={(e) =>
-                setFilters({ ...filters, grantType: e.target.value })
-              }
-            >
-              <option value="">Grant Type</option>
-              <option value="research">Research</option>
-              <option value="nextgen">Next Gen</option>
-            </select>
-
-            <select
-              className="filter-dropdown"
-              onChange={(e) =>
-                setFilters({ ...filters, institution: e.target.value })
-              }
-            >
-              <option value="">Institution</option>
-              {availableInstitutions.map((institution) => (
-                <option key={institution} value={institution}>
-                  {institution}
-                </option>
-              ))}
-            </select>
+                <select
+                  value={filters.institution}
+                  onChange={(e) =>
+                    setFilters({ ...filters, institution: e.target.value })
+                  }
+                  aria-label="Filter by institution"
+                >
+                  <option value="">Institution</option>
+                  {availableInstitutions.map((institution) => (
+                    <option key={institution} value={institution}>
+                      {institution}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           {Object.keys(filteredApplications).length === 0 ? (
-            "No applications matching filters"
+            <div className="empty-state">No applications matching filters</div>
           ) : (
-            <div className="dashboard-sections-content">
+            <div className="admin-database-year-list">
               {Object.keys(filteredApplications)
                 .sort((a, b) => Number(b) - Number(a))
                 .map((year) => (
@@ -251,7 +263,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                     >
                       <div className="header-content">
                         <img
-                          src={document}
+                          src={blueDocument}
                           alt="Application Icon"
                           className="section-icon year-section-icon"
                         />
@@ -436,6 +448,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                 ))}
             </div>
           )}
+      </div>
     </RoleDashboardShell>
   );
 }

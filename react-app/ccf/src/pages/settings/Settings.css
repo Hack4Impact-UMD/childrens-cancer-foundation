@@ -2,18 +2,22 @@
    (see DashboardLayout.css) and the shared <Header /> component, so this file
    only styles the inner sections. */
 
+/* Match the dashboard layout used everywhere else: yellow outer card with 24px
+   padding wrapping plain white inner sections, so the breathing room between
+   the yellow surround and the white card matches the rest of the app. */
 .AccountSettings-sections-content {
-  border-radius: var(--ccf-radius);
+  background-color: var(--ccf-yellow);
+  padding: 24px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 20px;
 }
 
 .AccountSettings-section {
   padding: 20px;
   border-radius: var(--ccf-radius);
   box-shadow: var(--ccf-shadow-sm);
-  border: var(--ccf-section-border);
   background-color: var(--ccf-surface);
   /* flex + gap so every child (header / fields / button) is spaced uniformly
      regardless of which optional rows (email, pwd-reqs, validation) are present. */
