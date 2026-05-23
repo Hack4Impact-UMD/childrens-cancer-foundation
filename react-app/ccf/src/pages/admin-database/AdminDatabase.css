@@ -93,24 +93,36 @@
     color: white;
 }
 
+/* Expanded card: keep the blue summary on top (consistent with the collapsed
+   state) and reveal a clean white details panel beneath, so the open card
+   reads as "header + content" instead of a single washed-out blue block. */
 .admin-database-page .single-application-box.expanded {
-    background-color: #A1C5E4;
-    max-height: 2000px;
-    padding: 16px;
-    opacity: 1;
-    color: black;
-    height: auto;
+    background-color: #003E83;
+    color: white;
+    padding: 0;
     overflow: visible;
-}
-.admin-database-page .single-application-box.expanded .application-title{
-    color: #1E1E1E;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
 }
 
-.admin-database-page .single-application-box.expanded .subtext{
-    color: #545454;
+.admin-database-page .single-application-box.expanded .application-summary-row {
+    padding: 14px 18px;
+    align-items: center;
+    margin-bottom: 0;
 }
 
-.admin-database-page .single-application-box.expanded .application-header{
+.admin-database-page .single-application-box.expanded .application-title {
+    color: white;
+}
+
+.admin-database-page .single-application-box.expanded .subtext {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.admin-database-page .single-application-box.expanded .application-toggle-btn {
+    color: white;
+}
+
+.admin-database-page .single-application-box.expanded .application-header {
     margin-top: 0;
 }
 
@@ -120,12 +132,10 @@
     justify-content: space-between;
     gap: 16px;
     width: 100%;
+    box-sizing: border-box;
 }
-
-.admin-database-page .single-application-box.expanded .application-summary-row {
-    align-items: flex-start;
-    margin-bottom: 12px;
-}
+/* Note: the expanded-state overrides for .application-summary-row live
+   alongside the other .expanded rules above. */
 
 .admin-database-page .application-header {
     display: flex;
@@ -193,90 +203,152 @@
     border-radius: 4px;
 }
 
+/* Divider is no longer needed — the blue header / white details bg already
+   reads as a clear separator. Kept declared (display: none) so any stray
+   usage doesn't print an unwanted line. */
 .admin-database-page .divider {
-    border: none;
-    height: 2px;
-    background-color: #003E83;
-    margin: 0 0 16px 0;
+    display: none;
+}
+
+.admin-database-page .application-details {
+    background-color: var(--ccf-surface);
+    color: var(--ccf-text);
+    padding: 20px 22px;
+    border-radius: 0 0 8px 8px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.admin-database-page .admin-details-two-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px 28px;
+}
+
+.admin-database-page .admin-details-block {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+/* Label sits on its own line in a small, muted label-style; value renders
+   below in normal size — better scannability than label + value crammed
+   inline with wrapping. */
+.admin-database-page .admin-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 0;
+}
+
+.admin-database-page .admin-detail-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ccf-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+.admin-database-page .admin-detail-value {
+    color: var(--ccf-text);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin: 0;
+    word-break: break-word;
+}
+
+/* Status pill inside the details grid. Color reflects the decision so it
+   reads at a glance. */
+.admin-database-page .admin-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.6;
+    width: fit-content;
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.admin-database-page .admin-status-accepted,
+.admin-database-page .admin-status-approved {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.admin-database-page .admin-status-rejected,
+.admin-database-page .admin-status-denied {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.admin-database-page .admin-status-pending,
+.admin-database-page .admin-status- {
+    background-color: #fef3c7;
+    color: #92400e;
 }
 
 .admin-database-page .action-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-top: 20px;
 }
 
 .admin-database-page .action-button {
-    flex: 1;
-    padding: 12px;
-    border-radius: 20px;
+    flex: 1 1 220px;
+    padding: 10px 18px;
+    border-radius: 8px;
     border: none;
     color: white;
     font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s ease;
+    gap: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
 }
 
-.admin-database-page .cover-sheet {
+.admin-database-page .action-button:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+}
+
+.admin-database-page .action-button:active {
+    transform: translateY(1px);
+}
+
+/* Primary action: opens the rich cover sheet modal. */
+.admin-database-page .action-button.cover-sheet {
     background-color: var(--ccf-blue);
 }
 
-.admin-database-page .cover-sheet:hover {
+.admin-database-page .action-button.cover-sheet:hover {
     background-color: #002a5c;
 }
 
-.admin-database-page .button-icon {
-    margin-left: 8px;
+/* Secondary action: opens the source PDF. Slightly different tone (outlined
+   over white) so the two buttons read as distinct affordances. */
+.admin-database-page .action-button.application-pdf {
+    background-color: var(--ccf-surface);
+    color: var(--ccf-blue);
+    border: 1.5px solid var(--ccf-blue);
 }
 
-.admin-database-page .application-details {
-    padding: 0;
-    width: 100%;
-    min-width: 0;
+.admin-database-page .action-button.application-pdf:hover {
+    background-color: rgba(0, 62, 131, 0.06);
 }
 
-.admin-database-page .admin-details-two-columns {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-}
-
-.admin-database-page .admin-details-block {
-    flex: 1;
-    min-width: 250px;
-}
-
-.admin-database-page .admin-detail-item {
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: row;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.admin-database-page .admin-detail-label {
-    display: inline;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-    font-size: 16px;
-}
-
-.admin-database-page .admin-detail-value {
-    color: #555;
-    display: inline;
-    margin: 0;
-    font-size: 16px;
-    padding: 0;
-    background: none;
-    border: none;
-    border-radius: 0;
-    min-height: auto;
-    font-weight: 400;
-    line-height: 1.5;
+.admin-database-page .button-icon-leading {
+    font-size: 14px;
+    flex-shrink: 0;
 }

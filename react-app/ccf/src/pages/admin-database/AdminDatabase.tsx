@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./AdminDatabase.css";
-import { FaArrowDown, FaArrowUp, FaChevronRight, FaSearch } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaFileAlt, FaFilePdf, FaSearch } from "react-icons/fa";
 import yellowDocument from "../../assets/yellowDocumentIcon.png";
 import blueDocument from "../../assets/blueDocumentIcon.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
@@ -280,9 +280,6 @@ function AdminApplicationsDatabase(): JSX.Element {
                           {filteredApplications[year].map((app) => {
                             const isExpanded =
                               expandedApplications[app.applicationId ?? ""];
-                            const iconColor = isExpanded
-                              ? blueDocument
-                              : yellowDocument;
                             return (
                               <div
                                 key={app.applicationId}
@@ -292,7 +289,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                   <div className="application-header">
                                     <div className="application-info">
                                       <img
-                                        src={iconColor}
+                                        src={yellowDocument}
                                         alt="Document Icon"
                                         className="section-icon"
                                       />
@@ -401,8 +398,10 @@ function AdminApplicationsDatabase(): JSX.Element {
                                           <span className="admin-detail-label">
                                             Status:{" "}
                                           </span>
-                                          <span className="admin-detail-value">
-                                            {firstLetterCap(app.decision)}
+                                          <span
+                                            className={`admin-status-badge admin-status-${(app.decision || "pending").toLowerCase()}`}
+                                          >
+                                            {firstLetterCap(app.decision) || "Pending"}
                                           </span>
                                         </div>
                                       </div>
@@ -415,11 +414,11 @@ function AdminApplicationsDatabase(): JSX.Element {
                                           setOpenModal(app);
                                         }}
                                       >
+                                        <FaFileAlt className="button-icon-leading" />
                                         Cover Sheet Information
-                                        <FaChevronRight className="button-icon" />
                                       </Button>
                                       <Button
-                                        className="action-button cover-sheet"
+                                        className="action-button application-pdf"
                                         onClick={(event) => {
                                           event.stopPropagation();
                                           void openApplicationDocument(
@@ -427,8 +426,8 @@ function AdminApplicationsDatabase(): JSX.Element {
                                           );
                                         }}
                                       >
+                                        <FaFilePdf className="button-icon-leading" />
                                         Application PDF
-                                        <FaChevronRight className="button-icon" />
                                       </Button>
                                     </div>
                                     <AdminCoverPageModal
