@@ -71,8 +71,11 @@
   gap: 1rem;
 }
 
-#lastName {
-  box-sizing: border-box;
+/* Make First Name / Last Name columns share width evenly. Without flex: 1,
+   each column collapses to its input's intrinsic width. */
+.name-container > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .form-container2 {
@@ -89,21 +92,36 @@
   margin-top: 10px;
 }
 
+/* box-sizing here keeps width: 100% inputs (including the Institution <select>)
+   from overflowing the form container once padding/border are added. */
 .form-container2 .input {
   width: 100%;
+  box-sizing: border-box;
 }
 
+/* No fixed height — let the select size to its padding + text so the selected
+   option isn't vertically clipped. */
 .form-container2 select {
-  height: 2em;
   padding-left: 10px;
   border-radius: 10px;
   border-width: 1px;
 }
 
+/* The shared .login-content / .login-form layout assumes form-on-right with the
+   image filling the left side. The create-account pages put the form on the left,
+   so the asymmetric padding-left:0 + margin-right makes the right side look tighter
+   than the left. Re-symmetrize within the createAcc scope only. */
+.createAcc-page .login-content {
+  padding-left: 20px !important;
+}
+
+.createAcc-page .login-form {
+  margin-right: 0;
+}
+
 .pwd-reqs {
-  width: 75%;
+  width: 100%;
   margin-top: 10px;
-  margin-left: 30px;
   color: #545454;
 }
 
@@ -112,7 +130,7 @@
   font-size: smaller;
 }
 
-.pwd-reqs label#checkbox {
+.pwd-reqs label.checkbox {
   display: block;
   margin-bottom: 10px;
 }
@@ -121,10 +139,9 @@
   color: var(--color-red);
   margin-top: 5px;
   font-size: 0.75em;
-  margin-left: 30px;
 }
 
-#checkbox {
+.checkbox {
   margin-top: 10px;
   font-size: smaller;
 }
@@ -145,7 +162,7 @@
   border-radius: 2px;
 }
 
-.pwd-reqs #checkbox input[type="checkbox"] {
+.pwd-reqs .checkbox input[type="checkbox"] {
   margin-left: 10px;
   vertical-align: middle;
   margin-right: 10px;

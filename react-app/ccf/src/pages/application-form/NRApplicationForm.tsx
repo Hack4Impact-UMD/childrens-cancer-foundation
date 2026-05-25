@@ -107,6 +107,7 @@ function NRApplicationForm(): JSX.Element {
             await saveDraft();
             navigate('/applicant/dashboard');
         }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const saveAndExit = async () => {
@@ -167,9 +168,12 @@ function NRApplicationForm(): JSX.Element {
                 return;
             }
         }
-        
+
         await saveDraft();
-        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     const handleSubmit = async () => {
@@ -347,20 +351,24 @@ function NRApplicationForm(): JSX.Element {
             {renderPage()}
 
             <div className="btn-container">
-                <button type="button" onClick={goBack} className="back-btn">Go Back</button>
-                <button type="button" onClick={saveAndExit} className="back-btn">Save and Exit</button>
-                {currentPage < totalPages ? (
-                    <button type="button" onClick={currentPage === 1 ? handleStart : handleContinue} className="save-btn">{currentPage === 1 ? "Start" : "Save and Continue"}</button>
-                ) : (
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        className={`save-btn${appOpen && isFormValid() ? '' : ' disabled'}`}
-                        aria-disabled={!(appOpen && isFormValid())}
-                    >
-                        Save and Submit
-                    </button>
-                )}
+                <button type="button" onClick={goBack} className="app-form-btn app-form-btn-secondary">Go Back</button>
+                <div className="btn-right-group">
+                    <button type="button" onClick={saveAndExit} className="app-form-btn app-form-btn-secondary">Save and Exit</button>
+                    {currentPage < totalPages ? (
+                        <button type="button" onClick={currentPage === 1 ? handleStart : handleContinue} className="app-form-btn app-form-btn-primary">
+                            {currentPage === 1 ? "Start" : "Save and Continue"}
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            className={`app-form-btn app-form-btn-primary${appOpen && isFormValid() ? '' : ' disabled'}`}
+                            aria-disabled={!(appOpen && isFormValid())}
+                        >
+                            Save and Submit
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );

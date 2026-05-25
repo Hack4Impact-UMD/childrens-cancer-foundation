@@ -1,6 +1,6 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../index';
-import { ApplicationDetails, NonResearchApplication, ResearchApplication } from '../types/application-types';
+import { NonResearchApplication, ResearchApplication } from '../types/application-types';
 
 // Helper function to convert file to base64 using browser-compatible API
 const fileToBase64 = (file: File): Promise<string> => {

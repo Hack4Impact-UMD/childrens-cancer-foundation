@@ -1,6 +1,5 @@
 import { Decision } from "../../types/decision-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
-import { useEffect, useState } from "react";
 // import Confetti from "react-confetti";
 import "./decisionBox.css";
 import { useNavigate } from "react-router-dom";
@@ -12,36 +11,6 @@ export const DecisionBox = ({
   decision: Decision;
   inAdminView?: boolean;
 }) => {
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [windowDimensions, setWindowDimensions] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
-
-  console.log(decision);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    if (decision.isAccepted === true) {
-      setShowConfetti(true);
-      const timer = setTimeout(() => {
-        setShowConfetti(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [decision.isAccepted]);
-
   const getDecisionStatus = () => {
     // Use isAccepted boolean field to determine status
     if (decision.isAccepted === true) {
@@ -81,61 +50,53 @@ export const DecisionBox = ({
     navigate("/applicant/results", { state: { decision } });
   };
 
+  const showFunding =
+    decision.isAccepted === true &&
+    !!decision.fundingAmount &&
+    decision.fundingAmount > 0;
+
   return (
-    <>
-      <div className="decision-box">
-        <div className="decision-status-section">
-          <div className="status-header">
-            <h3 className="status-title">Decision Status</h3>
-          </div>
-          <div
-            className="status-badge"
-            style={{
-              backgroundColor: getStatusColor(),
-              color: "white",
-            }}
-          >
-            <span className="status-text">{firstLetterCap(status)}</span>
-          </div>
-        </div>
-
-        <div className="decision-details">
-          {/* Only show funding section for accepted decisions */}
-          {decision.isAccepted === true && (
-            <div className="funding-section">
-              <div className="section-label">Funding Decision</div>
-              <div className="funding-amount">
-                {formatCurrency(decision.fundingAmount || 0)}
-              </div>
-
-              {status === "accepted" &&
-                decision.fundingAmount &&
-                decision.fundingAmount > 0 && (
-                  <div className="funding-note">
-                    {inAdminView
-                      ? "This applicant has been approved for funding."
-                      : "Congratulations! Your funding has been approved."}
-                  </div>
-                )}
-            </div>
-          )}
-
-          {decision.comments && (
-            <div className="comments-section">
-              <div className="section-label">Additional Comments</div>
-              <div className="comments-content">{decision.comments}</div>
-            </div>
-          )}
-
-          {!inAdminView && (
-            <div className="button-to-results">
-              <button onClick={goToResults} className="results-button">
-                Go to Results
-              </button>
-            </div>
-          )}
-        </div>
+    <div className="decision-box">
+      <div className="decision-row">
+        <span className="decision-label">Status</span>
+        <span className={`decision-pill decision-pill--${status}`}>
+          {firstLetterCap(status)}
+        </span>
+        {showFunding && (
+          <>
+            <span className="decision-divider" aria-hidden="true">·</span>
+            <span className="decision-label">Funding</span>
+            <span className="decision-amount">
+              {formatCurrency(decision.fundingAmount || 0)}
+            </span>
+          </>
+        )}
       </div>
-    </>
+
+      {status === "accepted" && decision.fundingAmount && decision.fundingAmount > 0 && (
+        <p className="decision-note">
+          {inAdminView
+            ? "Approved for funding."
+            : "Congratulations — your funding has been approved."}
+        </p>
+      )}
+
+      {decision.comments && (
+        <div className="decision-comments">
+          <span className="decision-label">Comments</span>
+          <p>{decision.comments}</p>
+        </div>
+      )}
+
+      {!inAdminView && (
+        <button
+          type="button"
+          onClick={goToResults}
+          className="decision-results-button"
+        >
+          Go to Results
+        </button>
+      )}
+    </div>
   );
 };

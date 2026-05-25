@@ -1,6 +1,4 @@
 import "./AdminWhitelistReviewers.css";
-import logo from "../../assets/ccf-logo.png";
-import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
 import { FaSearch, FaPlus, FaTrash } from "react-icons/fa";
 import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
@@ -8,7 +6,7 @@ import { db } from "../../index";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { WhitelistEntry, WhitelistFormData } from "../../types/whitelist-types";
 import { auth } from "../../index";
-import Header from "../../components/header/Header";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 
 function AdminWhitelistReviewers(): JSX.Element {
     const sidebarItems = getSidebarbyRole("admin");
@@ -163,23 +161,27 @@ function AdminWhitelistReviewers(): JSX.Element {
     });
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-                <div className="AdminWhitelist">
-                    <Header title="Whitelist Reviewers" />
-                    <div className="search-filter-container">
-                        <div className="search-bar">
-                            <FaSearch className="search-icon" />
-                            <input
-                                type="text"
-                                placeholder="Search by email or name"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+        <RoleDashboardShell
+            sidebarItems={sidebarItems}
+            title="Whitelist Reviewers"
+            stackClassName="AdminWhitelist"
+        >
+                <div className="dashboard-sections-content">
+                    <div className="ccf-toolbar">
+                        <div className="ccf-toolbar-row">
+                            <div className="ccf-toolbar-search">
+                                <FaSearch className="ccf-toolbar-search-icon" />
+                                <input
+                                    type="text"
+                                    aria-label="Search reviewers by email or name"
+                                    placeholder="Search by email or name"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
                         </div>
-                        <div className="filters">
-                            <div className="filter">
+                        <div className="ccf-toolbar-row">
+                            <div className="ccf-toolbar-filters">
                                 <select
                                     value={affiliationFilter}
                                     onChange={(e) => setAffiliationFilter(e.target.value)}
@@ -192,8 +194,6 @@ function AdminWhitelistReviewers(): JSX.Element {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
-                            <div className="filter">
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -204,12 +204,14 @@ function AdminWhitelistReviewers(): JSX.Element {
                                     <option value="pending">Pending</option>
                                 </select>
                             </div>
-                            <button
-                                className="add-button"
-                                onClick={() => setShowAddForm(true)}
-                            >
-                                <FaPlus /> Add Email
-                            </button>
+                            <div className="ccf-toolbar-actions">
+                                <button
+                                    className="add-button"
+                                    onClick={() => setShowAddForm(true)}
+                                >
+                                    <FaPlus /> Add Email
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -288,7 +290,7 @@ function AdminWhitelistReviewers(): JSX.Element {
                         </div>
                     )}
 
-                    <div className="whitelist-table-container">
+                    <div className="ccf-table-container">
                         <div className="whitelist-header">
                             <h2>Whitelisted Emails ({filteredEntries.length})</h2>
                             <div className="whitelist-stats">
@@ -308,7 +310,8 @@ function AdminWhitelistReviewers(): JSX.Element {
                                 {searchTerm || affiliationFilter || statusFilter ? 'No entries match your filters.' : 'No emails in the whitelist yet.'}
                             </div>
                         ) : (
-                            <table className="whitelist-table">
+                            <div className="ccf-table-scroll">
+                            <table className="ccf-table">
                                 <thead>
                                     <tr>
                                         <th>Email</th>
@@ -356,11 +359,11 @@ function AdminWhitelistReviewers(): JSX.Element {
                                     ))}
                                 </tbody>
                             </table>
+                            </div>
                         )}
                     </div>
                 </div>
-            </div>
-        </div>
+        </RoleDashboardShell>
     );
 }
 

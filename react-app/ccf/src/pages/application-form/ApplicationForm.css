@@ -49,44 +49,53 @@
 .btn-container {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: min(1120px, 94%);
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-    margin-bottom: 10px;
+    margin-bottom: 24px;
+    gap: 12px;
 }
 
-.back-btn {
-    background-color: var(--color-red);
-    color: white;
-    padding-left: 3%;
-    padding-right: 3%;
-    padding-top: 10px;
-    padding-bottom: 10px;
+.btn-right-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.app-form-btn {
+    padding: 10px 24px;
     border-radius: 20px;
-    border: transparent;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
 }
 
-.save-btn {
-    background-color: var(--color-red);
+.app-form-btn-secondary {
+    background-color: #fff;
+    color: #333;
+    border: 2px solid #ccc;
+}
+
+.app-form-btn-secondary:hover {
+    background-color: #f5f5f5;
+}
+
+.app-form-btn-primary {
+    background-color: #003E83;
     color: white;
-    padding-left: 10%;
-    padding-right: 10%;
-    border-radius: 20px;
-    border: transparent;
-    transition: background-color 0.3s ease;
+    border: none;
 }
 
-.save-btn.warning {
-    background-color: #f0ad4e;
-    /* Orange color */
+.app-form-btn-primary:hover {
+    background-color: #002a5e;
 }
 
-/* Disabled state for the save button */
-.save-btn.disabled {
+.app-form-btn-primary.disabled {
     background-color: #d3d3d3;
-    /* Light grey */
     color: #808080;
-    /* Dark grey text */
     cursor: not-allowed;
 }

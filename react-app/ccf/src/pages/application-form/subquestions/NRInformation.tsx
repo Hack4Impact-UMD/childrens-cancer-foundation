@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { ChangeEvent } from "react";
 import "./SubForm.css";
 import { InformationProps } from "../../../types/application-types";
 

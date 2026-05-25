@@ -58,6 +58,7 @@ Thumbs.db
 *.tmp
 *.temp
 *.cache
+mise.toml
 
 # Firebase local files
 .firebase/

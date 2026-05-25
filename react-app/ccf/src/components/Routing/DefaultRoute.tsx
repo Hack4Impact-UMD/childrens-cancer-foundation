@@ -8,11 +8,11 @@ const DefaultRoute = () => {
         getRole().then((role) => {
             if (!role) {
                 setTo("/login")
-            } else if (role == "applicant") {
+            } else if (role === "applicant") {
                 setTo("/applicant/dashboard")
-            } else if (role == "reviewer") {
+            } else if (role === "reviewer") {
                 setTo("/reviewer/dashboard")
-            } else if (role == "admin") {
+            } else if (role === "admin") {
                 setTo("/admin/dashboard")
             }
         })

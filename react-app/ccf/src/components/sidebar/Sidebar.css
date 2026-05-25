@@ -1,7 +1,7 @@
 .sidebar {
-  width: 250px;
+  width: var(--ccf-sidebar-width);
   height: 100vh;
-  background-color: #003366;
+  background-color: var(--ccf-navy);
   position: fixed;
   top: 0;
   left: 0;
@@ -11,7 +11,7 @@
 }
 
 .sidebar.collapsed {
-  width: 60px;
+  width: var(--ccf-sidebar-collapsed-width);
 }
 
 .sidebar-header {
@@ -38,13 +38,13 @@
 .sidebar-item {
   padding: 10px 15px;
   margin: 10px;
-  background-color: #fff;
-  border-radius: 8px;
+  background-color: var(--ccf-surface);
+  border-radius: var(--ccf-radius);
   cursor: pointer;
   text-align: left;
   font-size: 16px;
   font-weight: 500;
-  color: #003366;
+  color: var(--ccf-navy);
   transition: background-color 0.3s ease, padding-left 0.3s ease;
 }
 
@@ -73,11 +73,11 @@
 }
 
 .sidebar.collapsed + .dashboard-container {
-  margin-left: 60px;
+  margin-left: var(--ccf-sidebar-collapsed-width);
 }
 
 .dashboard-container {
-  margin-left: 250px;
+  margin-left: var(--ccf-sidebar-width);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -85,7 +85,7 @@
 }
 
 .dashboard-container.collapsed {
-  margin-left: 60px;
+  margin-left: var(--ccf-sidebar-collapsed-width);
 }
 
 /* Transition Effect */

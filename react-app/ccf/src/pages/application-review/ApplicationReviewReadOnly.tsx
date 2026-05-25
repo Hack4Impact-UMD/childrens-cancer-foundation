@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import "./ApplicationReview.css";
-import Sidebar from "../../components/sidebar/Sidebar";
-import logo from "../../assets/ccf-logo.png";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../..";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { getReviewsForApplicationAdmin } from "../../services/review-service";
-import Review, { ReviewSummary } from "../../types/review-types";
+import { ReviewSummary } from "../../types/review-types";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 
@@ -123,12 +122,6 @@ function ApplicationReviewReadOnly(): JSX.Element {
         fetchApplicationData();
     }, [applicationId]);
 
-    const openApplicationViewer = () => {
-        if (application?.file) {
-            window.open(application.file, '_blank');
-        }
-    };
-
     const getCurrentFeedback = (): FeedbackData | null => {
         if (activeReviewer === 'primary') {
             return reviewSummary?.primaryReview?.feedback || null;
@@ -172,58 +165,37 @@ function ApplicationReviewReadOnly(): JSX.Element {
 
     if (loading) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="dashboard-content">
-                        <div className="dashboard-header-container">
-                            <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Application Review</h1>
-                        </div>
-                        <div className="applications-container">
-                            <p>Loading application data...</p>
-                        </div>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
+                <div className="dashboard-sections-content">
+                    <div className="arr-review-card">
+                        <p>Loading application data...</p>
                     </div>
                 </div>
-            </div>
+            </RoleDashboardShell>
         );
     }
 
     if (error) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="dashboard-content">
-                        <div className="dashboard-header-container">
-                            <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Application Review</h1>
-                        </div>
-                        <div className="applications-container">
-                            <p className="error-message">{error}</p>
-                        </div>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
+                <div className="dashboard-sections-content">
+                    <div className="arr-review-card">
+                        <p className="error-message">{error}</p>
                     </div>
                 </div>
-            </div>
+            </RoleDashboardShell>
         );
     }
 
     if (!application) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="dashboard-content">
-                        <div className="dashboard-header-container">
-                            <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Application Review</h1>
-                        </div>
-                        <div className="applications-container">
-                            <p>No application data available</p>
-                        </div>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
+                <div className="dashboard-sections-content">
+                    <div className="arr-review-card">
+                        <p>No application data available</p>
                     </div>
                 </div>
-            </div>
+            </RoleDashboardShell>
         );
     }
 
@@ -232,126 +204,106 @@ function ApplicationReviewReadOnly(): JSX.Element {
     const currentStatus = getCurrentStatus();
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-                <div className="dashboard-content">
-                    <div className="internal-header">
-                        <div className="dashboard-header-container">
-                            <img src={logo} alt="Logo" className="dashboard-logo" />
-                            <h1 className="dashboard-header">Application Review - Read Only</h1>
-                        </div>
+        <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review — Read Only" stackClassName="arr-review-page">
+            <div className="dashboard-sections-content">
+                <button className="arr-back-btn" onClick={() => window.history.back()}>
+                    ← Back
+                </button>
+
+                <div className="arr-review-card">
+                    <div className="arr-app-meta">
+                        <h2>{application.title}</h2>
+                        <p>Applicant: {application.grantType === "nonresearch" ? (application as NonResearchApplication).requestor : (application as ResearchApplication).principalInvestigator}</p>
+                        <p>Type: {application.grantType}</p>
+                    </div>
+
+                    <button className="arr-view-btn" onClick={() => setModalOpen(true)}>
+                        View Application
+                    </button>
+
+                    {/* Reviewer Toggle */}
+                    <div className="reviewer-toggle">
                         <button
-                            className="back-button"
-                            onClick={() => window.history.back()}
+                            className={`reviewer-toggle-btn ${activeReviewer === 'primary' ? 'active' : ''}`}
+                            onClick={() => setActiveReviewer('primary')}
+                            disabled={!reviewSummary?.primaryReview}
                         >
-                            Back
+                            <div>Primary Reviewer</div>
+                            <div className="reviewer-name">{getReviewerName(primaryReviewer)}</div>
+                        </button>
+                        <button
+                            className={`reviewer-toggle-btn ${activeReviewer === 'secondary' ? 'active' : ''}`}
+                            onClick={() => setActiveReviewer('secondary')}
+                            disabled={!reviewSummary?.secondaryReview}
+                        >
+                            <div>Secondary Reviewer</div>
+                            <div className="reviewer-name">{getReviewerName(secondaryReviewer)}</div>
                         </button>
                     </div>
 
-                    <div className="applications-container">
-                        {application && (
-                            <div className="application-info">
-                                <h2>Title: {application.title}</h2>
-                                <p>Applicant: {application.grantType == "nonresearch" ? (application as NonResearchApplication).requestor : (application as ResearchApplication).principalInvestigator}</p>
-                                <p>Type: {application.grantType}</p>
-                            </div>
-                        )}
+                    {/* Review Status Indicator */}
+                    <div className={`review-status-indicator ${currentStatus}`} style={{ marginTop: '16px' }}>
+                        {currentStatus === 'completed' && 'Review Completed'}
+                        {currentStatus === 'in-progress' && 'Review In Progress'}
+                        {currentStatus === 'not-started' && 'Review Not Started'}
+                    </div>
 
-                        <p className="view-app-link" onClick={() => setModalOpen(true)}>VIEW APPLICATION</p>
-
-                        {/* Reviewer Toggle */}
-                        <div className="reviewer-toggle">
-                            <button
-                                className={`reviewer-toggle-btn ${activeReviewer === 'primary' ? 'active' : ''}`}
-                                onClick={() => setActiveReviewer('primary')}
-                                disabled={!reviewSummary?.primaryReview}
-                            >
-                                <div>Primary Reviewer</div>
-                                <div className="reviewer-name">
-                                    {getReviewerName(primaryReviewer)}
-                                </div>
-                            </button>
-                            <button
-                                className={`reviewer-toggle-btn ${activeReviewer === 'secondary' ? 'active' : ''}`}
-                                onClick={() => setActiveReviewer('secondary')}
-                                disabled={!reviewSummary?.secondaryReview}
-                            >
-                                <div>Secondary Reviewer</div>
-                                <div className="reviewer-name">
-                                    {getReviewerName(secondaryReviewer)}
-                                </div>
-                            </button>
+                    {/* Overall Score */}
+                    {currentScore && (
+                        <div className="score-section" style={{ marginTop: '16px' }}>
+                            <p className="score-label">
+                                Overall score: (1 <em>exceptional</em> – 5 <em>poor quality, unrepairable</em>)
+                            </p>
+                            <div className="score-display">{currentScore}</div>
                         </div>
+                    )}
 
-                        {/* Review Status Indicator */}
-                        <div className={`review-status-indicator ${currentStatus}`}>
-                            {currentStatus === 'completed' && 'Review Completed'}
-                            {currentStatus === 'in-progress' && 'Review In Progress'}
-                            {currentStatus === 'not-started' && 'Review Not Started'}
-                        </div>
-
-                        {/* Overall Score */}
-                        {currentScore && (
-                            <div className="score-section">
-                                <p className="score-label">
-                                    Overall score: (1 <em>exceptional</em> - 5{" "}
-                                    <em>poor quality, unrepairable</em>)
-                                </p>
-                                <div className="score-display">{currentScore}</div>
-                            </div>
-                        )}
-
-                        {/* Feedback Display */}
-                        {currentFeedback && (
-                            <div className="feedback-container">
-                                {Object.entries(feedbackLabels).map(([key, label]) => (
-                                    <div key={key} className="feedback-section">
-                                        <div className="feedback-header">
-                                            <PencilIcon />
-                                            <strong>{label}:</strong>
-                                        </div>
-                                        <div className="feedback-text">
-                                            {currentFeedback[key as keyof FeedbackData] || 'No feedback provided'}
-                                        </div>
-                                    </div>
-                                ))}
-
-                                <div className="feedback-section">
+                    {/* Feedback Display */}
+                    {currentFeedback && (
+                        <div className="feedback-container" style={{ marginTop: '20px' }}>
+                            {Object.entries(feedbackLabels).map(([key, label]) => (
+                                <div key={key} className="feedback-section">
                                     <div className="feedback-header">
                                         <PencilIcon />
-                                        <strong>Internal Comments:</strong>
+                                        <strong>{label}:</strong>
                                     </div>
-                                    <div className="feedback-text">
-                                        {currentFeedback.internal || 'No internal comments provided'}
+                                    <div className="arr-feedback-text">
+                                        {currentFeedback[key as keyof FeedbackData] || 'No feedback provided'}
                                     </div>
                                 </div>
-                            </div>
-                        )}
-
-                        {!currentFeedback && currentStatus === 'not-started' && (
-                            <div className="no-review-message">
-                                <p>No review has been submitted yet by this reviewer.</p>
-                            </div>
-                        )}
-
-                        {/* Final Score if both reviews are completed */}
-                        {reviewSummary?.primaryReview?.status === 'completed' &&
-                            reviewSummary?.secondaryReview?.status === 'completed' && (
-                                <div className="final-score">
-                                    Final Score: <span className="score-display">
-                                        {((reviewSummary.primaryReview.score || 0) + (reviewSummary.secondaryReview.score || 0)) / 2}
-                                    </span>
-                                    <span className="red-text">
-                                        (Average of both reviewer scores)
-                                    </span>
+                            ))}
+                            <div className="feedback-section">
+                                <div className="feedback-header">
+                                    <PencilIcon />
+                                    <strong>Internal Comments:</strong>
                                 </div>
-                            )}
-                    </div>
+                                <div className="arr-feedback-text">
+                                    {currentFeedback.internal || 'No internal comments provided'}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {!currentFeedback && currentStatus === 'not-started' && (
+                        <div className="arr-no-review" style={{ marginTop: '20px' }}>
+                            <p>No review has been submitted yet by this reviewer.</p>
+                        </div>
+                    )}
+
+                    {/* Final Score if both reviews are completed */}
+                    {reviewSummary?.primaryReview?.status === 'completed' &&
+                        reviewSummary?.secondaryReview?.status === 'completed' && (
+                            <div className="final-score">
+                                Final Score: <span className="score-display">
+                                    {((reviewSummary.primaryReview.score || 0) + (reviewSummary.secondaryReview.score || 0)) / 2}
+                                </span>
+                                <span className="red-text">(Average of both reviewer scores)</span>
+                            </div>
+                        )}
                 </div>
-                {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}
             </div>
-        </div>
+            {application && <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application} />}
+        </RoleDashboardShell>
     );
 }
 

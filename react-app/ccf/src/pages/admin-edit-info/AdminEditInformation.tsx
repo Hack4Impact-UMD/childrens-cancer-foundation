@@ -1,6 +1,5 @@
 import "./AdminEditInformation.css";
-import logo from "../../assets/ccf-logo.png";
-import Sidebar from "../../components/sidebar/Sidebar";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { useState, useEffect } from "react";
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import EditIcon from '@mui/icons-material/Edit';
@@ -22,12 +21,11 @@ import {
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { FAQItem } from "../../types/faqTypes";
-import { getFAQs, initializeSampleFAQs, createNewFAQ } from "../../backend/faq-handler";
+import { getFAQs, createNewFAQ } from "../../backend/faq-handler";
 import { AboutPage, ApplicationAboutType } from "../../types/aboutTypes";
 import { getAboutPages, upsertAboutPage, getDefaultAboutPage } from "../../backend/about-handler";
 import MarkdownPreviewer from "../../components/markdown/Markdown";
 import EditableFAQComponent from "../../components/faq/FaqEditableComp";
-import Header from "../../components/header/Header";
 
 const buildAboutPages = (): Record<ApplicationAboutType, AboutPage> => ({
     Research: getDefaultAboutPage("Research"),
@@ -253,19 +251,15 @@ function AdminEditInformation(): JSX.Element {
     };
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-                <Header title="Application Cycle" />
+        <>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Application Cycle">
                 <div className="sections-container">
-                    <div className="deadlines-section">
+                <div className="application-cycle-card">
+                    <div className="deadline-interactives">
                         <div className="deadlines-header-container">
                             <MoreTimeIcon />
                             <h2 className="deadlines-header-text">Deadlines for Current Cycle</h2>
                         </div>
-                    </div>
-                    <div className="deadline-interactives">
-                        <h2>Applications:</h2>
                         <div className="interactive-date-selector">
                             <h2>Application Deadline</h2>
                             <div className="deadline-section">
@@ -274,9 +268,6 @@ function AdminEditInformation(): JSX.Element {
                                         value={allApplicationsDate}
                                         onChange={handleAllApplicationsChange}
                                         enableAccessibleFieldDOMStructure={false}
-                                        sx={{
-                                            backgroundColor: '#79747E',
-                                        }}
                                         slots={{
                                             textField: (props: any) => (
                                                 <TextField
@@ -302,19 +293,14 @@ function AdminEditInformation(): JSX.Element {
                                     variant="contained"
                                     disabled={!allApplicationsDate}
                                     onClick={async () => {
-                                        const success = await updateCurrentCycleDeadlines({
-                                            allApplicationsDate
-                                        });
-
-                                        //debug
+                                        const success = await updateCurrentCycleDeadlines({ allApplicationsDate });
                                         if (success) {
-                                            setAppDeadlineMessage("Application Deadlines Updated!");
-                                            setTimeout(() => setAppDeadlineMessage(null), 3000); // clear after 3 seconds
+                                            setAppDeadlineMessage("Application Deadline Updated!");
                                         } else {
-                                            setAppDeadlineMessage("Failed to update deadlines. Please try again.");
+                                            setAppDeadlineMessage("Failed to update. Please try again.");
                                         }
-                                            setTimeout(() => setAppDeadlineMessage(null), 3000);
-                                        }}
+                                        setTimeout(() => setAppDeadlineMessage(null), 3000);
+                                    }}
                                     sx={{
                                         backgroundColor: '#79747E',
                                         fontFamily: 'Roboto, sans-serif',
@@ -323,22 +309,14 @@ function AdminEditInformation(): JSX.Element {
                                         fontSize: '1.25rem',
                                         fontWeight: 'normal',
                                         borderRadius: '10px',
-                                        '&:hover': {
-                                            backgroundColor: '#003E83'
-                                        },
+                                        '&:hover': { backgroundColor: '#003E83' },
                                         minWidth: 'auto !important',
                                         width: 'auto !important',
                                         whiteSpace: 'nowrap',
-                                        marginBottom: '10px',
-                                        marginTop: '10px',
                                     }}
-
                                 >{appDeadlineMessage ?? "Set Application Deadline"}</Button>
                             </div>
                         </div>
-                    </div>
-                    <div className="deadline-interactives">
-                        <h2>Reviews:</h2>
                         <div className="interactive-date-selector">
                             <h2>Reviewer Deadline</h2>
                             <div className="deadline-section">
@@ -347,9 +325,6 @@ function AdminEditInformation(): JSX.Element {
                                         value={reviewerDate}
                                         onChange={handleReviewerDateChange}
                                         enableAccessibleFieldDOMStructure={false}
-                                        sx={{
-                                            backgroundColor: '#79747E',
-                                        }}
                                         slots={{
                                             textField: (props: any) => (
                                                 <TextField
@@ -375,15 +350,11 @@ function AdminEditInformation(): JSX.Element {
                                     variant="contained"
                                     disabled={!reviewerDate}
                                     onClick={async () => {
-                                        const success = await updateCurrentCycleDeadlines({
-                                            reviewerDate
-                                        });
-
+                                        const success = await updateCurrentCycleDeadlines({ reviewerDate });
                                         if (success) {
-                                            setRevDeadlineMessage("Reviewer Deadlines Updated!");
-                                            setTimeout(() => setRevDeadlineMessage(null), 3000);
+                                            setRevDeadlineMessage("Reviewer Deadline Updated!");
                                         } else {
-                                            setRevDeadlineMessage("Failed to update reviewer deadlines. Please try again.");
+                                            setRevDeadlineMessage("Failed to update. Please try again.");
                                         }
                                         setTimeout(() => setRevDeadlineMessage(null), 3000);
                                     }}
@@ -395,21 +366,14 @@ function AdminEditInformation(): JSX.Element {
                                         fontSize: '1.25rem',
                                         fontWeight: 'normal',
                                         borderRadius: '10px',
-                                        '&:hover': {
-                                            backgroundColor: '#003E83'
-                                        },
+                                        '&:hover': { backgroundColor: '#003E83' },
                                         minWidth: 'auto !important',
                                         width: 'auto !important',
                                         whiteSpace: 'nowrap',
-                                        marginBottom: '10px',
-                                        marginTop: '10px',
                                     }}
                                 >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
                             </div>
                         </div>
-                    </div>
-                    <div className="deadline-interactives">
-                        <h2>Post-Grant Reports:</h2>
                         <div className="interactive-date-selector">
                             <h2>Post-Grant Report Deadline</h2>
                             <div className="deadline-section">
@@ -418,9 +382,6 @@ function AdminEditInformation(): JSX.Element {
                                         value={postGrantReportDate}
                                         onChange={handlePostGrantReportDateChange}
                                         enableAccessibleFieldDOMStructure={false}
-                                        sx={{
-                                            backgroundColor: '#79747E',
-                                        }}
                                         slots={{
                                             textField: (props: any) => (
                                                 <TextField
@@ -446,15 +407,11 @@ function AdminEditInformation(): JSX.Element {
                                     variant="contained"
                                     disabled={!postGrantReportDate}
                                     onClick={async () => {
-                                        const success = await updateCurrentCycleDeadlines({
-                                            postGrantReportDate
-                                        });
-
+                                        const success = await updateCurrentCycleDeadlines({ postGrantReportDate });
                                         if (success) {
                                             setPostGrantReportDeadlineMessage("Post-Grant Report Deadline Updated!");
-                                            setTimeout(() => setPostGrantReportDeadlineMessage(null), 3000);
                                         } else {
-                                            setPostGrantReportDeadlineMessage("Failed to update post-grant report deadlines. Please try again.");
+                                            setPostGrantReportDeadlineMessage("Failed to update. Please try again.");
                                         }
                                         setTimeout(() => setPostGrantReportDeadlineMessage(null), 3000);
                                     }}
@@ -466,14 +423,10 @@ function AdminEditInformation(): JSX.Element {
                                         fontSize: '1.25rem',
                                         fontWeight: 'normal',
                                         borderRadius: '10px',
-                                        '&:hover': {
-                                            backgroundColor: '#003E83'
-                                        },
+                                        '&:hover': { backgroundColor: '#003E83' },
                                         minWidth: 'auto !important',
                                         width: 'auto !important',
                                         whiteSpace: 'nowrap',
-                                        marginBottom: '10px',
-                                        marginTop: '10px',
                                     }}
                                 >{postGrantReportDeadlineMessage ?? "Set Post-Grant Deadline"}</Button>
                             </div>
@@ -541,42 +494,11 @@ function AdminEditInformation(): JSX.Element {
                             </DialogActions>
                         </Dialog>
                     </div>
-                    <div>
                         <div className="editable-info-section">
                             <h2>Update Frequently Asked Questions:</h2>
 
                             {/* FAQ Management Buttons */}
                             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                                <Button
-                                    variant="contained"
-                                    onClick={async () => {
-                                        try {
-                                            await initializeSampleFAQs();
-                                            // Refresh FAQ data
-                                            const updatedFaqs = await getFAQs();
-                                            setFAQData(updatedFaqs);
-                                            alert('Sample FAQs initialized successfully!');
-                                        } catch (error) {
-                                            console.error('Error initializing FAQs:', error);
-                                            alert('Error initializing FAQs. Please try again.');
-                                        }
-                                    }}
-                                    sx={{
-                                        backgroundColor: '#79747E',
-                                        fontFamily: 'Roboto, sans-serif',
-                                        textTransform: 'none',
-                                        height: '40px',
-                                        fontSize: '1rem',
-                                        fontWeight: 'normal',
-                                        borderRadius: '10px',
-                                        '&:hover': {
-                                            backgroundColor: '#003E83'
-                                        }
-                                    }}
-                                >
-                                    Initialize Sample FAQs
-                                </Button>
-
                                 <Button
                                     variant="contained"
                                     onClick={() => setShowNewFAQForm(!showNewFAQForm)}
@@ -799,17 +721,17 @@ function AdminEditInformation(): JSX.Element {
                                 </Box>
                             ))}
                         </div>
-                    </div>
+                </div>
                 </div>
 
-            </div>
+            </RoleDashboardShell>
             <Snackbar
                 open={!!stageSnack}
                 autoHideDuration={3000}
                 onClose={() => setStageSnack(null)}
                 message={stageSnack}
             />
-        </div>
+        </>
     )
 }
 

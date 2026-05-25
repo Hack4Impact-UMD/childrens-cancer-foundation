@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './FAQComponent.css';
 import { FAQComponentProps } from '../../types/faqTypes';
 import MarkdownPreviewer from '../markdown/Markdown';
-import { Box, TextField, Button, Typography, IconButton } from '@mui/material';
+import { Box, TextField, Typography, IconButton } from '@mui/material';
 import { uploadFAQ, deleteFAQ } from '../../backend/faq-handler';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -143,19 +143,29 @@ const EditableFAQComponent: React.FC<EditableFAQComponentProps> = ({ faqs, onFAQ
                                 </div>
                             </div>
                             <div className="faq-buttons-container">
-                                <Button
+                                <IconButton
                                     onClick={(e) => {
                                         toggleEdit(index, e);
                                         if (editingIndices.has(index) && (questionValues[index] || answerValues[index])) {
                                             updateFAQ(faq.id, questionValues[index] || faq.question, answerValues[index] || faq.answer);
                                         }
                                     }}
-                                    className="edit-toggle-button"
-                                    startIcon={!editingIndices.has(index) ? <EditIcon /> : <SaveIcon />}
                                     size="small"
-                                    variant={editingIndices.has(index) ? "contained" : "outlined"}
-                                    sx={{ minWidth: 'auto' }}
-                                />
+                                    title={editingIndices.has(index) ? 'Save FAQ' : 'Edit FAQ'}
+                                    sx={{
+                                        padding: '6px',
+                                        backgroundColor: editingIndices.has(index) ? '#1976d2' : '#fff',
+                                        color: editingIndices.has(index) ? '#fff' : '#1976d2',
+                                        border: '1px solid #1976d2',
+                                        borderRadius: '4px',
+                                        '&:hover': {
+                                            backgroundColor: editingIndices.has(index) ? '#125ea7' : '#e3f2fd',
+                                            borderColor: '#125ea7'
+                                        }
+                                    }}
+                                >
+                                    {!editingIndices.has(index) ? <EditIcon fontSize="small" /> : <SaveIcon fontSize="small" />}
+                                </IconButton>
                                 <IconButton
                                     onClick={(e) => handleDeleteFAQ(faq.id, e)}
                                     size="small"
@@ -166,7 +176,6 @@ const EditableFAQComponent: React.FC<EditableFAQComponentProps> = ({ faqs, onFAQ
                                         backgroundColor: '#fff',
                                         border: '1px solid #d32f2f',
                                         borderRadius: '4px',
-                                        minWidth: 'auto',
                                         '&:hover': {
                                             backgroundColor: '#ffebee',
                                             borderColor: '#b71c1c'

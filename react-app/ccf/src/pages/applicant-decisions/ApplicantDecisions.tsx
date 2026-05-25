@@ -6,7 +6,6 @@ import { getSidebarbyRole, getApplicantSidebarItems, SideBarTypes } from "../../
 import { getUsersCurrentCycleAppplications } from "../../backend/application-filters";
 import { getDecisionData } from "../../services/decision-data-service";
 import { getCurrentCycle } from "../../backend/application-cycle";
-import { Application, ResearchApplication, NonResearchApplication, ApplicationDetails } from "../../types/application-types";
 import { Decision } from "../../types/decision-types";
 import { DecisionBox } from "../../components/decisions/decisionBox";
 import { firstLetterCap } from "../../utils/stringfuncs";

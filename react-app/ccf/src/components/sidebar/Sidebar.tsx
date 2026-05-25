@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Sidebar.css";
 import { Link } from "react-router-dom"
-import { SideBarTypes, differentUserRoles } from '../../types/sidebar-types';
+import { SideBarTypes } from '../../types/sidebar-types';
 import MenuIcon from '@mui/icons-material/Menu';
 
 interface SidebarProps {

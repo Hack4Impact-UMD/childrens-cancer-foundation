@@ -22,52 +22,8 @@
     margin: 0;
 }
 
-.search-filter-container {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-    padding: 10px;
-    border-radius: 5px;
-    gap: 10px;
-}
-
-.search-bar {
-    display: flex;
-    align-items: center;
-    background-color: #D9D9D9;
-    border-radius: 4px;
-    padding: 5px 10px;
-    width: 100%;
-    border-radius: 10px;
-}
-
-.search-icon {
-    color: #888;
-    margin-right: 8px;
-}
-
-.search-bar input {
-    border: none;
-    outline: none;
-    width: 100%;
-    padding: 5px;
-    background-color: transparent;
-}
-
-.filters {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.filter select {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    background-color: #D9D9D9;
-    min-width: 150px;
-    margin-right: 20px;
-}
+/* Search bar / filter chrome is provided by the shared .ccf-toolbar classes
+   (see DashboardLayout.css). Page-specific styles only below. */
 
 .add-button {
     background-color: #003E83;
@@ -88,12 +44,8 @@
     background-color: #002a5c;
 }
 
-.whitelist-table-container {
-    background-color: #fff;
-    border: 2px solid #c41230;
-    border-radius: 8px;
-    overflow: hidden;
-}
+/* Table chrome is provided by the shared .ccf-table-container / .ccf-table /
+   .ccf-table-scroll classes (see DashboardLayout.css). Page-specific styles only. */
 
 .whitelist-header {
     background-color: #f9f9f9;
@@ -125,27 +77,6 @@
     color: #495057;
 }
 
-.whitelist-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.whitelist-table th,
-.whitelist-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.whitelist-table th {
-    background-color: #f5f5f5;
-    font-weight: 600;
-    color: #333;
-}
-
-.whitelist-table tr:hover {
-    background-color: #f9f9f9;
-}
 
 .delete-button {
     background-color: #dc3545;
@@ -297,21 +228,16 @@
     border: 1px solid #faeeba;
 }
 
-/* Row styling based on account status */
-.whitelist-table tr.has-account {
+/* Row styling based on account status — scoped to .ccf-table so it rides on
+   the shared chrome instead of a per-page table class. The td override is needed
+   because shared rules set cell padding/borders, and tr background can be hidden
+   by td backgrounds in some browsers. */
+.ccf-table tr.has-account td {
     background-color: #f8f9fa;
 }
 
-.whitelist-table tr.has-account:hover {
-    background-color: #e9ecef;
-}
-
-.whitelist-table tr.no-account {
+.ccf-table tr.no-account td {
     background-color: #fff;
-}
-
-.whitelist-table tr.no-account:hover {
-    background-color: #f9f9f9;
 }
 
 /* Responsive Design */
@@ -328,24 +254,5 @@
     .form-row {
         flex-direction: column;
         gap: 10px;
-    }
-
-    .filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .filter select {
-        margin-right: 0;
-        margin-bottom: 10px;
-    }
-
-    .whitelist-table {
-        font-size: 14px;
-    }
-
-    .whitelist-table th,
-    .whitelist-table td {
-        padding: 8px 10px;
     }
 }

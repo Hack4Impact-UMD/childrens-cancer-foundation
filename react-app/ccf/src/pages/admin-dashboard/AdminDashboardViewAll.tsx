@@ -1,15 +1,12 @@
 import "./AdminDashboardViewAll.css";
-import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaPaperPlane } from "react-icons/fa";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../index";
 import MailtoLink from "../../components/MailtoLink";
-import sendIcon from "../../assets/email_send-solid.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { UserData } from "../../types/usertypes";
-import Header from "../../components/header/Header";
-import "../../components/dashboard-layout/DashboardLayout.css";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 
 function AdminDashboardViewAll(): JSX.Element {
     const sidebarItems = getSidebarbyRole("admin")
@@ -61,46 +58,45 @@ function AdminDashboardViewAll(): JSX.Element {
     }, []);
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-page">
-                <div className="dashboard-page-stack AdminViewAll">
-                    <Header title="Account Management" />
-
+        <RoleDashboardShell
+            sidebarItems={sidebarItems}
+            title="Account Management"
+            stackClassName="AdminViewAll"
+        >
                     <div className="AdminViewAll-sections-content">
-                        <div className="search-filter-container">
-                            <div className="search-bar">
-                                <FaSearch className="search-icon" />
-                                <input
-                                    type="text"
-                                    placeholder="Search"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    aria-label="Search accounts"
-                                />
+                        <div className="ccf-toolbar">
+                            <div className="ccf-toolbar-row">
+                                <div className="ccf-toolbar-search">
+                                    <FaSearch className="ccf-toolbar-search-icon" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search by name, institution, or email"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        aria-label="Search accounts"
+                                    />
+                                </div>
                             </div>
-                            <div className="filters">
-                                <div className="filter">
+                            <div className="ccf-toolbar-row">
+                                <div className="ccf-toolbar-filters">
                                     <select
                                         value={affiliationFilter}
                                         onChange={(e) => setAffiliationFilter(e.target.value)}
                                         aria-label="Filter accounts by institution"
                                     >
-                                        <option value="">Institution</option>
+                                        <option value="">All Institutions</option>
                                         {uniqueAffiliations.map(aff => (
                                             <option key={aff} value={aff}>
                                                 {aff}
                                             </option>
                                         ))}
                                     </select>
-                                </div>
-                                <div className="filter">
                                     <select
                                         value={roleFilter}
                                         onChange={(e) => setRoleFilter(e.target.value)}
                                         aria-label="Filter accounts by role"
                                     >
-                                        <option value="">Role</option>
+                                        <option value="">All Roles</option>
                                         {roles.map(role => (
                                             <option key={role} value={role}>
                                                 {role}
@@ -110,26 +106,41 @@ function AdminDashboardViewAll(): JSX.Element {
                                 </div>
                             </div>
                         </div>
-                        <div className="accounts-table-container">
+                        <div className="ccf-table-container">
                             <div className="accounts-header">
                                 <h2>ALL ACCOUNTS</h2>
 
                                 {/* Only send email to selected accounts using MailtoLink */}
                                 <MailtoLink
-                                    to={selectedEmails}                                    
+                                    to={selectedEmails}
                                     subject="Important Update from CCF"
                                     body="Hello, This is a message from the CCF admin team. Please check your account for updates. Thank you!"
                                 >
-                                    <button className="send-email-button">
-                                    <img src={sendIcon} alt="Send Email"></img>
-                                    Send Email
+                                    <button
+                                        type="button"
+                                        className="send-email-button"
+                                        disabled={selectedEmails.length === 0}
+                                        title={
+                                            selectedEmails.length === 0
+                                                ? "Select one or more accounts to email"
+                                                : `Email ${selectedEmails.length} selected account${selectedEmails.length === 1 ? "" : "s"}`
+                                        }
+                                    >
+                                        <FaPaperPlane aria-hidden="true" />
+                                        <span>
+                                            Send Email
+                                            {selectedEmails.length > 0 && (
+                                                <span className="send-email-count">{selectedEmails.length}</span>
+                                            )}
+                                        </span>
                                     </button>
                                 </MailtoLink>
                             </div>
                             {loading ? (
                                 <div className="loading-message">Loading accounts...</div>
                             ) : (
-                                <table className="accounts-table">
+                                <div className="ccf-table-scroll">
+                                <table className="ccf-table">
                                     <thead>
                                         <tr>
                                             <th></th>
@@ -184,12 +195,11 @@ function AdminDashboardViewAll(): JSX.Element {
                                             ))}
                                     </tbody>
                                 </table>
+                                </div>
                             )}
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+        </RoleDashboardShell>
     );
 }
 

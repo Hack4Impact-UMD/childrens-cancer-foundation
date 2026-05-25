@@ -1,9 +1,7 @@
 import "./AdminPostGrantReports.css";
-import logo from "../../assets/ccf-logo.png";
-import Sidebar from "../../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
 import { FaSearch, FaEye, FaDownload } from "react-icons/fa";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../index";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { PostGrantReport } from "../../types/post-grant-report-types";
@@ -11,7 +9,7 @@ import { ref, getDownloadURL } from "firebase/storage";
 import { getAllPostGrantReports } from "../../backend/post-grant-reports";
 import { storage } from "../../index";
 import { ApplicationInfo } from "../../types/application-types";
-import Header from "../../components/header/Header";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 
 interface PostGrantReportWithApplication extends PostGrantReport {
     applicationTitle?: string;
@@ -59,7 +57,6 @@ function AdminPostGrantReports(): JSX.Element {
                 const decisionDataMap = await getMultipleDecisionData(applicationIds);
 
                 const applicationsWithReportStatus: ApplicationWithReportStatus[] = [];
-                const currentDate = new Date();
 
                 // Process all applications and filter for accepted ones
                 for (const doc of applicationsSnapshot.docs) {
@@ -224,33 +221,38 @@ function AdminPostGrantReports(): JSX.Element {
 
     if (loading) {
         return (
-            <div>
-                <Sidebar links={sidebarItems} />
-                <div className="dashboard-container">
-                    <div className="loading">Loading post-grant reports...</div>
-                </div>
-            </div>
+            <RoleDashboardShell
+                sidebarItems={sidebarItems}
+                title="Post-Grant Reports Management"
+                stackClassName="AdminPostGrantReports"
+            >
+                <div className="loading">Loading post-grant reports...</div>
+            </RoleDashboardShell>
         );
     }
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-container">
-                <div className="AdminPostGrantReports">
-                    <Header title="Post-Grant Reports Management" />
-                    <div className="search-filter-container">
-                        <div className="search-bar">
-                            <FaSearch className="search-icon" />
-                            <input
-                                type="text"
-                                placeholder="Search by Application ID, Title, PI, Institution, or Email"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+        <RoleDashboardShell
+            sidebarItems={sidebarItems}
+            title="Post-Grant Reports Management"
+            stackClassName="AdminPostGrantReports"
+        >
+                <div className="dashboard-sections-content">
+                    <div className="ccf-toolbar">
+                        <div className="ccf-toolbar-row">
+                            <div className="ccf-toolbar-search">
+                                <FaSearch className="ccf-toolbar-search-icon" />
+                                <input
+                                    type="text"
+                                    aria-label="Search applications"
+                                    placeholder="Search by Application ID, Title, PI, Institution, or Email"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
                         </div>
-                        <div className="filters">
-                            <div className="filter">
+                        <div className="ccf-toolbar-row">
+                            <div className="ccf-toolbar-filters">
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -260,8 +262,6 @@ function AdminPostGrantReports(): JSX.Element {
                                     <option value="submitted">Submitted</option>
                                     <option value="not-submitted">Not Submitted</option>
                                 </select>
-                            </div>
-                            <div className="filter">
                                 <select
                                     value={grantTypeFilter}
                                     onChange={(e) => setGrantTypeFilter(e.target.value)}
@@ -278,9 +278,9 @@ function AdminPostGrantReports(): JSX.Element {
                         </div>
                     </div>
 
-                    <div className="reports-table-container">
-                        <div className="reports-table-wrapper">
-                            <table className="reports-table">
+                    <div className="ccf-table-container">
+                        <div className="ccf-table-scroll">
+                            <table className="ccf-table">
                             <thead>
                                 <tr>
                                     {/* <th>Application ID</th> */}
@@ -307,7 +307,7 @@ function AdminPostGrantReports(): JSX.Element {
                                     filteredApplications.map((app) => (
                                         <tr key={app.applicationId}>
                                             {/* <td className="application-id-cell">{app.applicationId?.toString() || 'N/A'}</td> */}
-                                            <td>{app.title || 'N/A'}</td>
+                                            <td><div className="pgr-title-cell">{app.title || 'N/A'}</div></td>
                                             <td>{app.principalInvestigator || 'N/A'}</td>
                                             <td>{app.institution || 'N/A'}</td>
                                             <td>{(app as any).grantType || 'N/A'}</td>
@@ -351,8 +351,7 @@ function AdminPostGrantReports(): JSX.Element {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+        </RoleDashboardShell>
     );
 }
 

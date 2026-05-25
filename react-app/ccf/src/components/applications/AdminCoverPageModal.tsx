@@ -59,7 +59,7 @@ const AdminCoverPageModal = ({
           }
         });
     }
-  }, [isOpen]);
+  }, [isOpen, application.applicationId]);
 
   const researchCoverPage = (
     <div className="cover-page-modal-child">

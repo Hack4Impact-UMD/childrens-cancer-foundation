@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, orderBy, Query, DocumentData } from 'firebase/firestore';
+import { collection, query, where, getDocs, Query, DocumentData } from 'firebase/firestore';
 import { auth, db } from '../index';
 import { Application, ApplicationDetails, NonResearchApplication, ResearchApplication } from '../types/application-types';
 import { getCurrentCycle } from './application-cycle';

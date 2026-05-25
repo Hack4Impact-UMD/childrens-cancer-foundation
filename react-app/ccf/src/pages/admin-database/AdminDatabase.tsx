@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import "./AdminDatabase.css";
-import Sidebar from "../../components/sidebar/Sidebar";
-import { FaArrowDown, FaArrowUp, FaChevronRight } from "react-icons/fa";
-import document from "../../assets/documentIcon.png";
+import { FaArrowDown, FaArrowUp, FaFileAlt, FaFilePdf, FaSearch } from "react-icons/fa";
 import yellowDocument from "../../assets/yellowDocumentIcon.png";
 import blueDocument from "../../assets/blueDocumentIcon.png";
 import { getSidebarbyRole } from "../../types/sidebar-types";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import {
   Application,
   NonResearchApplication,
@@ -15,7 +14,6 @@ import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
-import Header from "../../components/header/Header";
 import { downloadPDFsByName } from "../../storage/storage";
 
 function AdminApplicationsDatabase(): JSX.Element {
@@ -172,77 +170,89 @@ function AdminApplicationsDatabase(): JSX.Element {
   };
 
   return (
-    <div className="admin-database-page">
-      <Sidebar links={sidebarItems} />
+    <RoleDashboardShell
+      sidebarItems={sidebarItems}
+      title="Administrator Dashboard"
+      stackClassName="admin-database-page"
+    >
+      <div className="dashboard-sections-content">
+          <div className="ccf-toolbar">
+            <div className="ccf-toolbar-row">
+              <div className="ccf-toolbar-search">
+                <FaSearch className="ccf-toolbar-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search by application title"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  aria-label="Search applications"
+                />
+              </div>
+            </div>
+            <div className="ccf-toolbar-row">
+              <div className="ccf-toolbar-filters">
+                <select
+                  value={filters.applicationCycle}
+                  onChange={(e) =>
+                    setFilters({ ...filters, applicationCycle: e.target.value })
+                  }
+                  aria-label="Filter by application cycle"
+                >
+                  <option value="">Application Cycle</option>
+                  {availableYears.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
 
-      <div className="dashboard-container">
-        <div className="dashboard-content">
-          <Header title="Administrator Dashboard" />
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
+                <select
+                  value={filters.decision}
+                  onChange={(e) =>
+                    setFilters({ ...filters, decision: e.target.value })
+                  }
+                  aria-label="Filter by decision"
+                >
+                  <option value="">Decision</option>
+                  <option value="accepted">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="pending">Pending</option>
+                </select>
 
-          <div className="filter-container">
-            <select
-              className="filter-dropdown"
-              onChange={(e) =>
-                setFilters({ ...filters, applicationCycle: e.target.value })
-              }
-            >
-              <option value="">Application Cycle</option>
-              {availableYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
+                <select
+                  value={filters.grantType}
+                  onChange={(e) =>
+                    setFilters({ ...filters, grantType: e.target.value })
+                  }
+                  aria-label="Filter by grant type"
+                >
+                  <option value="">Grant Type</option>
+                  <option value="research">Research</option>
+                  <option value="nextgen">Next Gen</option>
+                </select>
 
-            <select
-              className="filter-dropdown"
-              onChange={(e) =>
-                setFilters({ ...filters, decision: e.target.value })
-              }
-            >
-              <option value="">Decision</option>
-              <option value="accepted">Approved</option>
-              <option value="rejected">Rejected</option>
-              <option value="pending">Pending</option>
-            </select>
-
-            <select
-              className="filter-dropdown"
-              onChange={(e) =>
-                setFilters({ ...filters, grantType: e.target.value })
-              }
-            >
-              <option value="">Grant Type</option>
-              <option value="research">Research</option>
-              <option value="nextgen">Next Gen</option>
-            </select>
-
-            <select
-              className="filter-dropdown"
-              onChange={(e) =>
-                setFilters({ ...filters, institution: e.target.value })
-              }
-            >
-              <option value="">Institution</option>
-              {availableInstitutions.map((institution) => (
-                <option key={institution} value={institution}>
-                  {institution}
-                </option>
-              ))}
-            </select>
+                <select
+                  value={filters.institution}
+                  onChange={(e) =>
+                    setFilters({ ...filters, institution: e.target.value })
+                  }
+                  aria-label="Filter by institution"
+                >
+                  <option value="">Institution</option>
+                  {availableInstitutions.map((institution) => (
+                    <option key={institution} value={institution}>
+                      {institution}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           {Object.keys(filteredApplications).length === 0 ? (
-            "No applications matching filters"
+            <div className="empty-state">No applications matching filters</div>
           ) : (
-            <div className="dashboard-sections-content">
+            <div className="admin-database-year-list">
               {Object.keys(filteredApplications)
                 .sort((a, b) => Number(b) - Number(a))
                 .map((year) => (
@@ -253,7 +263,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                     >
                       <div className="header-content">
                         <img
-                          src={document}
+                          src={blueDocument}
                           alt="Application Icon"
                           className="section-icon year-section-icon"
                         />
@@ -270,9 +280,6 @@ function AdminApplicationsDatabase(): JSX.Element {
                           {filteredApplications[year].map((app) => {
                             const isExpanded =
                               expandedApplications[app.applicationId ?? ""];
-                            const iconColor = isExpanded
-                              ? blueDocument
-                              : yellowDocument;
                             return (
                               <div
                                 key={app.applicationId}
@@ -282,7 +289,7 @@ function AdminApplicationsDatabase(): JSX.Element {
                                   <div className="application-header">
                                     <div className="application-info">
                                       <img
-                                        src={iconColor}
+                                        src={yellowDocument}
                                         alt="Document Icon"
                                         className="section-icon"
                                       />
@@ -387,14 +394,21 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                   .continuation}
                                           </span>
                                         </div>
-                                        <div className="admin-detail-item">
-                                          <span className="admin-detail-label">
-                                            Status:{" "}
-                                          </span>
-                                          <span className="admin-detail-value">
-                                            {firstLetterCap(app.decision)}
-                                          </span>
-                                        </div>
+                                        {(() => {
+                                          const normalizedDecision = app.decision ?? "pending";
+                                          return (
+                                            <div className="admin-detail-item">
+                                              <span className="admin-detail-label">
+                                                Status:{" "}
+                                              </span>
+                                              <span
+                                                className={`admin-status-badge admin-status-${normalizedDecision.toLowerCase()}`}
+                                              >
+                                                {firstLetterCap(normalizedDecision)}
+                                              </span>
+                                            </div>
+                                          );
+                                        })()}
                                       </div>
                                     </div>
                                     <div className="action-buttons">
@@ -405,11 +419,11 @@ function AdminApplicationsDatabase(): JSX.Element {
                                           setOpenModal(app);
                                         }}
                                       >
+                                        <FaFileAlt className="button-icon-leading" />
                                         Cover Sheet Information
-                                        <FaChevronRight className="button-icon" />
                                       </Button>
                                       <Button
-                                        className="action-button cover-sheet"
+                                        className="action-button application-pdf"
                                         onClick={(event) => {
                                           event.stopPropagation();
                                           void openApplicationDocument(
@@ -417,8 +431,8 @@ function AdminApplicationsDatabase(): JSX.Element {
                                           );
                                         }}
                                       >
+                                        <FaFilePdf className="button-icon-leading" />
                                         Application PDF
-                                        <FaChevronRight className="button-icon" />
                                       </Button>
                                     </div>
                                     <AdminCoverPageModal
@@ -438,9 +452,8 @@ function AdminApplicationsDatabase(): JSX.Element {
                 ))}
             </div>
           )}
-        </div>
       </div>
-    </div>
+    </RoleDashboardShell>
   );
 }
 

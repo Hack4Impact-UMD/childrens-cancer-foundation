@@ -3,7 +3,7 @@ import {
     doc,
     setDoc,
     getDoc,
-    updateDoc,
+
     getDocs,
     serverTimestamp
 } from "firebase/firestore";

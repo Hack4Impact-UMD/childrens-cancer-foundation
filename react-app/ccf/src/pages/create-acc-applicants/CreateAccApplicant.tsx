@@ -24,6 +24,7 @@ function AccountPageApplicants(): JSX.Element {
   const [specialChar, setSpecialChar] = useState(false);
   const [capitalLetter, setCapitalLetter] = useState(false);
   const [number, setNumber] = useState(false);
+  const [minLength, setMinLength] = useState(false);
   const [showReqs, setShowReqs] = useState(false);
   const [pwdUnmatched, setPwdUnmatched] = useState(false);
 
@@ -46,10 +47,11 @@ function AccountPageApplicants(): JSX.Element {
   ]);
 
   const checkPasswordRequirements = (password: string) => {
-    const { specialChar, capitalLetter, number } = checkPasswordRequirementsUtil(password);
+    const { specialChar, capitalLetter, number, minLength } = checkPasswordRequirementsUtil(password);
     setSpecialChar(specialChar);
     setCapitalLetter(capitalLetter);
     setNumber(number);
+    setMinLength(minLength);
   };
 
   const checkEmail = (email: string) => {
@@ -59,7 +61,7 @@ function AccountPageApplicants(): JSX.Element {
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
     e.preventDefault();
-    if (!specialChar || !capitalLetter || !number || pwdUnmatched) {
+    if (!specialChar || !capitalLetter || !number || !minLength || pwdUnmatched) {
       console.log("Failed to submit. One requirement was not met.");
       e.preventDefault();
       return;
@@ -87,7 +89,7 @@ function AccountPageApplicants(): JSX.Element {
   };
 
   return (
-      <div className="login-container">
+      <div className="login-container createAcc-page">
         <div className="login-content">
         <div className="login-form">
             <div className="header-container2">
@@ -173,40 +175,26 @@ function AccountPageApplicants(): JSX.Element {
               {showReqs && (
                 <div className="pwd-reqs">
                   <p>Password requires:</p>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={specialChar}
-                      readOnly
-                    />
+                  <label className="checkbox">
+                    <input type="checkbox" name="options" value="Yes" checked={minLength} readOnly />
+                    More than 6 characters
+                  </label>
+                  <label className="checkbox">
+                    <input type="checkbox" name="options" value="Yes" checked={specialChar} readOnly />
                     One special character
                   </label>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={capitalLetter}
-                      readOnly
-                    />
+                  <label className="checkbox">
+                    <input type="checkbox" name="options" value="Yes" checked={capitalLetter} readOnly />
                     One capital letter
                   </label>
-                  <label id="checkbox">
-                    <input
-                      type="checkbox"
-                      name="options"
-                      value="Yes"
-                      checked={number}
-                      readOnly
-                    />
+                  <label className="checkbox">
+                    <input type="checkbox" name="options" value="Yes" checked={number} readOnly />
                     One number
                   </label>
                 </div>
               )}
 
-              {((!specialChar || !number || !capitalLetter) && pwd && !showReqs) && (
+              {((!specialChar || !number || !capitalLetter || !minLength) && pwd && !showReqs) && (
                 <p className="validation">At least one password requirement was not met</p>
               )}
 
@@ -265,6 +253,7 @@ function AccountPageApplicants(): JSX.Element {
                     !specialChar ||
                     !capitalLetter ||
                     !number ||
+                    !minLength ||
                     pwdUnmatched ||
                     emailError ||
                     institutionError
@@ -282,6 +271,7 @@ function AccountPageApplicants(): JSX.Element {
                   !specialChar ||
                   !capitalLetter ||
                   !number ||
+                  !minLength ||
                   pwdUnmatched ||
                   emailError ||
                   institutionError

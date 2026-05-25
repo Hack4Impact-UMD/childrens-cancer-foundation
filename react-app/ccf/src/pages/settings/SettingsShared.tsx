@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
-import logo from "../../assets/ccf-logo.png";
-import Sidebar from "../../components/sidebar/Sidebar";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { SideBarTypes } from "../../types/sidebar-types";
 import TextField from "@mui/material/TextField";
 import { InputAdornment, IconButton } from "@mui/material";
@@ -9,6 +8,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 interface SettingsPageLayoutProps {
   sidebarItems: SideBarTypes[];
   children: ReactNode;
+  title?: string;
 }
 
 interface PersonalInfoField {
@@ -54,20 +54,12 @@ interface PasswordSettingsSectionProps {
 export function SettingsPageLayout({
   sidebarItems,
   children,
+  title = "Account Settings",
 }: SettingsPageLayoutProps): JSX.Element {
   return (
-    <div>
-      <Sidebar links={sidebarItems} />
-      <div className="dashboard-container">
-        <div className="AccountSettings">
-          <div className="AccountSettings-header-container">
-            <img src={logo} className="AccountSettings-logo" alt="logo" />
-            <h1 className="AccountSettings-header">Account Settings</h1>
-          </div>
-          <div className="AccountSettings-sections-content">{children}</div>
-        </div>
-      </div>
-    </div>
+    <RoleDashboardShell sidebarItems={sidebarItems} title={title}>
+      <div className="AccountSettings-sections-content">{children}</div>
+    </RoleDashboardShell>
   );
 }
 
@@ -83,11 +75,11 @@ export function PersonalInformationSection({
         <h2>Personal Information</h2>
       </div>
 
-      <div className="AccountSetting-personal-info">
+      <div className="settings-field-grid">
         {fields.map((field) => (
           <TextField
             key={field.label}
-            sx={{ width: field.width || "30%" }}
+            sx={{ width: field.width || "100%" }}
             label={field.label}
             variant="outlined"
             value={field.value}
@@ -97,22 +89,19 @@ export function PersonalInformationSection({
 
         {personalInfoError && <p className="error-message">{personalInfoError}</p>}
       </div>
-      <div className="button-container">
-        <div className="button-message-container">
-          <button
-            type="button"
-            className="signup-btn2"
-            onClick={onSave}
-            style={{ width: "200px" }}
-          >
-            Save Personal Information
-          </button>
-          {personalInfoSuccess && (
-            <p className="success-message inline-message">
-              Personal information updated successfully!
-            </p>
-          )}
-        </div>
+      <div className="button-message-container">
+        <button
+          type="button"
+          className="signup-btn2 settings-submit-btn"
+          onClick={onSave}
+        >
+          Save Personal Information
+        </button>
+        {personalInfoSuccess && (
+          <p className="success-message inline-message">
+            Personal information updated successfully!
+          </p>
+        )}
       </div>
     </div>
   );
@@ -151,14 +140,17 @@ export function PasswordSettingsSection({
   return (
     <div className="AccountSettings-section">
       <div className="header-title">
-        <h2>Account Settings</h2>
+        <h2>Change Password</h2>
       </div>
-      <div className="info-row-settings">
-        <label>{emailLabel}</label>
-        <span className="username-text">{email || "No email available"}</span>
 
+      <p className="settings-email-row">
+        <span className="settings-email-label">{emailLabel}:</span>
+        <span className="username-text">{email || "No email available"}</span>
+      </p>
+
+      <div className="settings-field-grid">
         <TextField
-          sx={{ width: "40%" }}
+          sx={{ width: "100%" }}
           label="Current Password"
           placeholder="Enter current password"
           type={showCurrentPassword ? "text" : "password"}
@@ -182,7 +174,7 @@ export function PasswordSettingsSection({
         />
 
         <TextField
-          sx={{ width: "40%" }}
+          sx={{ width: "100%" }}
           label="New Password"
           placeholder="Enter new password"
           type={showNewPassword ? "text" : "password"}
@@ -207,30 +199,8 @@ export function PasswordSettingsSection({
           }}
         />
 
-        {showReqs && (
-          <div className="pwd-reqs">
-            <p>Password requires:</p>
-            <label id="checkbox">
-              <input type="checkbox" name="options" value="Yes" checked={specialChar} readOnly />
-              One special character
-            </label>
-            <label id="checkbox">
-              <input type="checkbox" name="options" value="Yes" checked={capitalLetter} readOnly />
-              One capital letter
-            </label>
-            <label id="checkbox">
-              <input type="checkbox" name="options" value="Yes" checked={number} readOnly />
-              One number
-            </label>
-          </div>
-        )}
-
-        {(!specialChar || !number || !capitalLetter) && pwd && !showReqs && (
-          <p className="validation">At least one password requirement was not met</p>
-        )}
-
         <TextField
-          sx={{ width: "40%" }}
+          sx={{ width: "100%" }}
           label="Confirm New Password"
           placeholder="Confirm new password"
           type={showConfirmPassword ? "text" : "password"}
@@ -254,17 +224,46 @@ export function PasswordSettingsSection({
           error={showPwdMismatch}
           helperText={showPwdMismatch && "Passwords do not match"}
         />
+      </div>
 
-        {updateError && <p className="error-message">{updateError}</p>}
-        {updateSuccess && <p className="success-message">Password updated successfully!</p>}
+      {showReqs && (
+        <div className="pwd-reqs">
+          <p>Password requires:</p>
+          <label className="checkbox">
+            <input type="checkbox" name="options" value="Yes" checked={specialChar} readOnly />
+            One special character
+          </label>
+          <label className="checkbox">
+            <input type="checkbox" name="options" value="Yes" checked={capitalLetter} readOnly />
+            One capital letter
+          </label>
+          <label className="checkbox">
+            <input type="checkbox" name="options" value="Yes" checked={number} readOnly />
+            One number
+          </label>
+        </div>
+      )}
+
+      {(!specialChar || !number || !capitalLetter) && pwd && !showReqs && (
+        <p className="validation">At least one password requirement was not met</p>
+      )}
+
+      {updateError && <p className="error-message">{updateError}</p>}
+
+      <div className="button-message-container">
         <button
           type="submit"
-          className={canSubmit ? "signup-btn2" : "disable-submit"}
+          className={`${canSubmit ? "signup-btn2" : "disable-submit"} settings-submit-btn`}
           onClick={onSubmit}
           disabled={!canSubmit}
         >
           Change Password
         </button>
+        {updateSuccess && (
+          <p className="success-message inline-message">
+            Password updated successfully!
+          </p>
+        )}
       </div>
     </div>
   );

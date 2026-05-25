@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./SubForm.css";
 import React from "react";
 import { ReviewProps } from "../../../types/application-types";

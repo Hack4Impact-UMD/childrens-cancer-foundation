@@ -2,9 +2,48 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@100..900&display=swap');
 
 :root {
+    /* Legacy brand palette (kept for backward compatibility with existing CSS). */
     --color-red: #BE0019;
     --color-yellow: #F0C567;
     --color-blue: #003E83;
+
+    /* CCF design tokens — semantic aliases and shared layout values.
+       Prefer these in new/refactored styles so the look stays consistent across roles. */
+
+    /* Palette */
+    --ccf-red: var(--color-red);
+    --ccf-yellow: var(--color-yellow);
+    --ccf-navy: #003366;            /* sidebar background */
+    --ccf-blue: var(--color-blue);  /* links / accents */
+    --ccf-page-bg: #f3f4f6;
+    --ccf-surface: #ffffff;
+    --ccf-text: #333333;
+    --ccf-text-muted: #5b5b5b;
+
+    /* Shape */
+    --ccf-radius-sm: 4px;
+    --ccf-radius: 8px;
+    --ccf-radius-lg: 15px;
+
+    /* Section chrome (the yellow-bordered cards used on dashboards + settings) */
+    --ccf-section-border: 6px solid var(--ccf-yellow);
+    --ccf-shadow-sm: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    /* Page frame — keep dashboards and settings visually identical */
+    --ccf-sidebar-width: 250px;
+    --ccf-sidebar-collapsed-width: 60px;
+    --ccf-page-padding: 28px 24px 32px;
+    --ccf-page-padding-mobile: 20px 16px 24px;
+    --ccf-stack-gap: 20px;
+    --ccf-stack-gap-mobile: 16px;
+
+    /* Typography — single app-wide default so pages don't drift to serif fallbacks */
+    --ccf-font-family: Arial, Helvetica, sans-serif;
+}
+
+html, body {
+    font-family: var(--ccf-font-family);
+    color: var(--ccf-text);
 }
 
 /* Standardized Page Header Styles */

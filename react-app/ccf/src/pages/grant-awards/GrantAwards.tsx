@@ -7,14 +7,13 @@ import {
   FaComments,
   FaTimes,
   FaSync,
+  FaSearch,
 } from "react-icons/fa";
-import Sidebar from "../../components/sidebar/Sidebar";
-import logo from "../../assets/ccf-logo.png";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../..";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import {
-  getReviewsForApplicationAdmin,
   checkAndUpdateApplicationStatus,
 } from "../../services/review-service";
 import {
@@ -25,7 +24,6 @@ import {
 import { GrantAwardApplication } from "../../types/application-types";
 import { getAllCycles } from "../../backend/application-cycle";
 import ApplicationCycle from "../../types/applicationCycle-types";
-import Header from "../../components/header/Header";
 
 type SortField =
   | "name"
@@ -48,14 +46,7 @@ type ColumnKey =
   | "save"
   | "title"
   | "applicationCycle"
-  | "submitTime"
-  | "typesOfCancerAddressed"
-  | "adminOfficialName"
-  | "adminEmail"
-  | "adminPhoneNumber"
-  | "institutionEmail"
-  | "requestor"
-  | "timeframe";
+  | "typesOfCancerAddressed";
 
 interface CommentModalProps {
   isOpen: boolean;
@@ -165,14 +156,7 @@ function GrantAwards(): JSX.Element {
     // optional off by default
     title: false,
     applicationCycle: false,
-    submitTime: false,
     typesOfCancerAddressed: false,
-    adminOfficialName: false,
-    adminEmail: false,
-    adminPhoneNumber: false,
-    institutionEmail: false,
-    requestor: false,
-    timeframe: false,
   });
 
   const sidebarItems = getSidebarbyRole("admin");
@@ -311,7 +295,7 @@ function GrantAwards(): JSX.Element {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (columnsOpen && !target.closest(".columns-group")) {
+      if (columnsOpen && !target.closest(".ga-columns-wrap")) {
         setColumnsOpen(false);
       }
     };
@@ -490,14 +474,7 @@ function GrantAwards(): JSX.Element {
       { key: "programType", label: "Program Type" },
       { key: "institution", label: "Institution" },
       { key: "applicationCycle", label: "Cycle" },
-      { key: "submitTime", label: "Submitted" },
       { key: "typesOfCancerAddressed", label: "Types of Cancer Addressed" },
-      { key: "adminOfficialName", label: "Admin Official Name" },
-      { key: "adminEmail", label: "Admin Email" },
-      { key: "adminPhoneNumber", label: "Admin Phone" },
-      { key: "institutionEmail", label: "Institution Email" },
-      { key: "requestor", label: "Requestor" },
-      { key: "timeframe", label: "Timeframe" },
       { key: "finalScore", label: "Final Avg. Score" },
       { key: "requested", label: "Requested" },
       { key: "recommended", label: "Recommended" },
@@ -523,22 +500,8 @@ function GrantAwards(): JSX.Element {
                 return `"${sanitizeCsvCell(app.institution)}"`;
               case "applicationCycle":
                 return `"${sanitizeCsvCell(app.applicationCycle || "")}"`;
-              case "submitTime":
-                return `"${sanitizeCsvCell(app.submitTime || "")}"`;
               case "typesOfCancerAddressed":
                 return `"${sanitizeCsvCell(app.typesOfCancerAddressed || "")}"`;
-              case "adminOfficialName":
-                return `"${sanitizeCsvCell(app.adminOfficialName || "")}"`;
-              case "adminEmail":
-                return `"${sanitizeCsvCell(app.adminEmail || "")}"`;
-              case "adminPhoneNumber":
-                return `"${sanitizeCsvCell(app.adminPhoneNumber || "")}"`;
-              case "institutionEmail":
-                return `"${sanitizeCsvCell(app.institutionEmail || "")}"`;
-              case "requestor":
-                return `"${sanitizeCsvCell(app.requestor || "")}"`;
-              case "timeframe":
-                return `"${sanitizeCsvCell(app.timeframe || "")}"`;
               case "finalScore":
                 return String(app.finalScore);
               case "requested":
@@ -631,150 +594,130 @@ function GrantAwards(): JSX.Element {
   });
 
   return (
-    <div>
-      <Sidebar links={sidebarItems} />
-      <div className="dashboard-container">
-        <div className="AdminViewAll">
-          <Header title="Award Recommendation" />
-
-          <div className="ApplicantDashboard-sections-content">
-            <div className="accounts-table-container">
-              <div className="top-controls">
-                <div className="filter-group">
-                  <label htmlFor="cycle-select">Cycle:</label>
-                  <select
-                    id="cycle-select"
-                    value={selectedCycle}
-                    onChange={(e) => setSelectedCycle(e.target.value)}
-                  >
-                    <option value={"All"}>All</option>
-                    {cycleOptions.map((cn) => (
-                      <option key={cn} value={cn}>
-                        {cn}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="filter-group">
-                  <label htmlFor="type-select">Type:</label>
-                  <select
-                    id="type-select"
-                    value={selectedProgramType}
-                    onChange={(e) =>
-                      setSelectedProgramType(e.target.value as any)
-                    }
-                  >
-                    <option value={"All"}>All</option>
-                    <option value={"research"}>research</option>
-                    <option value={"nextgen"}>nextgen</option>
-                    <option value={"nonresearch"}>nonresearch</option>
-                  </select>
-                </div>
-                <div className="search-group">
-                  <input
-                    type="text"
-                    placeholder="Search by name, program type, or institution"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                
-                <div
-                  className={`columns-group ${columnsOpen ? "columns-open" : ""}`}
-                >
-                  <button
-                    type="button"
-                    className="columns-toggle"
-                    aria-haspopup="true"
-                    onClick={() => setColumnsOpen((o) => !o)}
-                  >
-                    <span>Columns</span>
-                  </button>
-                  {columnsOpen && (
-                    <div className="columns-dropdown">
-                      <div className="columns-dropdown-header">
-                        Select columns to show
-                      </div>
-                      <div
-                        className="columns-menu"
-                        onClick={(e) => e.stopPropagation()}
+    <>
+      <RoleDashboardShell
+        sidebarItems={sidebarItems}
+        title="Award Recommendation"
+        stackClassName="AdminViewAll"
+      >
+          <div className="dashboard-sections-content">
+            <div className="ccf-table-container">
+              <div className="ccf-toolbar">
+                <div className="ccf-toolbar-row">
+                  <div className="ccf-toolbar-search">
+                    <FaSearch className="ccf-toolbar-search-icon" />
+                    <input
+                      type="text"
+                      placeholder="Search by name, program type, or institution"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <div className="ccf-toolbar-actions">
+                    <div className="ga-columns-wrap">
+                      <button
+                        type="button"
+                        className={`ga-action-btn${columnsOpen ? " ga-columns-open" : ""}`}
+                        aria-haspopup="true"
+                        aria-expanded={columnsOpen}
+                        aria-controls="ga-columns-dropdown"
+                        onClick={() => setColumnsOpen((o) => !o)}
                       >
-                        {(
-                          [
-                            { key: "title", label: "Title" },
-                            { key: "name", label: "Name" },
-                            { key: "programType", label: "Program Type" },
-                            { key: "institution", label: "Institution" },
-                            { key: "applicationCycle", label: "Cycle" },
-                            { key: "submitTime", label: "Submitted" },
-                            {
-                              key: "typesOfCancerAddressed",
-                              label: "Types of Cancer Addressed",
-                            },
-                            {
-                              key: "adminOfficialName",
-                              label: "Admin Official",
-                            },
-                            { key: "adminEmail", label: "Admin Email" },
-                            { key: "adminPhoneNumber", label: "Admin Phone" },
-                            { key: "institutionEmail", label: "Inst. Email" },
-                            { key: "requestor", label: "Requestor" },
-                            { key: "timeframe", label: "Timeframe" },
-                            { key: "finalScore", label: "Final Score" },
-                            { key: "requested", label: "Requested" },
-                            { key: "recommended", label: "Recommended" },
-                            { key: "acceptance", label: "Acceptance" },
-                            { key: "comments", label: "Comments" },
-                            { key: "save", label: "Save" },
-                          ] as { key: ColumnKey; label: string }[]
-                        ).map((c) => (
-                          <label key={c.key} className="column-toggle">
-                            <input
-                              type="checkbox"
-                              checked={visibleColumns[c.key]}
-                              onChange={(e) =>
-                                setVisibleColumns((prev) => ({
-                                  ...prev,
-                                  [c.key]: e.target.checked,
-                                }))
-                              }
-                            />
-                            <span>{c.label}</span>
-                          </label>
-                        ))}
-                      </div>
+                        Columns
+                      </button>
+                      {columnsOpen && (
+                        <div
+                          id="ga-columns-dropdown"
+                          className="ga-columns-menu"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="ga-columns-header">
+                            Select columns to show
+                          </div>
+                          {(
+                            [
+                              { key: "title", label: "Title" },
+                              { key: "name", label: "Name" },
+                              { key: "programType", label: "Program Type" },
+                              { key: "institution", label: "Institution" },
+                              { key: "applicationCycle", label: "Cycle" },
+                              { key: "typesOfCancerAddressed", label: "Types of Cancer Addressed" },
+                              { key: "finalScore", label: "Final Score" },
+                              { key: "requested", label: "Requested" },
+                              { key: "recommended", label: "Recommended" },
+                              { key: "acceptance", label: "Acceptance" },
+                              { key: "comments", label: "Comments" },
+                              { key: "save", label: "Save" },
+                            ] as { key: ColumnKey; label: string }[]
+                          ).map((c) => (
+                            <label key={c.key} className="ga-column-item">
+                              <input
+                                type="checkbox"
+                                checked={visibleColumns[c.key]}
+                                onChange={(e) =>
+                                  setVisibleColumns((prev) => ({
+                                    ...prev,
+                                    [c.key]: e.target.checked,
+                                  }))
+                                }
+                              />
+                              <span>{c.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
+                    <button
+                      className="ga-action-btn"
+                      onClick={() => handleDownloadCSV(sortedApplications)}
+                      title="Download CSV"
+                      aria-label="Download applications as CSV"
+                    >
+                      <FaDownload /> Export CSV
+                    </button>
+                    <button
+                      className="ga-action-btn ga-action-btn-muted"
+                      onClick={refreshScores}
+                      disabled={loading}
+                      title="Refresh application scores"
+                      aria-label="Refresh application scores"
+                    >
+                      <FaSync className={loading ? "spinning" : ""} /> Refresh
+                    </button>
+                  </div>
                 </div>
-                <div className="section-header">
-                <div className="header-actions">
-                  <span className="download-text">Download as CSV</span>
-                  <button
-                    className="download-btn"
-                    onClick={() => handleDownloadCSV(sortedApplications)}
-                    title="Download CSV"
-                    aria-label="Download applications as CSV"
-                  >
-                    <FaDownload />
-                  </button>
-                  <span className="refresh-text">Refresh Scores</span>
-                  <button
-                    className="refresh-btn"
-                    onClick={refreshScores}
-                    disabled={loading}
-                    title="Refresh application scores"
-                    aria-label="Refresh application scores"
-                  >
-                    <FaSync className={loading ? "spinning" : ""} />
-                  </button>
+                <div className="ccf-toolbar-row">
+                  <div className="ccf-toolbar-filters">
+                    <select
+                      id="cycle-select"
+                      aria-label="Cycle"
+                      value={selectedCycle}
+                      onChange={(e) => setSelectedCycle(e.target.value)}
+                    >
+                      <option value={"All"}>All Cycles</option>
+                      {cycleOptions.map((cn) => (
+                        <option key={cn} value={cn}>{cn}</option>
+                      ))}
+                    </select>
+                    <select
+                      id="type-select"
+                      aria-label="Program Type"
+                      value={selectedProgramType}
+                      onChange={(e) => setSelectedProgramType(e.target.value as any)}
+                    >
+                      <option value={"All"}>All Types</option>
+                      <option value={"research"}>Research</option>
+                      <option value={"nextgen"}>NextGen</option>
+                      <option value={"nonresearch"}>Non-Research</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
               </div>
               {loading ? (
                 <div className="loading-indicator">Loading applications...</div>
               ) : (
-                <div className="table-scroll-wrapper">
-                  <table className="applications-table">
+                <div className="ccf-table-scroll">
+                  <table className="ccf-table">
                     <thead>
                       <tr>
                         {visibleColumns.title && <th>Title</th>}
@@ -803,22 +746,9 @@ function GrantAwards(): JSX.Element {
                           </th>
                         )}
                         {visibleColumns.applicationCycle && <th>Cycle</th>}
-                        {visibleColumns.submitTime && <th>Submitted</th>}
                         {visibleColumns.typesOfCancerAddressed && (
                           <th>Types of Cancer Addressed</th>
                         )}
-                        {visibleColumns.adminOfficialName && (
-                          <th>Admin Official Name</th>
-                        )}
-                        {visibleColumns.adminEmail && <th>Admin Email</th>}
-                        {visibleColumns.adminPhoneNumber && (
-                          <th>Admin Phone</th>
-                        )}
-                        {visibleColumns.institutionEmail && (
-                          <th>Institution Email</th>
-                        )}
-                        {visibleColumns.requestor && <th>Requestor</th>}
-                        {visibleColumns.timeframe && <th>Timeframe</th>}
                         {visibleColumns.finalScore && (
                           <th
                             onClick={() => handleSort("finalScore")}
@@ -884,11 +814,6 @@ function GrantAwards(): JSX.Element {
                               {app.applicationCycle || "—"}
                             </td>
                           )}
-                          {visibleColumns.submitTime && (
-                            <td className={!app.submitTime ? "cell-empty" : ""}>
-                              {app.submitTime || "—"}
-                            </td>
-                          )}
                           {visibleColumns.typesOfCancerAddressed && (
                             <td
                               className={
@@ -896,48 +821,6 @@ function GrantAwards(): JSX.Element {
                               }
                             >
                               {app.typesOfCancerAddressed || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.adminOfficialName && (
-                            <td
-                              className={
-                                !app.adminOfficialName ? "cell-empty" : ""
-                              }
-                            >
-                              {app.adminOfficialName || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.adminEmail && (
-                            <td className={!app.adminEmail ? "cell-empty" : ""}>
-                              {app.adminEmail || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.adminPhoneNumber && (
-                            <td
-                              className={
-                                !app.adminPhoneNumber ? "cell-empty" : ""
-                              }
-                            >
-                              {app.adminPhoneNumber || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.institutionEmail && (
-                            <td
-                              className={
-                                !app.institutionEmail ? "cell-empty" : ""
-                              }
-                            >
-                              {app.institutionEmail || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.requestor && (
-                            <td className={!app.requestor ? "cell-empty" : ""}>
-                              {app.requestor || "—"}
-                            </td>
-                          )}
-                          {visibleColumns.timeframe && (
-                            <td className={!app.timeframe ? "cell-empty" : ""}>
-                              {app.timeframe || "—"}
                             </td>
                           )}
                           {visibleColumns.finalScore && (
@@ -1049,8 +932,7 @@ function GrantAwards(): JSX.Element {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+      </RoleDashboardShell>
 
       <CommentModal
         isOpen={commentModal.isOpen}
@@ -1058,7 +940,7 @@ function GrantAwards(): JSX.Element {
         onClose={closeCommentModal}
         onSave={handleCommentsChange}
       />
-    </div>
+    </>
   );
 }
 

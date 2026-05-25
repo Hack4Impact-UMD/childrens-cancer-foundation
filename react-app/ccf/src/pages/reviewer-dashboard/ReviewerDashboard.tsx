@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-import Phone from '../../assets/call.png';
-import Email from '../../assets/mail.png';
-import document from '../../assets/documentIcon.png';
+import { FaClipboardList, FaEnvelope } from "react-icons/fa";
 import "./ReviewerDashboard.css";
-import Sidebar from "../../components/sidebar/Sidebar";
+import ContactUs from "../../components/contact/ContactUs";
+import DashboardSection from "../../components/dashboard-layout/DashboardSection";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationBox, { type Application } from "../../components/applications/ApplicationBox";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
@@ -15,8 +14,6 @@ import ApplicationCycle from "../../types/applicationCycle-types";
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded, getDaysUntilDeadline } from "../../backend/application-cycle";
 import Banner from "../../components/banner/Banner";
 import CoverPageModal from "../../components/applications/CoverPageModal";
-import Header from "../../components/header/Header";
-import "../../components/dashboard-layout/DashboardLayout.css";
 
 interface ReviewerProp {
     email: string;
@@ -26,9 +23,6 @@ interface ReviewerProp {
 
 function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
     const sidebarItems = getSidebarbyRole('reviewer');
-    // State for expandable sections
-    const [isApplicationCollapsed, setApplicationCollapsed] = useState(false);
-    const [isContactCollapsed, setContactCollapsed] = useState(false);
 
     // State for applications
     const [pendingReviews, setPendingReviews] = useState<Application[]>([]);
@@ -44,10 +38,6 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
 
     // Auth context for current user
     const { currentUser } = auth;
-
-    // Toggle functions
-    const toggleApplication = () => setApplicationCollapsed(!isApplicationCollapsed);
-    const toggleContact = () => setContactCollapsed(!isContactCollapsed);
 
     const handleDueDateClick = (dueDate: string, applicationId: string) => {
         // Navigate to review page with application ID
@@ -203,13 +193,12 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
     }, [currentUser]);
 
     return (
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="dashboard-page">
-                <div className="dashboard-page-stack ReviewerDashboard">
-
-                    <Header title="Reviewer Dashboard" />
-
+        <>
+            <RoleDashboardShell
+                sidebarItems={sidebarItems}
+                title="Reviewer Dashboard"
+                stackClassName="ReviewerDashboard"
+            >
                     {appCycle?.stage === "Applications Open" && (
                             <Banner>Awaiting Review Period to Begin</Banner>
                         )}
@@ -226,20 +215,12 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                             <Banner>Awaiting Review Period to Begin</Banner>
                         )}
 
-                    <div className="ReviewerDashboard-sections-content">
-                        <div className="ReviewerDashboard-section">
-                            <div className="ReviewerDashboard-section-header">
-                                <div className="ReviewerDashboard-header-content">
-                                    <img src={document} alt="Document Icon" className="ReviewerDashboard-section-icon" />
-                                    <h2>Applications to Review</h2>
-                                </div>
-                                <button onClick={toggleApplication} className="expand-collapse-btn">
-                                    {isApplicationCollapsed ? <FaArrowDown /> : <FaArrowUp />}
-                                </button>
-                            </div>
-
-                            {!isApplicationCollapsed && (
-                                <div className="ReviewerDashboard-applications-container">
+                    <div className="dashboard-sections-content">
+                        <DashboardSection
+                            title="Applications to Review"
+                            icon={<FaClipboardList className="dashboard-section-icon" />}
+                        >
+                            <div className="ReviewerDashboard-applications-container">
                                     {loading ? (
                                         <div className="loading-message">Loading your assigned applications...</div>
                                     ) : error ? (
@@ -261,7 +242,7 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                                                             onModalOpen={handleModalOpen}
                                                         />
                                                     ))}
-                                                    <hr className="ReviewerDashboard-red-line" />
+                                                    <hr className="dashboard-section-divider" />
                                                 </>
                                             )}
 
@@ -280,7 +261,7 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                                                             onModalOpen={handleModalOpen}
                                                         />
                                                     ))}
-                                                    <hr className="ReviewerDashboard-red-line" />
+                                                    <hr className="dashboard-section-divider" />
                                                 </>
                                             )}
 
@@ -312,57 +293,24 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                                         </>
                                     )}
                                 </div>
-                            )}
-                        </div>
+                        </DashboardSection>
 
-                        <div className="ReviewerDashboard-section">
-                            <div className="ReviewerDashboard-section-header">
-                                <div className="ReviewerDashboard-header-content">
-                                    <img src={document} alt="Document Icon" className="ReviewerDashboard-section-icon" />
-                                    <h2>Contact Us</h2>
-                                </div>
-                                <button onClick={toggleContact} className="expand-collapse-btn">
-                                    {isContactCollapsed ? <FaArrowDown /> : <FaArrowUp />}
-                                </button>
-                            </div>
-                            {!isContactCollapsed && (
-                                <div className="ReviewerDashboard-contact-box">
-                                    <div className="contact-method">
-                                        <div className="contact-method-header">
-                                            <img src={Email} alt="Email Icon" className="contact-icon" />
-                                            <h2 className="contact-method-title">Email Support</h2>
-                                        </div>
-                                        <p className="contact-text">Email us and we'll get back to you as soon as possible.</p>
-                                        <a href={`mailto:${email}`} className="contact-link">
-                                            {email}
-                                        </a>
-                                    </div>
-
-                                    <div className="contact-method">
-                                        <div className="contact-method-header">
-                                            <img src={Phone} alt="Phone Icon" className="contact-icon" />
-                                            <h2 className="contact-method-title">Call Support</h2>
-                                        </div>
-                                        <p className="contact-text">Call us and we'll get back to you as soon as possible.</p>
-                                        <a href={`tel:${phone}`} className="contact-link">
-                                            {phone}
-                                        </a>
-                                        <p className="contact-hours">{hours}</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        <DashboardSection
+                            title="Contact Us"
+                            icon={<FaEnvelope className="dashboard-section-icon" />}
+                        >
+                            <ContactUs email={email} phone={phone} hours={hours} />
+                        </DashboardSection>
                     </div>
-                </div>
-            </div>
+            </RoleDashboardShell>
             {currentModalApplication && (
-                    <CoverPageModal
-                        onClose={closeModal}
-                        isOpen={modalOpen}
-                        application={currentModalApplication}
-                    />
+                <CoverPageModal
+                    onClose={closeModal}
+                    isOpen={modalOpen}
+                    application={currentModalApplication}
+                />
             )}
-        </div>
+        </>
     );
 }
 

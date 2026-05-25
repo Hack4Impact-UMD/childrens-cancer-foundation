@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaArrowDown, FaArrowUp, FaFileAlt, FaSearch, FaTimes, FaEye } from 'react-icons/fa';
-import Sidebar from '../../components/sidebar/Sidebar';
 import Button from '../../components/buttons/Button';
-import logo from "../../assets/ccf-logo.png";
+import RoleDashboardShell from '../../components/dashboard-layout/RoleDashboardShell';
 import './AssignReviewers.css';
 import { collection, getDocs, doc, updateDoc, getDoc, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import { db } from "../.."; // Assuming you have a firebase config file
@@ -15,7 +14,6 @@ import {
   checkAndUpdateApplicationStatus
 } from '../../services/review-service';
 import { GrantApplication, Reviewer } from '../../types/application-types';
-import Header from "../../components/header/Header";
 
 // Interface definitions
 interface ExtendedGrantApplication extends GrantApplication {
@@ -523,7 +521,7 @@ const AssignReviewersPage: React.FC = () => {
             </div>
           </div>
           <span className="ar-expand-icon">
-            {app.expanded ? <FaArrowUp color="#1e3a8a" /> : <FaArrowDown color="white" />}
+            {app.expanded ? <FaArrowUp /> : <FaArrowDown />}
           </span>
         </div>
 
@@ -552,7 +550,7 @@ const AssignReviewersPage: React.FC = () => {
                       className="ar-add-reviewer"
                       onClick={() => openReviewerModal(app.document_id, 'primary')}
                     >
-                      +
+                      + Assign
                     </button>
                   </div>
                 )}
@@ -660,14 +658,11 @@ const AssignReviewersPage: React.FC = () => {
   };
 
   return (
-    <div className="ar-assign-reviewers-page">
-      <Sidebar links={sidebarLinks} />
-
-      <div className="ar-assign-reviewers-container">
-        <div className="ar-page-header">
-          <Header title="Assign Reviewers" />
-        </div>
-
+    <RoleDashboardShell
+      sidebarItems={sidebarLinks}
+      title="Assign Reviewers"
+      stackClassName="ar-assign-reviewers"
+    >
         {error && (
           <div className="ar-error-message">
             <p>{error}</p>
@@ -703,7 +698,6 @@ const AssignReviewersPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
 
       <ReviewerSelectionModal
         isOpen={modalOpen}
@@ -717,7 +711,7 @@ const AssignReviewersPage: React.FC = () => {
         currentApplication={applications.find(app => app.document_id === currentApplicationId)}
         reviewerType={reviewerType || undefined}
       />
-    </div>
+    </RoleDashboardShell>
   );
 };
 
