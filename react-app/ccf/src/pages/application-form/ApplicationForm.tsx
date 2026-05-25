@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 import { Modal } from '../../components/modal/modal';
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend/application-cycle';
 import { auth } from '../..';
-import { collection, addDoc, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../..';
 
 type ApplicationFormProps = {
@@ -125,6 +125,15 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                 const draftDoc = await getDoc(doc(db, 'applications', existingDraftId));
                 if (draftDoc.exists()) {
                     const data = draftDoc.data();
+
+                    const cycle = await getCurrentCycle();
+                    const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                    if (data.applicationCycle && data.applicationCycle !== updatedCycle.name) {
+                        toast.error('This draft is from a previous application cycle and cannot be submitted.');
+                        navigate('/applicant/dashboard');
+                        return;
+                    }
+
                     setDraftId(existingDraftId);
                     setFormData(prev => ({ ...prev, ...data }));
                     setCurrentPage(2); // Skip past the About Grant page
@@ -167,12 +176,16 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                 return;
             }
 
+            const cycle = await getCurrentCycle();
+            const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+
             const draftRef = await addDoc(collection(db, 'applications'), {
-                status: 'draft', 
-                grantType: type === 'NextGen' ? 'nextgen' : 'research', 
-                creatorId: currentUser.uid, 
-                applicantEmail: currentUser.email, 
-                createdAt: new Date().toISOString(), 
+                status: 'draft',
+                grantType: type === 'NextGen' ? 'nextgen' : 'research',
+                creatorId: currentUser.uid,
+                applicantEmail: currentUser.email,
+                applicationCycle: updatedCycle.name,
+                createdAt: new Date().toISOString(),
                 lastUpdated: new Date().toISOString(),
                 ...formData
             });
@@ -295,10 +308,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                     toast.success('Application submitted successfully!');
                     localStorage.removeItem('researchApplicationDraft');
                     if (draftId) {
-                        await updateDoc(doc(db, 'applications', draftId), {
-                            status: 'submitted', 
-                            lastUpdated: new Date().toISOString()
-                        });
+                        await deleteDoc(doc(db, 'applications', draftId));
                     }
                     navigate('/applicant/dashboard');
                 } else {
