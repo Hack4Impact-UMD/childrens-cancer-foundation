@@ -394,16 +394,21 @@ function AdminApplicationsDatabase(): JSX.Element {
                                                   .continuation}
                                           </span>
                                         </div>
-                                        <div className="admin-detail-item">
-                                          <span className="admin-detail-label">
-                                            Status:{" "}
-                                          </span>
-                                          <span
-                                            className={`admin-status-badge admin-status-${(app.decision || "pending").toLowerCase()}`}
-                                          >
-                                            {firstLetterCap(app.decision) || "Pending"}
-                                          </span>
-                                        </div>
+                                        {(() => {
+                                          const normalizedDecision = app.decision ?? "pending";
+                                          return (
+                                            <div className="admin-detail-item">
+                                              <span className="admin-detail-label">
+                                                Status:{" "}
+                                              </span>
+                                              <span
+                                                className={`admin-status-badge admin-status-${normalizedDecision.toLowerCase()}`}
+                                              >
+                                                {firstLetterCap(normalizedDecision)}
+                                              </span>
+                                            </div>
+                                          );
+                                        })()}
                                       </div>
                                     </div>
                                     <div className="action-buttons">

@@ -258,7 +258,8 @@
     font-weight: 500;
     line-height: 1.4;
     margin: 0;
-    word-break: break-word;
+    overflow-wrap: anywhere;
+    word-break: normal;
 }
 
 /* Status pill inside the details grid. Color reflects the decision so it
