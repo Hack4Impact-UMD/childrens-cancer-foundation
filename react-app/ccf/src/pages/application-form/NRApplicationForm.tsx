@@ -47,6 +47,7 @@ function NRApplicationForm(): JSX.Element {
     const [modalTitle, setModalTitle] = useState('Please Fill Out All Missing Fields Before Submitting');
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
     const [draftId, setDraftId] = useState<string | null>(null);
+    const [draftCycle, setDraftCycle] = useState<string | null>(null);
     const location = useLocation();
 
     useEffect(() => {
@@ -87,6 +88,7 @@ function NRApplicationForm(): JSX.Element {
                 if (draftDoc.exists()) {
                     const data = draftDoc.data();
                     setDraftId(existingDraftId);
+                    setDraftCycle(data.applicationCycle ?? null);
                     setFormData(prev => ({ ...prev, ...data }));
                     setCurrentPage(2);
                 }
@@ -128,18 +130,24 @@ function NRApplicationForm(): JSX.Element {
                 return;
             }
 
+            // Stamp the draft with the cycle it was created in so it can only
+            // be submitted during that same cycle.
+            const cycle = await getCurrentCycle();
+
             const draftRef = await addDoc(collection(db, 'applications'), {
                 status: 'draft',
                 grantType: 'nonresearch',
                 creatorId: currentUser.uid,
-                applicantEmail: currentUser.email, 
-                createdAt: new Date().toISOString(), 
-                lastUpdated: new Date().toISOString(), 
+                applicantEmail: currentUser.email,
+                applicationCycle: cycle.name,
+                createdAt: new Date().toISOString(),
+                lastUpdated: new Date().toISOString(),
                 ...formData
             });
 
             console.log('Draft created with ID:', draftRef.id);
             setDraftId(draftRef.id);
+            setDraftCycle(cycle.name);
             setCurrentPage(2);
         } catch (err) {
             console.error('Error creating draft:', err);
@@ -186,6 +194,33 @@ function NRApplicationForm(): JSX.Element {
             );
             setIsModalOpen(true);
             return;
+        }
+
+        // Ensure the draft is being submitted during the same cycle it was created in.
+        if (draftCycle) {
+            try {
+                const currentCycle = await getCurrentCycle();
+                if (currentCycle.name !== draftCycle) {
+                    setModalTitle('This Application Cycle Has Ended');
+                    setModalContent(
+                        <div style={{ whiteSpace: 'pre-line' }}>
+                            {`This application was started during the "${draftCycle}" cycle, which has since ended. Applications can only be submitted during the cycle in which they were created.\n\nPlease contact the Children's Cancer Foundation (CCF) for assistance.`}
+                        </div>
+                    );
+                    setIsModalOpen(true);
+                    return;
+                }
+            } catch (error) {
+                console.error('Error verifying application cycle:', error);
+                setModalTitle('Unable to Verify Application Cycle');
+                setModalContent(
+                    <div style={{ whiteSpace: 'pre-line' }}>
+                        {`We couldn't verify the current application cycle. Please try again later, or contact the Children's Cancer Foundation (CCF) for assistance.`}
+                    </div>
+                );
+                setIsModalOpen(true);
+                return;
+            }
         }
 
         if (Object.keys(invalidSections).length > 0) {
