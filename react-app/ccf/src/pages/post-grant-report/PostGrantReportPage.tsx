@@ -338,6 +338,13 @@ function PostGrantReportPage(): JSX.Element {
         );
     }
 
+    const isFormComplete = Boolean(
+        report &&
+        formData.investigatorName.trim() &&
+        formData.institutionName.trim() &&
+        formData.attestationDate.trim()
+    );
+
     return (
         <>
             {showConfetti && <Confetti />}
@@ -466,22 +473,20 @@ function PostGrantReportPage(): JSX.Element {
                                 </div>
 
                                 <div className="PostGrantReport-submit">
-                                    
-                                <button
-                                    className="application-btn"
-                                    onClick={handleSubmit}
-                                    disabled={loading}
-                                >
-                                    {loading ? 'Submitting...' : 'Submit Report'}
-                                </button>
-
-                                <button
-                                        className="cancel-button"
+                                    <button
+                                        className="application-btn"
                                         onClick={() => navigate('/applicant/dashboard')}
                                     >
                                         Cancel
                                     </button>
 
+                                    <button
+                                        className="application-btn"
+                                        onClick={handleSubmit}
+                                        disabled={loading || !isFormComplete}
+                                    >
+                                        {loading ? 'Submitting...' : 'Submit Report'}
+                                    </button>
                                 </div>
 
                             </div>
