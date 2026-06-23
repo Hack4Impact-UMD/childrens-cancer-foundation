@@ -14,7 +14,7 @@ import { validateEmail, validatePhoneNumber} from '../../utils/validation';
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend/application-cycle';
 import { Modal } from '../../components/modal/modal';
 import { auth } from '../..';
-import { collection, addDoc, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '../..';
 
 function NRApplicationForm(): JSX.Element {
@@ -254,11 +254,14 @@ function NRApplicationForm(): JSX.Element {
                 if (result.success) {
                     toast.success('Application submitted successfully!');
                     localStorage.removeItem('nonResearchApplicationDraft');
+                    // The cloud function creates the canonical submitted application,
+                    // so remove the working draft to avoid a duplicate appearing.
                     if (draftId) {
-                        await updateDoc(doc(db, 'applications', draftId), {
-                            status: 'submitted', 
-                            lastUpdated: new Date().toISOString()
-                        });
+                        try {
+                            await deleteDoc(doc(db, 'applications', draftId));
+                        } catch (cleanupErr) {
+                            console.error('Failed to delete draft after submission:', cleanupErr);
+                        }
                     }
                     navigate('/applicant/dashboard');
                 } else {
