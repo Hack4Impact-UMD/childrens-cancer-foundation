@@ -47,6 +47,7 @@ function NRApplicationForm(): JSX.Element {
     const [modalTitle, setModalTitle] = useState('Please Fill Out All Missing Fields Before Submitting');
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
     const [draftId, setDraftId] = useState<string | null>(null);
+    const [draftCycleId, setDraftCycleId] = useState<string | null>(null);
     const [draftCycle, setDraftCycle] = useState<string | null>(null);
     const location = useLocation();
 
@@ -88,6 +89,7 @@ function NRApplicationForm(): JSX.Element {
                 if (draftDoc.exists()) {
                     const data = draftDoc.data();
                     setDraftId(existingDraftId);
+                    setDraftCycleId(data.applicationCycleId ?? null);
                     setDraftCycle(data.applicationCycle ?? null);
                     setFormData(prev => ({ ...prev, ...data }));
                     setCurrentPage(2);
@@ -139,6 +141,7 @@ function NRApplicationForm(): JSX.Element {
                 grantType: 'nonresearch',
                 creatorId: currentUser.uid,
                 applicantEmail: currentUser.email,
+                applicationCycleId: cycle.id,
                 applicationCycle: cycle.name,
                 createdAt: new Date().toISOString(),
                 lastUpdated: new Date().toISOString(),
@@ -147,6 +150,7 @@ function NRApplicationForm(): JSX.Element {
 
             console.log('Draft created with ID:', draftRef.id);
             setDraftId(draftRef.id);
+            setDraftCycleId(cycle.id);
             setDraftCycle(cycle.name);
             setCurrentPage(2);
         } catch (err) {
@@ -197,10 +201,10 @@ function NRApplicationForm(): JSX.Element {
         }
 
         // Ensure the draft is being submitted during the same cycle it was created in.
-        if (draftCycle) {
+        if (draftCycleId) {
             try {
                 const currentCycle = await getCurrentCycle();
-                if (currentCycle.name !== draftCycle) {
+                if (currentCycle.id !== draftCycleId) {
                     setModalTitle('This Application Cycle Has Ended');
                     setModalContent(
                         <div style={{ whiteSpace: 'pre-line' }}>

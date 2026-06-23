@@ -87,6 +87,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
     const [appOpen, setAppOpen] = useState<boolean>(false);
     const [draftId, setDraftId] = useState<string | null>(null);
+    const [draftCycleId, setDraftCycleId] = useState<string | null>(null);
     const [draftCycle, setDraftCycle] = useState<string | null>(null);
     const location = useLocation();
 
@@ -128,6 +129,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                 if (draftDoc.exists()) {
                     const data = draftDoc.data();
                     setDraftId(existingDraftId);
+                    setDraftCycleId(data.applicationCycleId ?? null);
                     setDraftCycle(data.applicationCycle ?? null);
                     setFormData(prev => ({ ...prev, ...data }));
                     setCurrentPage(2); // Skip past the About Grant page
@@ -180,6 +182,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                 grantType: type === 'NextGen' ? 'nextgen' : 'research',
                 creatorId: currentUser.uid,
                 applicantEmail: currentUser.email,
+                applicationCycleId: cycle.id,
                 applicationCycle: cycle.name,
                 createdAt: new Date().toISOString(),
                 lastUpdated: new Date().toISOString(),
@@ -188,6 +191,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
 
             console.log('Draft created with ID:', draftRef.id);
             setDraftId(draftRef.id);
+            setDraftCycleId(cycle.id);
             setDraftCycle(cycle.name);
             setCurrentPage(2);
         } catch (err) {
@@ -281,10 +285,10 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         }
 
         // Ensure the draft is being submitted during the same cycle it was created in.
-        if (draftCycle) {
+        if (draftCycleId) {
             try {
                 const currentCycle = await getCurrentCycle();
-                if (currentCycle.name !== draftCycle) {
+                if (currentCycle.id !== draftCycleId) {
                     setModalTitle('This Application Cycle Has Ended');
                     setModalContent(
                         <div style={{ whiteSpace: 'pre-line' }}>
