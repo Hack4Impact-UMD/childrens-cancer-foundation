@@ -295,9 +295,9 @@ function AdminEditInformation(): JSX.Element {
                                     onClick={async () => {
                                         const success = await updateCurrentCycleDeadlines({ allApplicationsDate });
                                         if (success) {
-                                            setAppDeadlineMessage("Application Deadline Updated!");
+                                            setAppDeadlineMessage("Deadline updated!");
                                         } else {
-                                            setAppDeadlineMessage("Failed to update. Please try again.");
+                                            setAppDeadlineMessage("Update failed");
                                         }
                                         setTimeout(() => setAppDeadlineMessage(null), 3000);
                                     }}
@@ -310,8 +310,8 @@ function AdminEditInformation(): JSX.Element {
                                         fontWeight: 'normal',
                                         borderRadius: '10px',
                                         '&:hover': { backgroundColor: '#003E83' },
-                                        minWidth: 'auto !important',
-                                        width: 'auto !important',
+                                        minWidth: '270px',
+                                        width: '270px',
                                         whiteSpace: 'nowrap',
                                     }}
                                 >{appDeadlineMessage ?? "Set Application Deadline"}</Button>
@@ -352,9 +352,9 @@ function AdminEditInformation(): JSX.Element {
                                     onClick={async () => {
                                         const success = await updateCurrentCycleDeadlines({ reviewerDate });
                                         if (success) {
-                                            setRevDeadlineMessage("Reviewer Deadline Updated!");
+                                            setRevDeadlineMessage("Deadline updated!");
                                         } else {
-                                            setRevDeadlineMessage("Failed to update. Please try again.");
+                                            setRevDeadlineMessage("Update failed");
                                         }
                                         setTimeout(() => setRevDeadlineMessage(null), 3000);
                                     }}
@@ -367,8 +367,8 @@ function AdminEditInformation(): JSX.Element {
                                         fontWeight: 'normal',
                                         borderRadius: '10px',
                                         '&:hover': { backgroundColor: '#003E83' },
-                                        minWidth: 'auto !important',
-                                        width: 'auto !important',
+                                        minWidth: '270px',
+                                        width: '270px',
                                         whiteSpace: 'nowrap',
                                     }}
                                 >{revDeadlineMessage ?? "Set Reviewer Deadline"}</Button>
@@ -409,9 +409,9 @@ function AdminEditInformation(): JSX.Element {
                                     onClick={async () => {
                                         const success = await updateCurrentCycleDeadlines({ postGrantReportDate });
                                         if (success) {
-                                            setPostGrantReportDeadlineMessage("Post-Grant Report Deadline Updated!");
+                                            setPostGrantReportDeadlineMessage("Deadline updated!");
                                         } else {
-                                            setPostGrantReportDeadlineMessage("Failed to update. Please try again.");
+                                            setPostGrantReportDeadlineMessage("Update failed");
                                         }
                                         setTimeout(() => setPostGrantReportDeadlineMessage(null), 3000);
                                     }}
@@ -424,8 +424,8 @@ function AdminEditInformation(): JSX.Element {
                                         fontWeight: 'normal',
                                         borderRadius: '10px',
                                         '&:hover': { backgroundColor: '#003E83' },
-                                        minWidth: 'auto !important',
-                                        width: 'auto !important',
+                                        minWidth: '270px',
+                                        width: '270px',
                                         whiteSpace: 'nowrap',
                                     }}
                                 >{postGrantReportDeadlineMessage ?? "Set Post-Grant Deadline"}</Button>

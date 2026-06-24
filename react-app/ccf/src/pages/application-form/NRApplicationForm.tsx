@@ -7,14 +7,13 @@ import NRInformation from './subquestions/NRInformation';
 import NRNarrative from './subquestions/NRNarrative';
 import ReviewApplication from './subquestions/Review';
 import AboutGrant from './subquestions/AboutGrant';
-import { NonResearchApplication } from '../../types/application-types';
 import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
 import { toast } from 'react-toastify';
 import { validateEmail, validatePhoneNumber} from '../../utils/validation';
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend/application-cycle';
 import { Modal } from '../../components/modal/modal';
 import { auth } from '../..';
-import { collection, addDoc, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '../..';
 
 function NRApplicationForm(): JSX.Element {
@@ -47,14 +46,11 @@ function NRApplicationForm(): JSX.Element {
     const [modalTitle, setModalTitle] = useState('Please Fill Out All Missing Fields Before Submitting');
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
     const [draftId, setDraftId] = useState<string | null>(null);
+    const [draftCycleId, setDraftCycleId] = useState<string | null>(null);
+    const [draftCycle, setDraftCycle] = useState<string | null>(null);
     const location = useLocation();
 
     useEffect(() => {
-        const savedDraft = localStorage.getItem('nonResearchApplicationDraft');
-        if (savedDraft) {
-            setFormData(JSON.parse(savedDraft));
-        }
-
         getCurrentCycle().then(async cycle => {
             const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
             setAppOpen(updatedCycle.stage === "Applications Open")
@@ -87,6 +83,8 @@ function NRApplicationForm(): JSX.Element {
                 if (draftDoc.exists()) {
                     const data = draftDoc.data();
                     setDraftId(existingDraftId);
+                    setDraftCycleId(data.applicationCycleId ?? null);
+                    setDraftCycle(data.applicationCycle ?? null);
                     setFormData(prev => ({ ...prev, ...data }));
                     setCurrentPage(2);
                 }
@@ -128,18 +126,26 @@ function NRApplicationForm(): JSX.Element {
                 return;
             }
 
+            // Stamp the draft with the cycle it was created in so it can only
+            // be submitted during that same cycle.
+            const cycle = await getCurrentCycle();
+
             const draftRef = await addDoc(collection(db, 'applications'), {
                 status: 'draft',
                 grantType: 'nonresearch',
                 creatorId: currentUser.uid,
-                applicantEmail: currentUser.email, 
-                createdAt: new Date().toISOString(), 
-                lastUpdated: new Date().toISOString(), 
+                applicantEmail: currentUser.email,
+                applicationCycleId: cycle.id,
+                applicationCycle: cycle.name,
+                createdAt: new Date().toISOString(),
+                lastUpdated: new Date().toISOString(),
                 ...formData
             });
 
             console.log('Draft created with ID:', draftRef.id);
             setDraftId(draftRef.id);
+            setDraftCycleId(cycle.id);
+            setDraftCycle(cycle.name);
             setCurrentPage(2);
         } catch (err) {
             console.error('Error creating draft:', err);
@@ -188,6 +194,33 @@ function NRApplicationForm(): JSX.Element {
             return;
         }
 
+        // Ensure the draft is being submitted during the same cycle it was created in.
+        if (draftCycleId) {
+            try {
+                const currentCycle = await getCurrentCycle();
+                if (currentCycle.id !== draftCycleId) {
+                    setModalTitle('This Application Cycle Has Ended');
+                    setModalContent(
+                        <div style={{ whiteSpace: 'pre-line' }}>
+                            {`This application was started during the "${draftCycle}" cycle, which has since ended. Applications can only be submitted during the cycle in which they were created.\n\nPlease contact the Children's Cancer Foundation (CCF) for assistance.`}
+                        </div>
+                    );
+                    setIsModalOpen(true);
+                    return;
+                }
+            } catch (error) {
+                console.error('Error verifying application cycle:', error);
+                setModalTitle('Unable to Verify Application Cycle');
+                setModalContent(
+                    <div style={{ whiteSpace: 'pre-line' }}>
+                        {`We couldn't verify the current application cycle. Please try again later, or contact the Children's Cancer Foundation (CCF) for assistance.`}
+                    </div>
+                );
+                setIsModalOpen(true);
+                return;
+            }
+        }
+
         if (Object.keys(invalidSections).length > 0) {
             setModalTitle('Please Fill Out All Missing Fields Before Submitting');
             const formattedContent = (
@@ -206,7 +239,18 @@ function NRApplicationForm(): JSX.Element {
         }
 
         try {
-            const application: NonResearchApplication = formData as NonResearchApplication;
+            // Strip draft-only/metadata fields so the submitted application is never
+            // tagged as a draft. When a saved draft is resumed, the entire Firestore
+            // doc (including status: 'draft', cycle ids and timestamps) is merged into
+            // formData; sending those through would make the canonical submitted
+            // document still look like a draft. The file is passed separately and the
+            // cloud function sets the canonical storage reference.
+            const application = { ...formData } as any;
+            [
+                'status', 'creatorId', 'applicantEmail', 'applicationCycleId',
+                'applicationCycle', 'createdAt', 'lastUpdated', 'grantType',
+                'decision', 'submitTime', 'applicationId', 'file'
+            ].forEach((key) => delete application[key]);
             if (formData.file) {
                 toast.info('Submitting application...');
 
@@ -214,12 +258,14 @@ function NRApplicationForm(): JSX.Element {
 
                 if (result.success) {
                     toast.success('Application submitted successfully!');
-                    localStorage.removeItem('nonResearchApplicationDraft');
+                    // The cloud function creates the canonical submitted application,
+                    // so remove the working draft to avoid a duplicate appearing.
                     if (draftId) {
-                        await updateDoc(doc(db, 'applications', draftId), {
-                            status: 'submitted', 
-                            lastUpdated: new Date().toISOString()
-                        });
+                        try {
+                            await deleteDoc(doc(db, 'applications', draftId));
+                        } catch (cleanupErr) {
+                            console.error('Failed to delete draft after submission:', cleanupErr);
+                        }
                     }
                     navigate('/applicant/dashboard');
                 } else {

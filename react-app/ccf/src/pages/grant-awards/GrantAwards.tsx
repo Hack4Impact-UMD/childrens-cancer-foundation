@@ -199,6 +199,11 @@ function GrantAwards(): JSX.Element {
       // First, collect all application data and IDs
       for (const doc of querySnapshot.docs) {
         const data: any = doc.data();
+
+        // Drafts share this collection; skip them so unsubmitted applications
+        // don't appear in the grant awards list.
+        if (data.status === "draft") continue;
+
         applicationIds.push(doc.id);
 
         // Get final score from application document (stored when both reviews are completed)
