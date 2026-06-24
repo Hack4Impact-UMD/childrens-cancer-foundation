@@ -33,6 +33,9 @@ function AccountPageApplicants(): JSX.Element {
 
   const [institutionError, setInstitutionError] = useState(false);
 
+  //error returned from account creation
+  const [signupError, setSignupError] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
   useEffect(() => { }, [
@@ -66,6 +69,7 @@ function AccountPageApplicants(): JSX.Element {
       e.preventDefault();
       return;
     }
+    setSignupError(null);
     try {
       const userData: UserData = {
         email: email,
@@ -77,8 +81,15 @@ function AccountPageApplicants(): JSX.Element {
       }
       await addApplicantUser(userData, pwd)
       navigate("/Login");
-    } catch (e) {
+    } catch (e: any) {
       console.log(e)
+      const code = e?.code;
+      const message = typeof e?.message === "string" ? e.message : "";
+      if (code === "auth/email-already-in-use" || message.includes("EMAIL_EXISTS")) {
+        setSignupError("An account with this email already exists. Please log in instead.");
+      } else {
+        setSignupError("Something went wrong while creating your account. Please try again.");
+      }
     }
   };
 
@@ -148,6 +159,7 @@ function AccountPageApplicants(): JSX.Element {
                 onChange={(e) => {
                   setEmail(e.target.value);
                   checkEmail(e.target.value);
+                  setSignupError(null);
                 }}
                 className="input"
               />
@@ -233,6 +245,10 @@ function AccountPageApplicants(): JSX.Element {
               </select>
               {institutionError && (
                 <p className="validation">Please select a valid institution</p>
+              )}
+
+              {signupError && (
+                <p className="validation">{signupError}</p>
               )}
 
               <p className="acc-req2">
