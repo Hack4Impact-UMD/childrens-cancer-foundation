@@ -29,16 +29,23 @@ export async function getFilteredApplications(filters: FilterOptions): Promise<A
             conditions.push(where('grantType', '==', filters.grantType));
         }
 
-        // Create the query with all conditions
+        // Apply all provided filter conditions to the query
+        if (conditions.length > 0) {
+            q = query(q, ...conditions);
+        }
 
         // Execute the query
         const querySnapshot = await getDocs(q);
 
-        // Map the results to the expected type
-        const applications = querySnapshot.docs.map(doc => ({
-            applicationId: doc.id,
-            ...doc.data()
-        })) as unknown as Array<Application>;
+        // Map the results to the expected type. Drafts share this collection, so
+        // exclude them (filtered client-side so submitted docs that predate the
+        // status field are still included).
+        const applications = querySnapshot.docs
+            .filter(doc => doc.data().status !== 'draft')
+            .map(doc => ({
+                applicationId: doc.id,
+                ...doc.data()
+            })) as unknown as Array<Application>;
 
         return applications;
     } catch (error) {
@@ -54,10 +61,15 @@ export async function getUsersCurrentCycleAppplications(): Promise<Array<Applica
     let q: Query<DocumentData> = collection(db, 'applications');
     q = query(q, where("creatorId", "==", user.uid), where("applicationCycle", "==", currentCycle.name));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    })) as unknown as Array<Application>;
+    return querySnapshot.docs
+        // Drafts live in the same collection; exclude them so they don't show up
+        // as "completed" submitted applications. (Filtered client-side so submitted
+        // docs that predate the status field are still included.)
+        .filter(doc => doc.data().status !== 'draft')
+        .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as unknown as Array<Application>;
 }
 
 export async function getUsersAllApplications(): Promise<Array<Application>> {

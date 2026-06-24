@@ -8,7 +8,6 @@ import ApplicationQuestions from './subquestions/ApplicationQuestions';
 import ReviewApplication from './subquestions/Review';
 import GrantProposal from './subquestions/GrantProposal';
 import AboutGrant from './subquestions/AboutGrant';
-import { ResearchApplication } from '../../types/application-types';
 import { uploadResearchApplication } from '../../backend/applicant-form-submit';
 import { toast } from 'react-toastify';
 import { Modal } from '../../components/modal/modal';
@@ -92,11 +91,6 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const location = useLocation();
 
     useEffect(() => {
-        const savedDraft = localStorage.getItem('researchApplicationDraft');
-        if (savedDraft) {
-            setFormData(JSON.parse(savedDraft));
-        }
-
         getCurrentCycle().then(async cycle => {
             const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
             setAppOpen(updatedCycle.stage === "Applications Open")
@@ -329,7 +323,18 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         }
 
         try {
-            const application: ResearchApplication = formData as ResearchApplication;
+            // Strip draft-only/metadata fields so the submitted application is never
+            // tagged as a draft. When a saved draft is resumed, the entire Firestore
+            // doc (including status: 'draft', cycle ids and timestamps) is merged into
+            // formData; sending those through would make the canonical submitted
+            // document still look like a draft. The file is passed separately and the
+            // cloud function sets the canonical storage reference.
+            const application = { ...formData } as any;
+            [
+                'status', 'creatorId', 'applicantEmail', 'applicationCycleId',
+                'applicationCycle', 'createdAt', 'lastUpdated', 'grantType',
+                'decision', 'submitTime', 'applicationId', 'file'
+            ].forEach((key) => delete application[key]);
             if (formData.file) {
                 // Show loading toast
                 toast.info('Submitting application...');
@@ -339,7 +344,6 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
 
                 if (result.success) {
                     toast.success('Application submitted successfully!');
-                    localStorage.removeItem('researchApplicationDraft');
                     // The cloud function creates the canonical submitted application,
                     // so remove the working draft to avoid a duplicate appearing.
                     if (draftId) {

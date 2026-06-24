@@ -207,6 +207,7 @@ exports.submitApplication = onCall(async (request) => {
         // 9. Create application document
         const applicationDetails = {
             ...application,
+            status: 'submitted',
             decision: 'pending',
             creatorId: userId,
             applicationId: fileId,

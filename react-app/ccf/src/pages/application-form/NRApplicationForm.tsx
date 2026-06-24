@@ -7,7 +7,6 @@ import NRInformation from './subquestions/NRInformation';
 import NRNarrative from './subquestions/NRNarrative';
 import ReviewApplication from './subquestions/Review';
 import AboutGrant from './subquestions/AboutGrant';
-import { NonResearchApplication } from '../../types/application-types';
 import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
 import { toast } from 'react-toastify';
 import { validateEmail, validatePhoneNumber} from '../../utils/validation';
@@ -52,11 +51,6 @@ function NRApplicationForm(): JSX.Element {
     const location = useLocation();
 
     useEffect(() => {
-        const savedDraft = localStorage.getItem('nonResearchApplicationDraft');
-        if (savedDraft) {
-            setFormData(JSON.parse(savedDraft));
-        }
-
         getCurrentCycle().then(async cycle => {
             const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
             setAppOpen(updatedCycle.stage === "Applications Open")
@@ -245,7 +239,18 @@ function NRApplicationForm(): JSX.Element {
         }
 
         try {
-            const application: NonResearchApplication = formData as NonResearchApplication;
+            // Strip draft-only/metadata fields so the submitted application is never
+            // tagged as a draft. When a saved draft is resumed, the entire Firestore
+            // doc (including status: 'draft', cycle ids and timestamps) is merged into
+            // formData; sending those through would make the canonical submitted
+            // document still look like a draft. The file is passed separately and the
+            // cloud function sets the canonical storage reference.
+            const application = { ...formData } as any;
+            [
+                'status', 'creatorId', 'applicantEmail', 'applicationCycleId',
+                'applicationCycle', 'createdAt', 'lastUpdated', 'grantType',
+                'decision', 'submitTime', 'applicationId', 'file'
+            ].forEach((key) => delete application[key]);
             if (formData.file) {
                 toast.info('Submitting application...');
 
@@ -253,7 +258,6 @@ function NRApplicationForm(): JSX.Element {
 
                 if (result.success) {
                     toast.success('Application submitted successfully!');
-                    localStorage.removeItem('nonResearchApplicationDraft');
                     // The cloud function creates the canonical submitted application,
                     // so remove the working draft to avoid a duplicate appearing.
                     if (draftId) {
