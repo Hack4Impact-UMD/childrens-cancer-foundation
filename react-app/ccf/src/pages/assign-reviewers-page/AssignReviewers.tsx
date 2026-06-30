@@ -149,6 +149,10 @@ const AssignReviewersPage: React.FC = () => {
         for (const doc of applicationsSnapshot.docs) {
           const data = doc.data();
 
+          // Drafts share this collection; skip them so half-finished applications
+          // aren't shown as assignable to reviewers.
+          if (data.status === 'draft') continue;
+
           // Get review information from the reviews collection
           let primaryReviewerId: string | undefined;
           let secondaryReviewerId: string | undefined;

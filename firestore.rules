@@ -24,7 +24,7 @@ service cloud.firestore {
       allow read: if isAdmin() || isReviewer() || (isApplicant() && request.auth.uid == resource.data.creatorId);
       allow create: if isAdmin() || (isApplicant() && request.resource.data.creatorId == request.auth.uid);
       allow update: if isAdmin() || (isApplicant() && resource.data.creatorId == request.auth.uid && resource.data.status == 'draft');
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || (isApplicant() && resource.data.creatorId == request.auth.uid && resource.data.status == 'draft');
     }
     
     // FAQs collection rules

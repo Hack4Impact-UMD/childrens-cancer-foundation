@@ -61,6 +61,10 @@ function AdminPostGrantReports(): JSX.Element {
                 // Process all applications and filter for accepted ones
                 for (const doc of applicationsSnapshot.docs) {
                     const applicationData = doc.data() as ApplicationInfo;
+
+                    // Drafts share this collection; skip them outright.
+                    if ((applicationData as any).status === 'draft') continue;
+
                     const applicationId = doc.id; // Use the document ID
                     const decisionData = decisionDataMap[applicationId];
 

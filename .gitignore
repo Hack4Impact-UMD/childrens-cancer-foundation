@@ -86,3 +86,5 @@ create-empty-collections.js
 recreate-collections.js
 reset-firebase-admin.js
 reset-firebase.js
+
+/plans
