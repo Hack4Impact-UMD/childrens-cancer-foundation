@@ -58,10 +58,29 @@ export async function getUsersCurrentCycleAppplications(): Promise<Array<Applica
     const user = auth.currentUser;
     if (!user) throw new Error("User is not authenticated.");
     const currentCycle = await getCurrentCycle();
-    let q: Query<DocumentData> = collection(db, 'applications');
-    q = query(q, where("creatorId", "==", user.uid), where("applicationCycle", "==", currentCycle.name));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs
+    const base = collection(db, 'applications');
+
+    // Prefer matching by cycle id; keep a name-keyed query as a fallback for
+    // submitted docs that predate the applicationCycleId field.
+    // TODO(legacy-cycle-name): remove the name fallback once pre-id docs are
+    // gone or backfilled.
+    const [byId, byName] = await Promise.all([
+        getDocs(query(base, where("creatorId", "==", user.uid), where("applicationCycleId", "==", currentCycle.id))),
+        getDocs(query(base, where("creatorId", "==", user.uid), where("applicationCycle", "==", currentCycle.name))),
+    ]);
+
+    const seen = new Set<string>();
+    const docs = [...byId.docs, ...byName.docs].filter((d) => {
+        if (seen.has(d.id)) return false;
+        seen.add(d.id);
+        // Legacy docs lack applicationCycleId and are matched by name.
+        // Docs that HAVE an id field must match by id — a reused name must not leak them in.
+        const data = d.data();
+        if (data.applicationCycleId && data.applicationCycleId !== currentCycle.id) return false;
+        return true;
+    });
+
+    return docs
         // Drafts live in the same collection; exclude them so they don't show up
         // as "completed" submitted applications. (Filtered client-side so submitted
         // docs that predate the status field are still included.)

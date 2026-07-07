@@ -261,6 +261,7 @@ exports.submitApplication = onCall(async (request) => {
       applicationId: fileId,
       grantType: grantType,
       file: fileName_storage,
+      applicationCycleId: currentCycleDoc.id,
       applicationCycle: currentCycle.name,
       submitTime: admin.firestore.Timestamp.now(),
     };
