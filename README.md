@@ -80,6 +80,11 @@ To get the project up and running on your local machine, follow these steps:
     cd ../../functions
     npm install
     ```
+5.  **Configure Firebase:** Copy the config template and fill in your Firebase project's web-app credentials:
+    ```bash
+    cp react-app/ccf/src/firebase_config/FireConfig.example.ts react-app/ccf/src/firebase_config/FireConfig.ts
+    ```
+    (Run this from the repository root.) Then edit `FireConfig.ts` with the values from your Firebase project settings (Project settings > General > Your apps > SDK setup). This file is gitignored so each environment uses its own Firebase project.
 
 ### Running the Application
 
@@ -99,7 +104,7 @@ The project uses Firebase for various backend services, including Authentication
 
 ### Firebase Configuration
 
-The Firebase configuration is located in `src/firebase_config/FireConfig.ts`. This file contains the API keys and other configuration details for connecting to the Firebase project.
+The Firebase configuration is located in `src/firebase_config/FireConfig.ts`. This file contains the API keys and other configuration details for connecting to the Firebase project. It is gitignored — create it by copying the committed template `src/firebase_config/FireConfig.example.ts` and filling in your project's values (see the Installation section above).
 
 **Security Note:** The Firebase API keys are currently exposed in the source code. For a production environment, it is crucial to restrict the API keys to specific domains and use Firebase security rules to protect your data.
 
