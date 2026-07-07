@@ -22,6 +22,7 @@ interface ExtendedGrantApplication extends GrantApplication {
   principalInvestigator: string;
   grantType: string;
   institution: string;
+  applicationCycle: string;
   status: 'not-started' | 'in-progress' | 'completed';
   primaryReviewerId?: string;
   secondaryReviewerId?: string;
@@ -142,66 +143,77 @@ const AssignReviewersPage: React.FC = () => {
       try {
         setLoading(true);
 
-        // Fetch applications
-        const applicationsSnapshot = await getDocs(collection(db, 'applications'));
-        const applicationsData: ExtendedGrantApplication[] = [];
+        // Fetch applications and reviewers concurrently
+        const [applicationsSnapshot, reviewersSnapshot] = await Promise.all([
+          getDocs(collection(db, 'applications')),
+          getDocs(collection(db, 'reviewers')),
+        ]);
 
-        for (const doc of applicationsSnapshot.docs) {
-          const data = doc.data();
+        // Drafts share this collection; skip them so half-finished applications
+        // aren't shown as assignable to reviewers.
+        const submittedDocs = applicationsSnapshot.docs.filter(
+          (docSnap) => docSnap.data().status !== 'draft'
+        );
 
-          // Drafts share this collection; skip them so half-finished applications
-          // aren't shown as assignable to reviewers.
-          if (data.status === 'draft') continue;
+        // Look up each application's reviews concurrently — awaiting these
+        // one-by-one made this page take tens of seconds to load.
+        const applicationsData: ExtendedGrantApplication[] = await Promise.all(
+          submittedDocs.map(async (docSnap) => {
+            const data = docSnap.data();
 
-          // Get review information from the reviews collection
-          let primaryReviewerId: string | undefined;
-          let secondaryReviewerId: string | undefined;
-          let primaryReviewStatus = 'not-started';
-          let secondaryReviewStatus = 'not-started';
-          let status: 'not-started' | 'in-progress' | 'completed' = 'not-started';
+            // Get review information from the reviews collection
+            let primaryReviewerId: string | undefined;
+            let secondaryReviewerId: string | undefined;
+            let primaryReviewStatus = 'not-started';
+            let secondaryReviewStatus = 'not-started';
+            let status: 'not-started' | 'in-progress' | 'completed' = 'not-started';
 
-          try {
-            const reviewSummary = await getReviewsForApplicationAdmin(doc.id);
+            try {
+              const reviewSummary = await getReviewsForApplicationAdmin(docSnap.id);
 
-            if (reviewSummary.primaryReview) {
-              primaryReviewerId = reviewSummary.primaryReview.reviewerId;
-              primaryReviewStatus = reviewSummary.primaryReview.status;
+              if (reviewSummary.primaryReview) {
+                primaryReviewerId = reviewSummary.primaryReview.reviewerId;
+                primaryReviewStatus = reviewSummary.primaryReview.status;
+              }
+
+              if (reviewSummary.secondaryReview) {
+                secondaryReviewerId = reviewSummary.secondaryReview.reviewerId;
+                secondaryReviewStatus = reviewSummary.secondaryReview.status;
+              }
+
+              // Determine application status based on reviews
+              if (primaryReviewStatus === 'completed' && secondaryReviewStatus === 'completed') {
+                status = 'completed';
+              } else if (primaryReviewerId || secondaryReviewerId) {
+                status = 'in-progress';
+              }
+            } catch (error) {
+              // No reviews exist yet, keep default values
+              console.log(`No reviews found for application ${docSnap.id}`);
             }
 
-            if (reviewSummary.secondaryReview) {
-              secondaryReviewerId = reviewSummary.secondaryReview.reviewerId;
-              secondaryReviewStatus = reviewSummary.secondaryReview.status;
-            }
-
-            // Determine application status based on reviews
-            if (primaryReviewStatus === 'completed' && secondaryReviewStatus === 'completed') {
-              status = 'completed';
-            } else if (primaryReviewerId || secondaryReviewerId) {
-              status = 'in-progress';
-            }
-          } catch (error) {
-            // No reviews exist yet, keep default values
-            console.log(`No reviews found for application ${doc.id}`);
-          }
-
-          applicationsData.push({
-            document_id: doc.id,
-            title: data.title || 'Untitled Application',
-            grantType: data.grantType || 'Unknown Type',
-            principalInvestigator: data.principalInvestigator || 'Unknown',
-            institution: data.institution || 'Unknown Institution',
-            primaryReviewerId,
-            secondaryReviewerId,
-            primaryReviewStatus,
-            secondaryReviewStatus,
-            primaryScore: data.primaryScore,
-            secondaryScore: data.secondaryScore,
-            averageScore: data.averageScore,
-            status,
-            submittedDate: data.submittedDate || '',
-            expanded: false
-          });
-        }
+            return {
+              document_id: docSnap.id,
+              title: data.title || 'Untitled Application',
+              grantType: data.grantType || 'Unknown Type',
+              principalInvestigator: data.principalInvestigator || 'Unknown',
+              institution: data.institution || 'Unknown Institution',
+              applicationCycle: data.applicationCycle || '',
+              primaryReviewerId,
+              secondaryReviewerId,
+              primaryReviewStatus,
+              secondaryReviewStatus,
+              primaryScore: data.primaryScore,
+              secondaryScore: data.secondaryScore,
+              averageScore: data.averageScore,
+              status,
+              // Applications store submitTime (a Timestamp); the old
+              // submittedDate field never existed on submitted docs.
+              submittedDate: data.submitTime?.toDate?.().toLocaleDateString() ?? '',
+              expanded: false
+            };
+          })
+        );
 
         // Sort and group applications by status
         const sortedApplications = [
@@ -222,8 +234,6 @@ const AssignReviewersPage: React.FC = () => {
 
         setApplications(groupedApplications);
 
-        // Fetch reviewers
-        const reviewersSnapshot = await getDocs(collection(db, 'reviewers'));
         const reviewersData: Reviewer[] = [];
 
         reviewersSnapshot.forEach((doc) => {
@@ -521,7 +531,11 @@ const AssignReviewersPage: React.FC = () => {
             <FaFileAlt className="ar-application-icon" />
             <div className="ar-application-info">
               <h3>{app.title}</h3>
-              <p className="ar-applicant-type">{app.grantType} - {app.principalInvestigator}</p>
+              <p className="ar-applicant-type">
+                {app.grantType} - {app.principalInvestigator}
+                {app.applicationCycle ? ` · ${app.applicationCycle}` : ''}
+                {app.submittedDate ? ` · Submitted ${app.submittedDate}` : ''}
+              </p>
             </div>
           </div>
           <span className="ar-expand-icon">

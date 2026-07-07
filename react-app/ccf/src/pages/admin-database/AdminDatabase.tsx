@@ -12,9 +12,15 @@ import {
 } from "../../types/application-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
+import { getAllCycles } from "../../backend/application-cycle";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
 import { downloadPDFsByName } from "../../storage/storage";
+
+// Cycle names are free text ("2022", "New-Cycle3"), so a Number() sort is
+// undefined for non-numeric names. Numeric-aware descending string compare.
+const compareCycleNamesDesc = (a: string, b: string) =>
+  b.localeCompare(a, undefined, { numeric: true, sensitivity: "base" });
 
 function AdminApplicationsDatabase(): JSX.Element {
   const [applicationsData, setApplicationsData] = useState<{
@@ -80,9 +86,23 @@ function AdminApplicationsDatabase(): JSX.Element {
         });
 
         setApplicationsData(applications);
-        setAvailableYears(
-          Array.from(years).sort((a, b) => Number(b) - Number(a)),
-        );
+
+        // The filter dropdown should list every cycle, not just cycles that
+        // already have submitted applications (matches GrantAwards'
+        // cycleOptions, so both admin pages show the same cycle set).
+        try {
+          const cycles = await getAllCycles();
+          cycles.forEach((cycle) => {
+            if (cycle.name) {
+              years.add(cycle.name);
+            }
+          });
+        } catch (e) {
+          // A malformed cycle doc makes getAllCycles throw; fall back to
+          // app-derived names rather than blanking the dropdown.
+          console.error("Error fetching cycles for filter:", e);
+        }
+        setAvailableYears(Array.from(years).sort(compareCycleNamesDesc));
         setAvailableInstitutions(Array.from(institutions).sort());
 
         // Initialize collapse state for each year
@@ -254,7 +274,7 @@ function AdminApplicationsDatabase(): JSX.Element {
           ) : (
             <div className="admin-database-year-list">
               {Object.keys(filteredApplications)
-                .sort((a, b) => Number(b) - Number(a))
+                .sort(compareCycleNamesDesc)
                 .map((year) => (
                   <div key={year} className="dashboard-section">
                     <div
