@@ -13,13 +13,15 @@ import {
   getApplicantSidebarItems,
   SideBarTypes,
 } from "../../types/sidebar-types";
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { toast } from 'react-toastify';
 import {
   getUsersCurrentCycleAppplications,
   getUsersAllApplications,
 } from "../../backend/application-filters";
 import { Application } from "../../types/application-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
+import { isDraftFromEndedCycle } from "../../utils/draft-cycle";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 import { FAQItem } from "../../types/faqTypes";
 import { getFAQs } from "../../backend/faq-handler";
@@ -257,6 +259,19 @@ function ApplicantUsersDashboard(): JSX.Element {
     setOpenModal(null);
   };
 
+  const handleDeleteDraft = async (e: React.MouseEvent, draftId: string) => {
+    e.stopPropagation(); // the row itself navigates on click
+    if (!window.confirm('Delete this draft application? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db, 'applications', draftId));
+      setInProgressApplications((prev: any) => prev.filter((d: any) => d.id !== draftId));
+      toast.success('Draft deleted.');
+    } catch (err) {
+      console.error('Error deleting draft:', err);
+      toast.error('Could not delete the draft. Please try again.');
+    }
+  };
+
   const navigate = useNavigate();
 
   return (
@@ -361,11 +376,20 @@ function ApplicantUsersDashboard(): JSX.Element {
                             >
                               <div className="application-info">
                                 <FaFileAlt className="application-icon" />
-                                <p>{firstLetterCap(application.grantType)} - Draft</p>
+                                <p>{`${firstLetterCap(application.grantType)} - Draft${application.applicationCycle ? ` (${application.applicationCycle})` : ''}`}</p>
+                                {isDraftFromEndedCycle(application, appCycle?.id) && (
+                                  <span className="draft-ended-cycle-tag">Cycle ended — cannot be submitted</span>
+                                )}
                               </div>
                               <div className="ApplicantDashboard-application-status">
                                 <p>In Progress</p>
                                 <FaArrowRight className="application-status-icon" />
+                                <button
+                                  className="draft-delete-btn"
+                                  onClick={(e) => handleDeleteDraft(e, application.id)}
+                                >
+                                  Delete
+                                </button>
                               </div>
                             </div>
                           ),
