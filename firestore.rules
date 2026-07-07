@@ -47,12 +47,14 @@ service cloud.firestore {
     
     // Applicants
     match /applicants/{applicantId} {
-      allow read, write: if isAdmin() || isReviewer() || request.auth.uid == applicantId;
+      allow read: if isAdmin() || isReviewer() || request.auth.uid == applicantId;
+      allow write: if isAdmin() || request.auth.uid == applicantId;
     }
-    
+
     // Reviewers
     match /reviewers/{reviewerId} {
-      allow read, write: if isAdmin() || isReviewer();
+      allow read: if isAdmin() || isReviewer();
+      allow write: if isAdmin() || request.auth.uid == reviewerId;
     }
     
     // Application Cycles
@@ -91,14 +93,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
-    // Reviews
-    match /reviews/{reviewId} {
-      allow read, write: if isAdmin() || isReviewer();
-    }
-    
-    // Reviewer subcollection
-    match /reviews/{reviewId}/reviewers/{reviewreviewerId} {
-      allow read, write: if isAdmin() || isReviewer();
+    // Reviews (parent doc: { applicationId, createdAt })
+    match /reviews/{applicationId} {
+      allow read: if isAdmin() || isReviewer();
+      allow create, update: if isAdmin() || isReviewer();
+
+      // Individual review documents
+      match /reviewers/{reviewId} {
+        allow read: if isAdmin() || isReviewer();
+        allow create, delete: if isAdmin();
+        allow update: if isAdmin() ||
+          (isReviewer() && resource.data.reviewerId == request.auth.uid);
+      }
     }
   }
 }
