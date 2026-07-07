@@ -43,61 +43,92 @@ exports.helloWorld = onRequest((request, response) => {
     response.send("Hello from Firebase!");
 });
 
-exports.addReviewerRole = onCall((request) => {
-    const { data } = request;
-    return admin.auth().getUserByEmail(data.email).then((user) => {
-        return admin.auth().setCustomUserClaims(user.uid, {
-            "role": "reviewer"
-        });
-    }).then(() => {
+exports.addReviewerRole = onCall(async (request) => {
+    const { data, auth } = request;
+    if (!auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+    }
+    if (!data || !data.email) {
+        throw new functions.https.HttpsError('invalid-argument', 'Email is required');
+    }
+    const isAdmin = auth.token.role === 'admin';
+    const isSelf = !!auth.token.email && auth.token.email.toLowerCase() === String(data.email).toLowerCase();
+    if (!isAdmin && !isSelf) {
+        throw new functions.https.HttpsError('permission-denied', 'You can only assign the reviewer role to your own account');
+    }
+    try {
+        if (!isAdmin) {
+            const wl = await admin.firestore()
+                .collection('reviewer-whitelist')
+                .where('email', '==', String(data.email).toLowerCase().trim())
+                .get();
+            const allowed = wl.docs.some(d => d.data().status !== 'inactive');
+            if (!allowed) {
+                throw new functions.https.HttpsError('permission-denied', 'This email is not on the reviewer whitelist');
+            }
+        }
+        const user = await admin.auth().getUserByEmail(data.email);
+        await admin.auth().setCustomUserClaims(user.uid, { "role": "reviewer" });
         // Also create the user document in the reviewers collection
-        return admin.firestore().collection('reviewers').doc(data.userId).set({
-            firstName: data.firstName,
-            lastName: data.lastName,
-            title: data.title,
+        await admin.firestore().collection('reviewers').doc(data.userId || user.uid).set({
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            title: data.title || '',
             email: data.email,
-            affiliation: data.affiliation
+            affiliation: data.affiliation || ''
         });
-    }).then(() => {
-        return {
-            message: `Success! ${data.email} has been made a reviewer.`
-        };
-    }).catch((err) => {
+        return { message: `Success! ${data.email} has been made a reviewer.` };
+    } catch (err) {
+        if (err instanceof functions.https.HttpsError) throw err;
         console.error("Error in addReviewerRole:", err);
         throw new functions.https.HttpsError('internal', 'Failed to assign reviewer role');
-    });
+    }
 });
 
-exports.addApplicantRole = onCall((request) => {
-    const { data } = request;
-    return admin.auth().getUserByEmail(data.email).then((user) => {
-        return admin.auth().setCustomUserClaims(user.uid, {
-            "role": "applicant"
-        });
-    }).then(() => {
-        return {
-            message: `Success! ${data.email} has been made an applicant.`
-        };
-    }).catch((err) => {
+exports.addApplicantRole = onCall(async (request) => {
+    const { data, auth } = request;
+    if (!auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+    }
+    if (!data || !data.email) {
+        throw new functions.https.HttpsError('invalid-argument', 'Email is required');
+    }
+    const isAdmin = auth.token.role === 'admin';
+    const isSelf = !!auth.token.email && auth.token.email.toLowerCase() === String(data.email).toLowerCase();
+    if (!isAdmin && !isSelf) {
+        throw new functions.https.HttpsError('permission-denied', 'You can only assign the applicant role to your own account');
+    }
+    try {
+        const user = await admin.auth().getUserByEmail(data.email);
+        await admin.auth().setCustomUserClaims(user.uid, { "role": "applicant" });
+        return { message: `Success! ${data.email} has been made an applicant.` };
+    } catch (err) {
+        if (err instanceof functions.https.HttpsError) throw err;
         console.error("Error in addApplicantRole:", err);
         throw new functions.https.HttpsError('internal', 'Failed to assign applicant role');
-    });
+    }
 });
 
-exports.addAdminRole = onCall((request) => {
-    const { data } = request;
-    return admin.auth().getUserByEmail(data.email).then((user) => {
-        return admin.auth().setCustomUserClaims(user.uid, {
-            "role": "admin"
-        });
-    }).then(() => {
-        return {
-            message: `Success! ${data.email} has been made an admin.`
-        };
-    }).catch((err) => {
+exports.addAdminRole = onCall(async (request) => {
+    const { data, auth } = request;
+    if (!auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+    }
+    if (auth.token.role !== 'admin') {
+        throw new functions.https.HttpsError('permission-denied', 'Only admins can assign the admin role');
+    }
+    if (!data || !data.email) {
+        throw new functions.https.HttpsError('invalid-argument', 'Email is required');
+    }
+    try {
+        const user = await admin.auth().getUserByEmail(data.email);
+        await admin.auth().setCustomUserClaims(user.uid, { "role": "admin" });
+        return { message: `Success! ${data.email} has been made an admin.` };
+    } catch (err) {
+        if (err instanceof functions.https.HttpsError) throw err;
         console.error("Error in addAdminRole:", err);
         throw new functions.https.HttpsError('internal', 'Failed to assign admin role');
-    });
+    }
 });
 
 exports.syncCurrentCycleStage = onCall(async (request) => {
@@ -384,6 +415,23 @@ function validateApplicationData(application, grantType) {
 // Get Reviewers Function
 exports.getReviewers = onRequest(async (req, res) => {
     try {
+        const header = req.headers.authorization || '';
+        const match = header.match(/^Bearer (.+)$/);
+        if (!match) {
+            res.status(401).send('Unauthorized');
+            return;
+        }
+        let decoded;
+        try {
+            decoded = await admin.auth().verifyIdToken(match[1]);
+        } catch (e) {
+            res.status(401).send('Unauthorized');
+            return;
+        }
+        if (decoded.role !== 'admin' && decoded.role !== 'reviewer') {
+            res.status(403).send('Forbidden');
+            return;
+        }
         const reviewerUserIds = [];
 
         // Recursively list all users in batches of 100
