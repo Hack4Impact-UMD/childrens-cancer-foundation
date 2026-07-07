@@ -15,6 +15,7 @@ import { Modal } from '../../components/modal/modal';
 import { auth } from '../..';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '../..';
+import { toDraftDocData } from '../../utils/draft-serialization';
 
 function NRApplicationForm(): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
@@ -98,20 +99,24 @@ function NRApplicationForm(): JSX.Element {
     }, [location.search]);
 
     const goBack = async () => {
+        const saved = await saveDraft();
+        if (!saved) toast.error('Your latest changes could not be saved.');
         if (currentPage > 1) {
-            await saveDraft();
             setCurrentPage(currentPage - 1);
         } else {
-            await saveDraft();
             navigate('/applicant/dashboard');
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const saveAndExit = async () => {
-        await saveDraft();
-        toast.success('Progress saved!');
-        navigate('/applicant/dashboard');
+        const saved = await saveDraft();
+        if (saved) {
+            toast.success('Progress saved!');
+            navigate('/applicant/dashboard');
+        } else {
+            toast.error('Could not save your progress. Please try again before leaving.');
+        }
     }
 
     const handleStart = async () => {
@@ -139,7 +144,7 @@ function NRApplicationForm(): JSX.Element {
                 applicationCycle: cycle.name,
                 createdAt: new Date().toISOString(),
                 lastUpdated: new Date().toISOString(),
-                ...formData
+                ...toDraftDocData(formData)
             });
 
             console.log('Draft created with ID:', draftRef.id);
@@ -153,16 +158,18 @@ function NRApplicationForm(): JSX.Element {
         }
     };
 
-    const saveDraft = async (data = formData) => {
-        if (!draftId) return;
+    const saveDraft = async (data = formData): Promise<boolean> => {
+        if (!draftId) return true; // nothing to save yet (page 1, no draft created)
         try {
             await updateDoc(doc(db, 'applications', draftId), {
-                ...data,
+                ...toDraftDocData(data),
                 status: 'draft',
                 lastUpdated: new Date().toISOString()
             });
+            return true;
         } catch (err) {
             console.error('Error saving draft:', err);
+            return false;
         }
     };
 
@@ -175,7 +182,8 @@ function NRApplicationForm(): JSX.Element {
             }
         }
 
-        await saveDraft();
+        const saved = await saveDraft();
+        if (!saved) toast.error('Your latest changes could not be saved.');
         if (currentPage < totalPages) {
             setCurrentPage(currentPage + 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
