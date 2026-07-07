@@ -98,6 +98,11 @@ This will start the development server and open the application in your default 
 
 For local development with Firebase emulators, run `firebase emulators:start` from the project root.
 
+### Verification
+
+- Typecheck: `cd react-app/ccf && npx tsc --noEmit`
+- Tests: `cd react-app/ccf && CI=true npx craco test --watchAll=false`
+
 ## Firebase Integration
 
 The project uses Firebase for various backend services, including Authentication, Firestore Database, and Storage.
