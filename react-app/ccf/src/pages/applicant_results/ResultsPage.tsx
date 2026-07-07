@@ -4,8 +4,9 @@ import "./ResultsPage.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { getSidebarbyRole, getApplicantSidebarItems, SideBarTypes } from "../../types/sidebar-types";
 import { ReviewSummary } from "../../types/review-types"; 
-import { getReviewsForApplication } from "../../services/review-service"; 
+import { getReviewsForApplication } from "../../services/review-service";
 import { useNavigate } from "react-router-dom";
+import { getDecisionStatus } from "../../utils/decision-status";
 
 function ResultsPage(): JSX.Element {
     const [sidebarItems, setSidebarItems] = useState<SideBarTypes[]>(getSidebarbyRole('applicant')); //to get applicaant info in sidebar
@@ -24,6 +25,7 @@ function ResultsPage(): JSX.Element {
     const location = useLocation();
     const decision = location.state.decision;
     const applicationId = decision?.applicationId;
+    const status = decision ? getDecisionStatus(decision) : 'pending';
 
     useEffect(() => {
     if (!applicationId) return;
@@ -53,7 +55,7 @@ function ResultsPage(): JSX.Element {
                 <h1 className="global-header">Grant Results</h1>
                 <div className="form-container">
                     <div>
-                    {decision?.isAccepted ? (
+                    {status === 'accepted' ? (
                         <div>
                         <h1 className="global-header">Congratulations!</h1>
                         <div>
@@ -74,7 +76,7 @@ function ResultsPage(): JSX.Element {
                         <h2 className="decision-labels">Funding Amount:</h2>
                         <p className="reward-money">Reward Money Amount: <b>${decision.fundingAmount}</b></p>
                         </div>
-                    ) : (
+                    ) : status === 'rejected' ? (
                         <div>
                         <h1 className="global-header">Thank you.</h1>
                         <div>
@@ -91,6 +93,17 @@ function ResultsPage(): JSX.Element {
                                 <p>Warm regards, <br /> The Children’s Cancer Foundation, Inc.</p>
                                 </div>
                             </div>
+                        </div>
+                    ) : (
+                        <div>
+                        <h1 className="global-header">Under Review</h1>
+                        <div>
+                            <div className="letter-content">
+                                <p>
+                                Your application is still under review — a decision has not been finalized yet. Please check back later.
+                                </p>
+                            </div>
+                        </div>
                         </div>
                     )}
                     <h2 className="decision-labels">Feedback from Reviewers:</h2>

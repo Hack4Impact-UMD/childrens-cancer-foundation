@@ -1,5 +1,6 @@
 import { Decision } from "../../types/decision-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
+import { getDecisionStatus } from "../../utils/decision-status";
 // import Confetti from "react-confetti";
 import "./decisionBox.css";
 import { useNavigate } from "react-router-dom";
@@ -11,28 +12,6 @@ export const DecisionBox = ({
   decision: Decision;
   inAdminView?: boolean;
 }) => {
-  const getDecisionStatus = () => {
-    // Use isAccepted boolean field to determine status
-    if (decision.isAccepted === true) {
-      return "accepted";
-    } else {
-      // If isAccepted is false or undefined, show as rejected
-      return "rejected";
-    }
-  };
-
-  const getStatusColor = () => {
-    const status = getDecisionStatus();
-    switch (status) {
-      case "accepted":
-        return "#22c55e"; // green
-      case "rejected":
-        return "#ef4444"; // red
-      default:
-        return "#6b7280"; // gray
-    }
-  };
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -42,7 +21,7 @@ export const DecisionBox = ({
     }).format(amount);
   };
 
-  const status = getDecisionStatus();
+  const status = getDecisionStatus(decision);
 
   const navigate = useNavigate();
 
