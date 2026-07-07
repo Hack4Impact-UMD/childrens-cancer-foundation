@@ -13,13 +13,19 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ element }) =>
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user: User | null) => {
-      if (user) {
-        const idTokenResult = await user.getIdTokenResult();
-        setIsAdmin(!!idTokenResult.claims.role && idTokenResult.claims.role === 'admin');
-      } else {
+      try {
+        if (user) {
+          const idTokenResult = await user.getIdTokenResult();
+          setIsAdmin(!!idTokenResult.claims.role && idTokenResult.claims.role === 'admin');
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error('Error resolving auth role:', error);
         setIsAdmin(false);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
