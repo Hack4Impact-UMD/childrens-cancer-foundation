@@ -68,6 +68,8 @@ function ApplicantUsersDashboard(): JSX.Element {
 
     const fetchApplicationData = async () => {
       const apps = await getUsersCurrentCycleAppplications();
+      const user = auth.currentUser;
+      const userReports = user ? await getReportsByUser(user.uid) : [];
       const appsWithDecisions: ApplicationWithDecision[] = await Promise.all(
         apps.map(async (app: any) => {
           try {
@@ -76,25 +78,21 @@ function ApplicantUsersDashboard(): JSX.Element {
             let hasReportSubmitted = false;
             let submittedReport = null;
 
-            const user = auth.currentUser;
-            if (user) {
-              const userReports = await getReportsByUser(user.uid);
-              const existingReport = userReports.find(
-                (report) => report.applicationId === app.id,
-              );
-              if (existingReport) {
-                hasReportSubmitted = true;
-                submittedReport = existingReport;
+            const existingReport = userReports.find(
+              (report) => report.applicationId === app.id,
+            );
+            if (existingReport) {
+              hasReportSubmitted = true;
+              submittedReport = existingReport;
 
-                try {
-                  const fileId = existingReport.pdf || existingReport.file;
-                  if (fileId) {
-                    const pdfUrl = await getPDFDownloadURL(fileId);
-                    submittedReport.file = pdfUrl;
-                  }
-                } catch (error) {
-                  console.error("Error getting PDF URL for dashboard:", error);
+              try {
+                const fileId = existingReport.pdf || existingReport.file;
+                if (fileId) {
+                  const pdfUrl = await getPDFDownloadURL(fileId);
+                  submittedReport.file = pdfUrl;
                 }
+              } catch (error) {
+                console.error("Error getting PDF URL for dashboard:", error);
               }
             }
 
