@@ -16,7 +16,7 @@ module.exports = {
   jest: {
     configure: (jestConfig) => {
       jestConfig.transformIgnorePatterns = [
-        'node_modules/(?!(firebase|@firebase)/)',
+        'node_modules[/\\\\](?!(firebase|@firebase)[/\\\\])',
         '^.+\\.module\\.(css|sass|scss)$',
       ];
       return jestConfig;

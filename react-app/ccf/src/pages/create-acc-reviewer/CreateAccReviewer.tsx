@@ -31,6 +31,7 @@ function AccountPageReviewers(): JSX.Element {
   //email req
   const [emailError, setEmailError] = useState(false);
   const [emailWhitelistError, setEmailWhitelistError] = useState(false);
+  const [signupError, setSignupError] = useState(false);
 
   const [institutionError, setInstitutionError] = useState(false);
 
@@ -71,8 +72,9 @@ function AccountPageReviewers(): JSX.Element {
     }
 
     try {
-      // Clear any previous whitelist error
+      // Clear any previous submission errors
       setEmailWhitelistError(false);
+      setSignupError(false);
 
       const userData: UserData = {
         email: email,
@@ -103,6 +105,7 @@ function AccountPageReviewers(): JSX.Element {
         setEmailWhitelistError(true);
       } else {
         console.error("Error creating reviewer account:", e);
+        setSignupError(true);
       }
     }
   };
@@ -183,6 +186,10 @@ function AccountPageReviewers(): JSX.Element {
 
               {emailWhitelistError && (
                 <p className="validation">Email does not have permission to create reviewer account. Please contact CCF if you believe this to be a mistake.</p>
+              )}
+
+              {signupError && (
+                <p className="validation">Something went wrong creating your account. Please try again, or contact CCF if the problem persists.</p>
               )}
 
               <label>Password*</label>

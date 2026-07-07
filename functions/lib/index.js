@@ -69,8 +69,10 @@ exports.addReviewerRole = onCall(async (request) => {
     }
     const user = await admin.auth().getUserByEmail(data.email);
     await admin.auth().setCustomUserClaims(user.uid, {"role": "reviewer"});
-    // Also create the user document in the reviewers collection
-    await admin.firestore().collection("reviewers").doc(data.userId || user.uid).set({
+    // Also create the user document in the reviewers collection. The doc id
+    // must be the verified uid for data.email — trusting a client-supplied
+    // userId would let a whitelisted caller overwrite another reviewer's profile.
+    await admin.firestore().collection("reviewers").doc(user.uid).set({
       firstName: data.firstName || "",
       lastName: data.lastName || "",
       title: data.title || "",

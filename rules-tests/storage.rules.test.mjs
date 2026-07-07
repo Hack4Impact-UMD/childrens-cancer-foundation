@@ -95,6 +95,21 @@ await run('applicant cannot upload without uploadedBy metadata', assertFails(
   })
 ));
 
+// 7b. Writes are create-only: nobody can overwrite an existing object —
+// not another user (even with truthful uploadedBy), not the owner.
+await run('cannot overwrite another user\'s pdf', assertFails(
+  uploadBytes(ref(bobStorage, 'pdfs/alice.pdf'), pdfBytes, {
+    contentType: 'application/pdf',
+    customMetadata: { uploadedBy: 'bob' },
+  })
+));
+await run('cannot overwrite even your own pdf (create-only)', assertFails(
+  uploadBytes(ref(aliceStorage, 'pdfs/alice.pdf'), pdfBytes, {
+    contentType: 'application/pdf',
+    customMetadata: { uploadedBy: 'alice' },
+  })
+));
+
 // 8. Outside pdfs/: applicant denied, admin allowed.
 await run('applicant cannot read outside pdfs/', assertFails(
   getBytes(ref(aliceStorage, 'misc/x.txt'))

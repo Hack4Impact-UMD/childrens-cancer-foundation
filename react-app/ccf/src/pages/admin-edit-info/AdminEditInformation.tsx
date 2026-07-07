@@ -151,7 +151,7 @@ function AdminEditInformation(): JSX.Element {
 
     const confirmEndCycle = async () => {
         setConfirmDialogOpen(false);
-        const newCycleName = window.prompt("Enter the name for the new application cycle (e.g., 2024-2025):");
+        const newCycleName = window.prompt("Enter the name for the new application cycle (e.g., 2024-2025):")?.trim();
         if (newCycleName) {
             if (await cycleNameExists(newCycleName)) {
                 setStageSnack(`A cycle named "${newCycleName}" already exists — choose a different name.`);

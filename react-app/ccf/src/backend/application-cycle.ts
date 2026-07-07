@@ -159,10 +159,15 @@ export const cycleNameExists = async (name: string): Promise<boolean> => {
 
 export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
   try {
-    // Cycle names key several application queries; a duplicate would silently
-    // merge two cycles' applications. Check before mutating anything.
-    if (await cycleNameExists(newCycleName)) {
-      console.error(`Cycle name "${newCycleName}" already exists.`);
+    // Cycle names key several application queries; a blank or duplicate name
+    // would corrupt them. Check before mutating anything.
+    const trimmedName = newCycleName.trim();
+    if (!trimmedName) {
+      console.error("Cycle name cannot be empty.");
+      return false;
+    }
+    if (await cycleNameExists(trimmedName)) {
+      console.error(`Cycle name "${trimmedName}" already exists.`);
       return false;
     }
 
@@ -180,7 +185,7 @@ export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
     const oneYearFromNow = dayjs().add(1, 'year').toDate();
 
     await addDoc(collection(db, "applicationCycles"), {
-      name: newCycleName.trim(),
+      name: trimmedName,
       current: true,
       startDate: Timestamp.now(),
       endDate: Timestamp.fromDate(oneYearFromNow),

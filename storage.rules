@@ -16,8 +16,11 @@ service firebase.storage {
         resource.metadata.uploadedBy == request.auth.uid
       );
 
-      // Authenticated uploads: PDF, <50MB, and must declare the uploader truthfully.
+      // Authenticated uploads: create-only (uploads always use fresh UUID
+      // names; allowing updates would let any user overwrite existing PDFs),
+      // PDF, <50MB, and must declare the uploader truthfully.
       allow write: if request.auth != null
+        && resource == null
         && request.resource.size < 50 * 1024 * 1024
         && request.resource.contentType.matches('application/pdf')
         && request.resource.metadata.uploadedBy == request.auth.uid;
