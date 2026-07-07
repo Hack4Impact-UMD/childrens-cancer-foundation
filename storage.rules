@@ -1,23 +1,31 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
-    match /pdfs/{fileName} {
-      // Allow read for authenticated users
-      allow read: if request.auth != null;
-      
-      // Allow write for authenticated users with validation
-      allow write: if request.auth != null 
-        && request.resource.size < 50 * 1024 * 1024  // 50MB limit
-        && request.resource.contentType.matches('application/pdf');
+    function role() {
+      return request.auth != null ? request.auth.token.role : null;
     }
-    
-    // Allow access to any file in the root for authenticated users (for admin access)
+
+    match /pdfs/{fileName} {
+      // Admins and reviewers read everything; applicants only what they uploaded.
+      // Objects written by the submitApplication cloud function and by
+      // uploadFileToStorage both carry customMetadata.uploadedBy.
+      allow read: if request.auth != null && (
+        role() == 'admin' ||
+        role() == 'reviewer' ||
+        resource.metadata.uploadedBy == request.auth.uid
+      );
+
+      // Authenticated uploads: PDF, <50MB, and must declare the uploader truthfully.
+      allow write: if request.auth != null
+        && request.resource.size < 50 * 1024 * 1024
+        && request.resource.contentType.matches('application/pdf')
+        && request.resource.metadata.uploadedBy == request.auth.uid;
+    }
+
+    // Anything outside pdfs/ is admin-only.
     match /{allPaths=**} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null && request.auth.token.role == 'admin';
     }
   }
 }
