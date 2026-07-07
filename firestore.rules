@@ -89,7 +89,7 @@ service cloud.firestore {
     
     // Reviewer Whitelist
     match /reviewer-whitelist/{whitelistId} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow write: if isAdmin();
     }
     

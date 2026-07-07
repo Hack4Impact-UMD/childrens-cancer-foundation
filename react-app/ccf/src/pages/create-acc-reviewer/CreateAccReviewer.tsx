@@ -5,11 +5,10 @@ import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
 import toretsky from "../../assets/toretskywithpatient 1.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
 import { useEffect, useState } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
 import { VALID_INSTITUTIONS, validateInstitution, checkEmailCreateAcc, checkPasswordRequirements as checkPasswordRequirementsUtil } from "../../utils/validation";
 import { addReviewerUser } from "../../users/usermanager";
 import { UserData } from "../../types/usertypes"
-import { db, auth } from "../../index"
+import { auth } from "../../index"
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
@@ -60,33 +59,9 @@ function AccountPageReviewers(): JSX.Element {
     setEmailError(!checkEmailCreateAcc(email));
   };
 
-  const checkEmailWhitelist = async (email: string) => {
-    if (!email) return false;
-
-    try {
-      const whitelistRef = collection(db, "reviewer-whitelist");
-      const q = query(whitelistRef, where("email", "==", email.toLowerCase()));
-      const querySnapshot = await getDocs(q);
-
-      return !querySnapshot.empty;
-    } catch (error) {
-      console.error("Error checking whitelist:", error);
-      return false;
-    }
-  };
-
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
     e.preventDefault();
-
-    // Check whitelist before proceeding
-    if (!emailError && email) {
-      const isWhitelisted = await checkEmailWhitelist(email);
-      if (!isWhitelisted) {
-        setEmailWhitelistError(true);
-        return;
-      }
-    }
 
     console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
 
@@ -121,9 +96,14 @@ function AccountPageReviewers(): JSX.Element {
 
       // Navigate to login page after account creation
       navigate("/Login");
-    } catch (e) {
-      console.error("Error creating reviewer account:", e);
-      // You might want to show an error message to the user here
+    } catch (e: any) {
+      // The addReviewerRole cloud function rejects non-whitelisted emails
+      const msg = String(e?.message || '').toLowerCase();
+      if (msg.includes('whitelist')) {
+        setEmailWhitelistError(true);
+      } else {
+        console.error("Error creating reviewer account:", e);
+      }
     }
   };
 
