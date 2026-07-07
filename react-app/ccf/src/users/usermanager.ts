@@ -37,14 +37,14 @@ export const addApplicantUser = async (userData: UserData, password: string): Pr
 
 // Function to add a new reviewer user
 export const addReviewerUser = async (userData: UserData, password: string): Promise<void> => {
-  var user: any = null
+  let user: any = null
   const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password).catch((e) => {
     console.log("User could not be created: " + e);
     throw e;
   });
   try {
     const addReviewerRole = httpsCallable(functions, "addReviewerRole");
-    const user = userCredential.user;
+    user = userCredential.user;
 
     // Pass user data to the Firebase function which will handle the database write
     const result = await addReviewerRole({
