@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import './ApplicationForm.css';
 import Breadcrumb from './Components/Breadcrumbs';
 import { useNavigate } from 'react-router-dom';
@@ -11,11 +10,7 @@ import AboutGrant from './subquestions/AboutGrant';
 import { uploadResearchApplication } from '../../backend/applicant-form-submit';
 import { toast } from 'react-toastify';
 import { Modal } from '../../components/modal/modal';
-import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend/application-cycle';
-import { auth } from '../..';
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
-import { db } from '../..';
-import { toDraftDocData } from '../../utils/draft-serialization';
+import { useApplicationDraft } from './useApplicationDraft';
 
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
@@ -85,60 +80,25 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalTitle, setModalTitle] = useState<string>('Please Fill Out All Missing Fields Before Submitting');
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
-    const [appOpen, setAppOpen] = useState<boolean>(false);
-    const [draftId, setDraftId] = useState<string | null>(null);
-    const [draftCycleId, setDraftCycleId] = useState<string | null>(null);
-    const [draftCycle, setDraftCycle] = useState<string | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isStartingDraft, setIsStartingDraft] = useState(false);
-    const location = useLocation();
+
+    const {
+        appOpen,
+        isSubmitting,
+        isStartingDraft,
+        startDraft,
+        saveDraft,
+        verifyDraftCycle,
+        submit,
+        resumedFromDraft,
+    } = useApplicationDraft({
+        grantType: type === 'NextGen' ? 'nextgen' : 'research',
+        formData,
+        setFormData,
+    });
 
     useEffect(() => {
-        getCurrentCycle().then(async cycle => {
-            const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
-            setAppOpen(updatedCycle.stage === "Applications Open")
-        }).catch(error => {
-            console.error('Error fetching initial cycle:', error);
-        })
-
-        // Refetch cycle every 30 seconds to detect admin changes or deadline progression
-        const cycleRefreshInterval = setInterval(async () => {
-            try {
-                const cycle = await getCurrentCycle();
-                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
-                setAppOpen(updatedCycle.stage === "Applications Open");
-            } catch (error) {
-                console.error('Error refetching cycle:', error);
-            }
-        }, 30000);
-
-        return () => clearInterval(cycleRefreshInterval);
-    }, [])
-
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const existingDraftId = params.get('draftId');
-        if (!existingDraftId) return;
-
-        const loadDraft = async () => {
-            try {
-                const draftDoc = await getDoc(doc(db, 'applications', existingDraftId));
-                if (draftDoc.exists()) {
-                    const data = draftDoc.data();
-                    setDraftId(existingDraftId);
-                    setDraftCycleId(data.applicationCycleId ?? null);
-                    setDraftCycle(data.applicationCycle ?? null);
-                    setFormData(prev => ({ ...prev, ...data }));
-                    setCurrentPage(2); // Skip past the About Grant page
-                }
-            } catch (err) {
-                console.error('Error loading draft:', err);
-                toast.error('Failed to load saved application.');
-            }
-        };
-
-        loadDraft();
-    }, [location.search]);
+        if (resumedFromDraft) setCurrentPage(2); // Skip past the About Grant page
+    }, [resumedFromDraft]);
 
     const goBack = async () => {
         const saved = await saveDraft();
@@ -162,62 +122,8 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     };
 
     const handleStart = async () => {
-        if (draftId) {
-            // already have a draft, just advance
-            setCurrentPage(2);
-            return;
-        }
-        if (isStartingDraft) return;
-        setIsStartingDraft(true);
-        try {
-            const currentUser = auth.currentUser;
-            if (!currentUser) {
-                toast.error('You must be logged in to start an application.');
-                return;
-            }
-
-            // Stamp the draft with the cycle it was created in so it can only
-            // be submitted during that same cycle.
-            const cycle = await getCurrentCycle();
-
-            const draftRef = await addDoc(collection(db, 'applications'), {
-                status: 'draft',
-                grantType: type === 'NextGen' ? 'nextgen' : 'research',
-                creatorId: currentUser.uid,
-                applicantEmail: currentUser.email,
-                applicationCycleId: cycle.id,
-                applicationCycle: cycle.name,
-                createdAt: new Date().toISOString(),
-                lastUpdated: new Date().toISOString(),
-                ...toDraftDocData(formData)
-            });
-
-            console.log('Draft created with ID:', draftRef.id);
-            setDraftId(draftRef.id);
-            setDraftCycleId(cycle.id);
-            setDraftCycle(cycle.name);
-            setCurrentPage(2);
-        } catch (err) {
-            console.error('Error creating draft:', err);
-            toast.error('Failed to start application. Please try again.');
-        } finally {
-            setIsStartingDraft(false);
-        }
-    };
-
-    const saveDraft = async (data = formData): Promise<boolean> => {
-        if (!draftId) return true; // nothing to save yet (page 1, no draft created)
-        try {
-            await updateDoc(doc(db, 'applications', draftId), {
-                ...toDraftDocData(data),
-                status: 'draft',
-                lastUpdated: new Date().toISOString()
-            });
-            return true;
-        } catch (err) {
-            console.error('Error saving draft:', err);
-            return false;
-        }
+        const ok = await startDraft();
+        if (ok) setCurrentPage(2);
     };
 
     const handleContinue = async () => {
@@ -293,31 +199,16 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             return;
         }
 
-        // Ensure the draft is being submitted during the same cycle it was created in.
-        if (draftCycleId) {
-            try {
-                const currentCycle = await getCurrentCycle();
-                if (currentCycle.id !== draftCycleId) {
-                    setModalTitle('This Application Cycle Has Ended');
-                    setModalContent(
-                        <div style={{ whiteSpace: 'pre-line' }}>
-                            {`This application was started during the "${draftCycle}" cycle, which has since ended. Applications can only be submitted during the cycle in which they were created.\n\nPlease contact the Children's Cancer Foundation (CCF) for assistance.`}
-                        </div>
-                    );
-                    setIsModalOpen(true);
-                    return;
-                }
-            } catch (error) {
-                console.error('Error verifying application cycle:', error);
-                setModalTitle('Unable to Verify Application Cycle');
-                setModalContent(
-                    <div style={{ whiteSpace: 'pre-line' }}>
-                        {`We couldn't verify the current application cycle. Please try again later, or contact the Children's Cancer Foundation (CCF) for assistance.`}
-                    </div>
-                );
-                setIsModalOpen(true);
-                return;
-            }
+        const cycleCheck = await verifyDraftCycle();
+        if (!cycleCheck.ok) {
+            setModalTitle(cycleCheck.modalTitle!);
+            setModalContent(
+                <div style={{ whiteSpace: 'pre-line' }}>
+                    {cycleCheck.modalContent}
+                </div>
+            );
+            setIsModalOpen(true);
+            return;
         }
 
         if (Object.keys(invalidSections).length > 0) {
@@ -337,69 +228,10 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             return;
         }
 
-        setIsSubmitting(true);
-        try {
-            // Strip draft-only/metadata fields so the submitted application is never
-            // tagged as a draft. When a saved draft is resumed, the entire Firestore
-            // doc (including status: 'draft', cycle ids and timestamps) is merged into
-            // formData; sending those through would make the canonical submitted
-            // document still look like a draft. The file is passed separately and the
-            // cloud function sets the canonical storage reference.
-            const application = { ...formData } as any;
-            [
-                'status', 'creatorId', 'applicantEmail', 'applicationCycleId',
-                'applicationCycle', 'createdAt', 'lastUpdated', 'grantType',
-                'decision', 'submitTime', 'applicationId', 'file'
-            ].forEach((key) => delete application[key]);
-            if (formData.file) {
-                // Show loading toast
-                toast.info('Submitting application...');
-
-                // Call the secure cloud function
-                const result = await uploadResearchApplication(application, formData.file, type === "NextGen");
-
-                if (result.success) {
-                    toast.success('Application submitted successfully!');
-                    // The cloud function creates the canonical submitted application,
-                    // so remove the working draft to avoid a duplicate appearing.
-                    if (draftId) {
-                        try {
-                            await deleteDoc(doc(db, 'applications', draftId));
-                        } catch (cleanupErr) {
-                            console.error('Failed to delete draft after submission:', cleanupErr);
-                        }
-                    }
-                    navigate('/applicant/dashboard');
-                } else {
-                    toast.error('Failed to submit application. Please try again.');
-                }
-            }
-        } catch (error: any) {
-            console.error('Application submission error:', error);
-
-            // Handle specific error messages from the cloud function
-            if (error.message) {
-                if (error.message.includes('Applications are currently closed')) {
-                    toast.error('Applications are currently closed. Please check back later.');
-                } else if (error.message.includes('already submitted')) {
-                    toast.error('You have already submitted an application for this grant type.');
-                } else if (error.message.includes('Deadline')) {
-                    toast.error('The deadline for this application type has passed.');
-                } else if (error.message.includes('Only PDF files')) {
-                    toast.error('Please upload a PDF file.');
-                } else if (error.message.includes('size exceeds')) {
-                    toast.error('File size exceeds 50MB limit. Please upload a smaller file.');
-                } else if (error.message.includes('Invalid application data')) {
-                    toast.error('Please check your application data and try again.');
-                } else {
-                    toast.error(error.message);
-                }
-            } else {
-                toast.error('Failed to submit application. Please try again.');
-            }
-        } finally {
-            setIsSubmitting(false);
-        }
+        if (!formData.file) return;
+        const submitted = await submit(formData.file, (application, file) =>
+            uploadResearchApplication(application as any, file, type === "NextGen"));
+        if (submitted) navigate('/applicant/dashboard');
     };
     const isFormValid = (checkAll = false) => {
         const hasRequiredFields = requiredFields.reduce((acc, curr) => {
