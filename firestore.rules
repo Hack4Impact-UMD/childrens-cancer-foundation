@@ -22,8 +22,14 @@ service cloud.firestore {
     // Applications collection rules
     match /applications/{applicationId} {
       allow read: if isAdmin() || isReviewer() || (isApplicant() && request.auth.uid == resource.data.creatorId);
-      allow create: if isAdmin() || (isApplicant() && request.resource.data.creatorId == request.auth.uid);
-      allow update: if isAdmin() || (isApplicant() && resource.data.creatorId == request.auth.uid && resource.data.status == 'draft');
+      allow create: if isAdmin() || (isApplicant()
+        && request.resource.data.creatorId == request.auth.uid
+        && request.resource.data.status == 'draft');
+      allow update: if isAdmin() || (isApplicant()
+        && resource.data.creatorId == request.auth.uid
+        && resource.data.status == 'draft'
+        && request.resource.data.status == 'draft'
+        && request.resource.data.creatorId == resource.data.creatorId);
       allow delete: if isAdmin() || (isApplicant() && resource.data.creatorId == request.auth.uid && resource.data.status == 'draft');
     }
     
