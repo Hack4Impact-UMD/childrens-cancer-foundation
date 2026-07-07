@@ -49,6 +49,8 @@ function NRApplicationForm(): JSX.Element {
     const [draftId, setDraftId] = useState<string | null>(null);
     const [draftCycleId, setDraftCycleId] = useState<string | null>(null);
     const [draftCycle, setDraftCycle] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isStartingDraft, setIsStartingDraft] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
@@ -125,6 +127,8 @@ function NRApplicationForm(): JSX.Element {
             setCurrentPage(2);
             return;
         }
+        if (isStartingDraft) return;
+        setIsStartingDraft(true);
         try {
             const currentUser = auth.currentUser;
             if (!currentUser) {
@@ -155,6 +159,8 @@ function NRApplicationForm(): JSX.Element {
         } catch (err) {
             console.error('Error creating draft:', err);
             toast.error('Failed to start application. Please try again.');
+        } finally {
+            setIsStartingDraft(false);
         }
     };
 
@@ -191,6 +197,7 @@ function NRApplicationForm(): JSX.Element {
     };
 
     const handleSubmit = async () => {
+        if (isSubmitting) return;
         const invalidSections = getNRInvalidSections();
 
         if (!appOpen) {
@@ -246,6 +253,7 @@ function NRApplicationForm(): JSX.Element {
             return;
         }
 
+        setIsSubmitting(true);
         try {
             // Strip draft-only/metadata fields so the submitted application is never
             // tagged as a draft. When a saved draft is resumed, the entire Firestore
@@ -303,6 +311,8 @@ function NRApplicationForm(): JSX.Element {
             } else {
                 toast.error('Failed to submit application. Please try again.');
             }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -409,17 +419,18 @@ function NRApplicationForm(): JSX.Element {
                 <div className="btn-right-group">
                     <button type="button" onClick={saveAndExit} className="app-form-btn app-form-btn-secondary">Save and Exit</button>
                     {currentPage < totalPages ? (
-                        <button type="button" onClick={currentPage === 1 ? handleStart : handleContinue} className="app-form-btn app-form-btn-primary">
+                        <button type="button" onClick={currentPage === 1 ? handleStart : handleContinue} disabled={currentPage === 1 && isStartingDraft} className="app-form-btn app-form-btn-primary">
                             {currentPage === 1 ? "Start" : "Save and Continue"}
                         </button>
                     ) : (
                         <button
                             type="button"
                             onClick={handleSubmit}
-                            className={`app-form-btn app-form-btn-primary${appOpen && isFormValid() ? '' : ' disabled'}`}
-                            aria-disabled={!(appOpen && isFormValid())}
+                            disabled={isSubmitting}
+                            className={`app-form-btn app-form-btn-primary${appOpen && isFormValid() && !isSubmitting ? '' : ' disabled'}`}
+                            aria-disabled={!(appOpen && isFormValid()) || isSubmitting}
                         >
-                            Save and Submit
+                            {isSubmitting ? 'Submitting…' : 'Save and Submit'}
                         </button>
                     )}
                 </div>
