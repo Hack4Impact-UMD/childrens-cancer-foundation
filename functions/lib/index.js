@@ -191,6 +191,12 @@ exports.submitApplication = onCall(async (request) => {
       throw new functions.https.HttpsError("invalid-argument", "File size exceeds 50MB limit");
     }
 
+    const isPdf = fileBuffer.length >= 5 &&
+      fileBuffer.slice(0, 5).toString("ascii") === "%PDF-";
+    if (!isPdf) {
+      throw new functions.https.HttpsError("invalid-argument", "Uploaded file is not a valid PDF");
+    }
+
     // 5. Get current application cycle and validate submission period
     const cycleSnapshot = await admin.firestore()
       .collection("applicationCycles")
@@ -236,8 +242,19 @@ exports.submitApplication = onCall(async (request) => {
     });
 
     // 9. Create application document
+    // Strip server/review-managed fields so the client payload cannot inject
+    // them (mass-assignment guard). Keep in sync with new server-managed fields.
+    const PROTECTED_APP_FIELDS = [
+      "status", "decision", "creatorId", "applicationId", "grantType", "file",
+      "applicationCycle", "submitTime", "reviewStatus", "averageScore",
+      "primaryScore", "secondaryScore", "assignedReviewers", "lastUpdated",
+    ];
+    const sanitizedApplication = {...application};
+    for (const field of PROTECTED_APP_FIELDS) {
+      delete sanitizedApplication[field];
+    }
     const applicationDetails = {
-      ...application,
+      ...sanitizedApplication,
       status: "submitted",
       decision: "pending",
       creatorId: userId,
@@ -525,6 +542,9 @@ exports.getApplicationReviews = onCall(async (request) => {
       secondaryReview,
     };
   } catch (error) {
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
     functions.logger.error("Error getting application reviews:", error);
     throw new functions.https.HttpsError("internal", "Failed to get application reviews");
   }
@@ -615,6 +635,9 @@ exports.updateApplicationReviewStatus = onCall(async (request) => {
       };
     }
   } catch (error) {
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
     functions.logger.error("Error updating application review status:", error);
     throw new functions.https.HttpsError("internal", "Failed to update application review status");
   }
@@ -713,6 +736,9 @@ exports.triggerApplicationStatusUpdate = onCall(async (request) => {
       };
     }
   } catch (error) {
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
     functions.logger.error("Error triggering application review status update:", error);
     throw new functions.https.HttpsError("internal", "Failed to trigger application review status update");
   }
