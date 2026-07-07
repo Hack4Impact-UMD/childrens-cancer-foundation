@@ -170,9 +170,15 @@ exports.submitApplication = onCall(async (request) => {
     }
 
     // 3. Validate required data
-    const {application, grantType, fileData, fileName, fileType} = data;
+    const {application, grantType, storedFileName, originalFileName} = data;
 
-    if (!application || !grantType || !fileData || !fileName) {
+    // Old clients sent the PDF base64-encoded through the callable; the file
+    // now goes directly to Storage and only its object name is sent here.
+    if (data.fileData) {
+      throw new functions.https.HttpsError("failed-precondition", "This app version is outdated — please refresh your browser and try again.");
+    }
+
+    if (!application || !grantType || !storedFileName) {
       throw new functions.https.HttpsError("invalid-argument", "Missing required application data");
     }
 
@@ -180,21 +186,9 @@ exports.submitApplication = onCall(async (request) => {
       throw new functions.https.HttpsError("invalid-argument", "Invalid grant type");
     }
 
-    // 4. Validate file type and size
-    if (fileType !== "application/pdf") {
-      throw new functions.https.HttpsError("invalid-argument", "Only PDF files are allowed");
-    }
-
-    const fileBuffer = Buffer.from(fileData, "base64");
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-    if (fileBuffer.length > MAX_FILE_SIZE) {
-      throw new functions.https.HttpsError("invalid-argument", "File size exceeds 50MB limit");
-    }
-
-    const isPdf = fileBuffer.length >= 5 &&
-      fileBuffer.slice(0, 5).toString("ascii") === "%PDF-";
-    if (!isPdf) {
-      throw new functions.https.HttpsError("invalid-argument", "Uploaded file is not a valid PDF");
+    // 4. Reject path tricks before any storage access
+    if (typeof storedFileName !== "string" || storedFileName.includes("/") || storedFileName.includes("..")) {
+      throw new functions.https.HttpsError("invalid-argument", "Invalid file reference");
     }
 
     // 5. Get current application cycle and validate submission period
@@ -224,20 +218,40 @@ exports.submitApplication = onCall(async (request) => {
       throw new functions.https.HttpsError("invalid-argument", `Invalid application data: ${validationResult.errors.join(", ")}`);
     }
 
-    // 8. Upload file to Firebase Storage
-    const fileId = admin.firestore().collection("applications").doc().id;
-    const fileName_storage = `${fileId}_${Date.now()}.pdf`;
+    // 8. Verify the client-uploaded file in Firebase Storage
     const bucket = admin.storage().bucket();
-    const file = bucket.file(`pdfs/${fileName_storage}`);
+    const file = bucket.file(`pdfs/${storedFileName}`);
+    const [exists] = await file.exists();
+    if (!exists) {
+      throw new functions.https.HttpsError("failed-precondition", "Uploaded file not found — please re-attach your PDF and try again.");
+    }
+    const [meta] = await file.getMetadata();
+    if (meta.contentType !== "application/pdf") {
+      throw new functions.https.HttpsError("invalid-argument", "Only PDF files are allowed");
+    }
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    if (Number(meta.size) > MAX_FILE_SIZE) {
+      throw new functions.https.HttpsError("invalid-argument", "File size exceeds 50MB limit");
+    }
+    const uploadedBy = meta.metadata && meta.metadata.uploadedBy;
+    if (uploadedBy !== userId) {
+      throw new functions.https.HttpsError("permission-denied", "File was not uploaded by this user");
+    }
 
-    await file.save(fileBuffer, {
+    // Content check: the object must actually be a PDF, not just labeled one.
+    const [head] = await file.download({start: 0, end: 4});
+    if (head.length < 5 || head.toString("ascii") !== "%PDF-") {
+      throw new functions.https.HttpsError("invalid-argument", "Uploaded file is not a valid PDF");
+    }
+
+    const fileId = admin.firestore().collection("applications").doc().id;
+
+    // Link the object to its application (merges with existing custom
+    // metadata; uploadedBy survives).
+    await file.setMetadata({
       metadata: {
-        contentType: "application/pdf",
-        metadata: {
-          uploadedBy: userId,
-          originalName: fileName,
-          applicationId: fileId,
-        },
+        applicationId: fileId,
+        originalName: originalFileName || "",
       },
     });
 
@@ -260,7 +274,7 @@ exports.submitApplication = onCall(async (request) => {
       creatorId: userId,
       applicationId: fileId,
       grantType: grantType,
-      file: fileName_storage,
+      file: storedFileName,
       applicationCycleId: currentCycleDoc.id,
       applicationCycle: currentCycle.name,
       submitTime: admin.firestore.Timestamp.now(),
