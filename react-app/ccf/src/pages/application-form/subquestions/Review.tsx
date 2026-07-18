@@ -60,7 +60,7 @@ function ReviewApplication({ type, formData, hideFile }: ReviewProps): JSX.Eleme
             <h3 className="card-title">Attachments</h3>
             <div className="detail-item">
               <span className="detail-label">File</span>
-              <span className="detail-value">{formData.file?.name || 'No file uploaded'}</span>
+              <span className="detail-value">{typeof formData.file === 'string' ? 'Current PDF on file' : (formData.file?.name || 'No file uploaded')}</span>
             </div>
           </div>
         )}
@@ -214,7 +214,7 @@ function ReviewApplication({ type, formData, hideFile }: ReviewProps): JSX.Eleme
             <h3 className="card-title">Attachments</h3>
             <div className="detail-item">
               <span className="detail-label">File</span>
-              <span className="detail-value">{formData.file?.name || 'No file uploaded'}</span>
+              <span className="detail-value">{typeof formData.file === 'string' ? 'Current PDF on file' : (formData.file?.name || 'No file uploaded')}</span>
             </div>
           </div>
         )}

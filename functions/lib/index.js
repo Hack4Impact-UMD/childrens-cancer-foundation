@@ -37,6 +37,48 @@ const syncCurrentCycleStageIfNeeded = async (cycleDoc) => {
   return currentCycle;
 };
 
+// Server/review-managed application fields stripped from any client payload
+// before it is written (mass-assignment guard). Shared by submitApplication
+// and updateApplication — keep in sync with new server-managed fields.
+const PROTECTED_APP_FIELDS = [
+  "status", "decision", "creatorId", "applicationId", "grantType", "file",
+  "applicationCycle", "applicationCycleId", "submitTime", "reviewStatus",
+  "averageScore", "primaryScore", "secondaryScore", "assignedReviewers",
+  "lastUpdated", "applicantEmail", "archived", "editedAt",
+];
+
+// Verifies a client-uploaded PDF object in Storage before it is linked to an
+// application: it must exist, be a real PDF (content type + magic bytes),
+// respect the size limit, and have been uploaded by the calling user.
+// Returns the file handle for follow-up metadata writes.
+const verifyUploadedPdf = async (storedFileName, userId) => {
+  const bucket = admin.storage().bucket();
+  const file = bucket.file(`pdfs/${storedFileName}`);
+  const [exists] = await file.exists();
+  if (!exists) {
+    throw new functions.https.HttpsError("failed-precondition", "Uploaded file not found — please re-attach your PDF and try again.");
+  }
+  const [meta] = await file.getMetadata();
+  if (meta.contentType !== "application/pdf") {
+    throw new functions.https.HttpsError("invalid-argument", "Only PDF files are allowed");
+  }
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+  if (Number(meta.size) > MAX_FILE_SIZE) {
+    throw new functions.https.HttpsError("invalid-argument", "File size exceeds 50MB limit");
+  }
+  const uploadedBy = meta.metadata && meta.metadata.uploadedBy;
+  if (uploadedBy !== userId) {
+    throw new functions.https.HttpsError("permission-denied", "File was not uploaded by this user");
+  }
+
+  // Content check: the object must actually be a PDF, not just labeled one.
+  const [head] = await file.download({start: 0, end: 4});
+  if (head.length < 5 || head.toString("ascii") !== "%PDF-") {
+    throw new functions.https.HttpsError("invalid-argument", "Uploaded file is not a valid PDF");
+  }
+  return file;
+};
+
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 exports.helloWorld = onRequest((request, response) => {
@@ -221,30 +263,7 @@ exports.submitApplication = onCall(async (request) => {
     }
 
     // 8. Verify the client-uploaded file in Firebase Storage
-    const bucket = admin.storage().bucket();
-    const file = bucket.file(`pdfs/${storedFileName}`);
-    const [exists] = await file.exists();
-    if (!exists) {
-      throw new functions.https.HttpsError("failed-precondition", "Uploaded file not found — please re-attach your PDF and try again.");
-    }
-    const [meta] = await file.getMetadata();
-    if (meta.contentType !== "application/pdf") {
-      throw new functions.https.HttpsError("invalid-argument", "Only PDF files are allowed");
-    }
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-    if (Number(meta.size) > MAX_FILE_SIZE) {
-      throw new functions.https.HttpsError("invalid-argument", "File size exceeds 50MB limit");
-    }
-    const uploadedBy = meta.metadata && meta.metadata.uploadedBy;
-    if (uploadedBy !== userId) {
-      throw new functions.https.HttpsError("permission-denied", "File was not uploaded by this user");
-    }
-
-    // Content check: the object must actually be a PDF, not just labeled one.
-    const [head] = await file.download({start: 0, end: 4});
-    if (head.length < 5 || head.toString("ascii") !== "%PDF-") {
-      throw new functions.https.HttpsError("invalid-argument", "Uploaded file is not a valid PDF");
-    }
+    const file = await verifyUploadedPdf(storedFileName, userId);
 
     const fileId = admin.firestore().collection("applications").doc().id;
 
@@ -258,13 +277,6 @@ exports.submitApplication = onCall(async (request) => {
     });
 
     // 9. Create application document
-    // Strip server/review-managed fields so the client payload cannot inject
-    // them (mass-assignment guard). Keep in sync with new server-managed fields.
-    const PROTECTED_APP_FIELDS = [
-      "status", "decision", "creatorId", "applicationId", "grantType", "file",
-      "applicationCycle", "submitTime", "reviewStatus", "averageScore",
-      "primaryScore", "secondaryScore", "assignedReviewers", "lastUpdated",
-    ];
     const sanitizedApplication = {...application};
     for (const field of PROTECTED_APP_FIELDS) {
       delete sanitizedApplication[field];
@@ -311,6 +323,137 @@ exports.submitApplication = onCall(async (request) => {
 
     // Otherwise, wrap in internal error
     throw new functions.https.HttpsError("internal", "Application submission failed");
+  }
+});
+
+// Secure in-place edit of a submitted application. Applicants may edit their
+// own submitted applications only while the cycle they were submitted in is
+// still the current cycle with applications open, and only before review has
+// begun. The existing PDF is kept unless a replacement object is supplied.
+exports.updateApplication = onCall(async (request) => {
+  try {
+    const {data, auth} = request;
+
+    // 1. Authentication Check
+    if (!auth) {
+      throw new functions.https.HttpsError("unauthenticated", "User must be authenticated to update applications");
+    }
+
+    const userId = auth.uid;
+
+    // 2. Validate user role
+    if (auth.token.role !== "applicant") {
+      throw new functions.https.HttpsError("permission-denied", "Only applicants can update applications");
+    }
+
+    // 3. Validate required data
+    const {applicationId, application, storedFileName, originalFileName} = data;
+    if (!applicationId || typeof applicationId !== "string" || !application) {
+      throw new functions.https.HttpsError("invalid-argument", "Missing required application data");
+    }
+
+    // 4. Reject path tricks before any storage access (storedFileName is
+    // optional here — absent means the existing PDF is kept)
+    if (storedFileName != null &&
+      (typeof storedFileName !== "string" || storedFileName.includes("/") || storedFileName.includes(".."))) {
+      throw new functions.https.HttpsError("invalid-argument", "Invalid file reference");
+    }
+
+    // 5. Load the existing application and verify ownership and state
+    const appRef = admin.firestore().collection("applications").doc(applicationId);
+    const appSnapshot = await appRef.get();
+    if (!appSnapshot.exists) {
+      throw new functions.https.HttpsError("not-found", "Application not found");
+    }
+    const existing = appSnapshot.data();
+    if (existing.creatorId !== userId) {
+      throw new functions.https.HttpsError("permission-denied", "You can only edit your own applications");
+    }
+    if (existing.status !== "submitted") {
+      throw new functions.https.HttpsError("failed-precondition", "Only submitted applications can be edited");
+    }
+    if (existing.decision && existing.decision !== "pending") {
+      throw new functions.https.HttpsError("failed-precondition", "This application has already been decided and can no longer be edited");
+    }
+    const hasReviewers = Array.isArray(existing.assignedReviewers) && existing.assignedReviewers.length > 0;
+    if (existing.reviewStatus || hasReviewers) {
+      throw new functions.https.HttpsError("failed-precondition", "This application is already under review and can no longer be edited");
+    }
+
+    // 6. Get current application cycle and validate the edit window
+    const cycleSnapshot = await admin.firestore()
+      .collection("applicationCycles")
+      .where("current", "==", true)
+      .limit(1)
+      .get();
+    if (cycleSnapshot.empty) {
+      throw new functions.https.HttpsError("failed-precondition", "No active application cycle found");
+    }
+    const currentCycleDoc = cycleSnapshot.docs[0];
+    const currentCycle = await syncCurrentCycleStageIfNeeded(currentCycleDoc);
+    if (currentCycle.stage !== "Applications Open") {
+      throw new functions.https.HttpsError("failed-precondition", "Applications are currently closed");
+    }
+    if (existing.applicationCycleId !== currentCycleDoc.id) {
+      throw new functions.https.HttpsError("failed-precondition", "This application belongs to a previous cycle and can no longer be edited");
+    }
+
+    // 7. Validate application data against the doc's canonical grant type
+    // (any client-supplied grantType is ignored)
+    const validationResult = validateApplicationData(application, existing.grantType);
+    if (!validationResult.isValid) {
+      throw new functions.https.HttpsError("invalid-argument", `Invalid application data: ${validationResult.errors.join(", ")}`);
+    }
+
+    // 8. If a replacement PDF was uploaded, verify and link it
+    if (storedFileName) {
+      const file = await verifyUploadedPdf(storedFileName, userId);
+      await file.setMetadata({
+        metadata: {
+          applicationId: applicationId,
+          originalName: originalFileName || "",
+        },
+      });
+    }
+
+    // 9. Update the application document in place. update() (not set) keeps
+    // status/decision/creatorId/submitTime/file untouched unless written here.
+    const sanitizedApplication = {...application};
+    for (const field of PROTECTED_APP_FIELDS) {
+      delete sanitizedApplication[field];
+    }
+    const updatePayload = {
+      ...sanitizedApplication,
+      editedAt: admin.firestore.Timestamp.now(),
+    };
+    if (storedFileName) {
+      updatePayload.file = storedFileName;
+    }
+    await appRef.update(updatePayload);
+
+    // 10. Log the edit
+    functions.logger.info("Application updated successfully", {
+      userId,
+      applicationId,
+      cycle: currentCycle.name,
+      fileReplaced: Boolean(storedFileName),
+    });
+
+    return {
+      success: true,
+      applicationId: applicationId,
+      message: "Application updated successfully",
+    };
+  } catch (error) {
+    functions.logger.error("Application update error:", error);
+
+    // If it's already an HttpsError, re-throw it
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+
+    // Otherwise, wrap in internal error
+    throw new functions.https.HttpsError("internal", "Application update failed");
   }
 });
 

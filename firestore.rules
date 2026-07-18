@@ -29,7 +29,13 @@ service cloud.firestore {
         && resource.data.creatorId == request.auth.uid
         && resource.data.status == 'draft'
         && request.resource.data.status == 'draft'
-        && request.resource.data.creatorId == resource.data.creatorId);
+        && request.resource.data.creatorId == resource.data.creatorId)
+        // Visual archive flag: applicants may toggle ONLY `archived` (bool) on
+        // their own docs, draft or submitted. Nothing else may change.
+        || (isApplicant()
+        && resource.data.creatorId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['archived'])
+        && request.resource.data.archived is bool);
       allow delete: if isAdmin() || (isApplicant() && resource.data.creatorId == request.auth.uid && resource.data.status == 'draft');
     }
     

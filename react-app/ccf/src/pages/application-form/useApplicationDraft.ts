@@ -6,6 +6,7 @@ import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend
 import { auth, db } from '../..';
 import { toDraftDocData } from '../../utils/draft-serialization';
 import { getSubmitErrorToast } from './submit-error-messages';
+import { updateApplicationSubmission } from '../../backend/applicant-form-submit';
 
 // Draft-only/metadata fields stripped before submit. When a saved draft is
 // resumed, the entire Firestore doc (including status: 'draft', cycle ids and
@@ -15,7 +16,7 @@ import { getSubmitErrorToast } from './submit-error-messages';
 const SUBMIT_STRIP_FIELDS = [
     'status', 'creatorId', 'applicantEmail', 'applicationCycleId',
     'applicationCycle', 'createdAt', 'lastUpdated', 'grantType',
-    'decision', 'submitTime', 'applicationId', 'file'
+    'decision', 'submitTime', 'applicationId', 'file', 'archived', 'editedAt'
 ];
 
 /**
@@ -32,6 +33,10 @@ export function useApplicationDraft(options: {
     const { grantType, formData, setFormData } = options;
     const [appOpen, setAppOpen] = useState<boolean>(false);
     const [draftId, setDraftId] = useState<string | null>(null);
+    // Set when the form was opened via ?editId= to edit an already-submitted
+    // application. Deliberately separate from draftId: draft saves/deletes
+    // must never touch a submitted doc.
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [draftCycleId, setDraftCycleId] = useState<string | null>(null);
     const [draftCycle, setDraftCycle] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,13 +74,18 @@ export function useApplicationDraft(options: {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const existingDraftId = params.get('draftId');
-        if (!existingDraftId) return;
+        const existingEditId = params.get('editId');
+        if (!existingDraftId && !existingEditId) return;
 
         const loadDraft = async () => {
             try {
-                const draftDoc = await getDoc(doc(db, 'applications', existingDraftId));
+                const draftDoc = await getDoc(doc(db, 'applications', existingDraftId!));
                 if (draftDoc.exists()) {
                     const data = draftDoc.data();
+                    if (data.status !== 'draft') {
+                        toast.error('This application has already been submitted.');
+                        return;
+                    }
                     setDraftId(existingDraftId);
                     setDraftCycleId(data.applicationCycleId ?? null);
                     setDraftCycle(data.applicationCycle ?? null);
@@ -88,13 +98,44 @@ export function useApplicationDraft(options: {
             }
         };
 
-        loadDraft();
+        // Editing an already-submitted application: load it into the form but
+        // track it as editingId, never draftId (see the state comment above).
+        const loadSubmitted = async () => {
+            try {
+                const appDoc = await getDoc(doc(db, 'applications', existingEditId!));
+                if (appDoc.exists()) {
+                    const data = appDoc.data();
+                    if (data.status !== 'submitted') {
+                        toast.error('This application cannot be edited.');
+                        return;
+                    }
+                    setEditingId(existingEditId);
+                    setDraftCycleId(data.applicationCycleId ?? null);
+                    setDraftCycle(data.applicationCycle ?? null);
+                    setFormData((prev: any) => ({ ...prev, ...data }));
+                    setResumedFromDraft(true);
+                }
+            } catch (err) {
+                console.error('Error loading submitted application:', err);
+                toast.error('Failed to load submitted application.');
+            }
+        };
+
+        if (existingEditId) {
+            loadSubmitted();
+        } else {
+            loadDraft();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.search]);
 
     // Creates the draft doc. Returns true when the caller may advance past the
     // first page (draft already exists, or was just created).
     const startDraft = async (): Promise<boolean> => {
+        if (editingId) {
+            // editing a submitted application — never fork a new draft
+            return true;
+        }
         if (draftId) {
             // already have a draft, just advance
             return true;
@@ -139,6 +180,9 @@ export function useApplicationDraft(options: {
     };
 
     const saveDraft = async (data: Record<string, any> = formData): Promise<boolean> => {
+        // Submitted docs only change through the updateApplication callable on
+        // final submit; intermediate saves are silent no-ops in edit mode.
+        if (editingId) return true;
         if (!draftId) return true; // nothing to save yet (page 1, no draft created)
         try {
             await updateDoc(doc(db, 'applications', draftId), {
@@ -178,8 +222,10 @@ export function useApplicationDraft(options: {
 
     // Wraps the upload call with the in-flight guard, payload stripping, draft
     // cleanup, and error toasts. Returns true on success; caller navigates.
+    // In edit mode `file` may be the stored object name (string) — meaning the
+    // existing PDF is kept — instead of a freshly attached File.
     const submit = async (
-        file: File,
+        file: File | string,
         upload: (application: Record<string, any>, file: File) => Promise<{ success: boolean }>
     ): Promise<boolean> => {
         if (isSubmitting) return false;
@@ -188,6 +234,23 @@ export function useApplicationDraft(options: {
         try {
             const application = { ...formData } as any;
             SUBMIT_STRIP_FIELDS.forEach((key) => delete application[key]);
+
+            if (editingId) {
+                toast.info('Saving changes...');
+                const result = await updateApplicationSubmission(
+                    editingId,
+                    application,
+                    file instanceof File ? file : null
+                );
+                if (result.success) {
+                    toast.success('Application updated successfully!');
+                    return true;
+                }
+                toast.error('Failed to update application. Please try again.');
+                return false;
+            }
+
+            if (!(file instanceof File)) return false;
 
             // Show loading toast
             toast.info('Submitting application...');
@@ -229,5 +292,6 @@ export function useApplicationDraft(options: {
         verifyDraftCycle,
         submit,
         resumedFromDraft,
+        isEditingSubmitted: editingId !== null,
     };
 }

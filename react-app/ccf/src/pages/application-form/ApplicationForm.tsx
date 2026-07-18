@@ -90,6 +90,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         verifyDraftCycle,
         submit,
         resumedFromDraft,
+        isEditingSubmitted,
     } = useApplicationDraft({
         grantType: type === 'NextGen' ? 'nextgen' : 'research',
         formData,
@@ -112,6 +113,12 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     };
 
     const saveAndExit = async () => {
+        if (isEditingSubmitted) {
+            // Edits to a submitted application only persist on final submit.
+            toast.info('Changes are not saved until you select Save Changes.');
+            navigate('/applicant/dashboard');
+            return;
+        }
         const saved = await saveDraft();
         if (saved) {
             toast.success('Progress saved!');
@@ -272,6 +279,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             </Modal>
             <h1 className="main-header">
                 {type === "Research" ? "Research Grant Application" : "NextGen Grant Application"}
+                {isEditingSubmitted ? " (Editing)" : ""}
             </h1>
             <Breadcrumb currentPage={currentPage} pages={pages} />
             <h1 className="form-header">
@@ -294,7 +302,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
                             className={`app-form-btn app-form-btn-primary${appOpen && isFormValid() && !isSubmitting ? '' : ' disabled'}`}
                             aria-disabled={!(appOpen && isFormValid()) || isSubmitting}
                         >
-                            {isSubmitting ? 'Submitting…' : 'Save and Submit'}
+                            {isSubmitting ? 'Submitting…' : isEditingSubmitted ? 'Save Changes' : 'Save and Submit'}
                         </button>
                     )}
                 </div>

@@ -50,6 +50,7 @@ function NRApplicationForm(): JSX.Element {
         verifyDraftCycle,
         submit,
         resumedFromDraft,
+        isEditingSubmitted,
     } = useApplicationDraft({
         grantType: 'nonresearch',
         formData,
@@ -72,6 +73,12 @@ function NRApplicationForm(): JSX.Element {
     };
 
     const saveAndExit = async () => {
+        if (isEditingSubmitted) {
+            // Edits to a submitted application only persist on final submit.
+            toast.info('Changes are not saved until you select Save Changes.');
+            navigate('/applicant/dashboard');
+            return;
+        }
         const saved = await saveDraft();
         if (saved) {
             toast.success('Progress saved!');
@@ -243,7 +250,7 @@ function NRApplicationForm(): JSX.Element {
             >
                 {modalContent}
             </Modal>
-            <h1 className="main-header">Non-Research Grant</h1>
+            <h1 className="main-header">Non-Research Grant{isEditingSubmitted ? " (Editing)" : ""}</h1>
             <Breadcrumb currentPage={currentPage} pages={pages} />
 
             <h1 className="form-header">{pages[currentPage - 1]}</h1>
@@ -265,7 +272,7 @@ function NRApplicationForm(): JSX.Element {
                             className={`app-form-btn app-form-btn-primary${appOpen && isFormValid() && !isSubmitting ? '' : ' disabled'}`}
                             aria-disabled={!(appOpen && isFormValid()) || isSubmitting}
                         >
-                            {isSubmitting ? 'Submitting…' : 'Save and Submit'}
+                            {isSubmitting ? 'Submitting…' : isEditingSubmitted ? 'Save Changes' : 'Save and Submit'}
                         </button>
                     )}
                 </div>

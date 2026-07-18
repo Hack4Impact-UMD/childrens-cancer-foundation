@@ -13,7 +13,7 @@ import {
   getApplicantSidebarItems,
   SideBarTypes,
 } from "../../types/sidebar-types";
-import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import {
   getUsersCurrentCycleAppplications,
@@ -60,6 +60,7 @@ function ApplicantUsersDashboard(): JSX.Element {
   const [faqData, setFAQData] = useState<FAQItem[]>([]);
   const [appCycle, setAppCycle] = useState<ApplicationCycle>();
   const [applicationsOpen, setApplicationsOpen] = useState<boolean>(false);
+  const [showArchived, setShowArchived] = useState<boolean>(false);
   const [, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -270,6 +271,39 @@ function ApplicantUsersDashboard(): JSX.Element {
     }
   };
 
+  // Visual-only archive flag: hides a row from this dashboard until the
+  // "Show archived" toggle is on. Admin/reviewer views are unaffected.
+  const handleToggleArchive = async (
+    e: React.MouseEvent,
+    appId: string,
+    currentlyArchived: boolean,
+    list: 'draft' | 'completed',
+  ) => {
+    e.stopPropagation(); // draft rows navigate on click
+    try {
+      await updateDoc(doc(db, 'applications', appId), { archived: !currentlyArchived });
+      const patch = (apps: any) =>
+        apps?.map((a: any) => (a.id === appId ? { ...a, archived: !currentlyArchived } : a));
+      if (list === 'draft') {
+        setInProgressApplications((prev: any) => patch(prev));
+      } else {
+        setCompletedApplications((prev: any) => patch(prev));
+      }
+    } catch (err) {
+      console.error('Error updating archive flag:', err);
+      toast.error('Could not update the application. Please try again.');
+    }
+  };
+
+  const isArchived = (app: any) => app.archived === true;
+  const visibleDrafts = inProgressApplications.filter((a) => showArchived || !isArchived(a));
+  const visibleCompleted = (completedApplications ?? []).filter((a) => showArchived || !isArchived(a));
+  // Computed from the unfiltered lists so the toggle stays available even when
+  // every application is archived.
+  const hasArchived =
+    inProgressApplications.some(isArchived) ||
+    (completedApplications ?? []).some(isArchived);
+
   const navigate = useNavigate();
 
   return (
@@ -353,11 +387,21 @@ function ApplicantUsersDashboard(): JSX.Element {
               icon={<FaClipboardList className="dashboard-section-icon" />}
             >
               <div className="ApplicantDashboard-application-box">
-                  {inProgressApplications &&
-                    Object.keys(inProgressApplications).length > 0 && (
+                  {hasArchived && (
+                    <label className="show-archived-toggle">
+                      <input
+                        type="checkbox"
+                        checked={showArchived}
+                        onChange={(e) => setShowArchived(e.target.checked)}
+                      />
+                      Show archived
+                    </label>
+                  )}
+
+                  {visibleDrafts.length > 0 && (
                       <>
                         <h3>IN PROGRESS APPLICATIONS:</h3>
-                        {inProgressApplications.map(
+                        {visibleDrafts.map(
                           (application: any, index: number) => (
                             <div
                               key={index}
@@ -378,10 +422,19 @@ function ApplicantUsersDashboard(): JSX.Element {
                                 {isDraftFromEndedCycle(application, appCycle?.id) && (
                                   <span className="draft-ended-cycle-tag">Cycle ended — cannot be submitted</span>
                                 )}
+                                {application.archived === true && (
+                                  <span className="archived-tag">Archived</span>
+                                )}
                               </div>
                               <div className="ApplicantDashboard-application-status">
                                 <p>In Progress</p>
                                 <FaArrowRight className="application-status-icon" />
+                                <button
+                                  className="archive-btn"
+                                  onClick={(e) => handleToggleArchive(e, application.id, application.archived === true, 'draft')}
+                                >
+                                  {application.archived === true ? 'Unarchive' : 'Archive'}
+                                </button>
                                 <button
                                   className="draft-delete-btn"
                                   onClick={(e) => handleDeleteDraft(e, application.id)}
@@ -396,11 +449,10 @@ function ApplicantUsersDashboard(): JSX.Element {
                       </>
                     )}
 
-                  {completedApplications &&
-                    Object.keys(completedApplications).length > 0 && (
+                  {visibleCompleted.length > 0 && (
                       <>
                         <h3>COMPLETED APPLICATIONS:</h3>
-                        {completedApplications.map((application, index) => (
+                        {visibleCompleted.map((application, index) => (
                           <div
                             key={index}
                             className="ApplicantDashboard-single-application-box"
@@ -410,6 +462,9 @@ function ApplicantUsersDashboard(): JSX.Element {
                               <p>
                                 {firstLetterCap((application as any).grantType)}
                               </p>
+                              {(application as any).archived === true && (
+                                <span className="archived-tag">Archived</span>
+                              )}
                             </div>
                             <div
                               className="ApplicantDashboard-application-status"
@@ -426,6 +481,38 @@ function ApplicantUsersDashboard(): JSX.Element {
                                   : "Submitted"}
                               </p>
                               <FaArrowRight className="application-status-icon" />
+                            </div>
+                            <div className="ApplicantDashboard-application-actions">
+                              {/* Submitted apps from the current cycle stay editable while applications are open */}
+                              {applicationsOpen &&
+                                (application as any).applicationCycleId === appCycle?.id && (
+                                  <button
+                                    className="edit-application-btn"
+                                    onClick={() => {
+                                      const route = (application as any).grantType === 'nonresearch'
+                                        ? '/applicant/application-form/nonresearch'
+                                        : (application as any).grantType === 'nextgen'
+                                        ? '/applicant/application-form/nextgen'
+                                        : '/applicant/application-form/research';
+                                      navigate(`${route}?editId=${(application as any).id}`);
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                )}
+                              <button
+                                className="archive-btn"
+                                onClick={(e) =>
+                                  handleToggleArchive(
+                                    e,
+                                    (application as any).id,
+                                    (application as any).archived === true,
+                                    'completed',
+                                  )
+                                }
+                              >
+                                {(application as any).archived === true ? 'Unarchive' : 'Archive'}
+                              </button>
                             </div>
                             <CoverPageModal
                               application={application as Application}
