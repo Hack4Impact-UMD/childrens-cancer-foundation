@@ -119,38 +119,38 @@
   margin-right: 0;
 }
 
-/* The only scrollable area on the create-account page is the form card. The
-   page itself is locked to the viewport — no body scroll, no horizontal scroll
-   from `width: 100vw` ever including the vertical scrollbar. */
+/* The create-account form has many more fields than Login, so it can be taller
+   than the viewport. Rather than lock the card to the viewport and give it an
+   inner scrollbar, let the page grow and use the normal document scroll only
+   when needed. The card keeps the SAME width metrics as the Login page. */
 .createAcc-page {
   width: 100%;
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
+  height: auto;
+  min-height: 100vh;
   box-sizing: border-box;
 }
 
 .createAcc-page .login-content {
   width: 100%;
   max-width: 1200px;
-  height: 100%;
-  max-height: 100%;
-  box-sizing: border-box;
-  overflow: hidden;
-  min-width: 0;
-}
-
-.createAcc-page .login-form {
-  max-height: 100%;
   height: auto;
-  overflow-y: auto;
-  overflow-x: hidden;
+  padding-top: 40px;
+  padding-bottom: 40px;
   min-width: 0;
-  box-sizing: border-box;
 }
 
+/* No box-sizing override here: like the Login card, max-width:500px caps the
+   CONTENT box, so padding adds to it and the card renders at the same width. */
+.createAcc-page .login-form {
+  height: auto;
+  min-width: 0;
+}
+
+/* Image strip matches the card's height instead of stretching to the full
+   viewport, so it never extends past the form. */
 .createAcc-page .login-imageContainer {
-  max-height: 100%;
+  align-self: stretch;
+  height: auto;
   min-width: 0;
   overflow: hidden;
   box-sizing: border-box;
@@ -318,21 +318,22 @@ select.input:focus {
   border-color: #be0019;
 }
 
-.login-form {
-  justify-content: flex-start; 
-  align-items: center; 
-  overflow-y: auto;             
-  padding-top: 30px;   
-  max-height: 80vh;
-  padding: 20px 40px;         
+/* Scoped to .createAcc-page so this taller, top-aligned form layout does not
+   leak onto the shared Login and Create-Account-menu pages (all page CSS is
+   bundled into one global stylesheet). Horizontal padding (40px) matches the
+   Login card so the two cards render at the same width. */
+.createAcc-page .login-form {
+  justify-content: flex-start;
+  align-items: center;
+  padding: 20px 40px;
 }
 
 @media (max-width: 750px) {
-  .login-imageContainer {
+  .createAcc-page .login-imageContainer {
     display: none;
   }
 
-  .login-form {
+  .createAcc-page .login-form {
     width: 95%;
     max-width: none;
     margin-right: 0;
