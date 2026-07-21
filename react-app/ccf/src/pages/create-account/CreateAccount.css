@@ -1,0 +1,347 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+
+/* Shared styles for the applicant AND reviewer create-account flows. Both pages
+   render <CreateAccountForm>, so this is the single source of truth — no more
+   two near-identical stylesheets drifting apart. */
+
+/* ---- Image strip -------------------------------------------------------- */
+.createAccApplicant-stackedImages {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0;
+  min-height: 0;
+}
+
+.createAccApplicant-researchImage {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  object-fit: cover;
+  display: block;
+}
+
+.createAccApplicant-yellowOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.createAccApplicant-overlayImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+
+/* ---- Header ------------------------------------------------------------- */
+.logo2 {
+  display: block;
+  margin: 0 auto;
+  max-width: 100px;
+}
+
+.header-container2 {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* ---- Step indicator ----------------------------------------------------- */
+.createAcc-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 28px;
+}
+
+.createAcc-step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  background: #e0e0e0;
+  color: #777;
+  border: 2px solid #e0e0e0;
+  box-sizing: border-box;
+}
+
+.createAcc-step-dot.active {
+  background: var(--color-red);
+  border-color: var(--color-red);
+  color: #fff;
+}
+
+.createAcc-step-dot.done {
+  background: #fff;
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.createAcc-step-line {
+  width: 48px;
+  height: 2px;
+  background: #e0e0e0;
+}
+
+.createAcc-step-line.done {
+  background: var(--color-red);
+}
+
+/* ---- Form fields -------------------------------------------------------- */
+.name-container {
+  display: flex;
+  box-sizing: border-box;
+  gap: 1rem;
+}
+
+/* Make First Name / Last Name columns share width evenly. Without flex: 1,
+   each column collapses to its input's intrinsic width. */
+.name-container > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-container2 {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-self: flex-start;
+}
+
+.form-container2 label {
+  display: table-row;
+  margin-left: 8px;
+  margin-bottom: 5px;
+  margin-top: 10px;
+}
+
+/* box-sizing here keeps width: 100% inputs (including the Institution <select>)
+   from overflowing the form container once padding/border are added. */
+.form-container2 .input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* No fixed height — let the select size to its padding + text so the selected
+   option isn't vertically clipped. */
+.form-container2 select {
+  padding-left: 10px;
+  border-radius: 10px;
+  border-width: 1px;
+}
+
+.pwd-reqs {
+  width: 100%;
+  margin-top: 10px;
+  color: #545454;
+}
+
+.pwd-reqs p {
+  margin-bottom: 10px;
+  font-size: smaller;
+}
+
+.pwd-reqs label.checkbox {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.validation {
+  color: var(--color-red);
+  margin-top: 5px;
+  font-size: 0.75em;
+}
+
+.checkbox {
+  margin-top: 10px;
+  font-size: smaller;
+}
+
+.pwd-reqs input[type="checkbox"]:not(:checked):not(:disabled):before {
+  content: "−";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #545454;
+  border-radius: 2px;
+}
+
+.pwd-reqs .checkbox input[type="checkbox"] {
+  margin-left: 10px;
+  vertical-align: middle;
+  margin-right: 10px;
+  accent-color: var(--color-blue);
+  transform: scale(1.75);
+  font-size: smaller;
+}
+
+select.input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+}
+
+select.input:focus {
+  outline: none;
+  border-color: #be0019;
+}
+
+/* ---- Actions ------------------------------------------------------------ */
+.acc-req2 {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#link-to {
+  color: var(--color-blue);
+}
+
+.signup-btn2 {
+  display: block;
+  width: 90%;
+  padding: 12px;
+  background-color: #be0019;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  margin: 10px auto;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.disable-submit {
+  display: block;
+  width: 90%;
+  padding: 12px;
+  background-color: #5b5b5b;
+  color: #949494;
+  border: none;
+  border-radius: 20px;
+  cursor: not-allowed;
+  margin: 10px auto;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.createAcc-back-btn {
+  display: block;
+  margin: 0 auto 4px;
+  background: none;
+  border: none;
+  color: var(--color-blue);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 6px;
+}
+
+.createAcc-back-btn:hover {
+  text-decoration: underline;
+}
+
+/* ---- Page layout -------------------------------------------------------- */
+/* The shared .login-content / .login-form layout assumes form-on-right with the
+   image filling the left side. The create-account pages put the form on the left,
+   so the asymmetric padding-left:0 + margin-right makes the right side look tighter
+   than the left. Re-symmetrize within the createAcc scope only. */
+.createAcc-page .login-content {
+  padding-left: 20px !important;
+}
+
+/* The create-account form can be taller than the viewport. Rather than lock the
+   card to the viewport and give it an inner scrollbar, let the page grow and use
+   the normal document scroll only when needed. The card keeps the SAME width
+   metrics as the Login page. */
+.createAcc-page {
+  width: 100%;
+  height: auto;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.createAcc-page .login-content {
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+  /* Match the Login page's image height (80vh): the row is at least 80vh tall,
+     so the image strip fills to the same height as Login even though the stepped
+     form card is short. The card grows past this only if its fields need more. */
+  min-height: 80vh;
+  /* Small min padding only: on tall screens align-items:center handles the
+     spacing; on short screens keeping this tight minimizes page scroll. */
+  padding-top: 24px;
+  padding-bottom: 24px;
+  min-width: 0;
+}
+
+/* No box-sizing override here: like the Login card, max-width:500px caps the
+   CONTENT box, so padding adds to it and the card renders at the same width.
+   Horizontal padding (40px) matches the Login card so widths line up exactly. */
+.createAcc-page .login-form {
+  height: auto;
+  min-width: 0;
+  margin-right: 0;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 20px 40px;
+}
+
+/* Image strip matches the card's height instead of stretching to the full
+   viewport, so it never extends past the form. The stacked images are taken out
+   of flow (absolute) so their intrinsic height can't push the column taller than
+   the card — the column stretches to the card height and the images fill it. */
+.createAcc-page .login-imageContainer {
+  align-self: stretch;
+  height: auto;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.createAcc-page .createAccApplicant-stackedImages {
+  position: absolute;
+  inset: 0;
+}
+
+/* All form fields stay inside the card width — the long Institution select
+   placeholder used to be the typical horizontal-overflow culprit. */
+.createAcc-page .form-container2 .input,
+.createAcc-page .form-container2 select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 750px) {
+  .createAcc-page .login-imageContainer {
+    display: none;
+  }
+
+  .createAcc-page .login-form {
+    width: 95%;
+    max-width: none;
+    margin-right: 0;
+    padding: 20px;
+  }
+}
