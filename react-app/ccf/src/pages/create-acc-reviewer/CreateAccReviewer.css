@@ -158,20 +158,23 @@ select.input:focus {
   border-color: #be0019;
 }
 
-.login-form {
+/* Scoped to .createAcc-page so this taller, top-aligned form layout does not
+   leak onto the shared Login and Create-Account-menu pages (all page CSS is
+   bundled into one global stylesheet). The rest of the create-account layout
+   (viewport/height/width metrics) comes from the shared block in
+   CreateAccApplicant.css; keep this in sync with it. */
+.createAcc-page .login-form {
   justify-content: flex-start;
   align-items: center;
-  overflow-y: auto;
-  max-height: 80vh;
   padding: 20px 40px;
 }
 
 @media (max-width: 750px) {
-  .login-imageContainer {
+  .createAcc-page .login-imageContainer {
     display: none;
   }
 
-  .login-form {
+  .createAcc-page .login-form {
     width: 95%;
     max-width: none;
     margin-right: 0;
