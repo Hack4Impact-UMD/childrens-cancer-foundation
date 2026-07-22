@@ -10,6 +10,7 @@ import { collection, getDocs, query, where, doc, getDoc } from "firebase/firesto
 import { auth } from "../.."; // Adjust path as needed
 import { db } from "../.."
 import { getReviewsForReviewer, setReviewArchived } from "../../services/review-service";
+import Review from "../../types/review-types";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded, getDaysUntilDeadline } from "../../backend/application-cycle";
 import Banner from "../../components/banner/Banner";
@@ -94,40 +95,69 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
     useEffect(() => {
         const fetchData = async () => {
             if (!currentUser) {
-                setError("User not authenticated");
+                setError("You are not signed in. Please log in again to view your reviews.");
                 setLoading(false);
                 return;
             }
 
+            setLoading(true);
+            setError(null);
+
+            // Each stage below fails for a different reason, so each reports its
+            // own message rather than one catch-all — that way the visible error
+            // points at what actually broke.
+
+            // 1) Current application cycle (needed for the reviewer deadline and
+            //    to filter reviews to the active cycle).
+            let updatedCycle: ApplicationCycle;
             try {
-                setLoading(true);
-
-                // Fetch cycle first so reviewerDeadline is available when building application list
                 const cycle = await getCurrentCycle();
-                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
                 setAppCycle(updatedCycle);
+            } catch (err) {
+                console.error("Error loading current application cycle:", err);
+                setError("Couldn't load the current application cycle. Please refresh and try again.");
+                setLoading(false);
+                return;
+            }
 
-                // First, get the reviewer document
+            // 2) Reviewer profile (maps the signed-in email to a reviewer id).
+            let reviewerId: string;
+            try {
                 const reviewersRef = collection(db, "reviewers");
                 const reviewerQuery = query(
                     reviewersRef,
                     where("email", "==", currentUser.email)
                 );
-
                 const reviewerSnapshot = await getDocs(reviewerQuery);
 
                 if (reviewerSnapshot.empty) {
-                    setError("Reviewer profile not found");
+                    setError("We couldn't find a reviewer profile for your account. Please contact CCF.");
                     setLoading(false);
                     return;
                 }
+                reviewerId = reviewerSnapshot.docs[0].id;
+            } catch (err) {
+                console.error("Error loading reviewer profile:", err);
+                setError("Couldn't load your reviewer profile. Please refresh and try again.");
+                setLoading(false);
+                return;
+            }
 
-                const reviewerDoc = reviewerSnapshot.docs[0];
-                const reviewerId = reviewerDoc.id;
+            // 3) The reviews assigned to this reviewer (collection-group query;
+            //    a permissions/rules problem surfaces here, not as an app error).
+            let reviews: Review[];
+            try {
+                reviews = await getReviewsForReviewer(reviewerId);
+            } catch (err) {
+                console.error("Error loading assigned reviews:", err);
+                setError("Couldn't load your assigned reviews. Please refresh and try again, or contact CCF if this continues.");
+                setLoading(false);
+                return;
+            }
 
-                // Get all reviews assigned to this reviewer
-                const reviews = await getReviewsForReviewer(reviewerId);
-
+            // 4) The application document behind each assigned review.
+            try {
                 // Only reviews for the current cycle (legacy reviews without a
                 // cycle field are kept).
                 const currentCycleReviews = reviews.filter(
@@ -203,8 +233,8 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
 
                 setLoading(false);
             } catch (err) {
-                console.error("Error fetching assigned applications:", err);
-                setError("Failed to load assigned applications");
+                console.error("Error loading applications for assigned reviews:", err);
+                setError("Failed to load the applications for your assigned reviews. Please refresh and try again.");
                 setLoading(false);
             }
         };
