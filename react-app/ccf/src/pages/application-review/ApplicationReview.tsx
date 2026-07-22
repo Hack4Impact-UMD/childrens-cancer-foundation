@@ -350,33 +350,43 @@ function ApplicationReview(): JSX.Element {
             </div>
           </div>
 
-          <div className="button-group">
+          <div className="review-actions">
             {isReviewLocked && (
-              <div style={{ color: '#dc3545', fontWeight: 'bold', marginBottom: '10px' }}>
+              <div className="review-locked-note">
                 Review submissions are now locked, please contact CCF if you need to submit a review
               </div>
             )}
-            <Button onClick={saveProgress} disabled={saveStatus === 'saving' || isReviewLocked}>
-              <div>{saveStatus === 'saving' ? 'Saving...' :
-                saveStatus === 'saved' ? 'Saved!' :
-                  saveStatus === 'error' ? 'Error Saving' : 'Save Progress'}</div>
-            </Button>
-            <Button 
-              onClick={submitReviewHandler} 
-              disabled={
-                saveStatus === 'saving' || 
-                isReviewLocked || 
-                !overall || 
-                !feedback.significance.trim() ||
-                !feedback.approach.trim() ||
-                !feedback.feasibility.trim() ||
-                !feedback.investigator.trim() ||
-                !feedback.summary.trim()
-              } 
-              height="40px"
-            >
+            <div className="review-actions-buttons">
+              <Button
+                className={`review-save${saveStatus === 'saved' ? ' is-saved' : saveStatus === 'error' ? ' is-error' : ''}`}
+                onClick={saveProgress}
+                disabled={saveStatus === 'saving' || isReviewLocked}
+                borderRadius="8px"
+                fontWeight={600}
+              >
+                {saveStatus === 'saving' ? 'Saving…' :
+                  saveStatus === 'saved' ? 'Saved!' :
+                    saveStatus === 'error' ? 'Error Saving' : 'Save Progress'}
+              </Button>
+              <Button
+                className="review-submit"
+                onClick={submitReviewHandler}
+                disabled={
+                  saveStatus === 'saving' ||
+                  isReviewLocked ||
+                  !overall ||
+                  !feedback.significance.trim() ||
+                  !feedback.approach.trim() ||
+                  !feedback.feasibility.trim() ||
+                  !feedback.investigator.trim() ||
+                  !feedback.summary.trim()
+                }
+                borderRadius="8px"
+                fontWeight={600}
+              >
                 Submit
-            </Button>
+              </Button>
+            </div>
             {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}
           </div>
       </div>

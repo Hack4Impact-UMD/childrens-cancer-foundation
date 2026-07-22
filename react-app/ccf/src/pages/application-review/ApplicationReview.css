@@ -114,14 +114,88 @@
     background-color: #d9d9d980;
   }
   
-  .button-group {
+  /* Reviewer action bar (Save Progress / Submit) */
+  .review-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .review-locked-note {
+    color: #b02a37;
+    font-weight: 700;
+    font-size: 0.95rem;
+    background-color: #fdecee;
+    border: 1px solid #f5c2c7;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .review-actions-buttons {
     display: flex;
     justify-content: flex-end;
-    gap: 15px;
-    margin: 20px;
-    padding: 0 30px;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
   }
-  
+
+  /* Consistent sizing for both action buttons (overrides .custom-button base) */
+  .review-actions .custom-button {
+    height: 44px;
+    min-width: 150px;
+    padding: 0 22px;
+    font-size: 16px;
+    gap: 8px;
+  }
+
+  /* Primary action: Submit */
+  .review-actions .custom-button.review-submit {
+    background-color: #003e83;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 62, 131, 0.25);
+  }
+  .review-actions .custom-button.review-submit:hover:not(:disabled) {
+    background-color: #002d5f;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 62, 131, 0.3);
+  }
+  .review-actions .custom-button.review-submit:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 62, 131, 0.25);
+  }
+
+  /* Secondary action: Save Progress (outlined) */
+  .review-actions .custom-button.review-save {
+    background-color: #fff;
+    color: #003e83;
+    border: 1.5px solid #003e83;
+  }
+  .review-actions .custom-button.review-save:hover:not(:disabled) {
+    background-color: #e8f0fb;
+  }
+  /* Transient feedback after a save attempt */
+  .review-actions .custom-button.review-save.is-saved {
+    color: #0f7b3f;
+    border-color: #0f7b3f;
+    background-color: #e9f7ef;
+  }
+  .review-actions .custom-button.review-save.is-error {
+    color: #be123c;
+    border-color: #be123c;
+    background-color: #fdecee;
+  }
+
+  @media (max-width: 480px) {
+    .review-actions-buttons {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .review-actions .custom-button {
+      width: 100%;
+    }
+  }
+
   .save-button,
   .submit-button {
     padding: 10px 20px;
