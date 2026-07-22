@@ -195,7 +195,8 @@ export const getReviewsForApplicationAdmin = async (applicationId: string): Prom
 // Get reviews assigned to a specific reviewer across all applications.
 // One collection-group query over every `reviewers` subcollection, filtered by
 // reviewerId — replaces the old whole-collection scan + per-application query.
-// Requires a COLLECTION_GROUP index on reviewers.reviewerId (firestore.indexes.json).
+// Requires a COLLECTION_GROUP-scoped single-field index on reviewers.reviewerId
+// (configured via fieldOverrides in firestore.indexes.json).
 export const getReviewsForReviewer = async (reviewerId: string): Promise<Review[]> => {
     try {
         const reviewersGroup = collectionGroup(db, "reviewers");

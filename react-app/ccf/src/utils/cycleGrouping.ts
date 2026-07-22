@@ -12,7 +12,10 @@ export const compareCycleNamesDesc = (a: string, b: string): number =>
 export const groupApplicationsByCycle = <T extends Record<string, any>>(
   apps: T[]
 ): { [cycle: string]: T[] } => {
-  const grouped: { [cycle: string]: T[] } = {};
+  // Prototype-free accumulator: cycle names are admin-set free text, so a name
+  // like "__proto__" or "constructor" must be treated as an ordinary key rather
+  // than hitting Object.prototype (which would skip init and throw on .push).
+  const grouped: { [cycle: string]: T[] } = Object.create(null);
   for (const app of apps) {
     const cycle: string | undefined = app.applicationCycle;
     if (!cycle) continue;
