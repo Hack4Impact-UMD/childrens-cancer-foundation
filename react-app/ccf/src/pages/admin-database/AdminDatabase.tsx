@@ -16,11 +16,7 @@ import { getAllCycles } from "../../backend/application-cycle";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
 import { downloadPDFsByName } from "../../storage/storage";
-
-// Cycle names are free text ("2022", "New-Cycle3"), so a Number() sort is
-// undefined for non-numeric names. Numeric-aware descending string compare.
-const compareCycleNamesDesc = (a: string, b: string) =>
-  b.localeCompare(a, undefined, { numeric: true, sensitivity: "base" });
+import { compareCycleNamesDesc, groupApplicationsByCycle } from "../../utils/cycleGrouping";
 
 function AdminApplicationsDatabase(): JSX.Element {
   const [applicationsData, setApplicationsData] = useState<{
@@ -64,26 +60,15 @@ function AdminApplicationsDatabase(): JSX.Element {
         const apps = allApps.filter(
           (app) => (app as any).status !== "draft" && app.applicationCycle,
         );
-        // Group applications by year
-        const applications: { [year: string]: Application[] } = {};
+        // Group applications by cycle (shared with the reviewer database page).
+        const applications = groupApplicationsByCycle(apps) as {
+          [year: string]: Application[];
+        };
         const institutions = new Set<string>();
-        const years = new Set<string>();
-
-        apps.forEach((data) => {
-          const year = data.applicationCycle;
-
-          // Map Firestore data to Application interface
-          const application: Application = data as Application;
-          // Add to applications by year
-          if (!applications[year]) {
-            applications[year] = [];
-          }
-          applications[year].push(application);
-
-          // Add to unique sets
-          institutions.add(application.institution);
-          years.add(year);
+        apps.forEach((app) => {
+          if (app.institution) institutions.add(app.institution);
         });
+        const years = new Set<string>(Object.keys(applications));
 
         setApplicationsData(applications);
 

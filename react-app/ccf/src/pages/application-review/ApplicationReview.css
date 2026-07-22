@@ -33,7 +33,10 @@
   .score-dropdown {
     padding: 5px;
     font-size: 14px;
+    font-family: var(--ccf-font-family);
     width: 200px;
+    max-width: 100%;
+    box-sizing: border-box;
     margin-left: 20px;
     border-radius: 8px;
     border: 1px solid #ccc;
@@ -61,15 +64,17 @@
   }
   
   .feedback-section textarea {
-    width: calc(100% - 20px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     min-height: 90px;
     padding: 8px;
     font-size: 14px;
+    font-family: var(--ccf-font-family);
     border: 1px solid #ccc;
     resize: vertical;
     border-radius: 8px;
     background-color: #d9d9d980;
-    margin-left: 20px;
   }
   
   .internal-section {
@@ -96,15 +101,17 @@
   }
   
   .internal-section textarea {
-    width: calc(100% - 20px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     min-height: 80px;
     padding: 8px;
     font-size: 14px;
+    font-family: var(--ccf-font-family);
     border: 1px solid #ccc;
     resize: vertical;
     border-radius: 8px;
     background-color: #d9d9d980;
-    margin-left: 20px;
   }
   
   .button-group {

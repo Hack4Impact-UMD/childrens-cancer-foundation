@@ -16,6 +16,9 @@ export default interface Review {
     submittedDate?: Date;
     lastUpdated?: Date;
     cycle?: string;
+    // Visual-only flag: lets a reviewer hide a completed review from their
+    // dashboard behind a "Show archived" toggle. Does not affect admin views.
+    archived?: boolean;
 }
 
 export interface ReviewSummary {

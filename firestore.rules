@@ -106,5 +106,13 @@ service cloud.firestore {
           (isReviewer() && resource.data.reviewerId == request.auth.uid);
       }
     }
+
+    // Collection-group reads of `reviewers` (the reviewer dashboard queries every
+    // reviewers subcollection at once). The nested rule above does not authorize
+    // collection-group queries, so a recursive-wildcard read rule is required.
+    // Same gating as the nested read rule; writes stay governed by the nested rules.
+    match /{path=**}/reviewers/{reviewId} {
+      allow read: if isAdmin() || isReviewer();
+    }
   }
 }
