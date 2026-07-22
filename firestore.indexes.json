@@ -1,12 +1,4 @@
 {
-  "indexes": [
-    {
-      "collectionGroup": "reviewers",
-      "queryScope": "COLLECTION_GROUP",
-      "fields": [
-        { "fieldPath": "reviewerId", "order": "ASCENDING" }
-      ]
-    }
-  ],
+  "indexes": [],
   "fieldOverrides": []
 }
