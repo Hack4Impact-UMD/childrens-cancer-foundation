@@ -1,15 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import "./AllApplications.css";
 import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
-import { FaSearch, FaChevronRight } from "react-icons/fa";
+import { FaSearch, FaChevronRight, FaArrowUp, FaArrowDown } from "react-icons/fa";
 import blueDocument from "../../assets/blueDocumentIcon.png";
 import yellowDocument from "../../assets/yellowDocumentIcon.png";
 import { getFilteredApplications } from "../../backend/application-filters";
-import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from "../../backend/application-cycle";
+import { getAllCycles } from "../../backend/application-cycle";
 import { ApplicationDetails, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
+import { compareCycleNamesDesc, groupApplicationsByCycle } from "../../utils/cycleGrouping";
 
 type ReviewerApplication = (ResearchApplication | NonResearchApplication) & ApplicationDetails;
 
@@ -21,11 +22,15 @@ function formatGrantType(grantType: string): string {
 }
 
 function AllApplications(): JSX.Element {
-  const [applicationsData, setApplicationsData] = useState<ReviewerApplication[]>([]);
+  const [applicationsByCycle, setApplicationsByCycle] = useState<{
+    [cycle: string]: ReviewerApplication[];
+  }>({});
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
+  const [collapseState, setCollapseState] = useState<{ [cycle: string]: boolean }>({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [cycleName, setCycleName] = useState<string>("");
   const [openModal, setOpenModal] = useState<ReviewerApplication | null>(null);
   const [filters, setFilters] = useState({
+    applicationCycle: "",
     decision: "",
     grantType: "",
     institution: "",
@@ -33,37 +38,81 @@ function AllApplications(): JSX.Element {
   const sidebarItems = getSidebarbyRole("reviewer");
 
   useEffect(() => {
-    getCurrentCycle()
-      .then(async (cycle) => {
-        const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
-        setCycleName(updatedCycle.name);
-        const apps = await getFilteredApplications({ date: updatedCycle.name });
-        setApplicationsData(apps);
-      })
-      .catch((e) => {
+    const fetchApplications = async () => {
+      try {
+        // Fetch every submitted application across all cycles (matches the
+        // admin database), then group by cycle name.
+        const allApps = (await getFilteredApplications({})).filter(
+          (app) => (app as any).status !== "draft" && (app as any).applicationCycle,
+        ) as ReviewerApplication[];
+
+        const grouped = groupApplicationsByCycle(allApps);
+        setApplicationsByCycle(grouped);
+
+        const years = new Set<string>(Object.keys(grouped));
+
+        // The filter dropdown should list every cycle, not just cycles that
+        // already have submitted applications (matches the admin database).
+        try {
+          const cycles = await getAllCycles();
+          cycles.forEach((cycle) => {
+            if (cycle.name) years.add(cycle.name);
+          });
+        } catch (e) {
+          console.error("Error fetching cycles for filter:", e);
+        }
+        setAvailableYears(Array.from(years).sort(compareCycleNamesDesc));
+
+        // Start every cycle expanded.
+        const initialCollapse: { [cycle: string]: boolean } = {};
+        Object.keys(grouped).forEach((cycle) => {
+          initialCollapse[cycle] = false;
+        });
+        setCollapseState(initialCollapse);
+      } catch (e) {
         console.log(e);
-      });
+      }
+    };
+
+    fetchApplications();
   }, []);
 
   const availableInstitutions = useMemo(() => {
     const set = new Set<string>();
-    applicationsData.forEach((app) => {
-      if (app.institution) set.add(app.institution);
+    Object.values(applicationsByCycle).forEach((apps) => {
+      apps.forEach((app) => {
+        if (app.institution) set.add(app.institution);
+      });
     });
     return Array.from(set).sort();
-  }, [applicationsData]);
+  }, [applicationsByCycle]);
 
-  const filteredApplications = useMemo(() => {
+  const filteredByCycle = useMemo(() => {
     const term = searchTerm.toLowerCase();
-    return applicationsData.filter(
-      (app) =>
-        app.title &&
-        app.title.toLowerCase().includes(term) &&
-        (!filters.grantType || app.grantType === filters.grantType) &&
-        (!filters.decision || app.decision === filters.decision) &&
-        (!filters.institution || app.institution === filters.institution),
+    return Object.keys(applicationsByCycle).reduce(
+      (acc, cycle) => {
+        if (filters.applicationCycle && cycle !== filters.applicationCycle) {
+          return acc;
+        }
+        const filtered = applicationsByCycle[cycle].filter(
+          (app) =>
+            (!term || (app.title && app.title.toLowerCase().includes(term))) &&
+            (!filters.grantType || app.grantType === filters.grantType) &&
+            (!filters.decision || app.decision === filters.decision) &&
+            (!filters.institution || app.institution === filters.institution),
+        );
+        if (filtered.length) {
+          acc[cycle] = filtered;
+        }
+        return acc;
+      },
+      {} as { [cycle: string]: ReviewerApplication[] },
     );
-  }, [applicationsData, searchTerm, filters]);
+  }, [applicationsByCycle, searchTerm, filters]);
+
+  const toggleCycle = (cycle: string) => {
+    setCollapseState((prev) => ({ ...prev, [cycle]: !prev[cycle] }));
+  };
 
   return (
     <RoleDashboardShell
@@ -87,6 +136,21 @@ function AllApplications(): JSX.Element {
           </div>
           <div className="ccf-toolbar-row">
             <div className="ccf-toolbar-filters">
+              <select
+                value={filters.applicationCycle}
+                onChange={(e) =>
+                  setFilters({ ...filters, applicationCycle: e.target.value })
+                }
+                aria-label="Filter by application cycle"
+              >
+                <option value="">Application Cycle</option>
+                {availableYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+
               <select
                 value={filters.decision}
                 onChange={(e) =>
@@ -131,58 +195,70 @@ function AllApplications(): JSX.Element {
           </div>
         </div>
 
-        {filteredApplications.length === 0 ? (
+        {Object.keys(filteredByCycle).length === 0 ? (
           <div className="empty-state">No applications matching filters</div>
         ) : (
-          <div className="dashboard-section">
-            <div className="section-header">
-              <div className="header-content">
-                <img
-                  src={blueDocument}
-                  alt="Application Icon"
-                  className="section-icon"
-                />
-                <h2>{cycleName || "Applications"}</h2>
-              </div>
-            </div>
-
-            <div className="applications-container">
-              {filteredApplications.map((coverSheet, index) => (
+          Object.keys(filteredByCycle)
+            .sort(compareCycleNamesDesc)
+            .map((cycle) => (
+              <div key={cycle} className="dashboard-section">
                 <div
-                  key={coverSheet.applicationId ?? index}
-                  className="single-application-box clickable"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setOpenModal(coverSheet)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpenModal(coverSheet); } }}
+                  className="section-header"
+                  onClick={() => toggleCycle(cycle)}
                 >
-                  <div className="application-summary-row">
-                    <div className="application-header">
-                      <div className="application-info">
-                        <img
-                          src={yellowDocument}
-                          alt="Document Icon"
-                          className="section-icon"
-                        />
-                        <div className="application-info-text">
-                          <p className="application-title">{coverSheet.title}</p>
-                          <p className="subtext">
-                            {formatGrantType(coverSheet.grantType)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <FaChevronRight className="application-open-icon" aria-hidden="true" />
+                  <div className="header-content">
+                    <img
+                      src={blueDocument}
+                      alt="Application Icon"
+                      className="section-icon"
+                    />
+                    <h2>{cycle}</h2>
                   </div>
-                  <CoverPageModal
-                    onClose={() => setOpenModal(null)}
-                    isOpen={coverSheet === openModal}
-                    application={coverSheet}
-                  />
+                  <button className="expand-collapse-btn" aria-label="Toggle cycle">
+                    {collapseState[cycle] ? <FaArrowDown /> : <FaArrowUp />}
+                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
+
+                {!collapseState[cycle] && (
+                  <div className="applications-container">
+                    {filteredByCycle[cycle].map((coverSheet, index) => (
+                      <div
+                        key={coverSheet.applicationId ?? index}
+                        className="single-application-box clickable"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setOpenModal(coverSheet)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpenModal(coverSheet); } }}
+                      >
+                        <div className="application-summary-row">
+                          <div className="application-header">
+                            <div className="application-info">
+                              <img
+                                src={yellowDocument}
+                                alt="Document Icon"
+                                className="section-icon"
+                              />
+                              <div className="application-info-text">
+                                <p className="application-title">{coverSheet.title}</p>
+                                <p className="subtext">
+                                  {formatGrantType(coverSheet.grantType)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <FaChevronRight className="application-open-icon" aria-hidden="true" />
+                        </div>
+                        <CoverPageModal
+                          onClose={() => setOpenModal(null)}
+                          isOpen={coverSheet === openModal}
+                          application={coverSheet}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
         )}
       </div>
     </RoleDashboardShell>

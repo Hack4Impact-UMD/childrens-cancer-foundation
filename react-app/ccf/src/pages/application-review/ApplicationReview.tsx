@@ -70,7 +70,8 @@ function ApplicationReview(): JSX.Element {
           return;
         }
 
-        setIsReviewLocked(cycle.stage === "Deliberations");
+        // Locked in every stage except the open review period ("Review").
+        setIsReviewLocked(cycle.stage !== "Review");
       } catch (error) {
         console.error("Error refetching cycle:", error);
       }
@@ -215,9 +216,11 @@ function ApplicationReview(): JSX.Element {
 
   if (loading) {
     return (
-      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
-        <div className="applications-container">
-          <p>Loading application data...</p>
+      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
+        <div className="dashboard-sections-content">
+          <div className="arr-review-card">
+            <p>Loading application data...</p>
+          </div>
         </div>
       </RoleDashboardShell>
     );
@@ -225,32 +228,35 @@ function ApplicationReview(): JSX.Element {
 
   if (error) {
     return (
-      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
-        <div className="applications-container">
-          <p className="error-message">{error}</p>
-          <button
-            className="save-button"
-            onClick={() => navigate("/reviewer/dashboard")}
-          >
-            Return to Dashboard
-          </button>
+      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
+        <div className="dashboard-sections-content">
+          <div className="arr-review-card">
+            <p className="error-message">{error}</p>
+            <button
+              className="save-button"
+              onClick={() => navigate("/reviewer/dashboard")}
+            >
+              Return to Dashboard
+            </button>
+          </div>
         </div>
       </RoleDashboardShell>
     );
   }
 
   return (
-    <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
-          <div className="applications-container">
+    <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
+      <div className="dashboard-sections-content">
+          <div className="arr-review-card">
             {application && (
-              <div>
-                <h2>Title: {application.title}</h2>
+              <div className="arr-app-meta">
+                <h2>{application.title}</h2>
                 <p>Applicant: {application.grantType === "nonresearch" ? (application as NonResearchApplication).requestor : (application as ResearchApplication).principalInvestigator}</p>
                 <p>Type: {application.grantType}</p>
               </div>
             )}
 
-            <p className="view-app-link" onClick={() => setModalOpen(true)}>VIEW APPLICATION</p>
+            <button className="arr-view-btn" onClick={() => setModalOpen(true)}>View Application</button>
             <div className="score-section">
               <p className="score-label">
                 Overall score: (1 <em>exceptional</em> - 5{" "}
@@ -347,7 +353,7 @@ function ApplicationReview(): JSX.Element {
           <div className="button-group">
             {isReviewLocked && (
               <div style={{ color: '#dc3545', fontWeight: 'bold', marginBottom: '10px' }}>
-                Reviews are locked - the cycle is now in the "Reviews Closed" stage.
+                Review submissions are now locked, please contact CCF if you need to submit a review
               </div>
             )}
             <Button onClick={saveProgress} disabled={saveStatus === 'saving' || isReviewLocked}>
@@ -373,6 +379,7 @@ function ApplicationReview(): JSX.Element {
             </Button>
             {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}
           </div>
+      </div>
     </RoleDashboardShell>
   );
 }
