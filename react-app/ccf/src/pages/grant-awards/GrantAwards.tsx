@@ -836,7 +836,10 @@ function GrantAwards(): JSX.Element {
                             >
                               <input
                                 type="number"
-                                step="0.1"
+                                // Averaging two 0.1-increment reviewer scores can
+                                // land on a half step (e.g. 1.15), so the spinner
+                                // steps by 0.05 rather than 0.1.
+                                step="0.05"
                                 value={
                                   editingScores[app.id] !== undefined
                                     ? editingScores[app.id]
