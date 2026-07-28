@@ -1,185 +1,279 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import "./ResultsPage.css";
-import Sidebar from "../../components/sidebar/Sidebar";
-import { getSidebarbyRole, getApplicantSidebarItems, SideBarTypes } from "../../types/sidebar-types";
-import { ReviewSummary } from "../../types/review-types"; 
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../..";
+import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
+import {
+  getSidebarbyRole,
+  getApplicantSidebarItems,
+  SideBarTypes,
+} from "../../types/sidebar-types";
 import { getReviewsForApplication } from "../../services/review-service";
-import { useNavigate } from "react-router-dom";
-import { getDecisionStatus } from "../../utils/decision-status";
+import { getDecisionData } from "../../services/decision-data-service";
+import { getCurrentCycle } from "../../backend/application-cycle";
+import { ReviewSummary } from "../../types/review-types";
+import { Decision } from "../../types/decision-types";
+import { Application } from "../../types/application-types";
+import { getDecisionStatus, DecisionStatus } from "../../utils/decision-status";
+import { firstLetterCap } from "../../utils/stringfuncs";
+import "./ResultsPage.css";
+
+// Criteria shown to the applicant, in the same order as the reviewer form.
+// Internal reviewer notes are deliberately absent — getApplicationReviews
+// strips them server-side, so they can never reach this page.
+const FEEDBACK_CRITERIA = [
+  { key: "significance", label: "Significance" },
+  { key: "approach", label: "Approach" },
+  { key: "feasibility", label: "Feasibility" },
+  { key: "investigator", label: "Investigator(s)" },
+  { key: "summary", label: "Summary" },
+] as const;
+
+const LETTERS: Record<DecisionStatus, { heading: string; body: string[] }> = {
+  accepted: {
+    heading: "Congratulations!",
+    body: [
+      "We are delighted to inform you that your application has been selected for funding. Your proposal stood out for its innovation, potential impact, and the clarity of your research goals. We are honored to support your work and look forward to the advancements your project promises to bring.",
+      "You and your grant administrator will receive further communication regarding the agreement and disbursement of funds via email from our office.",
+      "This grant represents our confidence in your vision and dedication. Please be in touch with any questions as you move forward with your project.",
+    ],
+  },
+  rejected: {
+    heading: "Thank you for your application",
+    body: [
+      "Thank you for submitting an application for CCF funding. After careful review by an independent committee, we regret to inform you that your proposal was not selected for funding this cycle. We received an extraordinary number of applications, making the selection process highly competitive, and while we were impressed by the vision and potential impact of your project, we were unable to fund all deserving proposals.",
+      "Please know that this decision is not wholly a reflection on the quality of your work. We encourage you to apply again in the future, as each cycle brings new opportunities and priorities.",
+      "We wish you all the best.",
+    ],
+  },
+  pending: {
+    heading: "Under review",
+    body: [
+      "Your application is still under review and a decision has not been finalized yet. Please check back later.",
+    ],
+  },
+};
+
+const formatCurrency = (amount: number): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 
 function ResultsPage(): JSX.Element {
-    const [sidebarItems, setSidebarItems] = useState<SideBarTypes[]>(getSidebarbyRole('applicant')); //to get applicaant info in sidebar
-    const [reviewsSummary, setReviewsSummary] = useState<ReviewSummary | null>(null); //for review summary
+  const [sidebarItems, setSidebarItems] = useState<SideBarTypes[]>(
+    getSidebarbyRole("applicant"),
+  );
+  const location = useLocation();
+  const navigate = useNavigate();
 
-     useEffect(() => {
-            // to get decision tab in the sidebar as well - copied from Applicant Decisions page
-            getApplicantSidebarItems().then((items) => {
-                setSidebarItems(items);
-            }).catch((e) => {
-                console.error('Error loading sidebar items:', e);
-            });
-    })
+  // Prefer the id in the URL so the page survives a refresh or a shared link;
+  // fall back to the decision handed over in router state by the decision box.
+  const searchParams = new URLSearchParams(location.search);
+  const applicationId =
+    searchParams.get("id") ?? location.state?.decision?.applicationId ?? null;
 
-    //get decision info
-    const location = useLocation();
-    const decision = location.state.decision;
-    const applicationId = decision?.applicationId;
-    const status = decision ? getDecisionStatus(decision) : 'pending';
+  const [application, setApplication] = useState<Application | null>(null);
+  const [decision, setDecision] = useState<Decision | null>(null);
+  const [reviews, setReviews] = useState<ReviewSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-    if (!applicationId) return;
+  useEffect(() => {
+    getApplicantSidebarItems()
+      .then(setSidebarItems)
+      .catch((e) => console.error("Error loading sidebar items:", e));
+  }, []);
 
-    const fetchReviews = async () => {
+  useEffect(() => {
+    if (!applicationId) {
+      setError("No application selected. Please open your results from the dashboard.");
+      setLoading(false);
+      return;
+    }
+
+    let isActive = true;
+
+    const fetchResults = async () => {
       try {
-        const summary = await getReviewsForApplication(applicationId);
-        setReviewsSummary(summary);
-      } catch (error) {
-        console.error("Error fetching reviews:", error);
+        setLoading(true);
+
+        // Results follow the same gate as the decisions list — nothing is shown
+        // before an admin moves the cycle into Release Decisions.
+        const cycle = await getCurrentCycle();
+        if (!isActive) return;
+
+        if (cycle.stage !== "Release Decisions") {
+          setError("Results are not yet available. Please check back once decisions have been released.");
+          setLoading(false);
+          return;
+        }
+
+        const applicationDoc = await getDoc(doc(db, "applications", applicationId));
+        if (!isActive) return;
+
+        if (!applicationDoc.exists()) {
+          setError("Application not found.");
+          setLoading(false);
+          return;
+        }
+        setApplication(applicationDoc.data() as Application);
+
+        // Reviews come from a callable that verifies ownership; a failure there
+        // should not hide the decision letter, so it is handled separately.
+        const decisionData = await getDecisionData(applicationId);
+        if (!isActive) return;
+        setDecision(decisionData);
+
+        try {
+          const summary = await getReviewsForApplication(applicationId);
+          if (isActive) setReviews(summary);
+        } catch (reviewError) {
+          console.error("Error fetching reviews:", reviewError);
+        }
+
+        if (isActive) setLoading(false);
+      } catch (err) {
+        console.error("Error loading results:", err);
+        if (isActive) {
+          setError("Failed to load your results. Please try again.");
+          setLoading(false);
+        }
       }
     };
 
-    fetchReviews();
-    }, [applicationId]);
+    fetchResults();
 
-    const navigate = useNavigate();
-    
-    const goDashboard = () => {
-        navigate("/applicant/dashboard");
+    return () => {
+      isActive = false;
     };
+  }, [applicationId]);
 
-    return(
-        <div>
-            <Sidebar links={sidebarItems} />
-            <div className="main-container">
-                <h1 className="global-header">Grant Results</h1>
-                <div className="form-container">
-                    <div>
-                    {status === 'accepted' ? (
-                        <div>
-                        <h1 className="global-header">Congratulations!</h1>
-                        <div>
-                            <div className="letter-content">
-                                <p>We are delighted to inform you that your application has been selected for funding! Your proposal stood out for its innovation, potential impact, and clarity of your research goals. We are honored to support your work and look forward to the significant advancements your project promises to bring.</p>
-                                <p>
-                                You and your grant administrator will receive further communication regarding the agreement and funds disbursement via email from our office.
-                                </p>
-                                <p>
-                                This grant represents our confidence in your vision and dedication, and we are excited to see how this support will empower your research journey. Please be in touch with questions as you move forward with your project.
-                                </p>
-                                <p>
-                                Congratulations on this well-deserved award!
-                                </p>
-                                <p>Warm regards, <br /> The Children’s Cancer Foundation, Inc.</p>
-                            </div>
-                        </div>
-                        <h2 className="decision-labels">Funding Amount:</h2>
-                        <p className="reward-money">Reward Money Amount: <b>${decision.fundingAmount}</b></p>
-                        </div>
-                    ) : status === 'rejected' ? (
-                        <div>
-                        <h1 className="global-header">Thank you.</h1>
-                        <div>
-                            <div className="letter-content">
-                                <p>
-                                Thank you for submitting an application for CCF funding. After careful review by an independent committee, we regret to inform you that your proposal was not selected for funding this cycle. We received an extraordinary number of applications, making the selection process highly competitive, and while we were deeply impressed by the vision and potential impact of your project, we were unable to fund all deserving proposals.
-                                </p>
-                                <p>
-                                Please know that this decision is not wholly a reflection on the quality of your work. We encourage you to apply again in the future, as each cycle brings new opportunities and priorities.
-                                </p>
-                                <p>
-                                We wish you all the best.
-                                </p>
-                                <p>Warm regards, <br /> The Children’s Cancer Foundation, Inc.</p>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div>
-                        <h1 className="global-header">Under Review</h1>
-                        <div>
-                            <div className="letter-content">
-                                <p>
-                                Your application is still under review — a decision has not been finalized yet. Please check back later.
-                                </p>
-                            </div>
-                        </div>
-                        </div>
-                    )}
-                    <h2 className="decision-labels">Feedback from Reviewers:</h2>
-                    <div className="reviews-container">
-                        <div className="review-section">
-                            <h3 className="review-text"><b>SIGNIFICANCE:</b> How significant is the childhood cancer problem addressed by this proposal? How will the proposed study add to or enhance the currently available methods to prevent, treat or manage childhood cancer?</h3>
-                            <div className="reviews">
-                                <h2>Reviewer 1:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.primaryReview?.feedback.significance ?? "No review available"}</p>
-                                </div>
-                                <h2>Reviewer 2:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.secondaryReview?.feedback.significance ?? "No review available"}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="review-section">
-                            <h3 className="review-text"><b>APPROACH:</b> Is the study hypothesis-driven? Is this a novel hypothesis or research question?  How well do existing data support the current hypothesis? Are the aims and objectives appropriate for the hypothesis being tested? Are the methodology and evaluation component adequate to provide a convincing test of the hypothesis?  Have the applicants adequately accounted for potential confounders?  Are there any methodological weaknesses? If there are methodological weaknesses, how may they be corrected?  Is the statistical analysis adequate? </h3>
-                            <div className="reviews">
-                                <h2>Reviewer 1:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.primaryReview?.feedback.approach ?? "No review available"}</p>
-                                </div>
-                                <h2>Reviewer 2:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.secondaryReview?.feedback.approach ?? "No review available"}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="review-section">
-                            <h3 className="review-text"><b>FEASIBILITY:</b> Comment on how well the research team is to carry out the study.  Is it feasible to carry out the project in the proposed location(s)?  Can the project be accomplished within the proposed time period?</h3>
-                            <div className="reviews">
-                                <h2>Reviewer 1:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.primaryReview?.feedback.feasibility ?? "No review available"}</p>
-                                </div>
-                                <h2>Reviewer 2:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.secondaryReview?.feedback.feasibility ?? "No review available"}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="review-section">
-                            <h3 className="review-text"><b>INVESTIGATOR:</b> What has the productivity of the PI been over the past 3 years? If successful, does the track record of the PI indicate that future peer-reviewed funding will allow the project to continue? Are there adequate collaborations for work outside the PI’s expertise?</h3>
-                            <div className="reviews">
-                                <h2>Reviewer 1:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.primaryReview?.feedback.investigator ?? "No review available"}</p>
-                                </div>
-                                <h2>Reviewer 2:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.secondaryReview?.feedback.investigator ?? "No review available"}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="review-section">
-                            <h3 className="review-text"><b>SUMMARY:</b> Please provide any additional comments that would be helpful to the applicant, such as readability, grantspersonship, etc., especially if the application does not score well.</h3>
-                            <div className="reviews">
-                                <h2>Reviewer 1:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.primaryReview?.feedback.summary ?? "No review available"}</p>
-                                </div>
-                                <h2>Reviewer 2:</h2>
-                                <div className="review-box">
-                                    <p>{reviewsSummary?.secondaryReview?.feedback.summary ?? "No review available"}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                <button onClick={goDashboard} className="button">Return to Dashboard</button>
-            </div>
-        </div>  
+  const renderCard = (children: JSX.Element) => (
+    <RoleDashboardShell
+      sidebarItems={sidebarItems}
+      title="Grant Results"
+      stackClassName="res-results-page"
+    >
+      <div className="dashboard-sections-content">
+        <div className="res-card">{children}</div>
+      </div>
+    </RoleDashboardShell>
+  );
+
+  if (loading) {
+    return renderCard(<p className="res-muted">Loading your results…</p>);
+  }
+
+  if (error) {
+    return renderCard(
+      <>
+        <p className="res-error">{error}</p>
+        <button
+          className="res-btn res-btn-primary"
+          onClick={() => navigate("/applicant/dashboard")}
+        >
+          Return to Dashboard
+        </button>
+      </>,
     );
-};
+  }
+
+  const status: DecisionStatus = decision ? getDecisionStatus(decision) : "pending";
+  const letter = LETTERS[status];
+  const showFunding =
+    status === "accepted" && !!decision?.fundingAmount && decision.fundingAmount > 0;
+  const hasAnyReview = !!(reviews?.primaryReview || reviews?.secondaryReview);
+
+  return (
+    <RoleDashboardShell
+      sidebarItems={sidebarItems}
+      title="Grant Results"
+      stackClassName="res-results-page"
+    >
+      <div className="dashboard-sections-content">
+        <button className="res-back-btn" onClick={() => navigate("/applicant/dashboard")}>
+          ← Back to Dashboard
+        </button>
+
+        {/* Decision */}
+        <div className="res-card">
+          <div className="res-card-head">
+            <div className="res-app-meta">
+              <h2>{application?.title || "Your application"}</h2>
+              {application?.grantType && (
+                <p>{firstLetterCap(application.grantType)} grant</p>
+              )}
+            </div>
+            <span className={`res-pill res-pill--${status}`}>
+              {firstLetterCap(status)}
+            </span>
+          </div>
+
+          <h3 className="res-letter-heading">{letter.heading}</h3>
+          <div className="res-letter">
+            {letter.body.map((paragraph, i) => (
+              <p key={i}>{paragraph}</p>
+            ))}
+            <p className="res-signoff">
+              Warm regards,
+              <br />
+              The Children's Cancer Foundation, Inc.
+            </p>
+          </div>
+
+          {showFunding && (
+            <div className="res-funding">
+              <span className="res-label">Funding awarded</span>
+              <span className="res-amount">
+                {formatCurrency(decision?.fundingAmount || 0)}
+              </span>
+            </div>
+          )}
+
+          {decision?.comments && (
+            <div className="res-comments">
+              <span className="res-label">Comments from the committee</span>
+              <p>{decision.comments}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Reviewer feedback */}
+        <div className="res-card">
+          <h3 className="res-section-title">Reviewer Feedback</h3>
+
+          {hasAnyReview ? (
+            FEEDBACK_CRITERIA.map(({ key, label }) => (
+              <div key={key} className="res-criterion">
+                <h4 className="res-criterion-label">{label}</h4>
+                <div className="res-reviewer-grid">
+                  <div className="res-reviewer">
+                    <span className="res-label">Reviewer 1</span>
+                    <p className="res-feedback">
+                      {reviews?.primaryReview?.feedback?.[key] || "No feedback provided."}
+                    </p>
+                  </div>
+                  <div className="res-reviewer">
+                    <span className="res-label">Reviewer 2</span>
+                    <p className="res-feedback">
+                      {reviews?.secondaryReview?.feedback?.[key] || "No feedback provided."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="res-empty">
+              Reviewer feedback for this application is not available.
+            </p>
+          )}
+        </div>
+      </div>
+    </RoleDashboardShell>
+  );
+}
 
 export default ResultsPage;

@@ -94,6 +94,28 @@
     background-color: rgba(217, 217, 217, 0.7);
 }
 
+/* Sits on the navy application row, so it is outlined in white rather than
+   using the blue primary button treatment used elsewhere. */
+.ApplicantDashboard-results-btn {
+    margin-left: auto;
+    padding: 8px 16px;
+    background-color: transparent;
+    color: #fff;
+    border: 1.5px solid #fff;
+    border-radius: 8px;
+    font-family: var(--ccf-font-family);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.ApplicantDashboard-results-btn:hover {
+    background-color: #fff;
+    color: #003E83;
+}
+
 .ApplicantDashboard .application-status-icon {
     margin-left: 10px;
     color: white;
