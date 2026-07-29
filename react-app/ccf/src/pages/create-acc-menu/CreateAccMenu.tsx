@@ -4,8 +4,8 @@ import "../login/login.css";
 import "./CreateAccMenu.css"
 import Button from "../../components/buttons/Button";
 import { useState } from "react";
-import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
-import toretsky from "../../assets/toretskywithpatient 1.png";
+import landingImageOne from "../../assets/landing page 1.jpg";
+import landingImageTwo from "../../assets/landing page 2.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
 import { useEffect } from "react";
 
@@ -50,8 +50,8 @@ function CreateAccMenu() {
         </div>
         {isWideScreen && (
             <div className="login-imageContainer">
-              <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="login-image" />
-              <img src={toretsky} alt="Researcher with patient" className="login-image" />
+              <img src={landingImageOne} alt="Dr Hanley in the lab" className="login-image" />
+              <img src={landingImageTwo} alt="Researcher with patient" className="login-image" />
               <div className="login-yellowOverlay">
                 <img src={yellowOverlay} alt="" aria-hidden="true" className="login-yellow" />
               </div>

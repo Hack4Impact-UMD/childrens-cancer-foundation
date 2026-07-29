@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { resetPassword } from "../../services/auth_login";
 import "./ForgotPassword.css";
-import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
-import toretsky from "../../assets/toretskywithpatient 1.png";
+import landingImageOne from "../../assets/landing page 1.jpg";
+import landingImageTwo from "../../assets/landing page 2.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
 import Button from "../../components/buttons/Button";
 import { TextField } from '@mui/material';
@@ -117,8 +117,8 @@ function ForgotPassword() {
 
         {isWideScreen && (
           <div className="forgot-imageContainer">
-            <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="forgot-image" />
-            <img src={toretsky} alt="Researcher with patient" className="forgot-image" />
+            <img src={landingImageOne} alt="Dr Hanley in the lab" className="forgot-image" />
+            <img src={landingImageTwo} alt="Researcher with patient" className="forgot-image" />
             <div className="forgot-yellowOverlay">
               <img src={yellowOverlay} alt="" aria-hidden="true" className="forgot-yellow" />
             </div>

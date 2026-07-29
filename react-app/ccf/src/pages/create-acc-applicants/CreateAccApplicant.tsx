@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccApplicant.css";
 import logo from '../../assets/ccf-logo.png';
-import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
-import toretsky from "../../assets/toretskywithpatient 1.png";
+import landingImageOne from "../../assets/landing page 1.jpg";
+import landingImageTwo from "../../assets/landing page 2.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
 import { useEffect, useState } from "react";
 import { addApplicantUser } from "../../users/usermanager";
@@ -299,8 +299,8 @@ function AccountPageApplicants(): JSX.Element {
           </div>
           <div className="login-imageContainer">
             <div className="createAccApplicant-stackedImages">
-              <img src={DrHanleyLabImage} aria-hidden="true" alt="Lab research" className="createAccApplicant-researchImage" />
-              <img src={toretsky} aria-hidden="true" alt="Doctor with patient" className="createAccApplicant-researchImage" />
+              <img src={landingImageOne} aria-hidden="true" alt="Lab research" className="createAccApplicant-researchImage" />
+              <img src={landingImageTwo} aria-hidden="true" alt="Doctor with patient" className="createAccApplicant-researchImage" />
             </div>
             <div className="createAccApplicant-yellowOverlay">
               <img src={yellowOverlay} alt="" aria-hidden="true" className="createAccApplicant-overlayImage" />
