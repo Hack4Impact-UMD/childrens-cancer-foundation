@@ -47,6 +47,13 @@ const PROTECTED_APP_FIELDS = [
   "lastUpdated", "applicantEmail", "archived", "editedAt",
 ];
 
+// Reviewer scores use the old NIH scale: 1.0 (best) to 5.0 (worst) in 0.1
+// increments. Averaging two of those lands on at most two decimals, but binary
+// floats make (1.1 + 1.2) / 2 come out as 1.1500000000000001 — round before
+// storing so the value admins read back is clean.
+// Mirrors react-app/ccf/src/utils/score.ts.
+const roundAverageScore = (score) => Math.round(score * 100) / 100;
+
 // Verifies a client-uploaded PDF object in Storage before it is linked to an
 // application: it must exist, be a real PDF (content type + magic bytes),
 // respect the size limit, and have been uploaded by the calling user.
@@ -756,7 +763,7 @@ exports.updateApplicationReviewStatus = onCall(async (request) => {
       // Both reviews completed - calculate average score
       const primaryScore = primaryReview.score || 0;
       const secondaryScore = secondaryReview.score || 0;
-      const averageScore = (primaryScore + secondaryScore) / 2;
+      const averageScore = roundAverageScore((primaryScore + secondaryScore) / 2);
 
       await applicationRef.update({
         reviewStatus: "completed",
@@ -857,7 +864,7 @@ exports.triggerApplicationStatusUpdate = onCall(async (request) => {
       // Both reviews completed - calculate average score
       const primaryScore = primaryReview.score || 0;
       const secondaryScore = secondaryReview.score || 0;
-      const averageScore = (primaryScore + secondaryScore) / 2;
+      const averageScore = roundAverageScore((primaryScore + secondaryScore) / 2);
 
       await applicationRef.update({
         reviewStatus: "completed",

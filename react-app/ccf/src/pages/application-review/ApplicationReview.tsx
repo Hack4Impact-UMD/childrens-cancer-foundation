@@ -24,6 +24,10 @@ import Button from "../../components/buttons/Button";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 
+// Old NIH scale: 1.0 (best) through 5.0 (worst) in 0.1 increments.
+// Built from tenths so the option values are free of float artifacts.
+const SCORE_OPTIONS = Array.from({ length: 41 }, (_, i) => ((10 + i) / 10).toFixed(1));
+
 function ApplicationReview(): JSX.Element {
   const sidebarItems = getSidebarbyRole("reviewer");
   const location = useLocation();
@@ -127,7 +131,9 @@ function ApplicationReview(): JSX.Element {
             internal: existingReview.feedback.internal || ""
           });
           if (existingReview.score) {
-            setOverall(existingReview.score.toString());
+            // Normalise to one decimal so scores saved under the old integer
+            // scale (e.g. 3) still match a dropdown option ("3.0").
+            setOverall(existingReview.score.toFixed(1));
           }
         } else {
           setError("No review assignment found for this application");
@@ -259,8 +265,10 @@ function ApplicationReview(): JSX.Element {
             <button className="arr-view-btn" onClick={() => setModalOpen(true)}>View Application</button>
             <div className="score-section">
               <p className="score-label">
-                Overall score: (1 <em>exceptional</em> - 5{" "}
-                <em>poor quality, unrepairable</em>)
+                Overall score: Please use the <strong>legacy NIH scoring scale</strong>,
+                where 1.0 indicates the highest merit and 5.0 the lowest. Scores may be
+                assigned in 0.1 increments — for example, 1.1 denotes an outstanding
+                application and 4.9 a very weak one.
               </p>
               <select
                 className="score-dropdown"
@@ -270,7 +278,7 @@ function ApplicationReview(): JSX.Element {
                 disabled={isReviewLocked}
               >
                 <option value="">Enter score.</option>
-                {[1, 2, 3, 4, 5].map((score) => (
+                {SCORE_OPTIONS.map((score) => (
                   <option key={score} value={score}>
                     {score}
                   </option>

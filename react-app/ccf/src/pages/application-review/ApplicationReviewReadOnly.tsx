@@ -9,6 +9,7 @@ import { getReviewsForApplicationAdmin } from "../../services/review-service";
 import { ReviewSummary } from "../../types/review-types";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
+import { formatAverageScore, formatScore, roundAverageScore } from "../../utils/score";
 
 const PencilIcon = () => (
     <svg
@@ -130,7 +131,7 @@ function ApplicationReviewReadOnly(): JSX.Element {
         }
     };
 
-    const getCurrentScore = (): string | number | null => {
+    const getCurrentScore = (): number | null => {
         if (activeReviewer === 'primary') {
             return reviewSummary?.primaryReview?.score || null;
         } else {
@@ -252,9 +253,10 @@ function ApplicationReviewReadOnly(): JSX.Element {
                     {currentScore && (
                         <div className="score-section" style={{ marginTop: '16px' }}>
                             <p className="score-label">
-                                Overall score: (1 <em>exceptional</em> – 5 <em>poor quality, unrepairable</em>)
+                                Overall score: <strong>legacy NIH scoring scale</strong> — 1.0 indicates
+                                the highest merit and 5.0 the lowest, in 0.1 increments.
                             </p>
-                            <div className="score-display">{currentScore}</div>
+                            <div className="score-display">{formatScore(currentScore)}</div>
                         </div>
                     )}
 
@@ -295,7 +297,7 @@ function ApplicationReviewReadOnly(): JSX.Element {
                         reviewSummary?.secondaryReview?.status === 'completed' && (
                             <div className="final-score">
                                 Final Score: <span className="score-display">
-                                    {((reviewSummary.primaryReview.score || 0) + (reviewSummary.secondaryReview.score || 0)) / 2}
+                                    {formatAverageScore(roundAverageScore(((reviewSummary.primaryReview.score || 0) + (reviewSummary.secondaryReview.score || 0)) / 2))}
                                 </span>
                                 <span className="red-text">(Average of both reviewer scores)</span>
                             </div>

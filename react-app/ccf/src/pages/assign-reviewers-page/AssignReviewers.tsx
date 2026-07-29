@@ -16,6 +16,7 @@ import {
 import { GrantApplication, Reviewer } from '../../types/application-types';
 import { getAllCycles } from '../../backend/application-cycle';
 import ApplicationCycle from '../../types/applicationCycle-types';
+import { formatAverageScore } from '../../utils/score';
 
 // Interface definitions
 interface ExtendedGrantApplication extends GrantApplication {
@@ -665,7 +666,7 @@ const AssignReviewersPage: React.FC = () => {
               {/* Show average score if both reviews are completed */}
               {app.status === 'completed' && app.averageScore && (
                 <div className="ar-average-score">
-                  Average Score: {app.averageScore.toFixed(1)}
+                  Average Score: {formatAverageScore(app.averageScore)}
                 </div>
               )}
 

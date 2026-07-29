@@ -466,6 +466,21 @@ function ApplicantUsersDashboard(): JSX.Element {
                                 <span className="archived-tag">Archived</span>
                               )}
                             </div>
+                            {/* Full results (letter, funding, reviewer feedback)
+                                are only reachable once decisions are released. */}
+                            {appCycle?.stage === "Release Decisions" && (
+                              <button
+                                type="button"
+                                className="ApplicantDashboard-results-btn"
+                                onClick={() =>
+                                  navigate(
+                                    `/applicant/results?id=${(application as any).id}`,
+                                  )
+                                }
+                              >
+                                View Results
+                              </button>
+                            )}
                             <div
                               className="ApplicantDashboard-application-status"
                               onClick={() => {
