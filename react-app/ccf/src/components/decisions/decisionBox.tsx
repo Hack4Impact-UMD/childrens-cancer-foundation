@@ -60,7 +60,8 @@ export const DecisionBox = ({
         </p>
       )}
 
-      {decision.comments && (
+      {/* Award comments are internal — only ever rendered in the admin view. */}
+      {inAdminView && decision.comments && (
         <div className="decision-comments">
           <span className="decision-label">Comments</span>
           <p>{decision.comments}</p>

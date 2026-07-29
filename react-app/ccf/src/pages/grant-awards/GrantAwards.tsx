@@ -86,9 +86,6 @@ function CommentModal({
           </button>
         </div>
         <div className="modal-body">
-          <p className="comment-note">
-            Note: Comments here will be shared with the applicant.
-          </p>
           <textarea
             className="comment-textarea"
             value={comment}
