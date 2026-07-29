@@ -429,6 +429,8 @@ function ApplicantUsersDashboard(): JSX.Element {
                               <div className="ApplicantDashboard-application-status">
                                 <p>In Progress</p>
                                 <FaArrowRight className="application-status-icon" />
+                              </div>
+                              <div className="ApplicantDashboard-application-actions">
                                 <button
                                   className="archive-btn"
                                   onClick={(e) => handleToggleArchive(e, application.id, application.archived === true, 'draft')}

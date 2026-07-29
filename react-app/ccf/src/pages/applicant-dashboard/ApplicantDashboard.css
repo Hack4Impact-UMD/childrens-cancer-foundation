@@ -472,6 +472,12 @@
   flex-shrink: 0;
 }
 
+/* Delete destroys a draft outright while Archive is reversible — keep the two
+   further apart than the default gap so they are not a mis-click away. */
+.ApplicantDashboard-application-actions .draft-delete-btn {
+  margin-left: 8px;
+}
+
 .edit-application-btn {
   background: #F0C567;
   color: #003E83;
