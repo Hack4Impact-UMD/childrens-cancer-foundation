@@ -47,6 +47,30 @@ const PROTECTED_APP_FIELDS = [
   "lastUpdated", "applicantEmail", "archived", "editedAt",
 ];
 
+// Every application field in the form model is a plain camelCase identifier.
+// Anything else is rejected rather than sanitized, because update() reads a
+// dotted top-level key as a nested field path: "decision.x" is not the
+// protected name "decision", so it survives the strip below and still rewrites
+// the protected field. Leading underscores are excluded so a payload cannot
+// carry "__proto__" into the copy either.
+const APP_FIELD_NAME = /^[A-Za-z][A-Za-z0-9_]*$/;
+
+// Copies a client-supplied application payload, rejecting field names Firestore
+// would read as anything but a single top-level field, then dropping the
+// server/review-managed fields.
+const sanitizeApplicationPayload = (application) => {
+  const sanitized = {...application};
+  for (const key of Object.keys(sanitized)) {
+    if (!APP_FIELD_NAME.test(key)) {
+      throw new functions.https.HttpsError("invalid-argument", `Invalid application field name: ${key}`);
+    }
+  }
+  for (const field of PROTECTED_APP_FIELDS) {
+    delete sanitized[field];
+  }
+  return sanitized;
+};
+
 // Reviewer scores use the old NIH scale: 1.0 (best) to 5.0 (worst) in 0.1
 // increments. Averaging two of those lands on at most two decimals, but binary
 // floats make (1.1 + 1.2) / 2 come out as 1.1500000000000001 — round before
@@ -284,10 +308,7 @@ exports.submitApplication = onCall(async (request) => {
     });
 
     // 9. Create application document
-    const sanitizedApplication = {...application};
-    for (const field of PROTECTED_APP_FIELDS) {
-      delete sanitizedApplication[field];
-    }
+    const sanitizedApplication = sanitizeApplicationPayload(application);
     const applicationDetails = {
       ...sanitizedApplication,
       status: "submitted",
@@ -425,10 +446,7 @@ exports.updateApplication = onCall(async (request) => {
 
     // 9. Update the application document in place. update() (not set) keeps
     // status/decision/creatorId/submitTime/file untouched unless written here.
-    const sanitizedApplication = {...application};
-    for (const field of PROTECTED_APP_FIELDS) {
-      delete sanitizedApplication[field];
-    }
+    const sanitizedApplication = sanitizeApplicationPayload(application);
     const updatePayload = {
       ...sanitizedApplication,
       editedAt: admin.firestore.Timestamp.now(),

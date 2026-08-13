@@ -8,9 +8,13 @@ import { useNavigate } from "react-router-dom";
 export const DecisionBox = ({
   decision,
   inAdminView,
+  comments,
 }: {
   decision: Decision;
   inAdminView?: boolean;
+  // Internal committee commentary, fetched separately from the admin-only
+  // /decision-comments collection. Applicant surfaces never have it to pass.
+  comments?: string;
 }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -61,10 +65,10 @@ export const DecisionBox = ({
       )}
 
       {/* Award comments are internal — only ever rendered in the admin view. */}
-      {inAdminView && decision.comments && (
+      {inAdminView && comments && (
         <div className="decision-comments">
           <span className="decision-label">Comments</span>
-          <p>{decision.comments}</p>
+          <p>{comments}</p>
         </div>
       )}
 

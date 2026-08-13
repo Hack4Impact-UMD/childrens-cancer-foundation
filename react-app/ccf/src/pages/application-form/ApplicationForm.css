@@ -46,6 +46,19 @@
     font-weight: 700;
 }
 
+/* Edit mode only: warns that changes are held in the form until "Save Changes",
+   so leaving the form loses them. */
+.edit-mode-hint {
+    width: min(1120px, 94%);
+    margin: 0 auto;
+    padding: 10px 14px;
+    border-left: 4px solid var(--color-red);
+    background-color: #fdf3f3;
+    color: #444;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
 .btn-container {
     display: flex;
     justify-content: space-between;

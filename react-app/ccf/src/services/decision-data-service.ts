@@ -8,7 +8,12 @@ import {
     serverTimestamp
 } from "firebase/firestore";
 import { db } from "../index";
-import {Decision} from "../types/decision-types"
+import {Decision, DecisionComments} from "../types/decision-types"
+
+// Applicants can read their own /decision-data doc, so nothing internal may be
+// stored on it. Internal award comments live in /decision-comments, which is
+// admin-only in firestore.rules and is read through the *Comments helpers below.
+const COMMENTS_COLLECTION = "decision-comments";
 
 // Create or update admin data for an application
 export const updateDecisionData = async (applicationId: string, adminData: Partial<Decision>): Promise<void> => {
@@ -64,12 +69,52 @@ export const getMultipleDecisionData = async (applicationIds: string[]): Promise
     }
 };
 
-// Update only comments for an application
+// Update the internal comments for an application (admin-only collection)
 export const updateDecisionComments = async (applicationId: string, comments: string): Promise<void> => {
     try {
-        await updateDecisionData(applicationId, { comments });
+        const commentsRef = doc(db, COMMENTS_COLLECTION, applicationId);
+        await setDoc(commentsRef, {
+            applicationId,
+            comments,
+            lastUpdated: serverTimestamp()
+        }, { merge: true });
     } catch (error) {
         console.error("Error updating admin comments:", error);
+        throw error;
+    }
+};
+
+// Get the internal comments for an application. Admin-only — calling this from
+// an applicant or reviewer surface is denied by the rules.
+export const getDecisionComments = async (applicationId: string): Promise<string> => {
+    try {
+        const commentsRef = doc(db, COMMENTS_COLLECTION, applicationId);
+        const commentsDoc = await getDoc(commentsRef);
+        return commentsDoc.exists() ? (commentsDoc.data() as DecisionComments).comments || "" : "";
+    } catch (error) {
+        console.error("Error getting admin comments:", error);
+        throw error;
+    }
+};
+
+// Get the internal comments for multiple applications, keyed by application id.
+export const getMultipleDecisionComments = async (applicationIds: string[]): Promise<{ [applicationId: string]: string }> => {
+    try {
+        const commentsMap: { [applicationId: string]: string } = {};
+
+        const commentsRef = collection(db, COMMENTS_COLLECTION);
+        const commentsSnapshot = await getDocs(commentsRef);
+
+        commentsSnapshot.forEach((doc) => {
+            const data = doc.data() as DecisionComments;
+            if (applicationIds.includes(data.applicationId) && data.comments) {
+                commentsMap[data.applicationId] = data.comments;
+            }
+        });
+
+        return commentsMap;
+    } catch (error) {
+        console.error("Error getting multiple admin comments:", error);
         throw error;
     }
 };

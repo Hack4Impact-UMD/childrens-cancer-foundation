@@ -348,6 +348,12 @@
     padding: 20px;
 }
 
+.comment-privacy-note {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: #4b5563;
+}
+
 .comment-textarea {
     width: 100%;
     padding: 10px;

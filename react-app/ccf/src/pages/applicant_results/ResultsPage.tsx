@@ -233,9 +233,10 @@ function ResultsPage(): JSX.Element {
             </div>
           )}
 
-          {/* decision.comments is deliberately not rendered — admin award
-              comments are internal. Reviewer feedback below is the only
-              written commentary applicants see. */}
+          {/* Admin award comments are internal and live in the admin-only
+              /decision-comments collection, so they never reach this page.
+              Reviewer feedback below is the only written commentary applicants
+              see. */}
         </div>
 
         {/* Reviewer feedback */}
