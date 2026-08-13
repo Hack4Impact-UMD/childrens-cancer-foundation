@@ -17,6 +17,7 @@ import {
   checkAndUpdateApplicationStatus,
 } from "../../services/review-service";
 import {
+  getMultipleDecisionComments,
   getMultipleDecisionData,
   updateDecisionComments,
   updateFundingDecision,
@@ -86,8 +87,9 @@ function CommentModal({
           </button>
         </div>
         <div className="modal-body">
-          <p className="comment-note">
-            Note: Comments here will be shared with the applicant.
+          <p className="comment-privacy-note">
+            Internal only — these comments are stored separately from the award
+            decision and are never visible to the applicant.
           </p>
           <textarea
             className="comment-textarea"
@@ -245,14 +247,19 @@ function GrantAwards(): JSX.Element {
         applicationsData.push(application);
       }
 
-      // Get admin data for all applications
-      const adminDataMap = await getMultipleDecisionData(applicationIds);
+      // Get admin data for all applications. Comments come from the separate
+      // admin-only collection — they are never stored on the applicant-readable
+      // decision doc.
+      const [adminDataMap, commentsMap] = await Promise.all([
+        getMultipleDecisionData(applicationIds),
+        getMultipleDecisionComments(applicationIds),
+      ]);
 
       // Merge admin data with application data
       const finalApplicationsData = applicationsData.map((app) => ({
         ...app,
         recommended: `$${adminDataMap[app.id]?.fundingAmount || "0"}`,
-        comments: adminDataMap[app.id]?.comments || "",
+        comments: commentsMap[app.id] || "",
         isAccepted: adminDataMap[app.id]?.isAccepted ?? false,
       }));
 
@@ -380,7 +387,8 @@ function GrantAwards(): JSX.Element {
 
       const decision = appToUpdate.decision;
 
-      // Update admin data (comments and funding decision) in separate collection
+      // Update the funding decision in the decision-data collection (comments
+      // are saved separately by handleCommentsChange)
       await updateFundingDecision(
         appId,
         recommendedAmount,
@@ -413,7 +421,7 @@ function GrantAwards(): JSX.Element {
 
   const handleCommentsChange = async (id: string, comments: string) => {
     try {
-      // Save comments to admin data collection
+      // Save comments to the admin-only decision-comments collection
       await updateDecisionComments(id, comments);
 
       // Update local state

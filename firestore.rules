@@ -29,7 +29,13 @@ service cloud.firestore {
         && resource.data.creatorId == request.auth.uid
         && resource.data.status == 'draft'
         && request.resource.data.status == 'draft'
-        && request.resource.data.creatorId == resource.data.creatorId);
+        && request.resource.data.creatorId == resource.data.creatorId)
+        // Visual archive flag: applicants may toggle ONLY `archived` (bool) on
+        // their own docs, draft or submitted. Nothing else may change.
+        || (isApplicant()
+        && resource.data.creatorId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['archived'])
+        && request.resource.data.archived is bool);
       allow delete: if isAdmin() || (isApplicant() && resource.data.creatorId == request.auth.uid && resource.data.status == 'draft');
     }
     
@@ -63,10 +69,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
-    // Decision Data
+    // Decision Data — the applicant can read their own decision doc, so it must
+    // hold only what they are allowed to see (status, funding amount).
     match /decision-data/{decisionId} {
       allow read: if isAdmin() || isReviewer() || (isApplicant() && request.auth.uid == get(/databases/$(database)/documents/applications/$(decisionId)).data.creatorId);
       allow write: if isAdmin();
+    }
+
+    // Internal committee commentary on an award, split out of decision-data so
+    // it is never served to the applicant. Rules cannot withhold a single field
+    // from a document read, so the field has to live behind its own path.
+    match /decision-comments/{decisionId} {
+      allow read, write: if isAdmin();
     }
     
     // Post Grant Reports collection rules

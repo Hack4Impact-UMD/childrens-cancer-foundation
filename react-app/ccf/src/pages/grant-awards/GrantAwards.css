@@ -348,10 +348,10 @@
     padding: 20px;
 }
 
-.comment-note {
+.comment-privacy-note {
     margin: 0 0 10px;
-    color: #6b7280;
     font-size: 13px;
+    color: #4b5563;
 }
 
 .comment-textarea {

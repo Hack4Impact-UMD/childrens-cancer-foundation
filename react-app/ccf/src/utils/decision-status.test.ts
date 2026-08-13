@@ -13,8 +13,11 @@ describe("getDecisionStatus", () => {
         expect(getDecisionStatus({ applicationId: "a", decision: "pending" })).toBe("pending");
     });
 
-    test("comment-only record is pending, never rejected (the regression)", () => {
-        expect(getDecisionStatus({ applicationId: "a", comments: "nice work" })).toBe("pending");
+    // Award comments now live in decision-comments, but a decision doc can
+    // still exist with neither `decision` nor `isAccepted` set (e.g. only a
+    // funding amount recorded so far). That is pending, never rejected.
+    test("record with no decision and no isAccepted is pending (the regression)", () => {
+        expect(getDecisionStatus({ applicationId: "a", fundingAmount: 5000 })).toBe("pending");
     });
 
     test("falls back to isAccepted true", () => {

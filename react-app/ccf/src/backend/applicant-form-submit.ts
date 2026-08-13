@@ -40,6 +40,47 @@ export const submitApplication = async (
     }
 };
 
+// In-place edit of an already-submitted application via the updateApplication
+// cloud function. Pass a File to replace the stored PDF, or null to keep it.
+export const updateApplicationSubmission = async (
+    applicationId: string,
+    application: Record<string, any>,
+    file: File | null
+): Promise<{ success: boolean; applicationId: string; message: string }> => {
+    try {
+        let storedFileName: string | null = null;
+        let originalFileName: string | null = null;
+
+        if (file) {
+            // Same client-side pre-checks as submitApplication
+            if (file.type !== 'application/pdf') throw new Error('Only PDF files are allowed');
+            if (file.size > 50 * 1024 * 1024) throw new Error('File size exceeds 50MB limit');
+
+            storedFileName = await uploadFileToStorage(file);
+            originalFileName = file.name;
+        }
+
+        const updateAppFunction = httpsCallable(functions, 'updateApplication');
+        const result = await updateAppFunction({
+            applicationId,
+            application,
+            storedFileName,
+            originalFileName,
+        });
+
+        return result.data as { success: boolean; applicationId: string; message: string };
+    } catch (error: any) {
+        console.error("Error updating application:", error);
+
+        // Handle specific Firebase function errors
+        if (error.code) {
+            throw new Error(error.message || 'Application update failed');
+        }
+
+        throw error;
+    }
+};
+
 // Legacy function for research applications (redirects to new secure function)
 export const uploadResearchApplication = async (
     application: ResearchApplication,

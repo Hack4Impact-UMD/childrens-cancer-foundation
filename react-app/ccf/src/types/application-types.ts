@@ -148,6 +148,11 @@ export interface ApplicationDetails {
     file: string;
     applicationCycle: string;
     submitTime: Date;
+    status?: "draft" | "submitted";
+    archived?: boolean;
+    applicationCycleId?: string;
+    id?: string;
+    editedAt?: unknown; // Firestore Timestamp
 }
 // application-types.ts
 

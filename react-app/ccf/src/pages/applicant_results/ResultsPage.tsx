@@ -233,12 +233,10 @@ function ResultsPage(): JSX.Element {
             </div>
           )}
 
-          {decision?.comments && (
-            <div className="res-comments">
-              <span className="res-label">Comments from the committee</span>
-              <p>{decision.comments}</p>
-            </div>
-          )}
+          {/* Admin award comments are internal and live in the admin-only
+              /decision-comments collection, so they never reach this page.
+              Reviewer feedback below is the only written commentary applicants
+              see. */}
         </div>
 
         {/* Reviewer feedback */}

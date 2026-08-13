@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { downloadPDFsByName } from "../../storage/storage";
 import { getReportByApplicationID } from "../../backend/post-grant-reports";
 import { Decision } from "../../types/decision-types";
-import { getDecisionData } from "../../services/decision-data-service";
+import { getDecisionComments, getDecisionData } from "../../services/decision-data-service";
 import { DecisionBox } from "../decisions/decisionBox";
 import blueDocument from "../../assets/blueDocumentIcon.png";
 
@@ -25,6 +25,7 @@ const AdminCoverPageModal = ({
   const [reportLink, setReportLink] = useState<any>();
   const [reportMsg, setReportMsg] = useState<string>("");
   const [decision, setDecision] = useState<Decision>();
+  const [comments, setComments] = useState<string>("");
 
   useEffect(() => {
     if (isOpen && application.applicationId) {
@@ -33,6 +34,13 @@ const AdminCoverPageModal = ({
         .then((decision) => {
           if (decision) setDecision(decision);
         })
+        .catch((e) => {
+          console.error(e);
+        });
+
+      // Internal comments live in a separate admin-only collection
+      getDecisionComments(application.applicationId)
+        .then(setComments)
         .catch((e) => {
           console.error(e);
         });
@@ -70,7 +78,7 @@ const AdminCoverPageModal = ({
           <p className="subtitle">{application.grantType}</p>
         </div>
       </div>
-      {decision ? <DecisionBox decision={decision} inAdminView={true}></DecisionBox> : ""}
+      {decision ? <DecisionBox decision={decision} inAdminView={true} comments={comments}></DecisionBox> : ""}
       <div className="post-grant-report-pdf-link">
         {reportLink ? (
           <a target="_blank" rel="noopener noreferrer" href={reportLink.url}>

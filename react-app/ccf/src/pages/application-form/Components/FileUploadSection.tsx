@@ -7,7 +7,10 @@ type FileUploadSectionProps = {
 };
 
 function FileUploadSection({ formData, setFormData }: FileUploadSectionProps): JSX.Element {
-  const [selectedFile, setSelectedFile] = useState<File | null>(formData.file);
+  // When editing a submitted application, formData.file is the stored PDF's
+  // object name (string) rather than a File — it means a PDF is already on
+  // record and is kept unless the applicant picks a replacement.
+  const [selectedFile, setSelectedFile] = useState<File | string | null>(formData.file);
   const [uploadStatus, setUploadStatus] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(formData.file);
 
@@ -45,7 +48,11 @@ function FileUploadSection({ formData, setFormData }: FileUploadSectionProps): J
           className="upload-btn1"
           onClick={handleUploadClick}
         >
-          {selectedFile ? selectedFile.name : "Click to upload"}
+          {selectedFile instanceof File
+            ? selectedFile.name
+            : typeof selectedFile === "string"
+            ? "Current PDF on file — click to replace"
+            : "Click to upload"}
         </button>
         <input
           ref={fileInputRef}

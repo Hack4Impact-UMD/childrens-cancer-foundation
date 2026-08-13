@@ -141,27 +141,6 @@
   line-height: 1.2;
 }
 
-.res-comments {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #f3f4f6;
-}
-
-.res-comments p {
-  margin: 0;
-  padding: 10px 14px;
-  background-color: #f9fafb;
-  border-left: 3px solid var(--ccf-blue);
-  border-radius: var(--ccf-radius-sm);
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: #374151;
-  white-space: pre-wrap;
-}
-
 /* Reviewer feedback */
 .res-section-title {
   margin: 0 0 20px;

@@ -19,8 +19,12 @@ const adminDb = env.authenticatedContext('adm', { role: 'admin' }).firestore();
 
 const seedAliceDraft = () =>
   env.withSecurityRulesDisabled(async (ctx) => {
-    await setDoc(doc(ctx.firestore(), 'applications/aliceDraft'), {
+    const seedDb = ctx.firestore();
+    await setDoc(doc(seedDb, 'applications/aliceDraft'), {
       creatorId: 'alice', status: 'draft', grantType: 'research', title: 'T',
+    });
+    await setDoc(doc(seedDb, 'applications/aliceSubmitted'), {
+      creatorId: 'alice', status: 'submitted', decision: 'pending', grantType: 'research', title: 'T',
     });
   });
 await seedAliceDraft();
@@ -82,6 +86,60 @@ await run('other applicant cannot update alice draft', assertFails(
 await run('applicant cannot transfer ownership', assertFails(
   updateDoc(doc(applicantDb, 'applications/aliceDraft'), {
     creatorId: 'bob', status: 'draft',
+  })
+));
+
+// Archive-flag cases (visual archive feature): applicants may toggle ONLY the
+// `archived` bool on their own docs, draft or submitted. (Before case 8 so the
+// draft doc still exists.)
+
+// A1. Applicant archives their own draft — allowed.
+await run('applicant archives own draft', assertSucceeds(
+  updateDoc(doc(applicantDb, 'applications/aliceDraft'), {
+    archived: true,
+  })
+));
+
+// A2. Applicant archives their own submitted app — allowed.
+await run('applicant archives own submitted app', assertSucceeds(
+  updateDoc(doc(applicantDb, 'applications/aliceSubmitted'), {
+    archived: true,
+  })
+));
+
+// A3. Applicant unarchives their own submitted app — allowed.
+await run('applicant unarchives own submitted app', assertSucceeds(
+  updateDoc(doc(applicantDb, 'applications/aliceSubmitted'), {
+    archived: false,
+  })
+));
+
+// A4. Archive write smuggling another field along — DENIED.
+await run('applicant cannot smuggle fields into an archive write', assertFails(
+  updateDoc(doc(applicantDb, 'applications/aliceSubmitted'), {
+    archived: true, title: 'sneak',
+  })
+));
+
+// A5. Non-boolean archived value — DENIED.
+await run('applicant cannot set non-bool archived', assertFails(
+  updateDoc(doc(applicantDb, 'applications/aliceSubmitted'), {
+    archived: 'yes',
+  })
+));
+
+// A6. Another applicant archives alice's submitted app — DENIED.
+await run('other applicant cannot archive alice submitted app', assertFails(
+  updateDoc(doc(otherApplicantDb, 'applications/aliceSubmitted'), {
+    archived: true,
+  })
+));
+
+// A7. Direct field edits on a submitted doc are still DENIED (edits must go
+// through the updateApplication callable, which uses the Admin SDK).
+await run('applicant still cannot edit submitted fields directly', assertFails(
+  updateDoc(doc(applicantDb, 'applications/aliceSubmitted'), {
+    title: 'edit',
   })
 ));
 

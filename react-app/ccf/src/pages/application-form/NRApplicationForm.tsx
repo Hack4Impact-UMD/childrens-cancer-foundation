@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { validateEmail, validatePhoneNumber } from '../../utils/validation';
 import { Modal } from '../../components/modal/modal';
 import { useApplicationDraft } from './useApplicationDraft';
+import { confirmDiscardEdits, EXIT_EDIT_BUTTON_LABEL, EXIT_EDIT_HINT } from './exit-edit-messages';
 
 function NRApplicationForm(): JSX.Element {
     const [currentPage, setCurrentPage] = useState(1);
@@ -50,6 +51,7 @@ function NRApplicationForm(): JSX.Element {
         verifyDraftCycle,
         submit,
         resumedFromDraft,
+        isEditingSubmitted,
     } = useApplicationDraft({
         grantType: 'nonresearch',
         formData,
@@ -61,6 +63,10 @@ function NRApplicationForm(): JSX.Element {
     }, [resumedFromDraft]);
 
     const goBack = async () => {
+        // Going back past the first page leaves the form; in edit mode that
+        // discards the edits, so it needs the same confirmation as the exit
+        // button rather than silently navigating away.
+        if (currentPage === 1 && isEditingSubmitted && !confirmDiscardEdits()) return;
         const saved = await saveDraft();
         if (!saved) toast.error('Your latest changes could not be saved.');
         if (currentPage > 1) {
@@ -72,6 +78,14 @@ function NRApplicationForm(): JSX.Element {
     };
 
     const saveAndExit = async () => {
+        if (isEditingSubmitted) {
+            // Edits to a submitted application only persist on final submit,
+            // so leaving now throws them away — confirm before navigating.
+            if (!confirmDiscardEdits()) return;
+            toast.info('Your changes were discarded. The submitted application is unchanged.');
+            navigate('/applicant/dashboard');
+            return;
+        }
         const saved = await saveDraft();
         if (saved) {
             toast.success('Progress saved!');
@@ -243,7 +257,8 @@ function NRApplicationForm(): JSX.Element {
             >
                 {modalContent}
             </Modal>
-            <h1 className="main-header">Non-Research Grant</h1>
+            <h1 className="main-header">Non-Research Grant{isEditingSubmitted ? " (Editing)" : ""}</h1>
+            {isEditingSubmitted && <p className="edit-mode-hint">{EXIT_EDIT_HINT}</p>}
             <Breadcrumb currentPage={currentPage} pages={pages} />
 
             <h1 className="form-header">{pages[currentPage - 1]}</h1>
@@ -252,7 +267,9 @@ function NRApplicationForm(): JSX.Element {
             <div className="btn-container">
                 <button type="button" onClick={goBack} className="app-form-btn app-form-btn-secondary">Go Back</button>
                 <div className="btn-right-group">
-                    <button type="button" onClick={saveAndExit} className="app-form-btn app-form-btn-secondary">Save and Exit</button>
+                    <button type="button" onClick={saveAndExit} className="app-form-btn app-form-btn-secondary">
+                        {isEditingSubmitted ? EXIT_EDIT_BUTTON_LABEL : 'Save and Exit'}
+                    </button>
                     {currentPage < totalPages ? (
                         <button type="button" onClick={currentPage === 1 ? handleStart : handleContinue} disabled={currentPage === 1 && isStartingDraft} className="app-form-btn app-form-btn-primary">
                             {currentPage === 1 ? "Start" : "Save and Continue"}
@@ -265,7 +282,7 @@ function NRApplicationForm(): JSX.Element {
                             className={`app-form-btn app-form-btn-primary${appOpen && isFormValid() && !isSubmitting ? '' : ' disabled'}`}
                             aria-disabled={!(appOpen && isFormValid()) || isSubmitting}
                         >
-                            {isSubmitting ? 'Submitting…' : 'Save and Submit'}
+                            {isSubmitting ? 'Submitting…' : isEditingSubmitted ? 'Save Changes' : 'Save and Submit'}
                         </button>
                     )}
                 </div>
