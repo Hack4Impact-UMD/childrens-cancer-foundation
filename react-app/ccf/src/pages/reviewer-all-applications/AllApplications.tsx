@@ -9,17 +9,10 @@ import { getAllCycles } from "../../backend/application-cycle";
 import { ApplicationDetails, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 import { getSidebarbyRole } from "../../types/sidebar-types";
-import { firstLetterCap } from "../../utils/stringfuncs";
+import { formatGrantType } from "../../utils/stringfuncs";
 import { compareCycleNamesDesc, groupApplicationsByCycle } from "../../utils/cycleGrouping";
 
 type ReviewerApplication = (ResearchApplication | NonResearchApplication) & ApplicationDetails;
-
-function formatGrantType(grantType: string): string {
-  if (!grantType) return "";
-  if (grantType.toLowerCase() === "nextgen") return "NextGen";
-  if (grantType.toLowerCase() === "nonresearch") return "Non-Research";
-  return firstLetterCap(grantType);
-}
 
 function AllApplications(): JSX.Element {
   const [applicationsByCycle, setApplicationsByCycle] = useState<{
