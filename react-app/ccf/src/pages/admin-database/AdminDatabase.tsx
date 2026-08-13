@@ -10,7 +10,7 @@ import {
   NonResearchApplication,
   ResearchApplication,
 } from "../../types/application-types";
-import { firstLetterCap } from "../../utils/stringfuncs";
+import { firstLetterCap, formatGrantType } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
 import { getAllCycles } from "../../backend/application-cycle";
 import Button from "../../components/buttons/Button";
@@ -43,14 +43,6 @@ function AdminApplicationsDatabase(): JSX.Element {
 
   const closeModal = () => {
     setOpenModal(null);
-  };
-
-  const formatGrantType = (grantType: string) => {
-    if (grantType.toLowerCase() === "nextgen") {
-      return "NextGen";
-    }
-
-    return firstLetterCap(grantType);
   };
 
   useEffect(() => {
