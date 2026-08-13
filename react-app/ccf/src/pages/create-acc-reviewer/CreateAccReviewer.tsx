@@ -1,15 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import "./CreateAccReviewer.css";
 import logo from '../../assets/ccf-logo.png';
-import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
-import toretsky from "../../assets/toretskywithpatient 1.png";
+import landingImageOne from "../../assets/landing page 1.jpg";
+import landingImageTwo from "../../assets/landing page 2.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
 import { useEffect, useState } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
 import { VALID_INSTITUTIONS, validateInstitution, checkEmailCreateAcc, checkPasswordRequirements as checkPasswordRequirementsUtil } from "../../utils/validation";
 import { addReviewerUser } from "../../users/usermanager";
 import { UserData } from "../../types/usertypes"
-import { db, auth } from "../../index"
+import { auth } from "../../index"
 
 function AccountPageReviewers(): JSX.Element {
   //form inputs
@@ -32,6 +31,7 @@ function AccountPageReviewers(): JSX.Element {
   //email req
   const [emailError, setEmailError] = useState(false);
   const [emailWhitelistError, setEmailWhitelistError] = useState(false);
+  const [signupError, setSignupError] = useState(false);
 
   const [institutionError, setInstitutionError] = useState(false);
 
@@ -60,33 +60,9 @@ function AccountPageReviewers(): JSX.Element {
     setEmailError(!checkEmailCreateAcc(email));
   };
 
-  const checkEmailWhitelist = async (email: string) => {
-    if (!email) return false;
-
-    try {
-      const whitelistRef = collection(db, "reviewer-whitelist");
-      const q = query(whitelistRef, where("email", "==", email.toLowerCase()));
-      const querySnapshot = await getDocs(q);
-
-      return !querySnapshot.empty;
-    } catch (error) {
-      console.error("Error checking whitelist:", error);
-      return false;
-    }
-  };
-
   const handleSubmit = async (e: any) => {
     // don't let user submit if pwd reqs aren't met
     e.preventDefault();
-
-    // Check whitelist before proceeding
-    if (!emailError && email) {
-      const isWhitelisted = await checkEmailWhitelist(email);
-      if (!isWhitelisted) {
-        setEmailWhitelistError(true);
-        return;
-      }
-    }
 
     console.log(specialChar, capitalLetter, number, showReqs, pwdUnmatched);
 
@@ -96,8 +72,9 @@ function AccountPageReviewers(): JSX.Element {
     }
 
     try {
-      // Clear any previous whitelist error
+      // Clear any previous submission errors
       setEmailWhitelistError(false);
+      setSignupError(false);
 
       const userData: UserData = {
         email: email,
@@ -121,9 +98,15 @@ function AccountPageReviewers(): JSX.Element {
 
       // Navigate to login page after account creation
       navigate("/Login");
-    } catch (e) {
-      console.error("Error creating reviewer account:", e);
-      // You might want to show an error message to the user here
+    } catch (e: any) {
+      // The addReviewerRole cloud function rejects non-whitelisted emails
+      const msg = String(e?.message || '').toLowerCase();
+      if (msg.includes('whitelist')) {
+        setEmailWhitelistError(true);
+      } else {
+        console.error("Error creating reviewer account:", e);
+        setSignupError(true);
+      }
     }
   };
 
@@ -203,6 +186,10 @@ function AccountPageReviewers(): JSX.Element {
 
               {emailWhitelistError && (
                 <p className="validation">Email does not have permission to create reviewer account. Please contact CCF if you believe this to be a mistake.</p>
+              )}
+
+              {signupError && (
+                <p className="validation">Something went wrong creating your account. Please try again, or contact CCF if the problem persists.</p>
               )}
 
               <label>Password*</label>
@@ -329,11 +316,11 @@ function AccountPageReviewers(): JSX.Element {
           </div>
           <div className="login-imageContainer">
               <div className="createAccApplicant-stackedImages">
-                <img src={DrHanleyLabImage} alt="Lab research" className="research-image" />
-                <img src={toretsky} alt="Doctor with patient" className="research-image" />
+                <img src={landingImageOne} aria-hidden="true" alt="Lab research" className="createAccApplicant-researchImage" />
+                <img src={landingImageTwo} aria-hidden="true" alt="Doctor with patient" className="createAccApplicant-researchImage" />
               </div>
-              <div className="yellow-overlay">
-                <img src={yellowOverlay} alt="" aria-hidden="true" className="overlay-image" />
+              <div className="createAccApplicant-yellowOverlay">
+                <img src={yellowOverlay} alt="" aria-hidden="true" className="createAccApplicant-overlayImage" />
               </div>
             </div>
         </div>

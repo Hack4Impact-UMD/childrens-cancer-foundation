@@ -33,6 +33,10 @@
   margin-bottom: 0;
 }
 
+.AccountSettings-section > .header-title h2 {
+  margin: 0;
+}
+
 .AccountSettings-section .settings-email-row {
   margin: 0;
 }

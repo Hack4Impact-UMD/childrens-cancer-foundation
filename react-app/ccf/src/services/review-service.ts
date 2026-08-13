@@ -1,5 +1,6 @@
 import {
     collection,
+    collectionGroup,
     doc,
     addDoc,
     updateDoc,
@@ -54,10 +55,10 @@ export const createReview = async (review: Omit<Review, 'id'>): Promise<string> 
 // Update an existing review
 export const updateReview = async (applicationId: string, reviewId: string, updates: Partial<Review>): Promise<void> => {
     try {
-        // Check if reviews are locked (stage is Deliberations)
+        // Reviews may only be edited while the review period is open (stage "Review").
         const cycle = await getCurrentCycle();
-        if (cycle.stage === "Deliberations") {
-            throw new Error("Reviews cannot be modified during Deliberations stage.");
+        if (cycle.stage !== "Review") {
+            throw new Error("Reviews can only be edited while the review period is open.");
         }
 
         const reviewRef = doc(db, "reviews", applicationId, "reviewers", reviewId);
@@ -76,10 +77,10 @@ export const updateReview = async (applicationId: string, reviewId: string, upda
 // Submit a review (mark as completed)
 export const submitReview = async (applicationId: string, reviewId: string, score: number, feedback: Review['feedback']): Promise<void> => {
     try {
-        // Check if reviews are locked (stage is Deliberations)
+        // Reviews may only be submitted while the review period is open (stage "Review").
         const cycle = await getCurrentCycle();
-        if (cycle.stage === "Deliberations") {
-            throw new Error("Reviews cannot be submitted during Deliberations stage.");
+        if (cycle.stage !== "Review") {
+            throw new Error("Reviews can only be submitted while the review period is open.");
         }
 
         const reviewRef = doc(db, "reviews", applicationId, "reviewers", reviewId);
@@ -191,30 +192,28 @@ export const getReviewsForApplicationAdmin = async (applicationId: string): Prom
     }
 };
 
-// Get reviews assigned to a specific reviewer across all applications
+// Get reviews assigned to a specific reviewer across all applications.
+// One collection-group query over every `reviewers` subcollection, filtered by
+// reviewerId — replaces the old whole-collection scan + per-application query.
+// Requires a COLLECTION_GROUP-scoped single-field index on reviewers.reviewerId
+// (configured via fieldOverrides in firestore.indexes.json).
 export const getReviewsForReviewer = async (reviewerId: string): Promise<Review[]> => {
     try {
-        // Get all application review documents from the reviews collection
-        const reviewsCollectionSnapshot = await getDocs(collection(db, "reviews"));
-        const allReviews: Review[] = [];
+        const reviewersGroup = collectionGroup(db, "reviewers");
+        const reviewerQuery = query(reviewersGroup, where("reviewerId", "==", reviewerId));
+        const reviewsSnapshot = await getDocs(reviewerQuery);
 
-        // For each application, check its reviewers subcollection for reviews by this reviewer
-        for (const appDoc of reviewsCollectionSnapshot.docs) {
-            const reviewersRef = collection(db, "reviews", appDoc.id, "reviewers");
-            const reviewerQuery = query(reviewersRef, where("reviewerId", "==", reviewerId));
-            const reviewsSnapshot = await getDocs(reviewerQuery);
-
-            reviewsSnapshot.forEach((reviewDoc) => {
-                const data = reviewDoc.data()
-                allReviews.push(
-                    {
-                        id: reviewDoc.id,
-                        ...data,
-                        lastUpdated: data.lastUpdated ? (data.lastUpdated as Timestamp).toDate() : undefined,
-                        submittedDate: data.submittedDate ? (data.submittedDate as Timestamp).toDate() : undefined,
-                    } as Review);
-            });
-        }
+        const allReviews: Review[] = reviewsSnapshot.docs.map((reviewDoc) => {
+            const data = reviewDoc.data();
+            return {
+                id: reviewDoc.id,
+                ...data,
+                // The parent of the reviewers subcollection is the reviews/{applicationId} doc.
+                applicationId: data.applicationId ?? reviewDoc.ref.parent.parent?.id,
+                lastUpdated: data.lastUpdated ? (data.lastUpdated as Timestamp).toDate() : undefined,
+                submittedDate: data.submittedDate ? (data.submittedDate as Timestamp).toDate() : undefined,
+            } as Review;
+        });
 
         // Sort by last updated date
         return allReviews.sort((a, b) => {
@@ -225,6 +224,23 @@ export const getReviewsForReviewer = async (reviewerId: string): Promise<Review[
         });
     } catch (error) {
         console.error("Error getting reviews for reviewer:", error);
+        throw error;
+    }
+};
+
+// Toggle the visual `archived` flag on a review. Kept separate from updateReview
+// so it is NOT blocked by the review-period stage gate — reviewers archive
+// completed reviews after the review period has closed.
+export const setReviewArchived = async (
+    applicationId: string,
+    reviewId: string,
+    archived: boolean
+): Promise<void> => {
+    try {
+        const reviewRef = doc(db, "reviews", applicationId, "reviewers", reviewId);
+        await updateDoc(reviewRef, { archived });
+    } catch (error) {
+        console.error("Error updating review archive flag:", error);
         throw error;
     }
 };

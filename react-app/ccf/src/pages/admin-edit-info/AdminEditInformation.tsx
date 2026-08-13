@@ -16,7 +16,8 @@ import {
     updateCurrentCycleDeadlines,
     updateCycleStage,
     getCurrentCycle,
-    endCurrentCycleAndStartNewOne
+    endCurrentCycleAndStartNewOne,
+    cycleNameExists
 } from '../../backend/application-cycle';
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import ApplicationCycle from "../../types/applicationCycle-types";
@@ -150,8 +151,12 @@ function AdminEditInformation(): JSX.Element {
 
     const confirmEndCycle = async () => {
         setConfirmDialogOpen(false);
-        const newCycleName = window.prompt("Enter the name for the new application cycle (e.g., 2024-2025):");
+        const newCycleName = window.prompt("Enter the name for the new application cycle (e.g., 2024-2025):")?.trim();
         if (newCycleName) {
+            if (await cycleNameExists(newCycleName)) {
+                setStageSnack(`A cycle named "${newCycleName}" already exists — choose a different name.`);
+                return;
+            }
             const success = await endCurrentCycleAndStartNewOne(newCycleName);
             if (success) {
                 setStageSnack(`Successfully created new cycle "${newCycleName}"`);

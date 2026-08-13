@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { loginUser } from "../../services/auth_login";
 import "./login.css";
-import DrHanleyLabImage from "../../assets/Dr. Hanley Lab 1.png";
-import toretsky from "../../assets/toretskywithpatient 1.png";
+import landingImageOne from "../../assets/landing page 1.jpg";
+import landingImageTwo from "../../assets/landing page 2.png";
 import yellowOverlay from "../../assets/yellowoverlay.png";
 import Button from "../../components/buttons/Button";
 import { TextField, InputAdornment, IconButton } from '@mui/material';
@@ -155,8 +155,8 @@ function Login() {
 
         {isWideScreen && (
           <div aria-hidden="true" className="login-imageContainer">
-            <img src={DrHanleyLabImage} alt="Dr Hanley in the lab" className="login-image" />
-            <img src={toretsky} alt="Researcher with patient" className="login-image" />
+            <img src={landingImageOne} alt="Dr Hanley in the lab" className="login-image" />
+            <img src={landingImageTwo} alt="Researcher with patient" className="login-image" />
             <div className="login-yellowOverlay">
               <img src={yellowOverlay} alt="" aria-hidden="true" className="login-yellow" />
             </div>

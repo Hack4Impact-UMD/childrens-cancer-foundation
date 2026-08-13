@@ -9,7 +9,8 @@ import ApplicationBox, { type Application } from "../../components/applications/
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { auth } from "../.."; // Adjust path as needed
 import { db } from "../.."
-import { getReviewsForReviewer } from "../../services/review-service";
+import { getReviewsForReviewer, setReviewArchived } from "../../services/review-service";
+import Review from "../../types/review-types";
 import ApplicationCycle from "../../types/applicationCycle-types";
 import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded, getDaysUntilDeadline } from "../../backend/application-cycle";
 import Banner from "../../components/banner/Banner";
@@ -28,6 +29,7 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
     const [pendingReviews, setPendingReviews] = useState<Application[]>([]);
     const [inProgressReviews, setInProgressReviews] = useState<Application[]>([]);
     const [completedReviews, setCompletedReviews] = useState<Application[]>([]);
+    const [showArchived, setShowArchived] = useState<boolean>(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [appCycle, setAppCycle] = useState<ApplicationCycle>();
@@ -66,100 +68,161 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
         setCurrentModalApplication(null);
     };
 
+    // Visual-only archive: hides a completed review from this dashboard until the
+    // "Show archived" toggle is on. Admin views are unaffected.
+    const handleToggleArchive = async (application: Application) => {
+        if (!application.id || !application.reviewId) return;
+        const nextArchived = !(application.archived === true);
+        try {
+            await setReviewArchived(application.id, application.reviewId, nextArchived);
+            setCompletedReviews((prev) =>
+                prev.map((a) =>
+                    a.reviewId === application.reviewId ? { ...a, archived: nextArchived } : a
+                )
+            );
+        } catch (err) {
+            console.error("Error updating review archive flag:", err);
+        }
+    };
+
+    const isArchived = (application: Application) => application.archived === true;
+    const visibleCompletedReviews = completedReviews.filter(
+        (a) => showArchived || !isArchived(a)
+    );
+    const hasArchivedCompleted = completedReviews.some(isArchived);
+
     // Fetch reviewer's assigned applications from Firebase using the new review service
     useEffect(() => {
         const fetchData = async () => {
             if (!currentUser) {
-                setError("User not authenticated");
+                setError("You are not signed in. Please log in again to view your reviews.");
                 setLoading(false);
                 return;
             }
 
+            setLoading(true);
+            setError(null);
+
+            // Each stage below fails for a different reason, so each reports its
+            // own message rather than one catch-all — that way the visible error
+            // points at what actually broke.
+
+            // 1) Current application cycle (needed for the reviewer deadline and
+            //    to filter reviews to the active cycle).
+            let updatedCycle: ApplicationCycle;
             try {
-                setLoading(true);
-
-                // Fetch cycle first so reviewerDeadline is available when building application list
                 const cycle = await getCurrentCycle();
-                const updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
+                updatedCycle = await checkAndUpdateCycleStageIfNeeded(cycle);
                 setAppCycle(updatedCycle);
+            } catch (err) {
+                console.error("Error loading current application cycle:", err);
+                setError("Couldn't load the current application cycle. Please refresh and try again.");
+                setLoading(false);
+                return;
+            }
 
-                // First, get the reviewer document
+            // 2) Reviewer profile (maps the signed-in email to a reviewer id).
+            let reviewerId: string;
+            try {
                 const reviewersRef = collection(db, "reviewers");
                 const reviewerQuery = query(
                     reviewersRef,
                     where("email", "==", currentUser.email)
                 );
-
                 const reviewerSnapshot = await getDocs(reviewerQuery);
 
                 if (reviewerSnapshot.empty) {
-                    setError("Reviewer profile not found");
+                    setError("We couldn't find a reviewer profile for your account. Please contact CCF.");
                     setLoading(false);
                     return;
                 }
+                reviewerId = reviewerSnapshot.docs[0].id;
+            } catch (err) {
+                console.error("Error loading reviewer profile:", err);
+                setError("Couldn't load your reviewer profile. Please refresh and try again.");
+                setLoading(false);
+                return;
+            }
 
-                const reviewerDoc = reviewerSnapshot.docs[0];
-                const reviewerId = reviewerDoc.id;
+            // 3) The reviews assigned to this reviewer (collection-group query;
+            //    a permissions/rules problem surfaces here, not as an app error).
+            let reviews: Review[];
+            try {
+                reviews = await getReviewsForReviewer(reviewerId);
+            } catch (err) {
+                console.error("Error loading assigned reviews:", err);
+                setError("Couldn't load your assigned reviews. Please refresh and try again, or contact CCF if this continues.");
+                setLoading(false);
+                return;
+            }
 
-                // Get all reviews assigned to this reviewer
-                const reviews = await getReviewsForReviewer(reviewerId);
+            // 4) The application document behind each assigned review.
+            try {
+                // Only reviews for the current cycle (legacy reviews without a
+                // cycle field are kept).
+                const currentCycleReviews = reviews.filter(
+                    (review) => !review.cycle || review.cycle === updatedCycle.id
+                );
+
+                // Format the reviewer deadline once for all rows.
+                const dueDateStr = updatedCycle.reviewerDeadline
+                    ? new Date(updatedCycle.reviewerDeadline).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })
+                    : "No deadline";
+
+                // Fetch every application in parallel rather than one-at-a-time.
+                const reviewsWithApps = await Promise.all(
+                    currentCycleReviews.map(async (review) => {
+                        const appDoc = await getDoc(doc(db, "applications", review.applicationId));
+                        return { review, appDoc };
+                    })
+                );
 
                 // Arrays for different application status
                 const notStarted: Application[] = [];
                 const inProgress: Application[] = [];
                 const completed: Application[] = [];
 
-                // Process each review
-                for (const review of reviews) {
-                    // skip reviews from past cycles
-                    if (review.cycle && review.cycle !== updatedCycle.id) {
+                for (const { review, appDoc } of reviewsWithApps) {
+                    if (!appDoc.exists()) {
                         continue;
                     }
 
-                    // Fetch application data for each review
-                    const appDoc = await getDoc(doc(db, "applications", review.applicationId));
+                    const appData = appDoc.data();
 
-                    if (appDoc.exists()) {
-                        const appData = appDoc.data();
+                    const application: Application = {
+                        id: review.applicationId,
+                        applicationType: appData.grantType || "Application",
+                        title: appData.title || "Untitled Application",
+                        principalInvestigator: appData.principalInvestigator || "Unknown",
+                        status: review.status,
+                        dueDate: `DUE ${dueDateStr.toUpperCase()}`
+                    };
 
-                        // Format date for display using local cycle variable, not stale state
-                        const dueDateStr = updatedCycle.reviewerDeadline
-                            ? new Date(updatedCycle.reviewerDeadline).toLocaleDateString('en-US', {
+                    // Categorize based on review status
+                    if (review.status === "completed") {
+                        // Format submission date
+                        const submittedDate = review.submittedDate
+                            ? new Date(review.submittedDate).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
                             })
-                            : "No deadline";
+                            : "Recently";
 
-                        const application: Application = {
-                            id: review.applicationId,
-                            applicationType: appData.grantType || "Application",
-                            title: appData.title || "Untitled Application",
-                            principalInvestigator: appData.principalInvestigator || "Unknown",
-                            status: review.status,
-                            dueDate: `DUE ${dueDateStr.toUpperCase()}`
-                        };
-
-                        // Categorize based on review status
-                        if (review.status === "completed") {
-                            // Format submission date
-                            const submittedDate = review.submittedDate
-                                ? new Date(review.submittedDate).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })
-                                : "Recently";
-
-                            completed.push({
-                                ...application,
-                                dueDate: `SUBMITTED: ${submittedDate}`
-                            });
-                        } else if (review.status === "in-progress") {
-                            inProgress.push(application);
-                        } else {
-                            notStarted.push(application);
-                        }
+                        completed.push({
+                            ...application,
+                            dueDate: `SUBMITTED: ${submittedDate}`,
+                            reviewId: review.id,
+                            archived: review.archived === true
+                        });
+                    } else if (review.status === "in-progress") {
+                        inProgress.push(application);
+                    } else {
+                        notStarted.push(application);
                     }
                 }
 
@@ -170,8 +233,8 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
 
                 setLoading(false);
             } catch (err) {
-                console.error("Error fetching assigned applications:", err);
-                setError("Failed to load assigned applications");
+                console.error("Error loading applications for assigned reviews:", err);
+                setError("Failed to load the applications for your assigned reviews. Please refresh and try again.");
                 setLoading(false);
             }
         };
@@ -268,9 +331,19 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                                             {completedReviews.length > 0 && (
                                                 <>
                                                     <h3>COMPLETED REVIEWS:</h3>
-                                                    {completedReviews.map((application, index) => (
+                                                    {hasArchivedCompleted && (
+                                                        <label className="show-archived-toggle">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={showArchived}
+                                                                onChange={(e) => setShowArchived(e.target.checked)}
+                                                            />
+                                                            Show archived
+                                                        </label>
+                                                    )}
+                                                    {visibleCompletedReviews.map((application, index) => (
                                                         <ApplicationBox
-                                                            key={index}
+                                                            key={application.reviewId ?? index}
                                                             id={application.id}
                                                             applicationType={application.applicationType}
                                                             dueDate={application.dueDate}
@@ -278,6 +351,8 @@ function ReviewerDashboard({ email, phone, hours }: ReviewerProp): JSX.Element {
                                                             principalInvestigator={application.principalInvestigator}
                                                             onClick={() => handleDueDateClick(application.dueDate, application.id || '')}
                                                             onModalOpen={handleModalOpen}
+                                                            archived={application.archived}
+                                                            onToggleArchive={() => handleToggleArchive(application)}
                                                         />
                                                     ))}
                                                 </>

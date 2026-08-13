@@ -22,8 +22,14 @@ service cloud.firestore {
     // Applications collection rules
     match /applications/{applicationId} {
       allow read: if isAdmin() || isReviewer() || (isApplicant() && request.auth.uid == resource.data.creatorId);
-      allow create: if isAdmin() || (isApplicant() && request.resource.data.creatorId == request.auth.uid);
-      allow update: if isAdmin() || (isApplicant() && resource.data.creatorId == request.auth.uid && resource.data.status == 'draft');
+      allow create: if isAdmin() || (isApplicant()
+        && request.resource.data.creatorId == request.auth.uid
+        && request.resource.data.status == 'draft');
+      allow update: if isAdmin() || (isApplicant()
+        && resource.data.creatorId == request.auth.uid
+        && resource.data.status == 'draft'
+        && request.resource.data.status == 'draft'
+        && request.resource.data.creatorId == resource.data.creatorId);
       allow delete: if isAdmin() || (isApplicant() && resource.data.creatorId == request.auth.uid && resource.data.status == 'draft');
     }
     
@@ -41,12 +47,14 @@ service cloud.firestore {
     
     // Applicants
     match /applicants/{applicantId} {
-      allow read, write: if isAdmin() || isReviewer() || request.auth.uid == applicantId;
+      allow read: if isAdmin() || isReviewer() || request.auth.uid == applicantId;
+      allow write: if isAdmin() || request.auth.uid == applicantId;
     }
-    
+
     // Reviewers
     match /reviewers/{reviewerId} {
-      allow read, write: if isAdmin() || isReviewer();
+      allow read: if isAdmin() || isReviewer();
+      allow write: if isAdmin() || request.auth.uid == reviewerId;
     }
     
     // Application Cycles
@@ -81,18 +89,30 @@ service cloud.firestore {
     
     // Reviewer Whitelist
     match /reviewer-whitelist/{whitelistId} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow write: if isAdmin();
     }
     
-    // Reviews
-    match /reviews/{reviewId} {
-      allow read, write: if isAdmin() || isReviewer();
+    // Reviews (parent doc: { applicationId, createdAt })
+    match /reviews/{applicationId} {
+      allow read: if isAdmin() || isReviewer();
+      allow create, update: if isAdmin() || isReviewer();
+
+      // Individual review documents
+      match /reviewers/{reviewId} {
+        allow read: if isAdmin() || isReviewer();
+        allow create, delete: if isAdmin();
+        allow update: if isAdmin() ||
+          (isReviewer() && resource.data.reviewerId == request.auth.uid);
+      }
     }
-    
-    // Reviewer subcollection
-    match /reviews/{reviewId}/reviewers/{reviewreviewerId} {
-      allow read, write: if isAdmin() || isReviewer();
+
+    // Collection-group reads of `reviewers` (the reviewer dashboard queries every
+    // reviewers subcollection at once). The nested rule above does not authorize
+    // collection-group queries, so a recursive-wildcard read rule is required.
+    // Same gating as the nested read rule; writes stay governed by the nested rules.
+    match /{path=**}/reviewers/{reviewId} {
+      allow read: if isAdmin() || isReviewer();
     }
   }
 }

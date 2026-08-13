@@ -4,11 +4,23 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 
 
+// Out-of-band claim bootstrap. The role callables now enforce authorization
+// (addAdminRole is admin-only; addReviewerRole requires the whitelist), so a
+// brand-new account can't mint the first admin/reviewer through them. Only the
+// Auth *emulator* accepts the privileged "Bearer owner" token — this code path
+// only runs against emulators (see the useEmulator guard in index.tsx).
+async function setEmulatorClaims(projectId: string, uid: string, role: string) {
+    await fetch(`http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/projects/${projectId}/accounts:update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer owner' },
+        body: JSON.stringify({ localId: uid, customAttributes: JSON.stringify({ role }) })
+    });
+}
+
 export async function initializeTestAccounts(db: any, auth: any, functions: any) {
 
     const addApplicantRole = httpsCallable(functions, "addApplicantRole");
-    const addReviewerRole = httpsCallable(functions, "addReviewerRole");
-    const addAdminRole = httpsCallable(functions, "addAdminRole");
+    const projectId = auth.app.options.projectId;
 
     const users = [
         { email: 'admin@test.com', password: 'P@ssword123', role: 'admin' },
@@ -21,7 +33,7 @@ export async function initializeTestAccounts(db: any, auth: any, functions: any)
             const userRecord = await createUserWithEmailAndPassword(auth, user.email, user.password);
 
             if (user.role === 'reviewer') {
-                await addReviewerRole({ email: user.email });
+                await setEmulatorClaims(projectId, userRecord.user.uid, 'reviewer');
                 await setDoc(doc(db, 'reviewers', userRecord.user.uid), {
                     firstName: "reviewer",
                     lastName: "person",
@@ -49,7 +61,7 @@ export async function initializeTestAccounts(db: any, auth: any, functions: any)
                     role: user.role
                 });
                 console.log('admin role added');
-                await addAdminRole({ email: user.email });
+                await setEmulatorClaims(projectId, userRecord.user.uid, 'admin');
             }
 
         } catch (error) {

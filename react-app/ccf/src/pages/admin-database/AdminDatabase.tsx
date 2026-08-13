@@ -10,11 +10,13 @@ import {
   NonResearchApplication,
   ResearchApplication,
 } from "../../types/application-types";
-import { firstLetterCap } from "../../utils/stringfuncs";
+import { firstLetterCap, formatGrantType } from "../../utils/stringfuncs";
 import { getFilteredApplications } from "../../backend/application-filters";
+import { getAllCycles } from "../../backend/application-cycle";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
 import { downloadPDFsByName } from "../../storage/storage";
+import { compareCycleNamesDesc, groupApplicationsByCycle } from "../../utils/cycleGrouping";
 
 function AdminApplicationsDatabase(): JSX.Element {
   const [applicationsData, setApplicationsData] = useState<{
@@ -43,14 +45,6 @@ function AdminApplicationsDatabase(): JSX.Element {
     setOpenModal(null);
   };
 
-  const formatGrantType = (grantType: string) => {
-    if (grantType.toLowerCase() === "nextgen") {
-      return "NextGen";
-    }
-
-    return firstLetterCap(grantType);
-  };
-
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -58,31 +52,34 @@ function AdminApplicationsDatabase(): JSX.Element {
         const apps = allApps.filter(
           (app) => (app as any).status !== "draft" && app.applicationCycle,
         );
-        // Group applications by year
-        const applications: { [year: string]: Application[] } = {};
+        // Group applications by cycle (shared with the reviewer database page).
+        const applications = groupApplicationsByCycle(apps) as {
+          [year: string]: Application[];
+        };
         const institutions = new Set<string>();
-        const years = new Set<string>();
-
-        apps.forEach((data) => {
-          const year = data.applicationCycle;
-
-          // Map Firestore data to Application interface
-          const application: Application = data as Application;
-          // Add to applications by year
-          if (!applications[year]) {
-            applications[year] = [];
-          }
-          applications[year].push(application);
-
-          // Add to unique sets
-          institutions.add(application.institution);
-          years.add(year);
+        apps.forEach((app) => {
+          if (app.institution) institutions.add(app.institution);
         });
+        const years = new Set<string>(Object.keys(applications));
 
         setApplicationsData(applications);
-        setAvailableYears(
-          Array.from(years).sort((a, b) => Number(b) - Number(a)),
-        );
+
+        // The filter dropdown should list every cycle, not just cycles that
+        // already have submitted applications (matches GrantAwards'
+        // cycleOptions, so both admin pages show the same cycle set).
+        try {
+          const cycles = await getAllCycles();
+          cycles.forEach((cycle) => {
+            if (cycle.name) {
+              years.add(cycle.name);
+            }
+          });
+        } catch (e) {
+          // A malformed cycle doc makes getAllCycles throw; fall back to
+          // app-derived names rather than blanking the dropdown.
+          console.error("Error fetching cycles for filter:", e);
+        }
+        setAvailableYears(Array.from(years).sort(compareCycleNamesDesc));
         setAvailableInstitutions(Array.from(institutions).sort());
 
         // Initialize collapse state for each year
@@ -254,7 +251,7 @@ function AdminApplicationsDatabase(): JSX.Element {
           ) : (
             <div className="admin-database-year-list">
               {Object.keys(filteredApplications)
-                .sort((a, b) => Number(b) - Number(a))
+                .sort(compareCycleNamesDesc)
                 .map((year) => (
                   <div key={year} className="dashboard-section">
                     <div

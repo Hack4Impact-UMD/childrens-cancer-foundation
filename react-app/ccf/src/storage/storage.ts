@@ -28,7 +28,13 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
 
   try {
     console.log('Uploading file to storage...');
-    const snapshot = await uploadBytes(storageRef, file);
+    const snapshot = await uploadBytes(storageRef, file, {
+      contentType: 'application/pdf',
+      customMetadata: {
+        uploadedBy: user.uid,
+        originalName: file.name,
+      },
+    });
     console.log('Uploaded a blob or file!');
 
     const downloadURL = await getDownloadURL(snapshot.ref);

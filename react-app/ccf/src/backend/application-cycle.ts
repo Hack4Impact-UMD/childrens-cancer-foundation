@@ -151,8 +151,26 @@ export const updateCurrentCycleDeadlines = async (deadlines: {
   }
 };
 
+export const cycleNameExists = async (name: string): Promise<boolean> => {
+  const q = query(collection(db, "applicationCycles"), where("name", "==", name.trim()), limit(1));
+  const snap = await getDocs(q);
+  return !snap.empty;
+};
+
 export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
   try {
+    // Cycle names key several application queries; a blank or duplicate name
+    // would corrupt them. Check before mutating anything.
+    const trimmedName = newCycleName.trim();
+    if (!trimmedName) {
+      console.error("Cycle name cannot be empty.");
+      return false;
+    }
+    if (await cycleNameExists(trimmedName)) {
+      console.error(`Cycle name "${trimmedName}" already exists.`);
+      return false;
+    }
+
     const q = query(collection(db, "applicationCycles"), where("current", "==", true), limit(1));
     const snapshot = await getDocs(q);
 
@@ -167,7 +185,7 @@ export const endCurrentCycleAndStartNewOne = async (newCycleName: string) => {
     const oneYearFromNow = dayjs().add(1, 'year').toDate();
 
     await addDoc(collection(db, "applicationCycles"), {
-      name: newCycleName,
+      name: trimmedName,
       current: true,
       startDate: Timestamp.now(),
       endDate: Timestamp.fromDate(oneYearFromNow),

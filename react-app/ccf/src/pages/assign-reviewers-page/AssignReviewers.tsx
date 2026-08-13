@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FaArrowDown, FaArrowUp, FaFileAlt, FaSearch, FaTimes, FaEye } from 'react-icons/fa';
 import Button from '../../components/buttons/Button';
 import RoleDashboardShell from '../../components/dashboard-layout/RoleDashboardShell';
@@ -14,6 +14,9 @@ import {
   checkAndUpdateApplicationStatus
 } from '../../services/review-service';
 import { GrantApplication, Reviewer } from '../../types/application-types';
+import { getAllCycles } from '../../backend/application-cycle';
+import ApplicationCycle from '../../types/applicationCycle-types';
+import { formatAverageScore } from '../../utils/score';
 
 // Interface definitions
 interface ExtendedGrantApplication extends GrantApplication {
@@ -22,6 +25,7 @@ interface ExtendedGrantApplication extends GrantApplication {
   principalInvestigator: string;
   grantType: string;
   institution: string;
+  applicationCycle: string;
   status: 'not-started' | 'in-progress' | 'completed';
   primaryReviewerId?: string;
   secondaryReviewerId?: string;
@@ -135,6 +139,27 @@ const AssignReviewersPage: React.FC = () => {
   const [currentApplicationId, setCurrentApplicationId] = useState<string | null>(null);
   const [reviewerType, setReviewerType] = useState<'primary' | 'secondary' | null>(null);
   const [pendingReassignments, setPendingReassignments] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [cycles, setCycles] = useState<ApplicationCycle[]>([]);
+  const [selectedCycle, setSelectedCycle] = useState<string>('All');
+  const [selectedGrantType, setSelectedGrantType] = useState<string>('');
+  const [selectedInstitution, setSelectedInstitution] = useState<string>('');
+
+  // Load cycles for the cycle filter; default to the current cycle since
+  // that's the one admins are assigning reviewers for.
+  useEffect(() => {
+    getAllCycles()
+      .then((all) => {
+        setCycles(all);
+        const currentCycle = all.find((cycle) => cycle.current);
+        if (currentCycle) {
+          setSelectedCycle(currentCycle.name);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load application cycles', err);
+      });
+  }, []);
 
   // Fetch applications and reviewers from Firebase
   useEffect(() => {
@@ -142,66 +167,77 @@ const AssignReviewersPage: React.FC = () => {
       try {
         setLoading(true);
 
-        // Fetch applications
-        const applicationsSnapshot = await getDocs(collection(db, 'applications'));
-        const applicationsData: ExtendedGrantApplication[] = [];
+        // Fetch applications and reviewers concurrently
+        const [applicationsSnapshot, reviewersSnapshot] = await Promise.all([
+          getDocs(collection(db, 'applications')),
+          getDocs(collection(db, 'reviewers')),
+        ]);
 
-        for (const doc of applicationsSnapshot.docs) {
-          const data = doc.data();
+        // Drafts share this collection; skip them so half-finished applications
+        // aren't shown as assignable to reviewers.
+        const submittedDocs = applicationsSnapshot.docs.filter(
+          (docSnap) => docSnap.data().status !== 'draft'
+        );
 
-          // Drafts share this collection; skip them so half-finished applications
-          // aren't shown as assignable to reviewers.
-          if (data.status === 'draft') continue;
+        // Look up each application's reviews concurrently — awaiting these
+        // one-by-one made this page take tens of seconds to load.
+        const applicationsData: ExtendedGrantApplication[] = await Promise.all(
+          submittedDocs.map(async (docSnap) => {
+            const data = docSnap.data();
 
-          // Get review information from the reviews collection
-          let primaryReviewerId: string | undefined;
-          let secondaryReviewerId: string | undefined;
-          let primaryReviewStatus = 'not-started';
-          let secondaryReviewStatus = 'not-started';
-          let status: 'not-started' | 'in-progress' | 'completed' = 'not-started';
+            // Get review information from the reviews collection
+            let primaryReviewerId: string | undefined;
+            let secondaryReviewerId: string | undefined;
+            let primaryReviewStatus = 'not-started';
+            let secondaryReviewStatus = 'not-started';
+            let status: 'not-started' | 'in-progress' | 'completed' = 'not-started';
 
-          try {
-            const reviewSummary = await getReviewsForApplicationAdmin(doc.id);
+            try {
+              const reviewSummary = await getReviewsForApplicationAdmin(docSnap.id);
 
-            if (reviewSummary.primaryReview) {
-              primaryReviewerId = reviewSummary.primaryReview.reviewerId;
-              primaryReviewStatus = reviewSummary.primaryReview.status;
+              if (reviewSummary.primaryReview) {
+                primaryReviewerId = reviewSummary.primaryReview.reviewerId;
+                primaryReviewStatus = reviewSummary.primaryReview.status;
+              }
+
+              if (reviewSummary.secondaryReview) {
+                secondaryReviewerId = reviewSummary.secondaryReview.reviewerId;
+                secondaryReviewStatus = reviewSummary.secondaryReview.status;
+              }
+
+              // Determine application status based on reviews
+              if (primaryReviewStatus === 'completed' && secondaryReviewStatus === 'completed') {
+                status = 'completed';
+              } else if (primaryReviewerId || secondaryReviewerId) {
+                status = 'in-progress';
+              }
+            } catch (error) {
+              // No reviews exist yet, keep default values
+              console.log(`No reviews found for application ${docSnap.id}`);
             }
 
-            if (reviewSummary.secondaryReview) {
-              secondaryReviewerId = reviewSummary.secondaryReview.reviewerId;
-              secondaryReviewStatus = reviewSummary.secondaryReview.status;
-            }
-
-            // Determine application status based on reviews
-            if (primaryReviewStatus === 'completed' && secondaryReviewStatus === 'completed') {
-              status = 'completed';
-            } else if (primaryReviewerId || secondaryReviewerId) {
-              status = 'in-progress';
-            }
-          } catch (error) {
-            // No reviews exist yet, keep default values
-            console.log(`No reviews found for application ${doc.id}`);
-          }
-
-          applicationsData.push({
-            document_id: doc.id,
-            title: data.title || 'Untitled Application',
-            grantType: data.grantType || 'Unknown Type',
-            principalInvestigator: data.principalInvestigator || 'Unknown',
-            institution: data.institution || 'Unknown Institution',
-            primaryReviewerId,
-            secondaryReviewerId,
-            primaryReviewStatus,
-            secondaryReviewStatus,
-            primaryScore: data.primaryScore,
-            secondaryScore: data.secondaryScore,
-            averageScore: data.averageScore,
-            status,
-            submittedDate: data.submittedDate || '',
-            expanded: false
-          });
-        }
+            return {
+              document_id: docSnap.id,
+              title: data.title || 'Untitled Application',
+              grantType: data.grantType || 'Unknown Type',
+              principalInvestigator: data.principalInvestigator || 'Unknown',
+              institution: data.institution || 'Unknown Institution',
+              applicationCycle: data.applicationCycle || '',
+              primaryReviewerId,
+              secondaryReviewerId,
+              primaryReviewStatus,
+              secondaryReviewStatus,
+              primaryScore: data.primaryScore,
+              secondaryScore: data.secondaryScore,
+              averageScore: data.averageScore,
+              status,
+              // Applications store submitTime (a Timestamp); the old
+              // submittedDate field never existed on submitted docs.
+              submittedDate: data.submitTime?.toDate?.().toLocaleDateString() ?? '',
+              expanded: false
+            };
+          })
+        );
 
         // Sort and group applications by status
         const sortedApplications = [
@@ -222,8 +258,6 @@ const AssignReviewersPage: React.FC = () => {
 
         setApplications(groupedApplications);
 
-        // Fetch reviewers
-        const reviewersSnapshot = await getDocs(collection(db, 'reviewers'));
         const reviewersData: Reviewer[] = [];
 
         reviewersSnapshot.forEach((doc) => {
@@ -483,6 +517,43 @@ const AssignReviewersPage: React.FC = () => {
     return reviewer ? `${reviewer.firstName} ${reviewer.lastName}` : 'Unknown Reviewer';
   };
 
+  // Cycle options come from the cycles collection plus any cycle names found
+  // on applications, so legacy apps whose cycle no longer exists stay filterable.
+  const cycleOptions = useMemo(() => {
+    const namesFromCollection = cycles.map((c) => c.name).filter(Boolean);
+    const namesFromApps = applications.map((app) => app.applicationCycle).filter(Boolean);
+    return Array.from(new Set([...namesFromCollection, ...namesFromApps]));
+  }, [cycles, applications]);
+
+  const institutionOptions = useMemo(() => {
+    const institutions = new Set<string>();
+    applications.forEach((app) => {
+      if (app.institution) institutions.add(app.institution);
+    });
+    return Array.from(institutions).sort();
+  }, [applications]);
+
+  const visibleApplications = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return applications.filter((app) => {
+      if (selectedCycle !== 'All' && app.applicationCycle !== selectedCycle) return false;
+      if (selectedGrantType && app.grantType !== selectedGrantType) return false;
+      if (selectedInstitution && app.institution !== selectedInstitution) return false;
+      if (term) {
+        const haystack = [
+          app.title,
+          app.principalInvestigator,
+          app.institution,
+          getReviewerName(app.primaryReviewerId),
+          getReviewerName(app.secondaryReviewerId),
+        ].join(' ').toLowerCase();
+        if (!haystack.includes(term)) return false;
+      }
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applications, reviewers, searchTerm, selectedCycle, selectedGrantType, selectedInstitution]);
+
   // Function to check if at least one review is completed
   const hasCompletedReview = (app: ExtendedGrantApplication) => {
     return app.primaryReviewStatus === 'completed' || app.secondaryReviewStatus === 'completed';
@@ -501,7 +572,7 @@ const AssignReviewersPage: React.FC = () => {
   };
 
   const renderApplications = (status: ExtendedGrantApplication['status']) => {
-    const filteredApps = applications.filter(app => app.status === status);
+    const filteredApps = visibleApplications.filter(app => app.status === status);
 
     if (loading) {
       return <div className="ar-loading">Loading applications...</div>;
@@ -521,7 +592,11 @@ const AssignReviewersPage: React.FC = () => {
             <FaFileAlt className="ar-application-icon" />
             <div className="ar-application-info">
               <h3>{app.title}</h3>
-              <p className="ar-applicant-type">{app.grantType} - {app.principalInvestigator}</p>
+              <p className="ar-applicant-type">
+                {app.grantType} - {app.principalInvestigator}
+                {app.applicationCycle ? ` · ${app.applicationCycle}` : ''}
+                {app.submittedDate ? ` · Submitted ${app.submittedDate}` : ''}
+              </p>
             </div>
           </div>
           <span className="ar-expand-icon">
@@ -591,7 +666,7 @@ const AssignReviewersPage: React.FC = () => {
               {/* Show average score if both reviews are completed */}
               {app.status === 'completed' && app.averageScore && (
                 <div className="ar-average-score">
-                  Average Score: {app.averageScore.toFixed(1)}
+                  Average Score: {formatAverageScore(app.averageScore)}
                 </div>
               )}
 
@@ -675,6 +750,55 @@ const AssignReviewersPage: React.FC = () => {
         )}
 
         <div className="ar-page-content">
+          <div className="ccf-toolbar">
+            <div className="ccf-toolbar-row">
+              <div className="ccf-toolbar-search">
+                <FaSearch className="ccf-toolbar-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search by title, investigator, institution, or reviewer"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  aria-label="Search applications"
+                />
+              </div>
+            </div>
+            <div className="ccf-toolbar-row">
+              <div className="ccf-toolbar-filters">
+                <select
+                  value={selectedCycle}
+                  onChange={(e) => setSelectedCycle(e.target.value)}
+                  aria-label="Filter by application cycle"
+                >
+                  <option value="All">All Cycles</option>
+                  {cycleOptions.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+                <select
+                  value={selectedGrantType}
+                  onChange={(e) => setSelectedGrantType(e.target.value)}
+                  aria-label="Filter by grant type"
+                >
+                  <option value="">All Grant Types</option>
+                  <option value="research">Research</option>
+                  <option value="nextgen">NextGen</option>
+                  <option value="nonresearch">Non-Research</option>
+                </select>
+                <select
+                  value={selectedInstitution}
+                  onChange={(e) => setSelectedInstitution(e.target.value)}
+                  aria-label="Filter by institution"
+                >
+                  <option value="">All Institutions</option>
+                  {institutionOptions.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div className="ar-applications-section">
             <h2>Not Started Assignments</h2>
             <div className="ar-applications-border-container">

@@ -1,21 +1,7 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../index';
 import { NonResearchApplication, ResearchApplication } from '../types/application-types';
-
-// Helper function to convert file to base64 using browser-compatible API
-const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const result = reader.result as string;
-            // Remove the data URL prefix (e.g., "data:application/pdf;base64,")
-            const base64Data = result.split(',')[1];
-            resolve(base64Data);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-};
+import { uploadFileToStorage } from '../storage/storage';
 
 // New secure cloud function for application submission
 export const submitApplication = async (
@@ -24,22 +10,24 @@ export const submitApplication = async (
     grantType: 'research' | 'nextgen' | 'nonresearch'
 ): Promise<{ success: boolean; applicationId: string; message: string }> => {
     try {
-        // Convert file to base64 for secure transmission using browser-compatible API
-        const fileData = await fileToBase64(file);
+        // Client-side pre-checks throw the same message shapes the forms already map:
+        if (file.type !== 'application/pdf') throw new Error('Only PDF files are allowed');
+        if (file.size > 50 * 1024 * 1024) throw new Error('File size exceeds 50MB limit');
 
-        // Call the secure cloud function
+        // Upload straight to Storage (rules enforce type/size server-side too),
+        // then hand the object name to the callable. This avoids base64-encoding
+        // the PDF through the callable's 32MB request limit.
+        const storedFileName = await uploadFileToStorage(file);
+
         const submitAppFunction = httpsCallable(functions, 'submitApplication');
-
         const result = await submitAppFunction({
             application,
             grantType,
-            fileData,
-            fileName: file.name,
-            fileType: file.type
+            storedFileName,
+            originalFileName: file.name,
         });
 
         return result.data as { success: boolean; applicationId: string; message: string };
-
     } catch (error: any) {
         console.error("Error submitting application:", error);
 

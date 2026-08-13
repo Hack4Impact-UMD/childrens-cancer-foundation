@@ -13,13 +13,19 @@ const ReviewerProtectedRoute: React.FC<ReviewerProtectedRouteProps> = ({ element
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user: User | null) => {
-      if (user) {
-        const idTokenResult = await user.getIdTokenResult();
-        setIsReviewer(!!idTokenResult.claims.role && idTokenResult.claims.role === 'reviewer');
-      } else {
+      try {
+        if (user) {
+          const idTokenResult = await user.getIdTokenResult();
+          setIsReviewer(!!idTokenResult.claims.role && idTokenResult.claims.role === 'reviewer');
+        } else {
+          setIsReviewer(false);
+        }
+      } catch (error) {
+        console.error('Error resolving auth role:', error);
         setIsReviewer(false);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();

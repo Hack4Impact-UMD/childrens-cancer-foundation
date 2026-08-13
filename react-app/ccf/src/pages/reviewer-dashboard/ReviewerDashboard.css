@@ -34,3 +34,42 @@
     color: var(--ccf-red);
     font-weight: 600;
 }
+
+/* Archive controls (mirrors the applicant dashboard archive styling) */
+.show-archived-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    margin-bottom: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.show-archived-toggle input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: #003E83;
+}
+
+.archived-tag {
+    color: #F0C567;
+    font-weight: bold;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.archive-btn {
+    background: #5b6770;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.archive-btn:hover {
+    background: #444d54;
+}

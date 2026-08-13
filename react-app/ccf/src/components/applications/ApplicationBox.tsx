@@ -9,6 +9,8 @@ export interface Application {
     status?: string;
     title?: string;
     principalInvestigator?: string;
+    reviewId?: string;
+    archived?: boolean;
 }
 
 interface ApplicationBoxProps {
@@ -20,6 +22,9 @@ interface ApplicationBoxProps {
     principalInvestigator?: string;
     onClick?: (dueDate: string, applicationId?: string) => void;
     onModalOpen?: (applicationId: string) => void;
+    archived?: boolean;
+    // When provided, an Archive/Unarchive control (and "Archived" tag) is shown.
+    onToggleArchive?: () => void;
 }
 
 const ApplicationBox = ({
@@ -30,7 +35,9 @@ const ApplicationBox = ({
     title,
     principalInvestigator,
     onClick = () => { },
-    onModalOpen = () => { }
+    onModalOpen = () => { },
+    archived = false,
+    onToggleArchive
 }: ApplicationBoxProps): JSX.Element => {
     // Handle click with optional applicationId
     const handleClick = () => {
@@ -46,12 +53,22 @@ const ApplicationBox = ({
         }
     };
 
+    const handleToggleArchive = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onToggleArchive?.();
+    };
+
     return (
         <div className="single-application-box">
             <div className="application-info">
                 <FaFileAlt className="application-icon" />
                 <div className="application-text">
-                    {title && <p className="application-title">{title}</p>}
+                    {title && (
+                        <p className="application-title">
+                            {title}
+                            {archived && <span className="archived-tag">Archived</span>}
+                        </p>
+                    )}
                     <p>{applicationType}{principalInvestigator ? ` - ${principalInvestigator}` : ''}</p>
                 </div>
             </div>
@@ -70,6 +87,14 @@ const ApplicationBox = ({
                     <FaEye />
                     View Details
                 </button>
+                {onToggleArchive && (
+                    <button
+                        className="archive-btn"
+                        onClick={handleToggleArchive}
+                    >
+                        {archived ? 'Unarchive' : 'Archive'}
+                    </button>
+                )}
             </div>
         </div>
     );

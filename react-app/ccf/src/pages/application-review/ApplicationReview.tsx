@@ -24,6 +24,10 @@ import Button from "../../components/buttons/Button";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 
+// Old NIH scale: 1.0 (best) through 5.0 (worst) in 0.1 increments.
+// Built from tenths so the option values are free of float artifacts.
+const SCORE_OPTIONS = Array.from({ length: 41 }, (_, i) => ((10 + i) / 10).toFixed(1));
+
 function ApplicationReview(): JSX.Element {
   const sidebarItems = getSidebarbyRole("reviewer");
   const location = useLocation();
@@ -70,7 +74,8 @@ function ApplicationReview(): JSX.Element {
           return;
         }
 
-        setIsReviewLocked(cycle.stage === "Deliberations");
+        // Locked in every stage except the open review period ("Review").
+        setIsReviewLocked(cycle.stage !== "Review");
       } catch (error) {
         console.error("Error refetching cycle:", error);
       }
@@ -126,7 +131,9 @@ function ApplicationReview(): JSX.Element {
             internal: existingReview.feedback.internal || ""
           });
           if (existingReview.score) {
-            setOverall(existingReview.score.toString());
+            // Normalise to one decimal so scores saved under the old integer
+            // scale (e.g. 3) still match a dropdown option ("3.0").
+            setOverall(existingReview.score.toFixed(1));
           }
         } else {
           setError("No review assignment found for this application");
@@ -215,9 +222,11 @@ function ApplicationReview(): JSX.Element {
 
   if (loading) {
     return (
-      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
-        <div className="applications-container">
-          <p>Loading application data...</p>
+      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
+        <div className="dashboard-sections-content">
+          <div className="arr-review-card">
+            <p>Loading application data...</p>
+          </div>
         </div>
       </RoleDashboardShell>
     );
@@ -225,36 +234,41 @@ function ApplicationReview(): JSX.Element {
 
   if (error) {
     return (
-      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
-        <div className="applications-container">
-          <p className="error-message">{error}</p>
-          <button
-            className="save-button"
-            onClick={() => navigate("/reviewer/dashboard")}
-          >
-            Return to Dashboard
-          </button>
+      <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
+        <div className="dashboard-sections-content">
+          <div className="arr-review-card">
+            <p className="error-message">{error}</p>
+            <button
+              className="save-button"
+              onClick={() => navigate("/reviewer/dashboard")}
+            >
+              Return to Dashboard
+            </button>
+          </div>
         </div>
       </RoleDashboardShell>
     );
   }
 
   return (
-    <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review">
-          <div className="applications-container">
+    <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
+      <div className="dashboard-sections-content">
+          <div className="arr-review-card">
             {application && (
-              <div>
-                <h2>Title: {application.title}</h2>
+              <div className="arr-app-meta">
+                <h2>{application.title}</h2>
                 <p>Applicant: {application.grantType === "nonresearch" ? (application as NonResearchApplication).requestor : (application as ResearchApplication).principalInvestigator}</p>
                 <p>Type: {application.grantType}</p>
               </div>
             )}
 
-            <p className="view-app-link" onClick={() => setModalOpen(true)}>VIEW APPLICATION</p>
+            <button className="arr-view-btn" onClick={() => setModalOpen(true)}>View Application</button>
             <div className="score-section">
               <p className="score-label">
-                Overall score: (1 <em>exceptional</em> - 5{" "}
-                <em>poor quality, unrepairable</em>)
+                Overall score: Please use the <strong>legacy NIH scoring scale</strong>,
+                where 1.0 indicates the highest merit and 5.0 the lowest. Scores may be
+                assigned in 0.1 increments — for example, 1.1 denotes an outstanding
+                application and 4.9 a very weak one.
               </p>
               <select
                 className="score-dropdown"
@@ -264,7 +278,7 @@ function ApplicationReview(): JSX.Element {
                 disabled={isReviewLocked}
               >
                 <option value="">Enter score.</option>
-                {[1, 2, 3, 4, 5].map((score) => (
+                {SCORE_OPTIONS.map((score) => (
                   <option key={score} value={score}>
                     {score}
                   </option>
@@ -344,35 +358,46 @@ function ApplicationReview(): JSX.Element {
             </div>
           </div>
 
-          <div className="button-group">
+          <div className="review-actions">
             {isReviewLocked && (
-              <div style={{ color: '#dc3545', fontWeight: 'bold', marginBottom: '10px' }}>
-                Reviews are locked - the cycle is now in the "Reviews Closed" stage.
+              <div className="review-locked-note">
+                Review submissions are now locked, please contact CCF if you need to submit a review
               </div>
             )}
-            <Button onClick={saveProgress} disabled={saveStatus === 'saving' || isReviewLocked}>
-              <div>{saveStatus === 'saving' ? 'Saving...' :
-                saveStatus === 'saved' ? 'Saved!' :
-                  saveStatus === 'error' ? 'Error Saving' : 'Save Progress'}</div>
-            </Button>
-            <Button 
-              onClick={submitReviewHandler} 
-              disabled={
-                saveStatus === 'saving' || 
-                isReviewLocked || 
-                !overall || 
-                !feedback.significance.trim() ||
-                !feedback.approach.trim() ||
-                !feedback.feasibility.trim() ||
-                !feedback.investigator.trim() ||
-                !feedback.summary.trim()
-              } 
-              height="40px"
-            >
+            <div className="review-actions-buttons">
+              <Button
+                className={`review-save${saveStatus === 'saved' ? ' is-saved' : saveStatus === 'error' ? ' is-error' : ''}`}
+                onClick={saveProgress}
+                disabled={saveStatus === 'saving' || isReviewLocked}
+                borderRadius="8px"
+                fontWeight={600}
+              >
+                {saveStatus === 'saving' ? 'Saving…' :
+                  saveStatus === 'saved' ? 'Saved!' :
+                    saveStatus === 'error' ? 'Error Saving' : 'Save Progress'}
+              </Button>
+              <Button
+                className="review-submit"
+                onClick={submitReviewHandler}
+                disabled={
+                  saveStatus === 'saving' ||
+                  isReviewLocked ||
+                  !overall ||
+                  !feedback.significance.trim() ||
+                  !feedback.approach.trim() ||
+                  !feedback.feasibility.trim() ||
+                  !feedback.investigator.trim() ||
+                  !feedback.summary.trim()
+                }
+                borderRadius="8px"
+                fontWeight={600}
+              >
                 Submit
-            </Button>
+              </Button>
+            </div>
             {application ? <CoverPageModal onClose={closeModal} isOpen={modalOpen} application={application}></CoverPageModal> : ""}
           </div>
+      </div>
     </RoleDashboardShell>
   );
 }

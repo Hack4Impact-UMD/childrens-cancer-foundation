@@ -13,13 +13,15 @@ import {
   getApplicantSidebarItems,
   SideBarTypes,
 } from "../../types/sidebar-types";
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { toast } from 'react-toastify';
 import {
   getUsersCurrentCycleAppplications,
   getUsersAllApplications,
 } from "../../backend/application-filters";
 import { Application } from "../../types/application-types";
 import { firstLetterCap } from "../../utils/stringfuncs";
+import { isDraftFromEndedCycle } from "../../utils/draft-cycle";
 import CoverPageModal from "../../components/applications/CoverPageModal";
 import { FAQItem } from "../../types/faqTypes";
 import { getFAQs } from "../../backend/faq-handler";
@@ -66,6 +68,8 @@ function ApplicantUsersDashboard(): JSX.Element {
 
     const fetchApplicationData = async () => {
       const apps = await getUsersCurrentCycleAppplications();
+      const user = auth.currentUser;
+      const userReports = user ? await getReportsByUser(user.uid) : [];
       const appsWithDecisions: ApplicationWithDecision[] = await Promise.all(
         apps.map(async (app: any) => {
           try {
@@ -74,25 +78,21 @@ function ApplicantUsersDashboard(): JSX.Element {
             let hasReportSubmitted = false;
             let submittedReport = null;
 
-            const user = auth.currentUser;
-            if (user) {
-              const userReports = await getReportsByUser(user.uid);
-              const existingReport = userReports.find(
-                (report) => report.applicationId === app.id,
-              );
-              if (existingReport) {
-                hasReportSubmitted = true;
-                submittedReport = existingReport;
+            const existingReport = userReports.find(
+              (report) => report.applicationId === app.id,
+            );
+            if (existingReport) {
+              hasReportSubmitted = true;
+              submittedReport = existingReport;
 
-                try {
-                  const fileId = existingReport.pdf || existingReport.file;
-                  if (fileId) {
-                    const pdfUrl = await getPDFDownloadURL(fileId);
-                    submittedReport.file = pdfUrl;
-                  }
-                } catch (error) {
-                  console.error("Error getting PDF URL for dashboard:", error);
+              try {
+                const fileId = existingReport.pdf || existingReport.file;
+                if (fileId) {
+                  const pdfUrl = await getPDFDownloadURL(fileId);
+                  submittedReport.file = pdfUrl;
                 }
+              } catch (error) {
+                console.error("Error getting PDF URL for dashboard:", error);
               }
             }
 
@@ -257,6 +257,19 @@ function ApplicantUsersDashboard(): JSX.Element {
     setOpenModal(null);
   };
 
+  const handleDeleteDraft = async (e: React.MouseEvent, draftId: string) => {
+    e.stopPropagation(); // the row itself navigates on click
+    if (!window.confirm('Delete this draft application? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db, 'applications', draftId));
+      setInProgressApplications((prev: any) => prev.filter((d: any) => d.id !== draftId));
+      toast.success('Draft deleted.');
+    } catch (err) {
+      console.error('Error deleting draft:', err);
+      toast.error('Could not delete the draft. Please try again.');
+    }
+  };
+
   const navigate = useNavigate();
 
   return (
@@ -361,11 +374,20 @@ function ApplicantUsersDashboard(): JSX.Element {
                             >
                               <div className="application-info">
                                 <FaFileAlt className="application-icon" />
-                                <p>{firstLetterCap(application.grantType)} - Draft</p>
+                                <p>{`${firstLetterCap(application.grantType)} - Draft${application.applicationCycle ? ` (${application.applicationCycle})` : ''}`}</p>
+                                {isDraftFromEndedCycle(application, appCycle?.id) && (
+                                  <span className="draft-ended-cycle-tag">Cycle ended — cannot be submitted</span>
+                                )}
                               </div>
                               <div className="ApplicantDashboard-application-status">
                                 <p>In Progress</p>
                                 <FaArrowRight className="application-status-icon" />
+                                <button
+                                  className="draft-delete-btn"
+                                  onClick={(e) => handleDeleteDraft(e, application.id)}
+                                >
+                                  Delete
+                                </button>
                               </div>
                             </div>
                           ),
@@ -389,6 +411,21 @@ function ApplicantUsersDashboard(): JSX.Element {
                                 {firstLetterCap((application as any).grantType)}
                               </p>
                             </div>
+                            {/* Full results (letter, funding, reviewer feedback)
+                                are only reachable once decisions are released. */}
+                            {appCycle?.stage === "Release Decisions" && (
+                              <button
+                                type="button"
+                                className="ApplicantDashboard-results-btn"
+                                onClick={() =>
+                                  navigate(
+                                    `/applicant/results?id=${(application as any).id}`,
+                                  )
+                                }
+                              >
+                                View Results
+                              </button>
+                            )}
                             <div
                               className="ApplicantDashboard-application-status"
                               onClick={() => {

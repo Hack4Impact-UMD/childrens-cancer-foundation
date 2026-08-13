@@ -13,13 +13,19 @@ const ApplicantProtectedRoute: React.FC<ApplicantProtectedRouteProps> = ({ eleme
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user: User | null) => {
-      if (user) {
-        const idTokenResult = await user.getIdTokenResult();
-        setIsApplicant(!!idTokenResult.claims.role && idTokenResult.claims.role === 'applicant');
-      } else {
+      try {
+        if (user) {
+          const idTokenResult = await user.getIdTokenResult();
+          setIsApplicant(!!idTokenResult.claims.role && idTokenResult.claims.role === 'applicant');
+        } else {
+          setIsApplicant(false);
+        }
+      } catch (error) {
+        console.error('Error resolving auth role:', error);
         setIsApplicant(false);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();

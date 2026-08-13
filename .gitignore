@@ -88,3 +88,5 @@ reset-firebase-admin.js
 reset-firebase.js
 
 /plans
+react-app/ccf/users.json
+
