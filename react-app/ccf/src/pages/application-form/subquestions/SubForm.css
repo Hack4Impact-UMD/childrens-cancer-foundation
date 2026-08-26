@@ -471,3 +471,9 @@
         align-items: stretch;
     }
 }
+
+.about-grant-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}

@@ -1,0 +1,67 @@
+.grant-instructions-page {
+    width: min(900px, 92%);
+    margin: 0 auto;
+    padding: 24px 0 60px;
+    text-align: left;
+}
+
+.grant-instructions-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e1e5e9;
+}
+
+.grant-instructions-logo {
+    height: 60px;
+    width: auto;
+}
+
+.grant-instructions-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.grant-instructions-login {
+    color: var(--color-red);
+    font-size: 15px;
+}
+
+.grant-instructions-content {
+    margin-top: 28px;
+    line-height: 1.55;
+}
+
+.grant-instructions-title {
+    font-size: 28px;
+    margin: 0 0 12px;
+}
+
+.grant-instructions-intro {
+    color: #5b5b5b;
+    margin: 0 0 20px;
+}
+
+.grant-instructions-list {
+    padding-left: 20px;
+}
+
+.grant-instructions-list li {
+    margin-bottom: 10px;
+}
+
+.grant-instructions-list a,
+.grant-instructions-footer a {
+    color: var(--color-red);
+}
+
+.grant-instructions-footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 2px solid #e1e5e9;
+    color: #5b5b5b;
+}
