@@ -2,6 +2,20 @@ import "./SubForm.css";
 import React from "react";
 import { ReviewProps } from "../../../types/application-types";
 
+// One-line rendering of a signature: name, title, institution and date, with
+// the parts an older application may not carry left out rather than blank.
+const formatSignature = (...parts: (string | undefined)[]): string => {
+  const signed = parts.map((part) => part?.trim()).filter(Boolean);
+  return signed.length > 0 ? signed.join(" \u2014 ") : "N/A";
+};
+
+// Applications submitted before the "I Agree" certification existed carry no
+// flag at all — say so rather than reporting them as unsigned.
+const formatCertification = (agreed: boolean | undefined): string => {
+  if (agreed === undefined || agreed === null) return "N/A";
+  return agreed ? "I Agree" : "Not signed";
+};
+
 /* Still need to add useState from information*/
 function ReviewApplication({ type, formData, hideFile }: ReviewProps): JSX.Element {
   if (type === "NonResearch") return (
@@ -198,13 +212,35 @@ function ReviewApplication({ type, formData, hideFile }: ReviewProps): JSX.Eleme
         <div className="detail-card">
           <h3 className="card-title">Signatures</h3>
           <div className="detail-grid">
-            <div className="detail-item">
-              <span className="detail-label">Signature of Principal Investigator(s)</span>
-              <span className="detail-value">{formData.signaturePI || "N/A"}</span>
+            <div className="detail-item full-width">
+              <span className="detail-label">Principal Investigator</span>
+              <span className="detail-value">
+                {formatSignature(
+                  formData.signaturePI,
+                  formData.signaturePITitle,
+                  formData.signaturePIInstitution,
+                  formData.signaturePIDate
+                )}
+              </span>
             </div>
             <div className="detail-item">
-              <span className="detail-label">Signature of Department Head</span>
-              <span className="detail-value">{formData.signatureDeptHead || "N/A"}</span>
+              <span className="detail-label">Principal Investigator Certification</span>
+              <span className="detail-value">{formatCertification(formData.signaturePIAgreed)}</span>
+            </div>
+            <div className="detail-item full-width">
+              <span className="detail-label">Department Head</span>
+              <span className="detail-value">
+                {formatSignature(
+                  formData.signatureDeptHead,
+                  formData.signatureDeptHeadTitle,
+                  formData.signatureDeptHeadInstitution,
+                  formData.signatureDeptHeadDate
+                )}
+              </span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Department Head Certification</span>
+              <span className="detail-value">{formatCertification(formData.signatureDeptHeadAgreed)}</span>
             </div>
           </div>
         </div>

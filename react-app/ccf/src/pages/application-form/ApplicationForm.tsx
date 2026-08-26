@@ -11,6 +11,8 @@ import { uploadResearchApplication } from '../../backend/applicant-form-submit';
 import { toast } from 'react-toastify';
 import { Modal } from '../../components/modal/modal';
 import { useApplicationDraft } from './useApplicationDraft';
+import { SIGNATURE_REQUIRED_FIELDS } from './signature-fields';
+import { isMissing, getFieldDisplayName } from './required-fields';
 
 type ApplicationFormProps = {
     type: "Research" | "NextGen";
@@ -30,7 +32,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         'adminOfficialName', 'adminOfficialAddress', 'adminOfficialCityStateZip',
         'adminPhoneNumber', 'adminEmail', 'includedPublishedPaper', 'creditAgreement',
         'patentApplied', 'includedFundingInfo', 'amountRequested', 'dates',
-        'einNumber', 'signaturePI', 'signatureDeptHead', 'file'
+        'einNumber', ...SIGNATURE_REQUIRED_FIELDS, 'file'
     ];
     const pageFields: { [key: number]: string[] } = {
         2: ['title', 'principalInvestigator', 'institution',
@@ -40,7 +42,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             'adminPhoneNumber', 'adminEmail'],
         3: ['includedPublishedPaper', 'creditAgreement', 'patentApplied',
             'includedFundingInfo', 'amountRequested', 'dates',
-            'einNumber', 'signaturePI', 'signatureDeptHead'],
+            'einNumber', ...SIGNATURE_REQUIRED_FIELDS],
         4: ['file'],
     };
     const [formData, setFormData] = useState({
@@ -73,7 +75,15 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
         attestationHumanSubjects: false,
         attestationCertification: false,
         signaturePI: '',
+        signaturePITitle: '',
+        signaturePIInstitution: '',
+        signaturePIDate: '',
+        signaturePIAgreed: false,
         signatureDeptHead: '',
+        signatureDeptHeadTitle: '',
+        signatureDeptHeadInstitution: '',
+        signatureDeptHeadDate: '',
+        signatureDeptHeadAgreed: false,
         file: null
     });
     const [errors, setErrors] = useState<any>({});
@@ -128,10 +138,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
 
     const handleContinue = async () => {
         const fieldsForCurrentPage = pageFields[currentPage] || [];
-        const isPageValid = fieldsForCurrentPage.every(field => {
-            const value = (formData as any)[field];
-            return value && value.toString().trim() !== '';
-        });
+        const isPageValid = fieldsForCurrentPage.every(field => !isMissing((formData as any)[field]));
 
         if (!isPageValid) {
             toast.warn("Please fill out all required fields. You will not be able to submit until all fields are complete.");
@@ -159,10 +166,8 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
             const invalidFieldsOnPage = [];
 
             for (const field of fieldsOnPage) {
-                const value = (formData as any)[field];
-                if (!value || (typeof value === 'string' && value.trim() === '')) {
-                    const fieldName = field === 'file' ? 'PDF Upload' : field.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
-                    invalidFieldsOnPage.push(fieldName);
+                if (isMissing((formData as any)[field])) {
+                    invalidFieldsOnPage.push(getFieldDisplayName(field));
                 }
             }
 
@@ -235,8 +240,7 @@ function ApplicationForm({ type }: ApplicationFormProps): JSX.Element {
     };
     const isFormValid = (checkAll = false) => {
         const hasRequiredFields = requiredFields.reduce((acc, curr) => {
-            const value = (formData as any)[curr];
-            const result = value !== '' && value !== null;
+            const result = !isMissing((formData as any)[curr]);
             if (checkAll && !result) {
                 setErrors((prev: any) => ({ ...prev, [curr]: "This field cannot be empty." }));
             }

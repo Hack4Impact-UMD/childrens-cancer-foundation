@@ -1,12 +1,14 @@
 import "./SubForm.css";
 import { ApplicationQuestionsProps } from "../../../types/application-types";
+import SignatureBlock from "../Components/SignatureBlock";
+import { PI_SIGNATURE_FIELDS, DEPT_HEAD_SIGNATURE_FIELDS } from "../signature-fields";
 
 function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsProps): JSX.Element {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prevData: any) => ({
       ...prevData,
-      [name]: type === 'radio' && e.target.checked ? value : value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -172,32 +174,22 @@ function ApplicationQuestions({ formData, setFormData }: ApplicationQuestionsPro
           </div>
         </div>
 
-        <div className="signature-row signature-row-bottom">
-          <div className="signature-field">
-            <p className="text-label">Signature of Principal Investigator(s) *</p>
-            <input 
-              type="text" 
-              name="signaturePI" 
-              value={formData.signaturePI} 
-              onChange={handleChange} 
-              placeholder="Enter PI signature"
-              required 
-              className="text-input" 
-            />
-          </div>
-          <div className="signature-field">
-            <p className="text-label">Signature of Department Head *</p>
-            <input 
-              type="text" 
-              name="signatureDeptHead" 
-              value={formData.signatureDeptHead} 
-              onChange={handleChange} 
-              placeholder="Enter Dept Head signature" 
-              required 
-              className="text-input" 
-            />
-          </div>
-        </div>
+        <SignatureBlock
+          heading="Your Electronic Signature"
+          namePlaceholder="Enter principal investigator full name"
+          fields={PI_SIGNATURE_FIELDS}
+          formData={formData}
+          setFormData={setFormData}
+        />
+
+        <SignatureBlock
+          heading="Department Head Electronic Signature"
+          namePlaceholder="Enter department head full name"
+          fields={DEPT_HEAD_SIGNATURE_FIELDS}
+          formData={formData}
+          setFormData={setFormData}
+        />
+
       </div>
   );
 }

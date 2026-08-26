@@ -34,7 +34,15 @@ export interface ApplicationQuestions {
     attestationHumanSubjects: boolean;
     attestationCertification: boolean;
     signaturePI: string;
+    signaturePITitle: string;
+    signaturePIInstitution: string;
+    signaturePIDate: string;
+    signaturePIAgreed: boolean;
     signatureDeptHead: string;
+    signatureDeptHeadTitle: string;
+    signatureDeptHeadInstitution: string;
+    signatureDeptHeadDate: string;
+    signatureDeptHeadAgreed: boolean;
 }
 
 export interface AssignReviewers {
@@ -75,7 +83,15 @@ export interface ResearchApplication {
     attestationHumanSubjects: boolean;
     attestationCertification: boolean;
     signaturePI: string;
+    signaturePITitle: string;
+    signaturePIInstitution: string;
+    signaturePIDate: string;
+    signaturePIAgreed: boolean;
     signatureDeptHead: string;
+    signatureDeptHeadTitle: string;
+    signatureDeptHeadInstitution: string;
+    signatureDeptHeadDate: string;
+    signatureDeptHeadAgreed: boolean;
 }
 
 export type Application = (ResearchApplication | NonResearchApplication) & ApplicationDetails
