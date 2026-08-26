@@ -8,8 +8,8 @@ import ReviewApplication from './subquestions/Review';
 import AboutGrant from './subquestions/AboutGrant';
 import { uploadNonResearchApplication } from '../../backend/applicant-form-submit';
 import { toast } from 'react-toastify';
-import { validateEmail, validatePhoneNumber } from '../../utils/validation';
 import { Modal } from '../../components/modal/modal';
+import { getNRInvalidSections, NR_MY_INFORMATION, NR_NARRATIVE } from './nr-validation';
 import { useApplicationDraft } from './useApplicationDraft';
 
 function NRApplicationForm(): JSX.Element {
@@ -18,10 +18,11 @@ function NRApplicationForm(): JSX.Element {
     const totalPages = pages.length;
     const navigate = useNavigate();
 
-    const myInformationFields = [
-        'title', 'requestor', 'institution', 'institutionPhoneNumber', 'institutionEmail',
-        'amountRequested', 'timeframe'
-    ];
+    // Breadcrumb page number -> the validation section rendered on that page.
+    const pageSections: { [page: number]: string } = {
+        2: NR_MY_INFORMATION,
+        3: NR_NARRATIVE,
+    };
 
     const [formData, setFormData] = useState({
         title: '',
@@ -87,8 +88,11 @@ function NRApplicationForm(): JSX.Element {
     };
 
     const handleContinue = async () => {
-        if (currentPage === 2) {
-            const validationErrors = validateCurrentPage();
+        const currentSection = pageSections[currentPage];
+        if (currentSection) {
+            const validationErrors = Object.values(
+                getNRInvalidSections(formData, [currentSection])
+            ).flat();
             if (validationErrors.length > 0) {
                 toast.warn(`Please fix the following issues: ${validationErrors.join(', ')}`);
                 return;
@@ -105,7 +109,7 @@ function NRApplicationForm(): JSX.Element {
 
     const handleSubmit = async () => {
         if (isSubmitting) return;
-        const invalidSections = getNRInvalidSections();
+        const invalidSections = getNRInvalidSections(formData);
 
         if (!appOpen) {
             setModalTitle('Applications Are Closed');
@@ -151,73 +155,8 @@ function NRApplicationForm(): JSX.Element {
         if (submitted) navigate('/applicant/dashboard');
     };
 
-    const getNRInvalidSections = (): Record<string, string[]> => {
-        const invalidSections: Record<string, string[]> = {};
-
-        const push = (section: string, message: string) => {
-            if (!invalidSections[section]) invalidSections[section] = [];
-            invalidSections[section].push(message);
-        };
-
-        for (const field of myInformationFields) {
-            const value = (formData as any)[field];
-            if (!value || value.toString().trim() === '') {
-                push('My Information', `${getFieldDisplayName(field)} is required`);
-            }
-        }
-
-        const fileVal = formData.file;
-        if (!fileVal) {
-            push('Narrative', `${getFieldDisplayName('file')} is required`);
-        }
-
-        if (formData.institutionEmail?.trim()) {
-            const emailError = validateEmail(formData.institutionEmail);
-            if (emailError) {
-                push('My Information', 'Invalid email format');
-            }
-        }
-
-        if (formData.institutionPhoneNumber?.trim()) {
-            const phoneError = validatePhoneNumber(formData.institutionPhoneNumber);
-            if (phoneError) {
-                push('My Information', phoneError);
-            }
-        }
-
-        if (formData.amountRequested?.trim()) {
-            const amount = parseFloat(formData.amountRequested);
-            if (isNaN(amount) || amount <= 0) {
-                push('My Information', 'Amount requested must be a valid positive number');
-            }
-        }
-
-        return invalidSections;
-    };
-
-    const validateCurrentPage = (): string[] => {
-        const sections = getNRInvalidSections();
-        return Object.values(sections).flat();
-    };
-
-    const getFieldDisplayName = (field: string): string => {
-        const fieldNames: { [key: string]: string } = {
-            'title': 'Title',
-            'requestor': 'Principal Requestor',
-            'institution': 'Institution',
-            'institutionPhoneNumber': 'Phone Number',
-            'institutionEmail': 'Email',
-            'amountRequested': 'Amount Requested',
-            'timeframe': 'Timeframe',
-            'file': 'File'
-        };
-        return fieldNames[field] || field;
-    };
-
-    const isFormValid = (): boolean => {
-        const errors = validateCurrentPage();
-        return errors.length === 0;
-    };
+    const isFormValid = (): boolean =>
+        Object.keys(getNRInvalidSections(formData)).length === 0;
 
     const renderPage = () => {
         switch (currentPage) {
