@@ -122,6 +122,20 @@
     margin-top: 8px;
   }
 
+  .feedback-optional {
+    color: #5b5b5b;
+    font-style: italic;
+  }
+
+  .review-submit-hint {
+    color: #5b5b5b;
+    font-size: 0.95rem;
+    background-color: #f4f4f4;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
   .review-locked-note {
     color: #b02a37;
     font-weight: 700;

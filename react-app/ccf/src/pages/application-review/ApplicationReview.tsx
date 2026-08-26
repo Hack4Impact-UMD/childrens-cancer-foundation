@@ -23,10 +23,47 @@ import { getCurrentCycle } from "../../backend/application-cycle";
 import Button from "../../components/buttons/Button";
 import { Application, NonResearchApplication, ResearchApplication } from "../../types/application-types";
 import CoverPageModal from "../../components/applications/CoverPageModal";
+import { getMissingRequiredReviewFields } from "./review-required-fields";
 
 // Old NIH scale: 1.0 (best) through 5.0 (worst) in 0.1 increments.
 // Built from tenths so the option values are free of float artifacts.
 const SCORE_OPTIONS = Array.from({ length: 41 }, (_, i) => ((10 + i) / 10).toFixed(1));
+
+// Only the summary is required; the remaining sections are optional so a
+// reviewer with nothing to add to one can still submit.
+const FEEDBACK_SECTIONS: { key: string; label: string; question: string; required?: boolean }[] = [
+  {
+    key: "significance",
+    label: "SIGNIFICANCE",
+    question:
+      "How significant is the childhood cancer problem addressed by this proposal? How will the proposed study add to or enhance the currently available methods to prevent, treat or manage childhood cancer?",
+  },
+  {
+    key: "approach",
+    label: "APPROACH",
+    question:
+      "Is the study hypothesis-driven? Is this a novel hypothesis or research question? How well do existing data support the current hypothesis? Are the aims and objectives appropriate for the hypothesis being tested? Are the methodology and evaluation component adequate to provide a convincing test of the hypothesis? Have the applicants adequately accounted for potential confounders? Are there any methodological weaknesses? If there are methodological weaknesses, how may they be corrected? Is the statistical analysis adequate?",
+  },
+  {
+    key: "feasibility",
+    label: "FEASIBILITY",
+    question:
+      "Comment on how well the research team is to carry out the study. Is it feasible to carry out the project in the proposed location(s)? Can the project be accomplished within the proposed time period?",
+  },
+  {
+    key: "investigator",
+    label: "INVESTIGATOR",
+    question:
+      "What has the productivity of the PI been over the past 3 years? If successful, does the track record of the PI indicate that future peer-reviewed funding will allow the project to continue? Are there adequate collaborations for work outside the PI's expertise?",
+  },
+  {
+    key: "summary",
+    label: "SUMMARY",
+    required: true,
+    question:
+      "Please provide any additional comments that would be helpful to the applicant, such as readability, grantsponsorship, etc., especially if the application does not score well.",
+  },
+];
 
 function ApplicationReview(): JSX.Element {
   const sidebarItems = getSidebarbyRole("reviewer");
@@ -220,6 +257,8 @@ function ApplicationReview(): JSX.Element {
     setModalOpen(false)
   }
 
+  const missingRequired = getMissingRequiredReviewFields(overall, feedback);
+
   if (loading) {
     return (
       <RoleDashboardShell sidebarItems={sidebarItems} title="Application Review" stackClassName="arr-review-page">
@@ -294,41 +333,11 @@ function ApplicationReview(): JSX.Element {
               </strong>
             </p>
 
-            {[
-              {
-                key: "significance",
-                label: "SIGNIFICANCE",
-                question:
-                  "How significant is the childhood cancer problem addressed by this proposal? How will the proposed study add to or enhance the currently available methods to prevent, treat or manage childhood cancer?",
-              },
-              {
-                key: "approach",
-                label: "APPROACH",
-                question:
-                  "Is the study hypothesis-driven? Is this a novel hypothesis or research question? How well do existing data support the current hypothesis? Are the aims and objectives appropriate for the hypothesis being tested? Are the methodology and evaluation component adequate to provide a convincing test of the hypothesis? Have the applicants adequately accounted for potential confounders? Are there any methodological weaknesses? If there are methodological weaknesses, how may they be corrected? Is the statistical analysis adequate?",
-              },
-              {
-                key: "feasibility",
-                label: "FEASIBILITY",
-                question:
-                  "Comment on how well the research team is to carry out the study. Is it feasible to carry out the project in the proposed location(s)? Can the project be accomplished within the proposed time period?",
-              },
-              {
-                key: "investigator",
-                label: "INVESTIGATOR",
-                question:
-                  "What has the productivity of the PI been over the past 3 years? If successful, does the track record of the PI indicate that future peer-reviewed funding will allow the project to continue? Are there adequate collaborations for work outside the PI's expertise?",
-              },
-              {
-                key: "summary",
-                label: "SUMMARY",
-                question:
-                  "Please provide any additional comments that would be helpful to the applicant, such as readability, grantsponsorship, etc., especially if the application does not score well.",
-              },
-            ].map(({ key, label, question }) => (
+            {FEEDBACK_SECTIONS.map(({ key, label, question, required }) => (
               <div key={key} className="feedback-section">
                 <label>
-                  <strong>{label}:</strong> {question}
+                  <strong>{label}:</strong>
+                  {!required && <span className="feedback-optional"> (optional)</span>} {question}
                 </label>
                 <textarea
                   value={feedback[key as keyof typeof feedback] || ""}
@@ -364,6 +373,12 @@ function ApplicationReview(): JSX.Element {
                 Review submissions are now locked, please contact CCF if you need to submit a review
               </div>
             )}
+            {!isReviewLocked && missingRequired.length > 0 && (
+              <div className="review-submit-hint">
+                Please add {missingRequired.join(" and ")} to submit. Every other
+                feedback section is optional.
+              </div>
+            )}
             <div className="review-actions-buttons">
               <Button
                 className={`review-save${saveStatus === 'saved' ? ' is-saved' : saveStatus === 'error' ? ' is-error' : ''}`}
@@ -382,12 +397,7 @@ function ApplicationReview(): JSX.Element {
                 disabled={
                   saveStatus === 'saving' ||
                   isReviewLocked ||
-                  !overall ||
-                  !feedback.significance.trim() ||
-                  !feedback.approach.trim() ||
-                  !feedback.feasibility.trim() ||
-                  !feedback.investigator.trim() ||
-                  !feedback.summary.trim()
+                  missingRequired.length > 0
                 }
                 borderRadius="8px"
                 fontWeight={600}
