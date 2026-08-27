@@ -38,6 +38,7 @@ import ApplicationReviewReadOnly from "./pages/application-review/ApplicationRev
 import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
 import AdminWhitelistReviewers from "./pages/admin-whitelist/AdminWhitelistReviewers";
 import AdminPostGrantReports from "./pages/admin-post-grant-reports/AdminPostGrantReports";
+import GrantInstructions from "./pages/grant-instructions/GrantInstructions";
 import { CCF_CONTACT_INFO } from "./StaticData/CONTACT-INFO";
 
 // import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
@@ -64,6 +65,9 @@ function App(): JSX.Element {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/email-action-handler" element={<EmailActionHandler />} />
         <Route path="/create-account-menu" element={<CreateAccMenu />} />
+        {/* Public grant instructions — shareable without an account */}
+        <Route path="/grants" element={<GrantInstructions />} />
+        <Route path="/grants/:grantType" element={<GrantInstructions />} />
         {/* Need to change path to create-account after authentication */}
         <Route
           path="/"

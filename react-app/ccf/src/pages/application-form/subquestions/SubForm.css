@@ -472,6 +472,10 @@
     }
 }
 
+.about-grant-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
 .signature-block {
     width: 100%;
     margin-top: 24px;
@@ -498,4 +502,5 @@
 .signature-block .checkbox-row {
     width: fit-content;
     min-width: min(320px, 100%);
+}
 }
