@@ -77,6 +77,13 @@
     flex-shrink: 0;
 }
 
+.ApplicantDashboard-application-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
 .ApplicantDashboard-application-status {
     display: flex;
     background-color: rgba(217, 217, 217, 0.5);
@@ -401,6 +408,15 @@
         min-width: 0;
         width: 100%;
     }
+
+    .ApplicantDashboard-application-actions {
+        width: 100%;
+    }
+
+    .ApplicantDashboard-application-actions .ApplicantDashboard-application-status {
+        flex: 1;
+        width: auto;
+    }
 }
 
 /* Ended-cycle drafts (plan 005) */
@@ -415,11 +431,12 @@
   background: #d32f2f;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   padding: 8px 16px;
   font-size: 12px;
   cursor: pointer;
   transition: background 0.3s;
+  flex-shrink: 0;
 }
 
 .draft-delete-btn:hover {
