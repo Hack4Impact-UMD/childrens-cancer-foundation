@@ -380,10 +380,13 @@ function ApplicantUsersDashboard(): JSX.Element {
                                   <span className="draft-ended-cycle-tag">Cycle ended — cannot be submitted</span>
                                 )}
                               </div>
-                              <div className="ApplicantDashboard-application-status">
-                                <p>In Progress</p>
-                                <FaArrowRight className="application-status-icon" />
+                              <div className="ApplicantDashboard-application-actions">
+                                <div className="ApplicantDashboard-application-status">
+                                  <p>In Progress</p>
+                                  <FaArrowRight className="application-status-icon" />
+                                </div>
                                 <button
+                                  type="button"
                                   className="draft-delete-btn"
                                   onClick={(e) => handleDeleteDraft(e, application.id)}
                                 >
