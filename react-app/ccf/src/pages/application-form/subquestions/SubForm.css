@@ -471,3 +471,31 @@
         align-items: stretch;
     }
 }
+
+.signature-block {
+    width: 100%;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 2px solid #e1e5e9;
+}
+
+.signature-block-heading {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.signature-block-help,
+.signature-block-certification {
+    margin: 8px 0 0;
+    font-size: 15px;
+    line-height: 1.45;
+    color: #5b5b5b;
+    text-align: left;
+}
+
+.signature-block .checkbox-row {
+    width: fit-content;
+    min-width: min(320px, 100%);
+}
