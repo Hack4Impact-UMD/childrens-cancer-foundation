@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./SubForm.css";
 import MarkdownPreviewer from "../../../components/markdown/Markdown";
+import PrintButton from "../../../components/print/PrintButton";
 import { ApplicationAboutType, AboutPage } from "../../../types/aboutTypes";
 import { getAboutPages, getDefaultAboutPage } from "../../../backend/about-handler";
 
@@ -69,8 +70,11 @@ function AboutGrant({ type }: AboutGrantProps): JSX.Element {
   }, [type]);
 
   return (
-    <div className="review-form-container">
+    <div className="review-form-container printable-instructions">
       <div className="proposal-text">
+        <div className="about-grant-actions no-print">
+          <PrintButton />
+        </div>
         <MarkdownPreviewer _previewOnly={true} _text={aboutContent} _minRows={8} />
       </div>
     </div>

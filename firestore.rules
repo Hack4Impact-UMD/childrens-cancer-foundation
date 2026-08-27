@@ -40,8 +40,10 @@ service cloud.firestore {
     }
     
     // About Pages collection rules
+    // Public read: the grant instructions are shared as a link (/grants/...)
+    // with applicants who do not have an account yet. Writes stay admin-only.
     match /AboutPages/{aboutId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if isAdmin();
     }
     
