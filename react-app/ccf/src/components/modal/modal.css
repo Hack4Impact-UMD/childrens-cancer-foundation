@@ -13,7 +13,7 @@
   
   .modal-container {
     background-color: white;
-    border-radius: 8px;
+    border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     width: 90%;
     max-width: 800px;
@@ -30,11 +30,9 @@
   @keyframes modal-appear {
     from {
       opacity: 0;
-      transform: translateY(-20px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
     }
   }
   
@@ -52,23 +50,36 @@
     font-weight: 600;
   }
   
+  /* GrantAwards.css defines a global `.modal-header` with a CCF-red background,
+     and CRA bundles every stylesheet together, so this header can render red.
+     Inheriting the header's own text colour keeps the X readable on the red
+     ground (white) and on a plain white one (ink) without guessing which wins. */
   .modal-close-button {
+    margin-left: auto;
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 26px;
+    line-height: 1;
+    font-weight: 600;
     cursor: pointer;
-    color: #666;
+    color: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 32px;
     height: 32px;
     border-radius: 50%;
+    transition: background-color 0.15s ease;
   }
   
+  /* A translucent grey reads as a subtle disc on either ground. */
   .modal-close-button:hover {
-    background-color: #f5f5f5;
-    color: #333;
+    background-color: rgba(128, 128, 128, 0.28);
+  }
+  
+  .modal-close-button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
   }
   
   .modal-content {

@@ -256,31 +256,8 @@
     padding: 28px;
     margin-bottom: 28px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-}
-
-.detail-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #003E83 0%, #BE0019 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.detail-card:hover {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-    border-color: #d1d5db;
-}
-
-.detail-card:hover::before {
-    opacity: 1;
 }
 
 .card-title {
@@ -301,7 +278,7 @@
     left: 0;
     width: 60px;
     height: 2px;
-    background: linear-gradient(90deg, #003E83 0%, #BE0019 100%);
+    background: #003E83;
     border-radius: 1px;
 }
 
@@ -316,11 +293,6 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    transition: transform 0.2s ease;
-}
-
-.detail-item:hover {
-    transform: translateX(4px);
 }
 
 .detail-item.full-width {
@@ -351,20 +323,13 @@
     color: #1f2937;
     line-height: 1.6;
     padding: 16px 20px;
-    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    background: #f9fafb;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     min-height: 24px;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
-    transition: all 0.2s ease;
     position: relative;
-}
-
-.detail-value:hover {
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    border-color: #d1d5db;
-    transform: translateY(-1px);
 }
 
 .detail-value:empty::before {
@@ -372,16 +337,6 @@
     color: #9ca3af;
     font-style: italic;
     font-weight: 400;
-}
-
-/* Special styling for important fields */
-.detail-item:has(.detail-label:contains("Title")) .detail-value,
-.detail-item:has(.detail-label:contains("Principal Investigator")) .detail-value,
-.detail-item:has(.detail-label:contains("Amount Requested")) .detail-value {
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border-color: #3b82f6;
-    color: #1e40af;
-    font-weight: 600;
 }
 
 /* Responsive adjustments */
