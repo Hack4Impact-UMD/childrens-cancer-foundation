@@ -416,11 +416,28 @@ function validateApplicationData(application, grantType) {
       errors.push("EIN Number is required");
     }
 
-    if (!application.signaturePI || typeof application.signaturePI !== "string" || application.signaturePI.trim() === "") {
-      errors.push("Signature of Principal Investigator is required");
-    }
-    if (!application.signatureDeptHead || typeof application.signatureDeptHead !== "string" || application.signatureDeptHead.trim() === "") {
-      errors.push("Signature of Department Head is required");
+    // Electronic signatures: the typed name, title, institution and date, plus
+    // the "I Agree" certification that makes the signature an attestation.
+    const signers = [
+      {label: "Principal Investigator", prefix: "signaturePI"},
+      {label: "Department Head", prefix: "signatureDeptHead"},
+    ];
+    for (const {label, prefix} of signers) {
+      const requiredText = [
+        {suffix: "", name: "Full Name"},
+        {suffix: "Title", name: "Title"},
+        {suffix: "Institution", name: "Institution"},
+        {suffix: "Date", name: "Date"},
+      ];
+      for (const {suffix, name} of requiredText) {
+        const value = application[`${prefix}${suffix}`];
+        if (!value || typeof value !== "string" || value.trim() === "") {
+          errors.push(`${label} signature ${name} is required`);
+        }
+      }
+      if (application[`${prefix}Agreed`] !== true) {
+        errors.push(`${label} must check "I Agree" to certify this application`);
+      }
     }
 
     // Note: Non-starred fields like otherStaff, coPI, continuation, continuationYears, and attestations are optional

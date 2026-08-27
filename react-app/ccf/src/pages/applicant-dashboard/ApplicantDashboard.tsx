@@ -4,6 +4,7 @@ import { FaFileAlt, FaArrowRight, FaClipboardList, FaQuestionCircle, FaEnvelope 
 import Button from "../../components/buttons/Button";
 import FAQComponent from "../../components/faq/FaqComp";
 import ContactUs from "../../components/contact/ContactUs";
+import { CCF_CONTACT_INFO } from "../../StaticData/CONTACT-INFO";
 import Banner from "../../components/banner/Banner";
 import DashboardSection from "../../components/dashboard-layout/DashboardSection";
 import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
@@ -379,10 +380,13 @@ function ApplicantUsersDashboard(): JSX.Element {
                                   <span className="draft-ended-cycle-tag">Cycle ended — cannot be submitted</span>
                                 )}
                               </div>
-                              <div className="ApplicantDashboard-application-status">
-                                <p>In Progress</p>
-                                <FaArrowRight className="application-status-icon" />
+                              <div className="ApplicantDashboard-application-actions">
+                                <div className="ApplicantDashboard-application-status">
+                                  <p>In Progress</p>
+                                  <FaArrowRight className="application-status-icon" />
+                                </div>
                                 <button
+                                  type="button"
                                   className="draft-delete-btn"
                                   onClick={(e) => handleDeleteDraft(e, application.id)}
                                 >
@@ -499,11 +503,7 @@ function ApplicantUsersDashboard(): JSX.Element {
               icon={<FaEnvelope className="dashboard-section-icon" />}
               defaultCollapsed
             >
-              <ContactUs
-                email={"contact@ccf.org"}
-                phone={"111-222-3333"}
-                hours={"Monday - Friday 10AM - 5PM"}
-              />
+              <ContactUs {...CCF_CONTACT_INFO} />
             </DashboardSection>
           </div>
     </RoleDashboardShell>
