@@ -38,6 +38,7 @@ import ApplicationReviewReadOnly from "./pages/application-review/ApplicationRev
 import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
 import AdminWhitelistReviewers from "./pages/admin-whitelist/AdminWhitelistReviewers";
 import AdminPostGrantReports from "./pages/admin-post-grant-reports/AdminPostGrantReports";
+import { CCF_CONTACT_INFO } from "./StaticData/CONTACT-INFO";
 
 // import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
 
@@ -71,7 +72,7 @@ function App(): JSX.Element {
           }
         />
         <Route path="/reviewer/dashboard" element={
-          <ReviewerProtectedRoute element={<ReviewerDashboard email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>} />
+          <ReviewerProtectedRoute element={<ReviewerDashboard {...CCF_CONTACT_INFO}></ReviewerDashboard>} />
         }>
         </Route>
         <Route
@@ -210,7 +211,7 @@ function App(): JSX.Element {
         />
 
         <Route path="/reviewer-dashboard" element={
-          <ReviewerProtectedRoute element={<ReviewerDashboard email={"email@testing.org"} hours={"10am - 5pm weekdays"} phone={"111-222-3333"}></ReviewerDashboard>} />
+          <ReviewerProtectedRoute element={<ReviewerDashboard {...CCF_CONTACT_INFO}></ReviewerDashboard>} />
         }>
         </Route>
         <Route
