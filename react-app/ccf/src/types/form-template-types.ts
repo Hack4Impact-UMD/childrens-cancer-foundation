@@ -118,10 +118,21 @@ export interface FormTemplate {
     grantType: GrantType;
     /** Human-readable, e.g. "Research Grant Application". */
     name: string;
+    /** Version number the working copy will become when published. */
     version: number;
+    /**
+     * The working copy's state: 'draft' while an admin has unpublished edits,
+     * 'published' when it matches the live version.
+     */
     status: TemplateStatus;
     /** True for the one template applicants currently fill in for this type. */
     isActive: boolean;
+    /**
+     * The published version applicants actually fill in. Editing a draft never
+     * moves this, so an admin can work on the next form for as long as they
+     * like without disturbing the one that is live.
+     */
+    activeVersion?: number;
     pages: FormPage[];
     /** ISO strings; set by the service, not the builder. */
     createdAt?: string;

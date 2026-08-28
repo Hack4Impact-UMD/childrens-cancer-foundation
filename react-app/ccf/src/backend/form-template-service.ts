@@ -37,8 +37,13 @@ import {
     canEdit,
     checkPublishable,
     createPublishedVersion,
+    discardDraftInto,
     forFirestore,
+    liveVersionNumber,
     nextVersionNumber,
+    startDraftFrom,
+    versionAsTemplate,
+    whyCannotStartDraft,
 } from '../form-templates/versioning';
 import { getSeedTemplate } from '../form-templates/seed';
 
@@ -63,10 +68,14 @@ export const listTemplates = async (grantType?: GrantType): Promise<FormTemplate
 };
 
 /**
- * The form applicants fill in for a grant type. Falls back to the seeded
- * template so the application forms keep working before any template has been
- * published — and if Firestore is unreachable, rather than showing an
- * applicant an empty form.
+ * The form applicants fill in for a grant type.
+ *
+ * This resolves to the *published version* the active template points at, not
+ * to the template document — the document holds the admin's working copy, and
+ * an unfinished draft must never reach an applicant.
+ *
+ * Falls back to the seeded form if nothing is published yet, or if Firestore
+ * is unreachable, rather than showing an applicant an empty form.
  */
 export const getActiveTemplate = async (grantType: GrantType): Promise<FormTemplate> => {
     try {
@@ -74,12 +83,18 @@ export const getActiveTemplate = async (grantType: GrantType): Promise<FormTempl
             query(
                 collection(db, TEMPLATES),
                 where('grantType', '==', grantType),
-                where('isActive', '==', true),
-                where('status', '==', 'published')
+                where('isActive', '==', true)
             )
         );
         const [match] = snap.docs;
-        if (match) return { ...(match.data() as FormTemplate), id: match.id };
+        if (match) {
+            const template = { ...(match.data() as FormTemplate), id: match.id };
+            const live = liveVersionNumber(template);
+            if (live) {
+                const published = await getVersion(template.id, live);
+                if (published) return versionAsTemplate(published);
+            }
+        }
     } catch (error) {
         console.error('Error loading active form template:', error);
     }
@@ -168,6 +183,7 @@ export const publishTemplate = async (
         version,
         status: 'published',
         isActive: true,
+        activeVersion: version,
         updatedAt: new Date().toISOString(),
         lastModifiedBy: publishedBy,
     });
@@ -214,6 +230,7 @@ export const seedTemplatesIfMissing = async (seededBy: string): Promise<GrantTyp
         const batch = writeBatch(db);
         batch.set(templateRef(seed.id), forFirestore({
             ...seed,
+            activeVersion: seed.version,
             createdAt: now,
             updatedAt: now,
             createdBy: seededBy,
@@ -232,6 +249,58 @@ export const seedTemplatesIfMissing = async (seededBy: string): Promise<GrantTyp
     }
 
     return created;
+};
+
+/**
+ * Open the next draft on a published form. The live version keeps serving
+ * applicants throughout — only the working copy changes.
+ */
+export const startNewDraft = async (
+    templateId: string,
+    editedBy: string
+): Promise<FormTemplate> => {
+    const template = await getTemplate(templateId);
+    if (!template) throw new Error('Template not found');
+
+    const reason = whyCannotStartDraft(template);
+    if (reason) throw new Error(reason);
+
+    const draft = startDraftFrom(template, await listVersions(templateId));
+    await setDoc(
+        templateRef(templateId),
+        forFirestore({
+            ...draft,
+            updatedAt: new Date().toISOString(),
+            lastModifiedBy: editedBy,
+        })
+    );
+    return draft;
+};
+
+/** Throw the draft away and put the working copy back to the live version. */
+export const discardDraft = async (
+    templateId: string,
+    editedBy: string
+): Promise<FormTemplate> => {
+    const template = await getTemplate(templateId);
+    if (!template) throw new Error('Template not found');
+
+    const live = liveVersionNumber({ ...template, status: 'published' });
+    const published = live ? await getVersion(templateId, live) : null;
+    if (!published) {
+        throw new Error('This form has never been published, so there is nothing to go back to.');
+    }
+
+    const reverted = discardDraftInto(template, published);
+    await setDoc(
+        templateRef(templateId),
+        forFirestore({
+            ...reverted,
+            updatedAt: new Date().toISOString(),
+            lastModifiedBy: editedBy,
+        })
+    );
+    return reverted;
 };
 
 /** Draft-only convenience for the builder: rename without a full save. */

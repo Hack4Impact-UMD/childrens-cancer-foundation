@@ -1,6 +1,11 @@
 import {
     applyActivation,
+    discardDraftInto,
     forFirestore,
+    hasUnpublishedChanges,
+    liveVersionNumber,
+    versionAsTemplate,
+    whyCannotStartDraft,
     canEdit,
     checkPublishable,
     createPublishedVersion,
@@ -211,46 +216,151 @@ describe('canEdit', () => {
     });
 });
 
-describe('startDraftFrom', () => {
-    test('the next draft is a fresh, inactive copy at the next version', () => {
-        const published = draft({ status: 'published', isActive: true, version: 2 });
-        const next = startDraftFrom(published, [{ version: 1 }, { version: 2 }]);
+describe('the draft lifecycle', () => {
+    const live = (over: Partial<FormTemplate> = {}): FormTemplate =>
+        draft({ status: 'published', isActive: true, version: 1, activeVersion: 1, ...over });
 
-        expect(next).toMatchObject({ id: 'tpl-1', status: 'draft', isActive: false, version: 3 });
+    describe('liveVersionNumber', () => {
+        test('is the version applicants are filling in', () => {
+            expect(liveVersionNumber(live())).toBe(1);
+        });
+
+        test('survives a draft being opened on top of it', () => {
+            expect(liveVersionNumber({ status: 'draft', version: 2, activeVersion: 1 })).toBe(1);
+        });
+
+        test('falls back for templates published before activeVersion existed', () => {
+            expect(liveVersionNumber({ status: 'published', version: 3 })).toBe(3);
+        });
+
+        test('is null when nothing has ever been published', () => {
+            expect(liveVersionNumber({ status: 'draft', version: 1 })).toBeNull();
+        });
     });
 
-    test('editing the new draft leaves the published pages untouched', () => {
-        const published = draft({ status: 'published', version: 1 });
-        const next = startDraftFrom(published, [{ version: 1 }]);
+    describe('whyCannotStartDraft', () => {
+        test('a published form may start one', () => {
+            expect(whyCannotStartDraft(live())).toBeNull();
+        });
 
-        next.pages[1].fields[0].label = 'Changed';
-        expect(published.pages[1].fields[0].label).toBe('Title of Project');
+        test('a form already being edited may not start a second', () => {
+            expect(whyCannotStartDraft({ status: 'draft' }))
+                .toBe('This form already has a draft in progress');
+        });
     });
 
-    test('falls back to the template version when no history is passed', () => {
-        expect(startDraftFrom(draft({ version: 4 }), []).version).toBe(5);
+    describe('startDraftFrom', () => {
+        test('takes the next version and moves the working copy to draft', () => {
+            const next = startDraftFrom(live(), [{ version: 1 }]);
+            expect(next).toMatchObject({ id: 'tpl-1', status: 'draft', version: 2 });
+        });
+
+        test('leaves the live version exactly where it was', () => {
+            // Applicants must keep filling in version 1 while version 2 is written.
+            const next = startDraftFrom(live(), [{ version: 1 }]);
+            expect(next.activeVersion).toBe(1);
+            expect(next.isActive).toBe(true);
+            expect(liveVersionNumber(next)).toBe(1);
+        });
+
+        test('starts from the published pages, and editing them changes nothing live', () => {
+            const published = live();
+            const next = startDraftFrom(published, [{ version: 1 }]);
+
+            next.pages[1].fields[0].label = 'Reworded for next cycle';
+            expect(published.pages[1].fields[0].label).toBe('Title of Project');
+        });
+
+        test('refuses when a draft is already open', () => {
+            expect(() => startDraftFrom(draft(), [{ version: 1 }]))
+                .toThrow('This form already has a draft in progress');
+        });
+
+        test('a form never published keeps no live version', () => {
+            const next = startDraftFrom(live({ status: 'published', activeVersion: undefined, version: 4 }), []);
+            expect(next.version).toBe(5);
+            expect(next.activeVersion).toBe(4);
+        });
+    });
+
+    describe('hasUnpublishedChanges', () => {
+        test('true only while a draft sits on top of a live version', () => {
+            expect(hasUnpublishedChanges({ status: 'draft', version: 2, activeVersion: 1 })).toBe(true);
+            expect(hasUnpublishedChanges({ status: 'published', version: 1, activeVersion: 1 })).toBe(false);
+            expect(hasUnpublishedChanges({ status: 'draft', version: 1 })).toBe(false);
+        });
+    });
+
+    describe('discardDraftInto', () => {
+        const published = {
+            templateId: 'tpl-1', version: 1, grantType: 'research' as const,
+            name: 'Research Grant Application', publishedAt: 'x', publishedBy: 'a@b.org',
+            pages: live().pages,
+        };
+
+        test('puts the working copy back to the published form', () => {
+            const messy = draft({ version: 2, activeVersion: 1 });
+            messy.pages[1].fields[0].label = 'Half-finished edit';
+
+            const reverted = discardDraftInto(messy, published);
+            expect(reverted.status).toBe('published');
+            expect(reverted.version).toBe(1);
+            expect(reverted.activeVersion).toBe(1);
+            expect(reverted.pages[1].fields[0].label).toBe('Title of Project');
+        });
+
+        test('the restored copy is deep, so the version cannot be edited through it', () => {
+            const reverted = discardDraftInto(draft({ version: 2 }), published);
+            reverted.pages[1].fields[0].label = 'Changed after restore';
+            expect(published.pages[1].fields[0].label).toBe('Title of Project');
+        });
+    });
+
+    describe('versionAsTemplate', () => {
+        test('a published version renders like the template it came from', () => {
+            const asTemplate = versionAsTemplate({
+                templateId: 'tpl-1', version: 3, grantType: 'nextgen',
+                name: 'NextGen Grant Application', publishedAt: 'x', publishedBy: 'a@b.org',
+                pages: live().pages,
+            });
+            expect(asTemplate).toMatchObject({
+                id: 'tpl-1', grantType: 'nextgen', version: 3,
+                status: 'published', isActive: true, activeVersion: 3,
+            });
+            expect(asTemplate.pages).toHaveLength(2);
+        });
     });
 });
 
 describe('grantTypesWithoutActiveTemplate', () => {
     test('reports the grant types applicants could not apply for', () => {
         expect(grantTypesWithoutActiveTemplate([
-            { grantType: 'research', isActive: true, status: 'published' },
-            { grantType: 'nextgen', isActive: false, status: 'published' },
+            { grantType: 'research', isActive: true, status: 'published', version: 1 },
+            { grantType: 'nextgen', isActive: false, status: 'published', version: 1 },
         ])).toEqual(['nextgen', 'nonresearch']);
     });
 
-    test('an active draft does not count as a live form', () => {
+    test('a template that has never been published does not count as a live form', () => {
         expect(grantTypesWithoutActiveTemplate([
-            { grantType: 'research', isActive: true, status: 'draft' },
+            { grantType: 'research', isActive: true, status: 'draft', version: 1 },
         ])).toContain('research');
+    });
+
+    test('a draft in progress does not take the live form away from applicants', () => {
+        // The whole point of activeVersion: an admin editing the next form
+        // must not leave applicants with nothing to fill in.
+        expect(grantTypesWithoutActiveTemplate([
+            { grantType: 'research', isActive: true, status: 'draft', version: 2, activeVersion: 1 },
+            { grantType: 'nextgen', isActive: true, status: 'published', version: 1 },
+            { grantType: 'nonresearch', isActive: true, status: 'published', version: 1 },
+        ])).toEqual([]);
     });
 
     test('all three covered means nothing to report', () => {
         expect(grantTypesWithoutActiveTemplate([
-            { grantType: 'research', isActive: true, status: 'published' },
-            { grantType: 'nextgen', isActive: true, status: 'published' },
-            { grantType: 'nonresearch', isActive: true, status: 'published' },
+            { grantType: 'research', isActive: true, status: 'published', version: 1 },
+            { grantType: 'nextgen', isActive: true, status: 'published', version: 1 },
+            { grantType: 'nonresearch', isActive: true, status: 'published', version: 1 },
         ])).toEqual([]);
     });
 });

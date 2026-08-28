@@ -11,7 +11,11 @@ import {
     listTemplates,
     seedTemplatesIfMissing,
 } from "../../backend/form-template-service";
-import { grantTypesWithoutActiveTemplate } from "../../form-templates/versioning";
+import {
+    grantTypesWithoutActiveTemplate,
+    hasUnpublishedChanges,
+    liveVersionNumber,
+} from "../../form-templates/versioning";
 import { FormTemplate, GrantType } from "../../types/form-template-types";
 
 const GRANT_LABELS: Record<GrantType, string> = {
@@ -122,21 +126,31 @@ function FormBuilderPage(): JSX.Element {
                                             <div className="fb-template-main">
                                                 <h3>{template.name}</h3>
                                                 <p className="fb-hint">
-                                                    {GRANT_LABELS[template.grantType]} · version {template.version} ·{" "}
+                                                    {GRANT_LABELS[template.grantType]} ·{" "}
                                                     {template.pages.reduce((n, p) => n + (p.fields?.length || 0), 0)} questions
                                                     {template.updatedAt &&
                                                         ` · edited ${new Date(template.updatedAt).toLocaleDateString()}`}
                                                 </p>
                                             </div>
-                                            <span className={`fb-tag${template.isActive && template.status === "published" ? " fb-tag-live" : ""}`}>
-                                                {template.isActive && template.status === "published" ? "Live" : template.status}
-                                            </span>
+                                            <div className="fb-tags">
+                                                {template.isActive && liveVersionNumber(template) && (
+                                                    <span className="fb-tag fb-tag-live">
+                                                        Live · version {liveVersionNumber(template)}
+                                                    </span>
+                                                )}
+                                                {hasUnpublishedChanges(template) && (
+                                                    <span className="fb-tag fb-tag-cond">Draft in progress</span>
+                                                )}
+                                                {!liveVersionNumber(template) && (
+                                                    <span className="fb-tag">Never published</span>
+                                                )}
+                                            </div>
                                             <div className="fb-template-actions">
                                                 <Button
                                                     variant="outlined"
                                                     onClick={() => navigate(`/admin/form-builder/${template.id}`)}
                                                 >
-                                                    {template.status === "published" ? "View" : "Edit"}
+                                                    {template.status === "published" ? "Open" : "Continue draft"}
                                                 </Button>
                                                 {template.status === "published" && !template.isActive && (
                                                     <Button variant="contained" onClick={() => handleActivate(template)} disabled={working}>

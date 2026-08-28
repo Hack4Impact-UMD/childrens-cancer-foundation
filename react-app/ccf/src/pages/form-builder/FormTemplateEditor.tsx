@@ -10,10 +10,13 @@ import FieldProperties from "./FieldProperties";
 import FormPreview from "./FormPreview";
 import { auth } from "../../index";
 import {
+    discardDraft,
     getTemplate,
     publishTemplate,
     saveDraft,
+    startNewDraft,
 } from "../../backend/form-template-service";
+import { hasUnpublishedChanges, liveVersionNumber } from "../../form-templates/versioning";
 import {
     addField,
     addPage,
@@ -88,7 +91,12 @@ function FormTemplateEditor(): JSX.Element {
     const problems = useMemo(() => (template ? validateTemplate(template) : []), [template]);
     const page = template?.pages.find((p) => p.id === selectedPageId) ?? null;
     const field = page?.fields.find((f) => f.id === selectedFieldId) ?? null;
+    // The working copy is editable only while it is a draft. A published
+    // template is the record of what applicants are filling in, so changing it
+    // starts a new draft rather than editing history.
     const readOnly = template?.status === "published";
+    const liveVersion = template ? liveVersionNumber(template) : null;
+    const draftInProgress = template ? hasUnpublishedChanges(template) : false;
 
     /** Every edit funnels through here, so a refused edit is reported once. */
     const edit = (change: (current: FormTemplate) => FormTemplate) => {
@@ -115,6 +123,42 @@ function FormTemplateEditor(): JSX.Element {
         } catch (error: any) {
             console.error("Error saving draft:", error);
             setSnack(error?.message || "Could not save this draft");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleStartDraft = async () => {
+        if (!template) return;
+        setSaving(true);
+        try {
+            const draft = await startNewDraft(template.id, auth.currentUser?.email || "unknown");
+            setTemplate(draft);
+            setDirty(false);
+            setSnack(`Draft started — applicants keep seeing version ${liveVersion ?? template.version} until you publish`);
+        } catch (error: any) {
+            console.error("Error starting a new draft:", error);
+            setSnack(error?.message || "Could not start a new draft");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDiscardDraft = async () => {
+        if (!template) return;
+        if (!window.confirm("Discard this draft and go back to the published form? This cannot be undone.")) return;
+
+        setSaving(true);
+        try {
+            const reverted = await discardDraft(template.id, auth.currentUser?.email || "unknown");
+            setTemplate(reverted);
+            setSelectedPageId(editablePages(reverted)[0]?.id ?? null);
+            setSelectedFieldId(null);
+            setDirty(false);
+            setSnack("Draft discarded");
+        } catch (error: any) {
+            console.error("Error discarding draft:", error);
+            setSnack(error?.message || "Could not discard this draft");
         } finally {
             setSaving(false);
         }
@@ -172,16 +216,33 @@ function FormTemplateEditor(): JSX.Element {
             </div>
             <div className="fb-toolbar">
                 <p className="fb-hint">
-                    {template.grantType} · version {template.version} · {template.status}
+                    {template.grantType}
+                    {liveVersion
+                        ? ` · applicants are filling in version ${liveVersion}`
+                        : " · never published"}
+                    {readOnly
+                        ? " · no draft in progress"
+                        : ` · editing draft for version ${template.version}`}
                     {dirty && " · unsaved changes"}
                 </p>
                 <div className="fb-toolbar-actions">
                     <Button variant="outlined" onClick={() => setShowPreview((s) => !s)}>
                         {showPreview ? "Back to editing" : "Preview"}
                     </Button>
-                    <Button variant="outlined" onClick={handleSave} disabled={saving || readOnly || !dirty}>
-                        {saving ? "Saving…" : "Save draft"}
-                    </Button>
+                    {readOnly ? (
+                        <Button variant="contained" onClick={handleStartDraft} disabled={saving}>
+                            {saving ? "Working…" : "Start new draft"}
+                        </Button>
+                    ) : (
+                        <Button variant="outlined" onClick={handleSave} disabled={saving || !dirty}>
+                            {saving ? "Saving…" : "Save draft"}
+                        </Button>
+                    )}
+                    {draftInProgress && (
+                        <Button variant="outlined" color="error" onClick={handleDiscardDraft} disabled={saving}>
+                            Discard draft
+                        </Button>
+                    )}
                     <Button
                         variant="contained"
                         onClick={() => setPublishOpen(true)}
@@ -192,6 +253,19 @@ function FormTemplateEditor(): JSX.Element {
                     </Button>
                 </div>
             </div>
+
+            {readOnly && (
+                <p className="fb-locked-note">
+                    This is the published form. Start a new draft to change it — applicants keep filling in
+                    the live version until you publish the draft.
+                </p>
+            )}
+
+            {draftInProgress && (
+                <p className="fb-locked-note">
+                    You are editing a draft. Applicants still see version {liveVersion} until you publish.
+                </p>
+            )}
 
             {problems.length > 0 && (
                 <div className="fb-problems" role="alert">

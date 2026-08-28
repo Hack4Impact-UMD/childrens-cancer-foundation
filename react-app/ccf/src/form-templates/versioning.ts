@@ -132,31 +132,95 @@ export const applyActivation = (
     return result;
 };
 
-/** A published template is a historical record; edits belong on a new draft. */
+/** Only the working copy is editable; a published version is a record. */
 export const canEdit = (template: Pick<FormTemplate, 'status'>): boolean =>
     template.status === 'draft';
 
+/** The published version applicants are filling in, if there is one. */
+export const liveVersionNumber = (
+    template: Pick<FormTemplate, 'activeVersion' | 'version' | 'status'>
+): number | null => {
+    if (template.activeVersion) return template.activeVersion;
+    // Templates published before activeVersion existed are their own live version.
+    return template.status === 'published' ? template.version : null;
+};
+
+/** True when an admin has edits that applicants are not seeing yet. */
+export const hasUnpublishedChanges = (
+    template: Pick<FormTemplate, 'status' | 'activeVersion' | 'version'>
+): boolean => template.status === 'draft' && liveVersionNumber(template) !== null;
+
+/** Why a new draft cannot be started right now, or null. */
+export const whyCannotStartDraft = (
+    template: Pick<FormTemplate, 'status'>
+): string | null =>
+    template.status === 'draft' ? 'This form already has a draft in progress' : null;
+
 /**
- * Start the next draft from a published template: same ID lineage, next
- * version number, back to draft status, not yet live.
+ * Open the next draft on a published form.
+ *
+ * The working copy moves to `draft` and takes the next version number, but
+ * `isActive` and `activeVersion` stay exactly as they were — the live form is
+ * the published version those point at, so an admin can edit for as long as
+ * they like without changing what applicants see.
  */
 export const startDraftFrom = (
     template: FormTemplate,
     existingVersions: { version: number }[]
+): FormTemplate => {
+    const reason = whyCannotStartDraft(template);
+    if (reason) throw new Error(reason);
+
+    return {
+        ...template,
+        pages: JSON.parse(JSON.stringify(template.pages)),
+        version: nextVersionNumber(
+            existingVersions.length ? existingVersions : [{ version: template.version }]
+        ),
+        status: 'draft',
+        activeVersion: liveVersionNumber(template) ?? undefined,
+    };
+};
+
+/**
+ * Throw the draft away and put the working copy back to the live version —
+ * the undo for "I have made a mess of this and want to start again".
+ */
+export const discardDraftInto = (
+    template: FormTemplate,
+    live: PublishedVersion
 ): FormTemplate => ({
     ...template,
-    pages: JSON.parse(JSON.stringify(template.pages)),
-    version: nextVersionNumber(existingVersions.length ? existingVersions : [{ version: template.version }]),
-    status: 'draft',
-    isActive: false,
+    pages: JSON.parse(JSON.stringify(live.pages)),
+    name: live.name,
+    version: live.version,
+    status: 'published',
+    activeVersion: live.version,
+});
+
+/** A published version, shaped like the template the renderers expect. */
+export const versionAsTemplate = (
+    version: PublishedVersion,
+    isActive = true
+): FormTemplate => ({
+    id: version.templateId,
+    grantType: version.grantType,
+    name: version.name,
+    version: version.version,
+    status: 'published',
+    isActive,
+    activeVersion: version.version,
+    pages: version.pages,
 });
 
 /** Which grant types have no live form — applicants would be stuck. */
 export const grantTypesWithoutActiveTemplate = (
-    templates: Pick<FormTemplate, 'grantType' | 'isActive' | 'status'>[]
+    templates: Pick<FormTemplate, 'grantType' | 'isActive' | 'status' | 'activeVersion' | 'version'>[]
 ): GrantType[] => {
     const all: GrantType[] = ['research', 'nextgen', 'nonresearch'];
     return all.filter(
-        (type) => !templates.some((t) => t.grantType === type && t.isActive && t.status === 'published')
+        (type) => !templates.some(
+            (t) => t.grantType === type && t.isActive && liveVersionNumber(t) !== null
+        )
     );
 };
