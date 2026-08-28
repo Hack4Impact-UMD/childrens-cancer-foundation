@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Button } from "@mui/material";
 import "./FormBuilder.css";
 import {
     VALIDATION_PRESETS,
@@ -96,7 +97,7 @@ function FieldProperties({
 
     return (
         <div className="fb-props">
-            <h3 className="fb-props-title">Question</h3>
+            <div className="fb-panel-header"><h3>Question</h3></div>
 
             {field.locked && (
                 <p className="fb-locked-note">
@@ -328,15 +329,15 @@ function FieldProperties({
             )}
 
             <div className="fb-props-footer">
-                <button
-                    type="button"
-                    className="fb-btn fb-btn-danger"
+                <Button
+                    variant="outlined"
+                    color="error"
                     onClick={onDelete}
                     disabled={Boolean(deleteBlockedReason)}
                     title={deleteBlockedReason || undefined}
                 >
                     Remove question
-                </button>
+                </Button>
                 {deleteBlockedReason && <p className="fb-hint">{deleteBlockedReason}</p>}
             </div>
         </div>

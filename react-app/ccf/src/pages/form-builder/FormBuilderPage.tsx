@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { Button, Snackbar } from "@mui/material";
+import DescriptionIcon from "@mui/icons-material/Description";
 import "./FormBuilder.css";
 import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { getSidebarbyRole } from "../../types/sidebar-types";
@@ -31,13 +32,14 @@ function FormBuilderPage(): JSX.Element {
     const [templates, setTemplates] = useState<FormTemplate[]>([]);
     const [loading, setLoading] = useState(true);
     const [working, setWorking] = useState(false);
+    const [snack, setSnack] = useState<string | null>(null);
 
     const load = () =>
         listTemplates()
             .then(setTemplates)
             .catch((error) => {
                 console.error("Error loading form templates:", error);
-                toast.error("Could not load the forms.");
+                setSnack("Could not load the forms");
             })
             .finally(() => setLoading(false));
 
@@ -52,15 +54,15 @@ function FormBuilderPage(): JSX.Element {
         setWorking(true);
         try {
             const created = await seedTemplatesIfMissing(auth.currentUser?.email || "unknown");
-            if (created.length === 0) {
-                toast.info("Every grant type already has a form.");
-            } else {
-                toast.success(`Created forms for: ${created.map((t) => GRANT_LABELS[t]).join(", ")}.`);
-            }
+            setSnack(
+                created.length === 0
+                    ? "Every grant type already has a form"
+                    : `Created forms for ${created.map((t) => GRANT_LABELS[t]).join(", ")}`
+            );
             await load();
         } catch (error: any) {
             console.error("Error seeding form templates:", error);
-            toast.error(error?.message || "Could not create the starting forms.");
+            setSnack(error?.message || "Could not create the starting forms");
         } finally {
             setWorking(false);
         }
@@ -70,82 +72,93 @@ function FormBuilderPage(): JSX.Element {
         setWorking(true);
         try {
             await activateTemplate(template.id);
-            toast.success(`${template.name} is now the live form.`);
+            setSnack(`${template.name} is now the live form`);
             await load();
         } catch (error: any) {
             console.error("Error activating template:", error);
-            toast.error(error?.message || "Could not make that form live.");
+            setSnack(error?.message || "Could not make that form live");
         } finally {
             setWorking(false);
         }
     };
 
     return (
-        <RoleDashboardShell sidebarItems={sidebarItems} title="Application Forms" stackClassName="fb-page">
-            <p className="fb-intro">
-                These are the forms applicants fill in. Editing one creates a draft; publishing it makes it live
-                for new applications. Applications already submitted keep the wording they were submitted under.
-            </p>
+        <>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Application Forms">
+                <div className="fb-shelf">
+                    <div className="fb-card">
+                        <div className="fb-panel">
+                            <div className="fb-panel-header">
+                                <DescriptionIcon />
+                                <h2>The forms applicants fill in</h2>
+                            </div>
+                            <p className="fb-intro">
+                                Editing a form creates a draft; publishing it makes it live for new applications.
+                                Applications already submitted keep the wording they were submitted under.
+                            </p>
 
-            {missing.length > 0 && (
-                <div className="fb-callout">
-                    <p>
-                        <strong>No live form for {missing.map((t) => GRANT_LABELS[t]).join(", ")}.</strong>{" "}
-                        Applicants see the built-in version of these forms until one is published.
-                    </p>
-                    <button type="button" className="fb-btn" onClick={handleSeed} disabled={working}>
-                        {working ? "Working…" : "Create from the current forms"}
-                    </button>
+                            {missing.length > 0 && (
+                                <div className="fb-callout">
+                                    <p>
+                                        <strong>No live form for {missing.map((t) => GRANT_LABELS[t]).join(", ")}.</strong>{" "}
+                                        Applicants see the built-in version until one is published.
+                                    </p>
+                                    <Button variant="contained" onClick={handleSeed} disabled={working}>
+                                        {working ? "Working…" : "Create from the current forms"}
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+
+                        {loading ? (
+                            <p className="fb-hint">Loading forms…</p>
+                        ) : templates.length === 0 ? (
+                            <p className="fb-hint">No forms yet.</p>
+                        ) : (
+                            <ul className="fb-template-list">
+                                {templates.map((template) => (
+                                    <li key={template.id} className="fb-panel">
+                                        <div className="fb-template-card">
+                                            <div className="fb-template-main">
+                                                <h3>{template.name}</h3>
+                                                <p className="fb-hint">
+                                                    {GRANT_LABELS[template.grantType]} · version {template.version} ·{" "}
+                                                    {template.pages.reduce((n, p) => n + (p.fields?.length || 0), 0)} questions
+                                                    {template.updatedAt &&
+                                                        ` · edited ${new Date(template.updatedAt).toLocaleDateString()}`}
+                                                </p>
+                                            </div>
+                                            <span className={`fb-tag${template.isActive && template.status === "published" ? " fb-tag-live" : ""}`}>
+                                                {template.isActive && template.status === "published" ? "Live" : template.status}
+                                            </span>
+                                            <div className="fb-template-actions">
+                                                <Button
+                                                    variant="outlined"
+                                                    onClick={() => navigate(`/admin/form-builder/${template.id}`)}
+                                                >
+                                                    {template.status === "published" ? "View" : "Edit"}
+                                                </Button>
+                                                {template.status === "published" && !template.isActive && (
+                                                    <Button variant="contained" onClick={() => handleActivate(template)} disabled={working}>
+                                                        Make live
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                 </div>
-            )}
-
-            {loading ? (
-                <p className="fb-hint">Loading forms…</p>
-            ) : templates.length === 0 ? (
-                <p className="fb-hint">No forms yet.</p>
-            ) : (
-                <ul className="fb-template-list">
-                    {templates.map((template) => (
-                        <li key={template.id} className="fb-template-card">
-                            <div className="fb-template-main">
-                                <h3>{template.name}</h3>
-                                <p className="fb-hint">
-                                    {GRANT_LABELS[template.grantType]} · version {template.version} ·{" "}
-                                    {template.pages.reduce((n, p) => n + (p.fields?.length || 0), 0)} questions
-                                    {template.updatedAt && ` · edited ${new Date(template.updatedAt).toLocaleDateString()}`}
-                                </p>
-                            </div>
-                            <div className="fb-template-state">
-                                {template.isActive && template.status === "published" ? (
-                                    <span className="fb-tag fb-tag-live">Live</span>
-                                ) : (
-                                    <span className="fb-tag">{template.status}</span>
-                                )}
-                            </div>
-                            <div className="fb-template-actions">
-                                <button
-                                    type="button"
-                                    className="fb-btn fb-btn-quiet"
-                                    onClick={() => navigate(`/admin/form-builder/${template.id}`)}
-                                >
-                                    {template.status === "published" ? "View" : "Edit"}
-                                </button>
-                                {template.status === "published" && !template.isActive && (
-                                    <button
-                                        type="button"
-                                        className="fb-btn"
-                                        onClick={() => handleActivate(template)}
-                                        disabled={working}
-                                    >
-                                        Make live
-                                    </button>
-                                )}
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </RoleDashboardShell>
+            </RoleDashboardShell>
+            <Snackbar
+                open={!!snack}
+                autoHideDuration={3000}
+                onClose={() => setSnack(null)}
+                message={snack}
+            />
+        </>
     );
 }
 

@@ -1,5 +1,6 @@
 import {
     applyActivation,
+    forFirestore,
     canEdit,
     checkPublishable,
     createPublishedVersion,
@@ -27,6 +28,50 @@ const draft = (over: Partial<FormTemplate> = {}): FormTemplate => ({
         },
     ],
     ...over,
+});
+
+describe('forFirestore', () => {
+    test('drops keys whose value is undefined', () => {
+        expect(forFirestore({ a: 1, b: undefined })).toEqual({ a: 1 });
+        expect('b' in (forFirestore({ a: 1, b: undefined }) as any)).toBe(false);
+    });
+
+    test('reaches into nested fields, where the builder actually produces them', () => {
+        const template = draft();
+        template.pages[1].fields[0].placeholder = undefined;
+        template.pages[1].fields[0].validation = { minLength: 2, maxLength: undefined };
+
+        const clean: any = forFirestore(template);
+        expect('placeholder' in clean.pages[1].fields[0]).toBe(false);
+        expect(clean.pages[1].fields[0].validation).toEqual({ minLength: 2 });
+    });
+
+    test('keeps falsy values that are real answers', () => {
+        expect(forFirestore({ required: false, order: 0, label: '', tags: [] }))
+            .toEqual({ required: false, order: 0, label: '', tags: [] });
+    });
+
+    test('walks arrays as well as objects', () => {
+        expect(forFirestore({ pages: [{ id: 'p', title: undefined }] }))
+            .toEqual({ pages: [{ id: 'p' }] });
+    });
+
+    test('null survives — it is a value, not an absence', () => {
+        expect(forFirestore({ a: null })).toEqual({ a: null });
+    });
+
+    test('the seeded templates carry no undefined anywhere', () => {
+        // The bug this pins: Firestore rejected the whole seed write because a
+        // signature field spelled "no placeholder" as `placeholder: undefined`.
+        const hasUndefined = (value: any): boolean => {
+            if (Array.isArray(value)) return value.some(hasUndefined);
+            if (value && typeof value === 'object') {
+                return Object.values(value).some((v) => v === undefined || hasUndefined(v));
+            }
+            return false;
+        };
+        expect(hasUndefined(RESEARCH_SEED)).toBe(false);
+    });
 });
 
 describe('nextVersionNumber', () => {

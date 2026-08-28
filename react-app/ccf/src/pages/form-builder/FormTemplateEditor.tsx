@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
+import { Button, Snackbar } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import "./FormBuilder.css";
 import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardShell";
 import { getSidebarbyRole } from "../../types/sidebar-types";
@@ -63,13 +64,14 @@ function FormTemplateEditor(): JSX.Element {
     const [newFieldType, setNewFieldType] = useState<FieldType>("text");
     const [publishOpen, setPublishOpen] = useState(false);
     const [changeNote, setChangeNote] = useState("");
+    const [snack, setSnack] = useState<string | null>(null);
 
     useEffect(() => {
         if (!templateId) return;
         getTemplate(templateId)
             .then((found) => {
                 if (!found) {
-                    toast.error("That form could not be found.");
+                    setSnack("That form could not be found");
                     navigate("/admin/form-builder");
                     return;
                 }
@@ -78,7 +80,7 @@ function FormTemplateEditor(): JSX.Element {
             })
             .catch((error) => {
                 console.error("Error loading form template:", error);
-                toast.error("Could not load that form.");
+                setSnack("Could not load that form");
             })
             .finally(() => setLoading(false));
     }, [templateId, navigate]);
@@ -92,14 +94,14 @@ function FormTemplateEditor(): JSX.Element {
     const edit = (change: (current: FormTemplate) => FormTemplate) => {
         if (!template) return;
         if (readOnly) {
-            toast.warn("This version is published. Start a new draft to make changes.");
+            setSnack("This version is published — start a new draft to make changes");
             return;
         }
         try {
             setTemplate(change(template));
             setDirty(true);
         } catch (error: any) {
-            toast.warn(error?.message || "That change is not allowed.");
+            setSnack(error?.message || "That change is not allowed");
         }
     };
 
@@ -109,10 +111,10 @@ function FormTemplateEditor(): JSX.Element {
         try {
             await saveDraft(template, auth.currentUser?.email || "unknown");
             setDirty(false);
-            toast.success("Draft saved.");
+            setSnack("Draft saved");
         } catch (error: any) {
             console.error("Error saving draft:", error);
-            toast.error(error?.message || "Could not save this draft.");
+            setSnack(error?.message || "Could not save this draft");
         } finally {
             setSaving(false);
         }
@@ -127,17 +129,20 @@ function FormTemplateEditor(): JSX.Element {
                 changeNote: changeNote.trim() || undefined,
             });
             if (!result.ok) {
-                toast.error(`Not published: ${(result.errors || []).join(", ")}`);
+                setSnack(`Not published — ${(result.errors || []).join(", ")}`);
                 return;
             }
-            if (result.warning) toast.warn(result.warning);
-            toast.success(`Published version ${result.version}. Applicants see it now.`);
+            setSnack(
+                result.warning
+                    ? `Published version ${result.version}. ${result.warning}`
+                    : `Published version ${result.version} — applicants see it now`
+            );
             setPublishOpen(false);
             setDirty(false);
             navigate("/admin/form-builder");
         } catch (error: any) {
             console.error("Error publishing template:", error);
-            toast.error(error?.message || "Could not publish this form.");
+            setSnack(error?.message || "Could not publish this form");
         } finally {
             setSaving(false);
         }
@@ -145,38 +150,46 @@ function FormTemplateEditor(): JSX.Element {
 
     if (loading || !template) {
         return (
-            <RoleDashboardShell sidebarItems={sidebarItems} title="Edit Form" stackClassName="fb-page">
-                <p className="fb-hint">{loading ? "Loading form…" : "Form not found."}</p>
+            <RoleDashboardShell sidebarItems={sidebarItems} title="Edit Form">
+                <div className="fb-shelf">
+                    <div className="fb-card">
+                        <p className="fb-hint">{loading ? "Loading form…" : "Form not found."}</p>
+                    </div>
+                </div>
             </RoleDashboardShell>
         );
     }
 
     return (
-        <RoleDashboardShell sidebarItems={sidebarItems} title="Edit Form" stackClassName="fb-page">
+        <>
+        <RoleDashboardShell sidebarItems={sidebarItems} title="Edit Form">
+            <div className="fb-shelf">
+            <div className="fb-card">
+            <div className="fb-panel">
+            <div className="fb-panel-header">
+                <EditIcon />
+                <h2>{template.name}</h2>
+            </div>
             <div className="fb-toolbar">
-                <div>
-                    <h2 className="fb-form-name">{template.name}</h2>
-                    <p className="fb-hint">
-                        {template.grantType} · version {template.version} · {template.status}
-                        {dirty && " · unsaved changes"}
-                    </p>
-                </div>
+                <p className="fb-hint">
+                    {template.grantType} · version {template.version} · {template.status}
+                    {dirty && " · unsaved changes"}
+                </p>
                 <div className="fb-toolbar-actions">
-                    <button type="button" className="fb-btn fb-btn-quiet" onClick={() => setShowPreview((s) => !s)}>
+                    <Button variant="outlined" onClick={() => setShowPreview((s) => !s)}>
                         {showPreview ? "Back to editing" : "Preview"}
-                    </button>
-                    <button type="button" className="fb-btn" onClick={handleSave} disabled={saving || readOnly || !dirty}>
+                    </Button>
+                    <Button variant="outlined" onClick={handleSave} disabled={saving || readOnly || !dirty}>
                         {saving ? "Saving…" : "Save draft"}
-                    </button>
-                    <button
-                        type="button"
-                        className="fb-btn fb-btn-primary"
+                    </Button>
+                    <Button
+                        variant="contained"
                         onClick={() => setPublishOpen(true)}
                         disabled={saving || readOnly || problems.length > 0}
                         title={problems.length > 0 ? "Fix the problems listed below first" : undefined}
                     >
                         Publish
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -188,6 +201,7 @@ function FormTemplateEditor(): JSX.Element {
                     </ul>
                 </div>
             )}
+            </div>
 
             {showPreview ? (
                 <FormPreview template={template} />
@@ -195,7 +209,7 @@ function FormTemplateEditor(): JSX.Element {
                 <div className="fb-columns">
                     {/* ---- pages ---- */}
                     <aside className="fb-panel">
-                        <h3 className="fb-panel-title">Pages</h3>
+                        <div className="fb-panel-header"><h3>Pages</h3></div>
                         <ul className="fb-list">
                             {template.pages.map((p) => (
                                 <li key={p.id}>
@@ -230,24 +244,24 @@ function FormTemplateEditor(): JSX.Element {
                                 </li>
                             ))}
                         </ul>
-                        <button
-                            type="button"
-                            className="fb-btn fb-btn-quiet fb-full"
+                        <Button
+                            variant="outlined"
+                            className="fb-full"
                             disabled={readOnly}
                             onClick={() => {
                                 const title = window.prompt("Name for the new page:")?.trim();
                                 if (title) edit((t) => addPage(t, title, selectedPageId ?? undefined));
                             }}
                         >
-                            + Add page
-                        </button>
+                            Add page
+                        </Button>
                     </aside>
 
                     {/* ---- questions ---- */}
                     <section className="fb-panel">
-                        <h3 className="fb-panel-title">
-                            {page ? `Questions on ${page.title}` : "Questions"}
-                        </h3>
+                        <div className="fb-panel-header">
+                            <h3>{page ? `Questions on ${page.title}` : "Questions"}</h3>
+                        </div>
                         {page && (
                             <>
                                 <label className="fb-label" htmlFor="fb-page-title">Page title</label>
@@ -304,17 +318,16 @@ function FormTemplateEditor(): JSX.Element {
                                             <option key={t.value} value={t.value}>{t.label}</option>
                                         ))}
                                     </select>
-                                    <button
-                                        type="button"
-                                        className="fb-btn fb-btn-quiet"
+                                    <Button
+                                        variant="outlined"
                                         disabled={readOnly}
                                         onClick={() => {
                                             const label = window.prompt("What should the question say?")?.trim();
                                             if (label) edit((t) => addField(t, page.id, { label, type: newFieldType }));
                                         }}
                                     >
-                                        + Add question
-                                    </button>
+                                        Add question
+                                    </Button>
                                 </div>
                             </>
                         )}
@@ -357,16 +370,23 @@ function FormTemplateEditor(): JSX.Element {
                         onChange={(e) => setChangeNote(e.target.value)}
                     />
                     <div className="fb-publish-actions">
-                        <button type="button" className="fb-btn fb-btn-quiet" onClick={() => setPublishOpen(false)}>
-                            Cancel
-                        </button>
-                        <button type="button" className="fb-btn fb-btn-primary" onClick={handlePublish} disabled={saving}>
+                        <Button variant="outlined" onClick={() => setPublishOpen(false)}>Cancel</Button>
+                        <Button variant="contained" onClick={handlePublish} disabled={saving}>
                             {saving ? "Publishing…" : "Publish"}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>
+            </div>
+            </div>
         </RoleDashboardShell>
+        <Snackbar
+            open={!!snack}
+            autoHideDuration={4000}
+            onClose={() => setSnack(null)}
+            message={snack}
+        />
+        </>
     );
 }
 

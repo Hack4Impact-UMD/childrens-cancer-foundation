@@ -20,6 +20,27 @@ import {
 } from '../types/form-template-types';
 import { validateTemplate } from './engine';
 
+/**
+ * Firestore rejects a document containing `undefined` anywhere in it, and the
+ * builder produces exactly that whenever an admin clears a rule — an empty
+ * "Longest" box is `maxLength: undefined`, not a missing key. Strip those out
+ * on the way to the database rather than making every caller remember.
+ */
+export const forFirestore = <T,>(value: T): T => {
+    if (Array.isArray(value)) {
+        return value.map((item) => forFirestore(item)) as unknown as T;
+    }
+    if (value && typeof value === 'object') {
+        const out: Record<string, any> = {};
+        for (const [key, item] of Object.entries(value as Record<string, any>)) {
+            if (item === undefined) continue;
+            out[key] = forFirestore(item);
+        }
+        return out as T;
+    }
+    return value;
+};
+
 export const nextVersionNumber = (existing: { version: number }[]): number =>
     existing.reduce((highest, v) => Math.max(highest, v.version), 0) + 1;
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Button } from "@mui/material";
 import "./FormBuilder.css";
 import DynamicField from "../../components/dynamic-forms/DynamicField";
 import { getVisibleFields, getVisiblePages, validateAnswers } from "../../form-templates/engine";
@@ -28,19 +29,19 @@ function FormPreview({ template }: FormPreviewProps): JSX.Element {
     setAnswers((prev) => ({ ...prev, [fieldId]: value }));
 
   return (
-    <div className="fb-preview">
+    <div className="fb-preview fb-panel">
       <div className="fb-preview-bar">
         <span>
           Preview — {pages.length} page{pages.length === 1 ? "" : "s"} shown
           {hiddenCount > 0 && `, ${hiddenCount} question${hiddenCount === 1 ? "" : "s"} hidden by conditions`}
         </span>
         <div className="fb-preview-actions">
-          <button type="button" className="fb-btn fb-btn-quiet" onClick={() => setShowErrors((s) => !s)}>
+          <Button variant="outlined" size="small" onClick={() => setShowErrors((s) => !s)}>
             {showErrors ? "Hide validation" : "Check validation"}
-          </button>
-          <button type="button" className="fb-btn fb-btn-quiet" onClick={() => { setAnswers({}); setShowErrors(false); }}>
+          </Button>
+          <Button variant="outlined" size="small" onClick={() => { setAnswers({}); setShowErrors(false); }}>
             Clear answers
-          </button>
+          </Button>
         </div>
       </div>
 

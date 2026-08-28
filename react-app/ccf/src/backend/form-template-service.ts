@@ -37,6 +37,7 @@ import {
     canEdit,
     checkPublishable,
     createPublishedVersion,
+    forFirestore,
     nextVersionNumber,
 } from '../form-templates/versioning';
 import { getSeedTemplate } from '../form-templates/seed';
@@ -110,12 +111,12 @@ export const saveDraft = async (template: FormTemplate, editedBy: string): Promi
     }
     await setDoc(
         templateRef(template.id),
-        {
+        forFirestore({
             ...template,
             status: 'draft',
             updatedAt: new Date().toISOString(),
             lastModifiedBy: editedBy,
-        },
+        }),
         { merge: true }
     );
 };
@@ -162,7 +163,7 @@ export const publishTemplate = async (
     );
 
     const batch = writeBatch(db);
-    batch.set(versionRef(templateId, version), frozen);
+    batch.set(versionRef(templateId, version), forFirestore(frozen));
     batch.update(templateRef(templateId), {
         version,
         status: 'published',
@@ -211,20 +212,20 @@ export const seedTemplatesIfMissing = async (seededBy: string): Promise<GrantTyp
 
         const now = new Date().toISOString();
         const batch = writeBatch(db);
-        batch.set(templateRef(seed.id), {
+        batch.set(templateRef(seed.id), forFirestore({
             ...seed,
             createdAt: now,
             updatedAt: now,
             createdBy: seededBy,
             lastModifiedBy: seededBy,
-        });
+        }));
         batch.set(
             versionRef(seed.id, seed.version),
-            createPublishedVersion(seed, {
+            forFirestore(createPublishedVersion(seed, {
                 publishedBy: seededBy,
                 publishedAt: now,
                 changeNote: 'Seeded from the forms in use before the builder existed',
-            })
+            }))
         );
         await batch.commit();
         created.push(grantType);

@@ -97,7 +97,9 @@ const signatureFields = (
             label: `Signature — ${who} ${shortLabel}`,
             shortLabel,
             required: true,
-            placeholder,
+            // Firestore rejects `undefined`, so an absent placeholder is an
+            // absent key rather than an explicit undefined.
+            ...(placeholder ? { placeholder } : {}),
             width: 'half',
             component: 'signatureBlock',
             componentProps: {
