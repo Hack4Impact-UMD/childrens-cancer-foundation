@@ -12,6 +12,9 @@ exports.getApplicationReviews = exports.getReviewers = exports.submitApplication
 const functions = require("firebase-functions");
 const {onRequest, onCall} = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
+// The same module the browser validates with, so the two can never disagree
+// about whether a form is complete. See functions/shared/form-engine.js.
+const formEngine = require("../shared/form-engine");
 admin.initializeApp();
 const hasDeadlinePassed = (deadlineValue) => {
   if (!deadlineValue) {
@@ -221,8 +224,14 @@ exports.submitApplication = onCall(async (request) => {
     // 6. Multiple applications are now allowed within the same cycle
     // Removed duplicate submission check to allow multiple applications per cycle
 
-    // 7. Validate application data based on grant type
-    const validationResult = validateApplicationData(application, grantType);
+    // 7. Validate application data.
+    // An application submitted against a published form template is judged by
+    // that template — the same one the browser rendered — rather than by the
+    // hardcoded field list, which only covers the pre-builder forms.
+    const formReference = await resolveFormVersion(data.formTemplateId, data.formVersion, grantType);
+    const validationResult = formReference ?
+      validateAgainstTemplate(application, formReference) :
+      validateApplicationData(application, grantType);
     if (!validationResult.isValid) {
       throw new functions.https.HttpsError("invalid-argument", `Invalid application data: ${validationResult.errors.join(", ")}`);
     }
@@ -271,6 +280,8 @@ exports.submitApplication = onCall(async (request) => {
       "status", "decision", "creatorId", "applicationId", "grantType", "file",
       "applicationCycle", "submitTime", "reviewStatus", "averageScore",
       "primaryScore", "secondaryScore", "assignedReviewers", "lastUpdated",
+      // Set from the version resolved server-side, never from the payload.
+      "formTemplateId", "formVersion",
     ];
     const sanitizedApplication = {...application};
     for (const field of PROTECTED_APP_FIELDS) {
@@ -278,6 +289,10 @@ exports.submitApplication = onCall(async (request) => {
     }
     const applicationDetails = {
       ...sanitizedApplication,
+      ...(formReference ? {
+        formTemplateId: formReference.templateId,
+        formVersion: formReference.version,
+      } : {}),
       status: "submitted",
       decision: "pending",
       creatorId: userId,
@@ -321,7 +336,49 @@ exports.submitApplication = onCall(async (request) => {
   }
 });
 
-// Helper function to validate application data
+/**
+ * Loads the published form version an application claims to have been filled
+ * in against. Returns null for applications from before the builder existed,
+ * which fall back to the hardcoded checks below.
+ *
+ * The version is read from Firestore rather than trusted from the client: a
+ * caller cannot hand us a permissive form of their own making.
+ */
+async function resolveFormVersion(templateId, version, grantType) {
+  if (!templateId || !version) return null;
+
+  if (typeof templateId !== "string" || templateId.includes("/") || templateId.includes("..")) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid form template reference");
+  }
+  const versionNumber = Number(version);
+  if (!Number.isInteger(versionNumber) || versionNumber < 1) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid form version");
+  }
+
+  const snapshot = await admin.firestore()
+    .collection("formTemplates").doc(templateId)
+    .collection("versions").doc(String(versionNumber))
+    .get();
+
+  if (!snapshot.exists) {
+    throw new functions.https.HttpsError("failed-precondition",
+      "The form this application was started on could not be found. Please refresh and try again.");
+  }
+
+  const published = snapshot.data();
+  if (published.grantType !== grantType) {
+    throw new functions.https.HttpsError("invalid-argument", "Form template does not match the grant type");
+  }
+  return { templateId, version: versionNumber, pages: published.pages || [] };
+}
+
+/** Validates answers against a published template, using the shared engine. */
+function validateAgainstTemplate(application, publishedVersion) {
+  const errors = formEngine.validateAnswers(publishedVersion, application);
+  return { isValid: Object.keys(errors).length === 0, errors: Object.values(errors) };
+}
+
+// Helper function to validate application data (pre-builder forms)
 function validateApplicationData(application, grantType) {
   const errors = [];
 

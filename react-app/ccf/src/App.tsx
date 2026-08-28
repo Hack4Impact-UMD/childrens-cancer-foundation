@@ -39,6 +39,8 @@ import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
 import AdminWhitelistReviewers from "./pages/admin-whitelist/AdminWhitelistReviewers";
 import AdminPostGrantReports from "./pages/admin-post-grant-reports/AdminPostGrantReports";
 import GrantInstructions from "./pages/grant-instructions/GrantInstructions";
+import FormBuilderPage from "./pages/form-builder/FormBuilderPage";
+import FormTemplateEditor from "./pages/form-builder/FormTemplateEditor";
 import { CCF_CONTACT_INFO } from "./StaticData/CONTACT-INFO";
 
 // import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
@@ -186,6 +188,14 @@ function App(): JSX.Element {
         <Route
           path="/create-account-applicants"
           element={<AccountPageApplicants />}
+        />
+        <Route
+          path="/admin/form-builder"
+          element={<AdminProtectedRoute element={<FormBuilderPage />} />}
+        />
+        <Route
+          path="/admin/form-builder/:templateId"
+          element={<AdminProtectedRoute element={<FormTemplateEditor />} />}
         />
         <Route
           path="/admin/settings"

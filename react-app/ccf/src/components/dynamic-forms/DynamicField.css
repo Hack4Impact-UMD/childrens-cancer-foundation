@@ -1,0 +1,48 @@
+/* Field chrome for template-rendered questions. Inputs reuse the application
+   form's own .text-input / .radio-opts classes so a dynamic page is
+   indistinguishable from the hand-written ones it replaces. */
+@import url('../../pages/application-form/subquestions/SubForm.css');
+
+.dynamic-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 4px;
+    min-width: 0;
+}
+
+.dynamic-field-half {
+    flex: 1 1 260px;
+}
+
+.dynamic-field .text-label {
+    margin-top: 12px;
+}
+
+.dynamic-field-help {
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: #5b5b5b;
+    line-height: 1.4;
+}
+
+.dynamic-field-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.dynamic-field-checkbox label {
+    line-height: 1.45;
+    color: #333;
+}
+
+.dynamic-field-error {
+    margin: 6px 0 0;
+    color: #b02a37;
+    font-size: 14px;
+}
+
+.dynamic-field-invalid {
+    border-color: #b02a37 !important;
+}
