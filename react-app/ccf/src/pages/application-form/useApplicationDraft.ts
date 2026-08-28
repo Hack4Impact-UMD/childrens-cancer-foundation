@@ -180,13 +180,19 @@ export function useApplicationDraft(options: {
     // cleanup, and error toasts. Returns true on success; caller navigates.
     const submit = async (
         file: File,
-        upload: (application: Record<string, any>, file: File) => Promise<{ success: boolean }>
+        upload: (application: Record<string, any>, file: File) => Promise<{ success: boolean }>,
+        /**
+         * Extra keys to send alongside the answers — the form template
+         * reference, so the cloud function can re-read the version this
+         * application was filled in against and validate with it.
+         */
+        extras: Record<string, any> = {}
     ): Promise<boolean> => {
         if (isSubmitting) return false;
         if (!file) return false;
         setIsSubmitting(true);
         try {
-            const application = { ...formData } as any;
+            const application = { ...formData, ...extras } as any;
             SUBMIT_STRIP_FIELDS.forEach((key) => delete application[key]);
 
             // Show loading toast

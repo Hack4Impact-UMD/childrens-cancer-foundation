@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import "./AdminDatabase.css";
 import { FaArrowDown, FaArrowUp, FaFileAlt, FaFilePdf, FaSearch } from "react-icons/fa";
 import yellowDocument from "../../assets/yellowDocumentIcon.png";
@@ -15,6 +16,9 @@ import { getFilteredApplications } from "../../backend/application-filters";
 import { getAllCycles } from "../../backend/application-cycle";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
+import { applicationsToCsv, downloadCsv } from "../../form-templates/applications-export";
+import { SEED_TEMPLATES } from "../../form-templates/seed";
+import { listTemplates } from "../../backend/form-template-service";
 import { downloadPDFsByName } from "../../storage/storage";
 import { compareCycleNamesDesc, groupApplicationsByCycle } from "../../utils/cycleGrouping";
 
@@ -43,6 +47,42 @@ function AdminApplicationsDatabase(): JSX.Element {
 
   const closeModal = () => {
     setOpenModal(null);
+  };
+
+  /**
+   * Exports every answer, not a fixed column list — a question an admin adds
+   * in the form builder reaches the spreadsheet without another code change.
+   * Columns come from the forms themselves, plus anything the applications
+   * answered that no current form still asks.
+   */
+  const handleExportAnswers = async () => {
+    const applications = Object.values(applicationsData).flat();
+    if (applications.length === 0) {
+      toast.info("There are no applications to export.");
+      return;
+    }
+
+    let forms = Object.values(SEED_TEMPLATES) as any[];
+    try {
+      const templates = await listTemplates();
+      if (templates.length > 0) forms = [...templates, ...forms];
+    } catch (error) {
+      // The seeded forms still cover every field an application can hold, so
+      // an unreachable template collection costs labels, not answers.
+      console.error("Error loading templates for export:", error);
+    }
+
+    const csv = applicationsToCsv(applications as any[], forms, {
+      metadata: [
+        { fieldId: "applicationCycle", label: "Cycle" },
+        { fieldId: "grantType", label: "Grant Type" },
+        { fieldId: "decision", label: "Decision" },
+        { fieldId: "averageScore", label: "Average Score" },
+        { fieldId: "submitTime", label: "Submitted" },
+      ],
+    });
+    downloadCsv(`ccf-applications-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+    toast.success(`Exported ${applications.length} application(s).`);
   };
 
   useEffect(() => {
@@ -185,6 +225,14 @@ function AdminApplicationsDatabase(): JSX.Element {
                   aria-label="Search applications"
                 />
               </div>
+              <button
+                type="button"
+                className="admin-export-btn"
+                onClick={handleExportAnswers}
+                aria-label="Export every application answer as CSV"
+              >
+                Export answers (CSV)
+              </button>
             </div>
             <div className="ccf-toolbar-row">
               <div className="ccf-toolbar-filters">

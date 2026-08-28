@@ -72,12 +72,17 @@ const myInformationPage = (): FormPage => ({
     ],
 });
 
+const CERTIFICATION_TEXT =
+    'By entering the signature information above and checking "I Agree" below, you certify that the ' +
+    'statements contained in this application are true and correct to the best of your knowledge and belief.';
+
 /** One signer's five fields. Labels stand alone so error messages do too. */
 const signatureFields = (
     prefix: 'signaturePI' | 'signatureDeptHead',
     who: string,
     block: 'pi' | 'deptHead',
-    namePlaceholder: string
+    namePlaceholder: string,
+    heading: string
 ): FormField[] => {
     const sig = (
         id: string,
@@ -95,7 +100,13 @@ const signatureFields = (
             placeholder,
             width: 'half',
             component: 'signatureBlock',
-            componentProps: { block, role },
+            componentProps: {
+                block,
+                role,
+                heading,
+                help: 'Enter the full name, business title, institution, and the date of submission.',
+                certification: CERTIFICATION_TEXT,
+            },
         });
 
     return [
@@ -166,15 +177,71 @@ const applicationQuestionsPage = (): FormPage => ({
             label: "I certify that everything in this cover sheet and included in the Grant Application is true to the best of my knowledge. I have read and recommend this Grant Proposal for CCF's consideration.",
             required: false,
         }),
-        ...signatureFields('signaturePI', 'Principal Investigator', 'pi', 'Enter principal investigator full name'),
-        ...signatureFields('signatureDeptHead', 'Department Head', 'deptHead', 'Enter department head full name'),
+        ...signatureFields(
+            'signaturePI', 'Principal Investigator', 'pi',
+            'Enter principal investigator full name', 'Your Electronic Signature'
+        ),
+        ...signatureFields(
+            'signatureDeptHead', 'Department Head', 'deptHead',
+            'Enter department head full name', 'Department Head Electronic Signature'
+        ),
     ],
 });
 
-const grantProposalPage = (): FormPage => ({
+const PROPOSAL_FORMAT_NOTE = `**Format:**
+
+The Narrative of the proposal should not exceed 6 pages and should use NIH standard: font 11 points or larger, no fewer than 6 lines per inch, and margins no smaller than 0.5" (top, bottom, left, and right). It is recommended to use Arial, Georgia, Helvetica, or Palatino Linotype.`;
+
+// Transcribed from GrantProposal.tsx. The NextGen list numbering (…5, 8, 7, 9)
+// is reproduced as it appears on the live form; it is the first thing CCF can
+// now fix without a developer.
+const RESEARCH_PROPOSAL_NOTE = `In the Grant Proposal, make sure to include:
+
+**1. Cover Sheet**
+
+**2. Narrative** (no more than 6 pages)
+
+**3. References Cited** (not included in 6 pages)
+
+**4. Budget** (up to $100,000 for one year)
+
+**5. Lay Summary** (~1/2 page recommended)
+
+**6. Applicant's Statement of Long-term Career Goals** (~1 page)
+
+**7. Mentor's Letter of Commitment**
+
+**8. Support Letter from Sponsoring Institution** (Hospital or University Department Chair, Division Director, or Dean, or equivalent)
+
+**9. NIH Biosketch**
+
+${PROPOSAL_FORMAT_NOTE}`;
+
+const NEXTGEN_PROPOSAL_NOTE = `In the Grant Proposal, make sure to include:
+
+**1. Cover Sheet**
+
+**2. If Re-submission or renewal** — Please include a one (1) page Introduction. Applicants who have received a previous CCF grant may apply for continued funding, but must include the results of their current research, discuss the progress made in prior year(s), and state how continued funding will advance research in this area.
+
+**3. Narrative** (no more than 6 pages)
+
+**4. References Cited** (not included in 6 pages)
+
+**5. CCF-specific References**
+
+**8. Budget** (up to $75,000 for one year)
+
+**7. Lay Summary** (1-2 pages recommended)
+
+**9. NIH Biosketch**
+
+${PROPOSAL_FORMAT_NOTE}`;
+
+const grantProposalPage = (grantType: GrantType): FormPage => ({
     id: 'grant-proposal',
     title: 'Grant Proposal',
     kind: 'fields',
+    description: grantType === 'nextgen' ? NEXTGEN_PROPOSAL_NOTE : RESEARCH_PROPOSAL_NOTE,
     fields: [
         field({
             id: 'file',
@@ -201,11 +268,11 @@ const reviewPage = (): FormPage => ({
     fields: [],
 });
 
-const researchPages = (): FormPage[] => [
+const researchPages = (grantType: GrantType): FormPage[] => [
     aboutPage(),
     myInformationPage(),
     applicationQuestionsPage(),
-    grantProposalPage(),
+    grantProposalPage(grantType),
     reviewPage(),
 ];
 
@@ -276,8 +343,8 @@ const seedTemplate = (grantType: GrantType, name: string, pages: FormPage[]): Fo
     pages,
 });
 
-export const RESEARCH_SEED = seedTemplate('research', 'Research Grant Application', researchPages());
-export const NEXTGEN_SEED = seedTemplate('nextgen', 'NextGen Grant Application', researchPages());
+export const RESEARCH_SEED = seedTemplate('research', 'Research Grant Application', researchPages('research'));
+export const NEXTGEN_SEED = seedTemplate('nextgen', 'NextGen Grant Application', researchPages('nextgen'));
 export const NONRESEARCH_SEED = seedTemplate('nonresearch', 'Non-Research Grant Application', nonResearchPages());
 
 export const SEED_TEMPLATES: Record<GrantType, FormTemplate> = {

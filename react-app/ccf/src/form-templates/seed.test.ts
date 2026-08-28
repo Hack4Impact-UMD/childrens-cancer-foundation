@@ -160,10 +160,28 @@ describe('research seed matches the live Research form', () => {
         });
     });
 
-    test('NextGen is the same form under a different name', () => {
+    test('NextGen asks the same questions under a different name', () => {
         expect(allIds(NEXTGEN_SEED)).toEqual(allIds(RESEARCH_SEED));
         expect(requiredIds(NEXTGEN_SEED)).toEqual(requiredIds(RESEARCH_SEED));
         expect(NEXTGEN_SEED.name).not.toBe(RESEARCH_SEED.name);
+    });
+
+    test('each grant type keeps its own Grant Proposal instructions', () => {
+        const research = RESEARCH_SEED.pages.find((p) => p.id === 'grant-proposal')!.description!;
+        const nextgen = NEXTGEN_SEED.pages.find((p) => p.id === 'grant-proposal')!.description!;
+
+        expect(research).toContain('up to $100,000 for one year');
+        expect(research).toContain("Applicant's Statement of Long-term Career Goals");
+        expect(nextgen).toContain('up to $75,000 for one year');
+        expect(nextgen).toContain('CCF-specific References');
+        expect(research).not.toEqual(nextgen);
+    });
+
+    test('both carry the NIH formatting note the live pages show', () => {
+        [RESEARCH_SEED, NEXTGEN_SEED].forEach((template) => {
+            expect(template.pages.find((p) => p.id === 'grant-proposal')!.description)
+                .toContain('font 11 points or larger');
+        });
     });
 });
 
@@ -188,6 +206,16 @@ describe('signature blocks', () => {
         expect(findField(RESEARCH_SEED, 'signaturePIAgreed')!.type).toBe('checkbox');
         expect(findField(RESEARCH_SEED, 'signatureDeptHeadAgreed')!.type).toBe('checkbox');
         expect(findField(RESEARCH_SEED, 'signaturePIDate')!.type).toBe('date');
+    });
+
+    test('each block carries its own heading and certification wording', () => {
+        const piName = findField(RESEARCH_SEED, 'signaturePI')!;
+        const deptName = findField(RESEARCH_SEED, 'signatureDeptHead')!;
+
+        expect(piName.componentProps!.heading).toBe('Your Electronic Signature');
+        expect(deptName.componentProps!.heading).toBe('Department Head Electronic Signature');
+        expect(piName.componentProps!.certification)
+            .toContain('true and correct to the best of your knowledge and belief');
     });
 
     test('labels stand alone so an error message names the signer', () => {
