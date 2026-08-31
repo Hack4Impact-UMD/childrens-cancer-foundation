@@ -431,7 +431,7 @@ function FormTemplateEditor(): JSX.Element {
             <Modal isOpen={publishOpen} onClose={() => setPublishOpen(false)} title="Publish this form">
                 <div className="fb-publish">
                     <p>
-                        Publishing freezes this draft as version {template.version + 1} and makes it the form
+                        Publishing freezes this draft as version {template.version} and makes it the form
                         applicants fill in for {template.grantType} grants. Published versions are kept forever so
                         past applications keep their original wording.
                     </p>

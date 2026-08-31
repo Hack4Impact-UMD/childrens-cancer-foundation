@@ -4,12 +4,15 @@ import "./FormBuilder.css";
 import {
     VALIDATION_PRESETS,
     availableConditionSources,
+    buildCondition,
     describeCondition,
     findPreset,
+    operatorOf,
+    operatorsFor,
     testPattern,
+    valueOf,
 } from "../../form-templates/builder-operations";
 import {
-    Condition,
     FieldType,
     FormField,
     FormTemplate,
@@ -37,39 +40,6 @@ const FIELD_TYPES: { value: FieldType; label: string }[] = [
     { value: "phone", label: "Phone" },
 ];
 
-const OPERATORS = [
-    { value: "equals", label: "is" },
-    { value: "notEquals", label: "is not" },
-    { value: "answered", label: "is answered" },
-    { value: "greaterThan", label: "is more than" },
-    { value: "lessThan", label: "is less than" },
-] as const;
-
-const operatorOf = (condition?: Condition): typeof OPERATORS[number]["value"] => {
-    if (!condition) return "equals";
-    if (condition.answered !== undefined) return "answered";
-    if (condition.notEquals !== undefined) return "notEquals";
-    if (condition.greaterThan !== undefined) return "greaterThan";
-    if (condition.lessThan !== undefined) return "lessThan";
-    return "equals";
-};
-
-const valueOf = (condition?: Condition): string => {
-    if (!condition) return "";
-    const raw = condition.equals ?? condition.notEquals ?? condition.greaterThan ?? condition.lessThan;
-    return raw === undefined ? "" : String(raw);
-};
-
-const buildCondition = (field: string, operator: string, value: string): Condition => {
-    switch (operator) {
-        case "answered": return { field, answered: true };
-        case "notEquals": return { field, notEquals: value };
-        case "greaterThan": return { field, greaterThan: Number(value) };
-        case "lessThan": return { field, lessThan: Number(value) };
-        default: return { field, equals: value };
-    }
-};
-
 /**
  * The properties panel: everything about one question. Locked questions keep
  * their label control and lose the rest, with the reason shown rather than a
@@ -86,6 +56,7 @@ function FieldProperties({
     const [sample, setSample] = useState("");
     const sources = availableConditionSources(template, field.id);
     const condition = field.showWhen?.all?.[0];
+    const sourceType = sources.find((s) => s.id === condition?.field)?.type;
     const preset = findPreset(field.validation);
     const isCustomPattern = Boolean(field.validation?.pattern) && !preset;
     const patternCheck = field.validation?.pattern && sample
@@ -184,13 +155,20 @@ function FieldProperties({
                             className="fb-input"
                             aria-label="Question this depends on"
                             value={condition?.field || ""}
-                            onChange={(e) =>
-                                e.target.value
-                                    ? onSetCondition({
-                                        all: [buildCondition(e.target.value, operatorOf(condition), valueOf(condition))],
-                                    })
-                                    : onSetCondition(undefined)
-                            }
+                            onChange={(e) => {
+                                if (!e.target.value) return onSetCondition(undefined);
+                                const picked = sources.find((s) => s.id === e.target.value);
+                                return onSetCondition({
+                                    all: [buildCondition(
+                                        e.target.value,
+                                        operatorsFor(picked?.type).some((op) => op.value === operatorOf(condition))
+                                            ? operatorOf(condition)
+                                            : "equals",
+                                        valueOf(condition),
+                                        picked?.type
+                                    )],
+                                });
+                            }}
                         >
                             <option value="">Always show it</option>
                             {sources.map((source) => (
@@ -208,26 +186,48 @@ function FieldProperties({
                                     value={operatorOf(condition)}
                                     onChange={(e) =>
                                         onSetCondition({
-                                            all: [buildCondition(condition.field, e.target.value, valueOf(condition))],
+                                            all: [buildCondition(
+                                                condition.field, e.target.value, valueOf(condition), sourceType
+                                            )],
                                         })
                                     }
                                 >
-                                    {OPERATORS.map((op) => (
+                                    {operatorsFor(sourceType).map((op) => (
                                         <option key={op.value} value={op.value}>{op.label}</option>
                                     ))}
                                 </select>
 
                                 {operatorOf(condition) !== "answered" && (
-                                    <input
-                                        className="fb-input"
-                                        aria-label="Answer to match"
-                                        value={valueOf(condition)}
-                                        onChange={(e) =>
-                                            onSetCondition({
-                                                all: [buildCondition(condition.field, operatorOf(condition), e.target.value)],
-                                            })
-                                        }
-                                    />
+                                    sourceType === "checkbox" ? (
+                                        <select
+                                            className="fb-input"
+                                            aria-label="Answer to match"
+                                            value={valueOf(condition) === "false" ? "false" : "true"}
+                                            onChange={(e) =>
+                                                onSetCondition({
+                                                    all: [buildCondition(
+                                                        condition.field, operatorOf(condition), e.target.value, sourceType
+                                                    )],
+                                                })
+                                            }
+                                        >
+                                            <option value="true">checked</option>
+                                            <option value="false">not checked</option>
+                                        </select>
+                                    ) : (
+                                        <input
+                                            className="fb-input"
+                                            aria-label="Answer to match"
+                                            value={valueOf(condition)}
+                                            onChange={(e) =>
+                                                onSetCondition({
+                                                    all: [buildCondition(
+                                                        condition.field, operatorOf(condition), e.target.value, sourceType
+                                                    )],
+                                                })
+                                            }
+                                        />
+                                    )
                                 )}
                             </>
                         )}

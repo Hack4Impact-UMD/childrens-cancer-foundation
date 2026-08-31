@@ -6,6 +6,7 @@ import { getCurrentCycle, checkAndUpdateCycleStageIfNeeded } from '../../backend
 import { auth, db } from '../..';
 import { toDraftDocData } from '../../utils/draft-serialization';
 import { getSubmitErrorToast } from './submit-error-messages';
+import { FormReference } from '../../types/form-template-types';
 
 // Draft-only/metadata fields stripped before submit. When a saved draft is
 // resumed, the entire Firestore doc (including status: 'draft', cycle ids and
@@ -180,26 +181,32 @@ export function useApplicationDraft(options: {
     // cleanup, and error toasts. Returns true on success; caller navigates.
     const submit = async (
         file: File,
-        upload: (application: Record<string, any>, file: File) => Promise<{ success: boolean }>,
+        upload: (
+            application: Record<string, any>,
+            file: File,
+            formReference?: FormReference
+        ) => Promise<{ success: boolean }>,
         /**
-         * Extra keys to send alongside the answers — the form template
-         * reference, so the cloud function can re-read the version this
-         * application was filled in against and validate with it.
+         * The form template version this application was filled in against, so
+         * the cloud function can re-read it and validate with it. It is handed
+         * to `upload` separately rather than merged into the answers: the
+         * callable reads it from the top level of the payload, and the answers
+         * are stripped of these keys server-side anyway.
          */
-        extras: Record<string, any> = {}
+        formReference?: FormReference
     ): Promise<boolean> => {
         if (isSubmitting) return false;
         if (!file) return false;
         setIsSubmitting(true);
         try {
-            const application = { ...formData, ...extras } as any;
+            const application = { ...formData } as any;
             SUBMIT_STRIP_FIELDS.forEach((key) => delete application[key]);
 
             // Show loading toast
             toast.info('Submitting application...');
 
             // Call the secure cloud function
-            const result = await upload(application, file);
+            const result = await upload(application, file, formReference);
 
             if (result.success) {
                 toast.success('Application submitted successfully!');

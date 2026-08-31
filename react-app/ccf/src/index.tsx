@@ -5,7 +5,7 @@ import reportWebVitals from './reportWebVitals';
 import { initializeApp } from "firebase/app";
 
 //If this line says import not found then you need to set up firebase api on your machine
-import firebaseConfig from "./firebase_config/FireConfig";
+import firebaseConfig from "./firebase_config/FireConfig.ts";
 import './index.css';
 
 //import the connections

@@ -2,6 +2,7 @@ import {
     VALIDATION_PRESETS,
     addField,
     addPage,
+    buildCondition,
     availableConditionSources,
     availablePageConditionSources,
     conditionSources,
@@ -16,6 +17,7 @@ import {
     moveField,
     moveFieldToPage,
     movePage,
+    operatorsFor,
     renamePage,
     setFieldCondition,
     testPattern,
@@ -406,5 +408,90 @@ describe('operating on the real seeded form', () => {
         updateField(RESEARCH_SEED, 'einNumber', { label: 'Changed' });
         addPage(RESEARCH_SEED, 'Another');
         expect(JSON.stringify(RESEARCH_SEED)).toBe(before);
+    });
+});
+
+describe('regressions', () => {
+    test('a deleted question never hands its ID to a new one', () => {
+        // Applications submitted under an earlier version are still keyed by
+        // the old ID; reuse would file that answer under different wording.
+        let t = addField(base(), 'questions', { label: 'Budget', type: 'text' });
+        expect(ids(t, 'questions')).toContain('custom_budget');
+
+        t = deleteField(t, 'custom_budget');
+        expect(t.retiredFieldIds).toContain('custom_budget');
+
+        t = addField(t, 'questions', { label: 'Budget', type: 'text' });
+        expect(ids(t, 'questions')).toContain('custom_budget_2');
+        expect(ids(t, 'questions')).not.toContain('custom_budget');
+    });
+
+    test('deleting a page retires every ID it held', () => {
+        let t = addPage(base(), 'Scratch');
+        t = addField(t, 'scratch', { label: 'Budget', type: 'text' });
+        t = deletePage(t, 'scratch');
+
+        expect(t.retiredFieldIds).toContain('custom_budget');
+        t = addField(t, 'questions', { label: 'Budget', type: 'text' });
+        expect(ids(t, 'questions')).toContain('custom_budget_2');
+    });
+
+    test('a page cannot be deleted while another page is shown based on it', () => {
+        // The trigger sits on a page of its own, so only the page-level
+        // dependency stands between it and deletion.
+        let t = addPage(base(), 'Trigger');
+        t = addField(t, 'trigger', { label: 'Needs budget', type: 'radio' });
+        t = { ...t, pages: t.pages.map((p) => (
+            p.id === 'questions'
+                ? { ...p, showWhen: { all: [{ field: 'custom_needs_budget', equals: 'Yes' }] } }
+                : p
+        )) };
+
+        expect(whyCannotDeletePage(t, 'trigger')).toMatch(/Application Questions/);
+        expect(() => deletePage(t, 'trigger')).toThrow(/Application Questions/);
+    });
+
+    test('a page whose questions nothing depends on still deletes', () => {
+        const t = base();
+        expect(whyCannotDeletePage(t, 'questions')).toBeNull();
+        expect(deletePage(t, 'questions').pages.map((p) => p.id)).not.toContain('questions');
+    });
+
+    test('changing a question away from a choice type drops its stale options', () => {
+        const t = updateField(base(), 'continuation', { type: 'text' });
+        const field = t.pages.find((p) => p.id === 'questions')!.fields[0];
+
+        expect(field.type).toBe('text');
+        expect(field.options).toBeUndefined();
+        // The invisible list must not survive to reject free-text answers.
+        expect(validateTemplate(t)).toEqual([]);
+    });
+
+    test('changing a question into a choice type gives it usable options', () => {
+        const t = updateField(base(), 'einNumber', { type: 'select' });
+        const field = t.pages.find((p) => p.id === 'questions')!.fields[1];
+
+        expect(field.options).toEqual(['Option 1', 'Option 2']);
+        expect(validateTemplate(t)).toEqual([]);
+    });
+
+    test('a checkbox comparison is stored as the boolean the answer holds', () => {
+        expect(buildCondition('coPI', 'equals', 'true', 'checkbox')).toEqual({ field: 'coPI', equals: true });
+        expect(buildCondition('coPI', 'equals', 'false', 'checkbox')).toEqual({ field: 'coPI', equals: false });
+        // A freshly picked checkbox source means "checked".
+        expect(buildCondition('coPI', 'equals', '', 'checkbox')).toEqual({ field: 'coPI', equals: true });
+        // Every other type still compares as text.
+        expect(buildCondition('continuation', 'equals', 'Yes', 'radio')).toEqual({ field: 'continuation', equals: 'Yes' });
+    });
+
+    test('a checkbox is not offered comparisons it cannot answer', () => {
+        expect(operatorsFor('checkbox').map((o) => o.value)).toEqual(['equals', 'notEquals', 'answered']);
+        expect(operatorsFor('number').map((o) => o.value)).toContain('greaterThan');
+    });
+
+    test('a checkbox condition reads as checked rather than as the text "true"', () => {
+        expect(describeCondition({ field: 'coPI', equals: true }, 'Co-PI?')).toBe('Co-PI? is checked');
+        expect(describeCondition({ field: 'coPI', equals: false }, 'Co-PI?')).toBe('Co-PI? is not checked');
+        expect(describeCondition({ field: 'c', equals: 'Yes' }, 'Continuation')).toBe('Continuation is "Yes"');
     });
 });

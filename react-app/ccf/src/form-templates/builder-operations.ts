@@ -21,7 +21,7 @@ import {
     FormTemplate,
     VisibilityRule,
 } from '../types/form-template-types';
-import { checkPatternSafety } from './engine';
+import { checkPatternSafety, isChoiceType } from './engine';
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
 
@@ -42,6 +42,23 @@ export const findFieldPage = (template: FormTemplate, fieldId: string): FormPage
 /* ------------------------------------------------------------------ *
  * IDs
  * ------------------------------------------------------------------ */
+
+/**
+ * Every ID this template has ever used: the questions it holds now, plus the
+ * ones deleted along the way. A deleted question's ID stays spoken for because
+ * submitted applications are still keyed by it — handing it to a new question
+ * would show one question's answer under another's wording.
+ */
+const usedFieldIds = (template: FormTemplate): string[] =>
+    [...allFieldIds(template), ...(template.retiredFieldIds || [])];
+
+/** Records deleted IDs so `generateFieldId` can never hand them out again. */
+const retireFieldIds = (template: FormTemplate, ids: string[]): FormTemplate => {
+    if (ids.length === 0) return template;
+    const retired = [...(template.retiredFieldIds || [])];
+    ids.forEach((id) => { if (!retired.includes(id)) retired.push(id); });
+    return { ...template, retiredFieldIds: retired };
+};
 
 /**
  * IDs for admin-created questions are prefixed and slugged from the label, so
@@ -121,6 +138,16 @@ export const whyCannotDeletePage = (template: FormTemplate, pageId: string): str
     if (dependant) {
         return `"${dependant.label}" is shown based on a question on this page`;
     }
+
+    // A page can be shown based on an answer too, so the same check has to run
+    // over page conditions — otherwise deleting the page holding the trigger
+    // leaves a dangling reference that `validateTemplate` refuses to publish.
+    const dependantPage = template.pages.find(
+        (p) => p.id !== pageId && conditionSources(p.showWhen).some((id) => removedIds.includes(id))
+    );
+    if (dependantPage) {
+        return `The page "${dependantPage.title}" is shown based on a question on this page`;
+    }
     return null;
 };
 
@@ -129,8 +156,9 @@ export const deletePage = (template: FormTemplate, pageId: string): FormTemplate
     if (reason) throw new Error(reason);
 
     const next = clone(template);
+    const page = next.pages.find((p) => p.id === pageId);
     next.pages = next.pages.filter((p) => p.id !== pageId);
-    return next;
+    return retireFieldIds(next, (page?.fields || []).map((f) => f.id));
 };
 
 export const renamePage = (template: FormTemplate, pageId: string, title: string): FormTemplate => {
@@ -193,7 +221,7 @@ export const addField = (
     if (!isEditablePage(page)) throw new Error('Questions cannot be added to that page');
 
     const field: FormField = {
-        id: generateFieldId(input.label, allFieldIds(next)),
+        id: generateFieldId(input.label, usedFieldIds(next)),
         type: input.type,
         label: input.label,
         required: input.required ?? false,
@@ -247,7 +275,21 @@ export const updateField = (
         if (unsafe) throw new Error(unsafe);
     }
 
-    page.fields[index] = { ...current, ...patch, id: current.id };
+    const updated: FormField = { ...current, ...patch, id: current.id };
+
+    // Options belong to choice fields only. Carrying them across a type change
+    // would leave an invisible list on a free-text box — the editor stops
+    // showing the choices, but the engine would still judge answers against
+    // them. Switching back into a choice type gets the defaults again.
+    if (patch.type && patch.type !== current.type) {
+        if (!isChoiceType(patch.type)) {
+            delete updated.options;
+        } else if (!updated.options?.length) {
+            updated.options = [...(DEFAULT_OPTIONS[patch.type] ?? [])];
+        }
+    }
+
+    page.fields[index] = updated;
     return next;
 };
 
@@ -277,7 +319,7 @@ export const deleteField = (template: FormTemplate, fieldId: string): FormTempla
     next.pages.forEach((page) => {
         page.fields = (page.fields || []).filter((f) => f.id !== fieldId);
     });
-    return next;
+    return retireFieldIds(next, [fieldId]);
 };
 
 export const whyCannotMoveField = (
@@ -404,12 +446,83 @@ export const setFieldCondition = (
     return next;
 };
 
+/** The comparisons the condition editor offers, with their button labels. */
+export const OPERATORS = [
+    { value: 'equals', label: 'is' },
+    { value: 'notEquals', label: 'is not' },
+    { value: 'answered', label: 'is answered' },
+    { value: 'greaterThan', label: 'is more than' },
+    { value: 'lessThan', label: 'is less than' },
+] as const;
+
+export type OperatorValue = typeof OPERATORS[number]['value'];
+
+/** Which comparison a stored condition represents. */
+export const operatorOf = (condition?: Condition): OperatorValue => {
+    if (!condition) return 'equals';
+    if (condition.answered !== undefined) return 'answered';
+    if (condition.notEquals !== undefined) return 'notEquals';
+    if (condition.greaterThan !== undefined) return 'greaterThan';
+    if (condition.lessThan !== undefined) return 'lessThan';
+    return 'equals';
+};
+
+/** The compared-against value, as the editor's control shows it. */
+export const valueOf = (condition?: Condition): string => {
+    if (!condition) return '';
+    const raw = condition.equals ?? condition.notEquals ?? condition.greaterThan ?? condition.lessThan;
+    return raw === undefined ? '' : String(raw);
+};
+
+/**
+ * A checkbox answer is a boolean and the engine compares with `===`, so a value
+ * stored as the text "true" could never match one — the question it gates would
+ * simply never appear. Every other type reaches the engine as a string. An
+ * unset checkbox comparison means "checked", which is what an admin picking a
+ * checkbox almost always intends.
+ */
+const coerceValue = (sourceType: FieldType | undefined, value: string): string | boolean =>
+    sourceType === 'checkbox' ? value !== 'false' : value;
+
+/** Build the stored condition from the editor's three controls. */
+export const buildCondition = (
+    field: string,
+    operator: string,
+    value: string,
+    sourceType?: FieldType
+): Condition => {
+    switch (operator) {
+        case 'answered': return { field, answered: true };
+        case 'notEquals': return { field, notEquals: coerceValue(sourceType, value) };
+        case 'greaterThan': return { field, greaterThan: Number(value) };
+        case 'lessThan': return { field, lessThan: Number(value) };
+        default: return { field, equals: coerceValue(sourceType, value) };
+    }
+};
+
+/** A checkbox is checked or not; "more than" has nothing to compare. */
+export const operatorsFor = (
+    sourceType: FieldType | undefined
+): readonly typeof OPERATORS[number][] =>
+    sourceType === 'checkbox'
+        ? OPERATORS.filter((op) => op.value !== 'greaterThan' && op.value !== 'lessThan')
+        : OPERATORS;
+
 export const describeCondition = (condition: Condition, sourceLabel: string): string => {
     if (condition.answered !== undefined) {
         return `${sourceLabel} is ${condition.answered ? 'answered' : 'not answered'}`;
     }
-    if (condition.equals !== undefined) return `${sourceLabel} is "${condition.equals}"`;
-    if (condition.notEquals !== undefined) return `${sourceLabel} is not "${condition.notEquals}"`;
+    // A boolean comparison is a checkbox; "is \"true\"" would read as nonsense.
+    if (condition.equals !== undefined) {
+        return typeof condition.equals === 'boolean'
+            ? `${sourceLabel} is ${condition.equals ? 'checked' : 'not checked'}`
+            : `${sourceLabel} is "${condition.equals}"`;
+    }
+    if (condition.notEquals !== undefined) {
+        return typeof condition.notEquals === 'boolean'
+            ? `${sourceLabel} is ${condition.notEquals ? 'not checked' : 'checked'}`
+            : `${sourceLabel} is not "${condition.notEquals}"`;
+    }
     if (condition.oneOf !== undefined) return `${sourceLabel} is one of ${condition.oneOf.join(', ')}`;
     if (condition.greaterThan !== undefined) return `${sourceLabel} is more than ${condition.greaterThan}`;
     if (condition.lessThan !== undefined) return `${sourceLabel} is less than ${condition.lessThan}`;

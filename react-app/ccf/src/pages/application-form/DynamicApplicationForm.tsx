@@ -185,13 +185,19 @@ function DynamicApplicationForm({ grantType }: DynamicApplicationFormProps): JSX
         const file = answers.file as File | null;
         if (!file) return;
 
-        const submitted = await submit(file, (application, uploaded) =>
+        // The application records the exact form it was filled in against, so
+        // the cloud function re-reads that version and validates with it. The
+        // in-code fallback has no stored version to point at, so it references
+        // none and the server falls back to the pre-builder field checks.
+        const formReference = template.isFallback
+            ? undefined
+            : { formTemplateId: template.id, formVersion: template.version };
+
+        const submitted = await submit(file, (application, uploaded, reference) =>
             grantType === 'nonresearch'
-                ? uploadNonResearchApplication(application as any, uploaded)
-                : uploadResearchApplication(application as any, uploaded, grantType === 'nextgen'),
-            // The application records the exact form it was filled in against;
-            // the cloud function re-reads that version and validates with it.
-            { formTemplateId: template.id, formVersion: template.version }
+                ? uploadNonResearchApplication(application as any, uploaded, reference)
+                : uploadResearchApplication(application as any, uploaded, grantType === 'nextgen', reference),
+            formReference
         );
         if (submitted) navigate('/applicant/dashboard');
     };

@@ -44,3 +44,16 @@ export declare function isComplete(form: FormLike, answers: Answers): boolean;
 export declare function checkPatternSafety(pattern: string): string | null;
 export declare function validateTemplate(template: FormTemplate): TemplateProblem[];
 export declare function getLockedFieldIds(form: FormLike): string[];
+
+/** True for the field types whose answer must be one of the field's `options`. */
+export declare function isChoiceType(type: string): boolean;
+
+/**
+ * The answers with the uploaded PDF's object name standing in for every `file`
+ * question, which the submission pipeline carries separately from the answers.
+ */
+export declare function withUploadedFile(
+    form: FormLike,
+    answers: Answers,
+    storedFileName: string
+): Answers;

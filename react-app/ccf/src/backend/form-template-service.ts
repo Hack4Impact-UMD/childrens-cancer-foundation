@@ -98,7 +98,10 @@ export const getActiveTemplate = async (grantType: GrantType): Promise<FormTempl
     } catch (error) {
         console.error('Error loading active form template:', error);
     }
-    return getSeedTemplate(grantType);
+    // Marked so the form knows this came from code rather than a stored
+    // version. Pointing an application at `seed-<type>` version 1 before an
+    // admin has seeded would reference a version document that does not exist.
+    return { ...getSeedTemplate(grantType), isFallback: true };
 };
 
 export const listVersions = async (templateId: string): Promise<PublishedVersion[]> => {

@@ -230,7 +230,7 @@ exports.submitApplication = onCall(async (request) => {
     // hardcoded field list, which only covers the pre-builder forms.
     const formReference = await resolveFormVersion(data.formTemplateId, data.formVersion, grantType);
     const validationResult = formReference ?
-      validateAgainstTemplate(application, formReference) :
+      validateAgainstTemplate(application, formReference, storedFileName) :
       validateApplicationData(application, grantType);
     if (!validationResult.isValid) {
       throw new functions.https.HttpsError("invalid-argument", `Invalid application data: ${validationResult.errors.join(", ")}`);
@@ -373,8 +373,13 @@ async function resolveFormVersion(templateId, version, grantType) {
 }
 
 /** Validates answers against a published template, using the shared engine. */
-function validateAgainstTemplate(application, publishedVersion) {
-  const errors = formEngine.validateAnswers(publishedVersion, application);
+function validateAgainstTemplate(application, publishedVersion, storedFileName) {
+  // The PDF goes straight to Storage, so a `file` question would read as
+  // unanswered here and a required upload would reject every submission. The
+  // object itself is verified immediately after this, so standing its name in
+  // cannot let an unusable file through.
+  const answers = formEngine.withUploadedFile(publishedVersion, application, storedFileName);
+  const errors = formEngine.validateAnswers(publishedVersion, answers);
   return { isValid: Object.keys(errors).length === 0, errors: Object.values(errors) };
 }
 

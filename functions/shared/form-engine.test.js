@@ -149,6 +149,65 @@ test('an unknown field in the answers is ignored, not rejected', () => {
     assert.deepEqual(engine.validateAnswers(form, answers), {});
 });
 
+test('options are enforced for choice fields only', () => {
+    // An admin who switches a Choice question to Short text leaves the old
+    // options behind, and the editor stops showing them. Judging a free-text
+    // answer against that invisible list would reject everything.
+    const choice = { pages: [{ id: 'p', title: 'P', fields: [
+        { id: 'q', type: 'radio', label: 'Pick', required: false, options: ['Alpha', 'Beta'] },
+    ] }] };
+    assert.deepEqual(engine.validateAnswers(choice, { q: 'Alpha' }), {});
+    assert.match(engine.validateAnswers(choice, { q: 'Chase' }).q, /must be one of/);
+
+    const stale = { pages: [{ id: 'p', title: 'P', fields: [
+        { id: 'q', type: 'text', label: 'Name', required: false, options: ['Alpha', 'Beta'] },
+    ] }] };
+    assert.deepEqual(engine.validateAnswers(stale, { q: 'Chase' }), {});
+});
+
+test('a checkbox condition compares against the boolean the checkbox stores', () => {
+    // DynamicField writes `target.checked`, so the answer is a real boolean.
+    const form = { pages: [{ id: 'p', title: 'P', fields: [
+        { id: 'coPI', type: 'checkbox', label: 'Co-PI?', required: false },
+        { id: 'name', type: 'text', label: 'Co-PI name', required: true,
+          showWhen: { all: [{ field: 'coPI', equals: true }] } },
+    ] }] };
+
+    assert.equal(engine.isFieldVisible(form.pages[0].fields[1], { coPI: true }), true);
+    assert.equal(engine.isFieldVisible(form.pages[0].fields[1], { coPI: false }), false);
+
+    // The shape the builder used to produce: a string that can never match.
+    const asText = { field: 'coPI', equals: 'true' };
+    assert.equal(engine.evaluateCondition(asText, { coPI: true }), false);
+});
+
+test('the uploaded PDF satisfies a required file question', () => {
+    // The browser strips `file` from the answers and uploads it separately, so
+    // without the stand-in a required upload would reject every submission.
+    const form = { pages: [{ id: 'proposal', title: 'Grant Proposal', fields: [
+        { id: 'file', type: 'file', label: 'PDF Upload', required: true },
+    ] }] };
+
+    assert.deepEqual(engine.validateAnswers(form, {}), { file: 'PDF Upload is required' });
+
+    const answers = engine.withUploadedFile(form, {}, 'abc123.pdf');
+    assert.equal(answers.file, 'abc123.pdf');
+    assert.deepEqual(engine.validateAnswers(form, answers), {});
+});
+
+test('standing in the upload leaves the other answers untouched', () => {
+    const form = { pages: [{ id: 'p', title: 'P', fields: [
+        { id: 'title', type: 'text', label: 'Title', required: true },
+        { id: 'file', type: 'file', label: 'PDF Upload', required: true },
+    ] }] };
+
+    const original = { title: 'A study' };
+    const answers = engine.withUploadedFile(form, original, 'abc123.pdf');
+
+    assert.equal(answers.title, 'A study');
+    assert.deepEqual(original, { title: 'A study' }, 'must not mutate the caller\'s answers');
+});
+
 if (process.exitCode) {
     console.error('\nform-engine tests failed');
 } else {

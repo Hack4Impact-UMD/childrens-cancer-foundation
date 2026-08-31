@@ -134,6 +134,20 @@ export interface FormTemplate {
      */
     activeVersion?: number;
     pages: FormPage[];
+    /**
+     * IDs of questions this template used to ask. Kept so a generated ID is
+     * never handed out twice: applications submitted under an earlier version
+     * are still keyed by them, and reuse would file an old answer under a new
+     * question. Grows only — nothing removes an entry.
+     */
+    retiredFieldIds?: string[];
+    /**
+     * True only for the in-code form `getActiveTemplate` falls back to when
+     * Firestore has no published version to serve — nothing stored ever carries
+     * it. An application filled in against a fallback references no version,
+     * because there is no version document for the cloud function to re-read.
+     */
+    isFallback?: boolean;
     /** ISO strings; set by the service, not the builder. */
     createdAt?: string;
     updatedAt?: string;

@@ -135,6 +135,13 @@ function matchesPattern(pattern, value) {
     }
 }
 
+/** Types whose answer must be one of the field's `options`. */
+const CHOICE_TYPES = ['radio', 'select'];
+
+function isChoiceType(type) {
+    return CHOICE_TYPES.indexOf(type) !== -1;
+}
+
 /** The one place a single answer is judged. Returns a message, or null. */
 function validateField(field, value) {
     if (isBlank(value)) {
@@ -169,11 +176,35 @@ function validateField(field, value) {
     if (rules && rules.pattern && !matchesPattern(rules.pattern, text)) {
         return rules.patternMessage || field.label + ' is not in the expected format';
     }
-    if (field.options && field.options.length > 0 && field.options.indexOf(text) === -1) {
+    // Only a choice field is judged against its options. Other types may still
+    // carry a stale `options` array — an admin who switches a Choice question
+    // to Short text leaves one behind, and the editor stops showing it — and
+    // that must not turn a free-text box into a list nobody can satisfy.
+    if (isChoiceType(field.type) && field.options && field.options.length > 0 &&
+        field.options.indexOf(text) === -1) {
         return field.label + ' must be one of: ' + field.options.join(', ');
     }
 
     return null;
+}
+
+/**
+ * The answers, with the uploaded PDF standing in for every `file` question.
+ *
+ * The file never travels with the answers: the browser strips it and uploads it
+ * to Storage directly, and only the object name reaches the cloud function. A
+ * required `file` question would therefore read as unanswered and reject every
+ * submission. The caller verifies the object separately — this only makes the
+ * answer set match what was actually submitted.
+ */
+function withUploadedFile(form, answers, storedFileName) {
+    const merged = Object.assign({}, answers);
+    for (const page of form.pages || []) {
+        for (const field of page.fields || []) {
+            if (field.type === 'file') merged[field.id] = storedFileName;
+        }
+    }
+    return merged;
 }
 
 /**
@@ -356,6 +387,8 @@ function getLockedFieldIds(form) {
 
 module.exports = {
     isBlank,
+    isChoiceType,
+    withUploadedFile,
     evaluateCondition,
     evaluateVisibility,
     isFieldVisible,
