@@ -189,6 +189,41 @@ function validateField(field, value) {
 }
 
 /**
+ * Which rules judge a submission: the live template, or the pre-builder checks.
+ *
+ * `claimed` is the version the browser says it rendered; `live` is the version
+ * actually published for the grant type, or null when there is none. The client
+ * does not get to choose — a claim that does not match the live version is
+ * refused rather than honoured, because otherwise omitting the reference would
+ * fall through to the weaker pre-builder checks, and naming an older version
+ * would be judged by whatever that version happened to require. Either way an
+ * applicant could skip every question an admin has added since.
+ *
+ * The I/O stays with the caller; this is only the decision.
+ */
+function resolveSubmissionForm(claimed, live) {
+    // Nothing published for this grant type. The browser falls back to the
+    // seeded form too, so both sides agree on the pre-builder checks.
+    if (!live) return { use: 'legacy' };
+
+    if (!claimed || !claimed.templateId || !claimed.version) {
+        return {
+            use: 'refuse',
+            reason: 'This application was filled in before the current form was published. ' +
+                'Please refresh your browser and try again.',
+        };
+    }
+    if (claimed.templateId !== live.templateId || Number(claimed.version) !== live.version) {
+        return {
+            use: 'refuse',
+            reason: 'The form has been updated since this application was started. ' +
+                'Please refresh your browser and try again — your saved answers are kept.',
+        };
+    }
+    return { use: 'template' };
+}
+
+/**
  * The answers, with the uploaded PDF standing in for every `file` question.
  *
  * The file never travels with the answers: the browser strips it and uploads it
@@ -389,6 +424,7 @@ module.exports = {
     isBlank,
     isChoiceType,
     withUploadedFile,
+    resolveSubmissionForm,
     evaluateCondition,
     evaluateVisibility,
     isFieldVisible,

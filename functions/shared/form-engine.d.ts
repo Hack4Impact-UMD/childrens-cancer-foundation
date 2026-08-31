@@ -57,3 +57,18 @@ export declare function withUploadedFile(
     answers: Answers,
     storedFileName: string
 ): Answers;
+
+/** A reference to one published version of a form. */
+export interface VersionRef {
+    templateId: string;
+    version: number;
+}
+
+/**
+ * Which rules judge a submission, given the version the client claims to have
+ * rendered and the version actually live for the grant type (null if none).
+ */
+export declare function resolveSubmissionForm(
+    claimed: Partial<VersionRef> | undefined,
+    live: VersionRef | null
+): { use: 'template' } | { use: 'legacy' } | { use: 'refuse'; reason: string };

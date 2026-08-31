@@ -8,7 +8,7 @@
  * application answered that no current form still asks.
  */
 
-import { FormLike } from './engine';
+import { FormLike, isFieldVisible } from './engine';
 import { NON_ANSWER_KEYS, exportColumns, humanizeFieldId } from './viewer';
 import { Answers, FormField } from '../types/form-template-types';
 
@@ -69,6 +69,38 @@ export interface ExportOptions {
     metadata?: ExportColumn[];
 }
 
+/** Every definition of a field across the supplied forms, keyed by field ID. */
+const definitionsByFieldId = (forms: FormLike[]): Map<string, FormField[]> => {
+    const map = new Map<string, FormField[]>();
+    forms.forEach((form) => fieldsOf(form).forEach((field) => {
+        const existing = map.get(field.id);
+        if (existing) existing.push(field);
+        else map.set(field.id, [field]);
+    }));
+    return map;
+};
+
+/**
+ * True when this question was never actually put to this applicant, because
+ * their own earlier answers hid it — the applicant who ticks "Continuation:
+ * Yes", fills in the follow-up, then switches to "No".
+ *
+ * The viewer already drops those rows; without the same rule here the CSV
+ * would report an answer the application's own detail page says was never
+ * given. A field no form mentions at all is a different thing — a question
+ * that has since been removed — and the export deliberately keeps those.
+ */
+const wasNotAsked = (
+    definitions: Map<string, FormField[]>,
+    fieldId: string,
+    application: Answers
+): boolean => {
+    const defined = definitions.get(fieldId);
+    // Judged across every version supplied, so an answer stays in the export
+    // if any version of the form would have asked for it.
+    return Boolean(defined?.length) && defined!.every((f) => !isFieldVisible(f, application));
+};
+
 /**
  * A CSV of applications and their answers. `forms` should include every
  * template version represented in the set, so no answer is left out of a
@@ -79,12 +111,19 @@ export const applicationsToCsv = (
     forms: FormLike[],
     options: ExportOptions = {}
 ): string => {
-    const columns = [...(options.metadata ?? []), ...buildExportColumns(forms, applications)];
+    const metadata = options.metadata ?? [];
+    const answers = buildExportColumns(forms, applications);
+    const definitions = definitionsByFieldId(forms);
 
-    const header = columns.map((c) => csvCell(c.label)).join(',');
-    const rows = applications.map((application) =>
-        columns.map((c) => csvCell(application?.[c.fieldId])).join(',')
-    );
+    const header = [...metadata, ...answers].map((c) => csvCell(c.label)).join(',');
+    const rows = applications.map((application) => [
+        // Metadata is about the application, not an answer, so it is never
+        // subject to the form's own visibility rules.
+        ...metadata.map((c) => csvCell(application?.[c.fieldId])),
+        ...answers.map((c) => csvCell(
+            wasNotAsked(definitions, c.fieldId, application) ? null : application?.[c.fieldId]
+        )),
+    ].join(','));
 
     return [header, ...rows].join('\n');
 };

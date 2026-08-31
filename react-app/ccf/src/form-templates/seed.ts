@@ -17,8 +17,14 @@ import { FormField, FormPage, FormTemplate, GrantType } from '../types/form-temp
  * Field IDs read by name elsewhere in the app. Grant Awards, the admin
  * database, reviewer assignment, the CSV export and the cloud function all
  * depend on these, so the builder must never let an admin delete, hide,
- * or un-require them. Adding a feature that reads a new field by name means
- * adding it here.
+ * or un-require them.
+ *
+ * Locking implies requiring — `validateTemplate` refuses a locked field that
+ * is optional — so this list is only for answers the app cannot do without.
+ * A screen that reads a discretionary question (`continuation` in the admin
+ * database) must tolerate its absence instead, because an admin is entitled to
+ * stop asking it. Adding a feature that *depends* on a new field means adding
+ * it here and making it required; merely displaying one does not.
  */
 export const LOCKED_FIELD_IDS = [
     'title',

@@ -433,10 +433,15 @@ function AdminApplicationsDatabase(): JSX.Element {
                                             Continuation of Funding:{" "}
                                           </span>
                                           <span className="admin-detail-value">
+                                            {/* Not a locked field, so a form
+                                                may stop asking it — read it
+                                                the same optional way as its
+                                                neighbours rather than
+                                                rendering a blank. */}
                                             {app.grantType === "nextgen"
                                               ? " N/A"
                                               : (app as ResearchApplication)
-                                                  .continuation}
+                                                  .continuation || " N/A"}
                                           </span>
                                         </div>
                                         {(() => {

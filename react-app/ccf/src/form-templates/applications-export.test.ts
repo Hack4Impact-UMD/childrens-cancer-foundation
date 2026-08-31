@@ -132,3 +132,54 @@ describe('applicationsToCsv', () => {
         lines.forEach((line) => expect(line.split('","').length).toBe(width));
     });
 });
+
+describe('answers to questions the applicant was never actually asked', () => {
+    const conditional = (): any => ({
+        pages: [{
+            id: 'p', title: 'P', kind: 'fields', fields: [
+                { id: 'continuation', type: 'radio', label: 'Continuation', required: false, options: ['Yes', 'No'] },
+                {
+                    id: 'continuationYears', type: 'number', label: 'Years', required: false,
+                    showWhen: { all: [{ field: 'continuation', equals: 'Yes' }] },
+                },
+            ],
+        }],
+    });
+
+    test('are left out, the same way the application view leaves them out', () => {
+        // Answered "Yes", filled the follow-up, then switched to "No".
+        const csv = applicationsToCsv([{ continuation: 'No', continuationYears: '3' }], [conditional()]);
+
+        expect(csv.split('\n')[0]).toBe('"Continuation","Years"');
+        expect(csv.split('\n')[1]).toBe('"No",""');
+    });
+
+    test('are kept when the answer that reveals them still stands', () => {
+        const csv = applicationsToCsv([{ continuation: 'Yes', continuationYears: '3' }], [conditional()]);
+        expect(csv.split('\n')[1]).toBe('"Yes","3"');
+    });
+
+    test('the column survives for the applicants who did answer it', () => {
+        const csv = applicationsToCsv(
+            [{ continuation: 'No', continuationYears: '3' }, { continuation: 'Yes', continuationYears: '2' }],
+            [conditional()]
+        );
+        expect(csv.split('\n')[1]).toBe('"No",""');
+        expect(csv.split('\n')[2]).toBe('"Yes","2"');
+    });
+
+    test('an answer no form mentions is still kept — removed is not the same as unasked', () => {
+        const csv = applicationsToCsv([{ continuation: 'No', custom_gone: 'kept' }], [conditional()]);
+        expect(csv.split('\n')[0]).toContain('"Custom gone"');
+        expect(csv.split('\n')[1]).toContain('"kept"');
+    });
+
+    test('metadata is never subject to the form\'s visibility rules', () => {
+        const csv = applicationsToCsv(
+            [{ continuation: 'No', continuationYears: '3', decision: 'accepted' }],
+            [conditional()],
+            { metadata: [{ fieldId: 'decision', label: 'Decision' }] }
+        );
+        expect(csv.split('\n')[1]).toBe('"accepted","No",""');
+    });
+});

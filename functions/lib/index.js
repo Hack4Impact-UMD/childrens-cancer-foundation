@@ -337,39 +337,60 @@ exports.submitApplication = onCall(async (request) => {
 });
 
 /**
- * Loads the published form version an application claims to have been filled
- * in against. Returns null for applications from before the builder existed,
- * which fall back to the hardcoded checks below.
+ * The published form version this submission is judged by.
  *
- * The version is read from Firestore rather than trusted from the client: a
- * caller cannot hand us a permissive form of their own making.
+ * The client names the version its browser rendered, but it does not get to
+ * choose the rules it is measured against. The live version is resolved here,
+ * and the claimed reference has to match it. Without that, omitting the
+ * reference would fall through to the pre-builder checks below, and naming an
+ * older version would be judged by whatever that version happened to require —
+ * either way an applicant could skip every question an admin has added since.
+ *
+ * Returns null only when no form is published for this grant type, which is
+ * also what the browser falls back to, so both sides agree on the seeded form.
  */
 async function resolveFormVersion(templateId, version, grantType) {
-  if (!templateId || !version) return null;
+  const live = await findLiveVersion(grantType);
+  const decision = formEngine.resolveSubmissionForm({templateId, version}, live);
 
-  if (typeof templateId !== "string" || templateId.includes("/") || templateId.includes("..")) {
-    throw new functions.https.HttpsError("invalid-argument", "Invalid form template reference");
+  if (decision.use === "refuse") {
+    throw new functions.https.HttpsError("failed-precondition", decision.reason);
   }
-  const versionNumber = Number(version);
-  if (!Number.isInteger(versionNumber) || versionNumber < 1) {
-    throw new functions.https.HttpsError("invalid-argument", "Invalid form version");
-  }
+  return decision.use === "template" ? live : null;
+}
 
+/**
+ * The published version applicants are currently filling in for a grant type,
+ * or null when there is none. Mirrors `liveVersionNumber` on the app side.
+ */
+async function findLiveVersion(grantType) {
   const snapshot = await admin.firestore()
-    .collection("formTemplates").doc(templateId)
+    .collection("formTemplates")
+    .where("grantType", "==", grantType)
+    .where("isActive", "==", true)
+    .limit(1)
+    .get();
+
+  if (snapshot.empty) return null;
+
+  const template = snapshot.docs[0];
+  const data = template.data();
+  // Templates published before activeVersion existed are their own live version.
+  const versionNumber = data.activeVersion || (data.status === "published" ? data.version : null);
+  if (!versionNumber) return null;
+
+  const versionDoc = await admin.firestore()
+    .collection("formTemplates").doc(template.id)
     .collection("versions").doc(String(versionNumber))
     .get();
 
-  if (!snapshot.exists) {
-    throw new functions.https.HttpsError("failed-precondition",
-      "The form this application was started on could not be found. Please refresh and try again.");
-  }
+  if (!versionDoc.exists) return null;
 
-  const published = snapshot.data();
-  if (published.grantType !== grantType) {
-    throw new functions.https.HttpsError("invalid-argument", "Form template does not match the grant type");
-  }
-  return { templateId, version: versionNumber, pages: published.pages || [] };
+  return {
+    templateId: template.id,
+    version: versionNumber,
+    pages: versionDoc.data().pages || [],
+  };
 }
 
 /** Validates answers against a published template, using the shared engine. */

@@ -208,6 +208,47 @@ test('standing in the upload leaves the other answers untouched', () => {
     assert.deepEqual(original, { title: 'A study' }, 'must not mutate the caller\'s answers');
 });
 
+test('a submission is judged by the live form, not the one it claims', () => {
+    const live = { templateId: 'seed-research', version: 5 };
+
+    // The honest case: the browser rendered what is live.
+    assert.deepEqual(
+        engine.resolveSubmissionForm({ templateId: 'seed-research', version: 5 }, live),
+        { use: 'template' }
+    );
+    // A numeric string from the callable payload is still the same version.
+    assert.deepEqual(
+        engine.resolveSubmissionForm({ templateId: 'seed-research', version: '5' }, live),
+        { use: 'template' }
+    );
+
+    // Naming an older version would be judged by whatever it required.
+    const old = engine.resolveSubmissionForm({ templateId: 'seed-research', version: 1 }, live);
+    assert.equal(old.use, 'refuse');
+    assert.match(old.reason, /form has been updated/);
+
+    // Omitting the reference would fall through to the pre-builder checks.
+    for (const claimed of [undefined, {}, { templateId: 'seed-research' }, { version: 5 }]) {
+        assert.equal(engine.resolveSubmissionForm(claimed, live).use, 'refuse',
+            'a missing reference must not silently downgrade the rules');
+    }
+
+    // A different form entirely.
+    assert.equal(
+        engine.resolveSubmissionForm({ templateId: 'seed-nonresearch', version: 5 }, live).use,
+        'refuse'
+    );
+});
+
+test('with nothing published, both sides fall back to the pre-builder checks', () => {
+    assert.deepEqual(engine.resolveSubmissionForm(undefined, null), { use: 'legacy' });
+    // Even a claimed reference cannot conjure a template that is not live.
+    assert.deepEqual(
+        engine.resolveSubmissionForm({ templateId: 'seed-research', version: 2 }, null),
+        { use: 'legacy' }
+    );
+});
+
 if (process.exitCode) {
     console.error('\nform-engine tests failed');
 } else {
