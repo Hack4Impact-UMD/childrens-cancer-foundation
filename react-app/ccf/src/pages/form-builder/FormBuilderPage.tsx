@@ -7,7 +7,6 @@ import RoleDashboardShell from "../../components/dashboard-layout/RoleDashboardS
 import { getSidebarbyRole } from "../../types/sidebar-types";
 import { auth } from "../../index";
 import {
-    activateTemplate,
     listTemplates,
     seedTemplatesIfMissing,
 } from "../../backend/form-template-service";
@@ -16,13 +15,8 @@ import {
     hasUnpublishedChanges,
     liveVersionNumber,
 } from "../../form-templates/versioning";
-import { FormTemplate, GrantType } from "../../types/form-template-types";
-
-const GRANT_LABELS: Record<GrantType, string> = {
-    research: "Research Grant",
-    nextgen: "NextGen Award",
-    nonresearch: "Non-Research Grant",
-};
+import { GRANT_LABELS } from "../../form-templates/grant-labels";
+import { FormTemplate } from "../../types/form-template-types";
 
 /**
  * The list of application forms: what each grant type currently asks, and the
@@ -67,20 +61,6 @@ function FormBuilderPage(): JSX.Element {
         } catch (error: any) {
             console.error("Error seeding form templates:", error);
             setSnack(error?.message || "Could not create the starting forms");
-        } finally {
-            setWorking(false);
-        }
-    };
-
-    const handleActivate = async (template: FormTemplate) => {
-        setWorking(true);
-        try {
-            await activateTemplate(template.id);
-            setSnack(`${template.name} is now the live form`);
-            await load();
-        } catch (error: any) {
-            console.error("Error activating template:", error);
-            setSnack(error?.message || "Could not make that form live");
         } finally {
             setWorking(false);
         }
@@ -152,11 +132,6 @@ function FormBuilderPage(): JSX.Element {
                                                 >
                                                     {template.status === "published" ? "Open" : "Continue draft"}
                                                 </Button>
-                                                {template.status === "published" && !template.isActive && (
-                                                    <Button variant="contained" onClick={() => handleActivate(template)} disabled={working}>
-                                                        Make live
-                                                    </Button>
-                                                )}
                                             </div>
                                         </div>
                                     </li>

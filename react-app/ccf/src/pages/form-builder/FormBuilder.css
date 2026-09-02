@@ -317,7 +317,77 @@
 .fb-preview-placeholder span { color: #6b7280; font-size: 13px; }
 
 .fb-publish { display: flex; flex-direction: column; gap: 6px; }
+.fb-publish p { margin: 0 0 8px; line-height: 1.5; }
 .fb-publish-actions { justify-content: flex-end; margin-top: 16px; }
+
+/* ---- switching between the draft and a published version ---- */
+
+.fb-view-switch {
+    display: inline-flex;
+    align-self: flex-start;
+    border: 1px solid #c9c9c9;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.fb-view-switch button {
+    border: 0;
+    background: #f4f4f4;
+    color: #444;
+    font: inherit;
+    font-size: 14px;
+    padding: 7px 14px;
+    cursor: pointer;
+}
+
+.fb-view-switch button + button { border-left: 1px solid #c9c9c9; }
+.fb-view-switch button:hover { background: #ebebeb; }
+
+.fb-view-switch button.is-selected {
+    background: #c41230;
+    color: #fff;
+    font-weight: 700;
+}
+
+.fb-inline-link {
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: #003E83;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* ---- version history ---- */
+
+.fb-history-header { justify-content: space-between; width: 100%; }
+
+.fb-versions {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fb-version {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.fb-version-main { min-width: 0; flex: 1 1 240px; }
+.fb-version-title { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.fb-version-note { margin: 4px 0 0; font-size: 14px; color: #444; line-height: 1.45; }
+.fb-version-note em { color: #6b7280; }
+.fb-version-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 @media (max-width: 1200px) {
     .fb-columns { grid-template-columns: 1fr; }

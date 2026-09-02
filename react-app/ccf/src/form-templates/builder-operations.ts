@@ -287,6 +287,17 @@ export const updateField = (
         } else if (!updated.options?.length) {
             updated.options = [...(DEFAULT_OPTIONS[patch.type] ?? [])];
         }
+
+        // Validation rules are type-specific in the same way, and stranding one
+        // is worse than stranding options: the engine applies a leftover
+        // pattern to every type, so an EIN rule left on a question switched to
+        // Checkbox is matched against "true" and rejects every answer.
+        const kept = validationForType(patch.type, updated.validation);
+        if (kept) {
+            updated.validation = kept;
+        } else {
+            delete updated.validation;
+        }
     }
 
     page.fields[index] = updated;
@@ -552,6 +563,70 @@ export const firstBackwardsDependency = (template: FormTemplate): string | null 
         }
     }
     return null;
+};
+
+/* ------------------------------------------------------------------ *
+ * Which validation rules a type can use
+ * ------------------------------------------------------------------ */
+
+/**
+ * The engine applies whatever rules it is handed, whatever the field's type:
+ * an answer is coerced to a string and then measured and matched. That makes a
+ * stranded rule dangerous rather than merely useless — a `pattern` left behind
+ * on a question switched to Checkbox is tested against the string "true", never
+ * matches, and leaves a box nobody can tick.
+ *
+ * So the rules that apply are a function of the type, in one place: the editor
+ * offers only these, and `updateField` drops the rest on a type change.
+ */
+export type ValidationKind = 'text' | 'number' | 'none';
+
+/** Rules that measure and match the text an applicant typed. */
+const TEXT_RULE_KEYS = ['minLength', 'maxLength', 'pattern', 'patternMessage'] as const;
+
+/** Rules that bound the value an applicant entered. */
+const NUMBER_RULE_KEYS = ['min', 'max'] as const;
+
+const VALIDATION_KINDS: Record<FieldType, ValidationKind> = {
+    text: 'text',
+    textarea: 'text',
+    email: 'text',
+    phone: 'text',
+    number: 'number',
+    currency: 'number',
+    // A date is already constrained by its picker, and a choice by its options.
+    // Length and pattern rules on either can only ever reject a valid answer.
+    date: 'none',
+    radio: 'none',
+    select: 'none',
+    checkbox: 'none',
+    file: 'none',
+};
+
+export const validationKindFor = (type: FieldType): ValidationKind =>
+    VALIDATION_KINDS[type] ?? 'none';
+
+/**
+ * `validation` with everything the type cannot use removed. Returns undefined
+ * when nothing survives, because an empty object is a rule set that says
+ * nothing and Firestore need not store it.
+ */
+export const validationForType = (
+    type: FieldType,
+    validation?: FieldValidation
+): FieldValidation | undefined => {
+    if (!validation) return undefined;
+
+    const kind = validationKindFor(type);
+    const keep: readonly string[] =
+        kind === 'text' ? TEXT_RULE_KEYS : kind === 'number' ? NUMBER_RULE_KEYS : [];
+
+    const kept: FieldValidation = {};
+    for (const [key, value] of Object.entries(validation)) {
+        if (value === undefined) continue;
+        if (keep.includes(key)) (kept as any)[key] = value;
+    }
+    return Object.keys(kept).length > 0 ? kept : undefined;
 };
 
 /* ------------------------------------------------------------------ *

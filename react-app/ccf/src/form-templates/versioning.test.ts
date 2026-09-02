@@ -1,6 +1,6 @@
 import {
     applyActivation,
-    discardDraftInto,
+    resetWorkingCopyTo,
     forFirestore,
     hasUnpublishedChanges,
     liveVersionNumber,
@@ -291,7 +291,7 @@ describe('the draft lifecycle', () => {
         });
     });
 
-    describe('discardDraftInto', () => {
+    describe('resetWorkingCopyTo', () => {
         const published = {
             templateId: 'tpl-1', version: 1, grantType: 'research' as const,
             name: 'Research Grant Application', publishedAt: 'x', publishedBy: 'a@b.org',
@@ -302,7 +302,7 @@ describe('the draft lifecycle', () => {
             const messy = draft({ version: 2, activeVersion: 1 });
             messy.pages[1].fields[0].label = 'Half-finished edit';
 
-            const reverted = discardDraftInto(messy, published);
+            const reverted = resetWorkingCopyTo(messy, published);
             expect(reverted.status).toBe('published');
             expect(reverted.version).toBe(1);
             expect(reverted.activeVersion).toBe(1);
@@ -310,9 +310,30 @@ describe('the draft lifecycle', () => {
         });
 
         test('the restored copy is deep, so the version cannot be edited through it', () => {
-            const reverted = discardDraftInto(draft({ version: 2 }), published);
+            const reverted = resetWorkingCopyTo(draft({ version: 2 }), published);
             reverted.pages[1].fields[0].label = 'Changed after restore';
             expect(published.pages[1].fields[0].label).toBe('Title of Project');
+        });
+
+        test('rolling back to an older version points applicants at it', () => {
+            const older = { ...published, version: 2 };
+            const current = { ...live(), version: 4, activeVersion: 4 };
+
+            const rolled = resetWorkingCopyTo(current, older);
+            // `activeVersion` is the only thing `getActiveTemplate` reads, and
+            // the working copy moves with it so the builder shows the same form.
+            expect(rolled.activeVersion).toBe(2);
+            expect(rolled.version).toBe(2);
+            expect(rolled.status).toBe('published');
+            // A later draft still takes the next unused number, not 3.
+            expect(startDraftFrom(rolled, [{ version: 1 }, { version: 2 }, { version: 3 }, { version: 4 }]).version)
+                .toBe(5);
+        });
+
+        test('a rolled-back template reports the older version as the live one', () => {
+            const rolled = resetWorkingCopyTo({ ...live(), version: 4, activeVersion: 4 }, { ...published, version: 2 });
+            expect(liveVersionNumber(rolled)).toBe(2);
+            expect(hasUnpublishedChanges(rolled)).toBe(false);
         });
     });
 

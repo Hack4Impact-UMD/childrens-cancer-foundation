@@ -183,19 +183,24 @@ export const startDraftFrom = (
 };
 
 /**
- * Throw the draft away and put the working copy back to the live version —
- * the undo for "I have made a mess of this and want to start again".
+ * Put the working copy back to a published version, and point applicants at it.
+ *
+ * Two operations need exactly this. Discarding a draft resets to the version
+ * already live — the undo for "I have made a mess of this". Rolling back
+ * resets to an older one, which is why the working copy has to move too: only
+ * `activeVersion` decides what applicants are served, so changing it alone
+ * would leave the builder showing one form while applicants filled in another.
  */
-export const discardDraftInto = (
+export const resetWorkingCopyTo = (
     template: FormTemplate,
-    live: PublishedVersion
+    target: PublishedVersion
 ): FormTemplate => ({
     ...template,
-    pages: JSON.parse(JSON.stringify(live.pages)),
-    name: live.name,
-    version: live.version,
+    pages: JSON.parse(JSON.stringify(target.pages)),
+    name: target.name,
+    version: target.version,
     status: 'published',
-    activeVersion: live.version,
+    activeVersion: target.version,
 });
 
 /** A published version, shaped like the template the renderers expect. */

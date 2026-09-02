@@ -22,13 +22,15 @@ import {
     setFieldCondition,
     testPattern,
     updateField,
+    validationForType,
+    validationKindFor,
     whyCannotChangeField,
     whyCannotDeleteField,
     whyCannotDeletePage,
     whyCannotMoveField,
     whyCannotMovePage,
 } from './builder-operations';
-import { validateTemplate } from './engine';
+import { validateAnswers, validateTemplate } from './engine';
 import { RESEARCH_SEED } from './seed';
 import { FormField, FormTemplate } from '../types/form-template-types';
 
@@ -473,6 +475,51 @@ describe('regressions', () => {
 
         expect(field.options).toEqual(['Option 1', 'Option 2']);
         expect(validateTemplate(t)).toEqual([]);
+    });
+
+    test('only the rules a type can satisfy are offered for it', () => {
+        expect(validationKindFor('text')).toBe('text');
+        expect(validationKindFor('textarea')).toBe('text');
+        expect(validationKindFor('email')).toBe('text');
+        expect(validationKindFor('currency')).toBe('number');
+        expect(validationKindFor('number')).toBe('number');
+        // Length and pattern rules can only reject a valid answer on these.
+        expect(validationKindFor('checkbox')).toBe('none');
+        expect(validationKindFor('date')).toBe('none');
+        expect(validationKindFor('radio')).toBe('none');
+        expect(validationKindFor('file')).toBe('none');
+    });
+
+    test('rules a type cannot use are dropped rather than kept', () => {
+        const mixed = { minLength: 2, maxLength: 9, pattern: '^x$', patternMessage: 'nope', min: 1, max: 5 };
+
+        expect(validationForType('text', mixed))
+            .toEqual({ minLength: 2, maxLength: 9, pattern: '^x$', patternMessage: 'nope' });
+        expect(validationForType('currency', mixed)).toEqual({ min: 1, max: 5 });
+        // Nothing survives, so the key goes rather than being left empty.
+        expect(validationForType('checkbox', mixed)).toBeUndefined();
+        expect(validationForType('text', undefined)).toBeUndefined();
+        expect(validationForType('text', { min: 3 })).toBeUndefined();
+    });
+
+    test('changing a question away from a text type drops its stale pattern', () => {
+        const withPattern = updateField(base(), 'einNumber', {
+            validation: { pattern: '^\\d{2}-\\d{7}$', patternMessage: 'Enter an EIN like 12-3456789' },
+        });
+        const t = updateField(withPattern, 'einNumber', { type: 'checkbox', label: 'I agree' });
+        const field = t.pages.find((p) => p.id === 'questions')!.fields[1];
+
+        expect(field.validation).toBeUndefined();
+        // Left behind, the pattern would be matched against the string "true"
+        // and leave a box nobody could tick.
+        expect(validateAnswers(t, { einNumber: true }, ['questions'])).toEqual({});
+    });
+
+    test('changing a question between numeric types keeps the bounds that still apply', () => {
+        const bounded = updateField(base(), 'einNumber', { type: 'currency', validation: { min: 0.01, max: 75000 } });
+        const t = updateField(bounded, 'einNumber', { type: 'number' });
+
+        expect(t.pages.find((p) => p.id === 'questions')!.fields[1].validation).toEqual({ min: 0.01, max: 75000 });
     });
 
     test('a checkbox comparison is stored as the boolean the answer holds', () => {

@@ -129,12 +129,20 @@ function DynamicApplicationForm({ grantType }: DynamicApplicationFormProps): JSX
 
     const handleContinue = async () => {
         // Only this page's questions are checked, so an applicant is never
-        // blocked by something they have not been shown yet.
+        // warned about something they have not been shown yet.
+        //
+        // An incomplete page is flagged but never blocks. Applicants fill the
+        // form out of order, and a resumed draft cannot carry the PDF across
+        // sessions, so blocking here would strand someone on the upload page
+        // with no way to reach Review. Submitting is what is gated: by
+        // `getProblemsByPage` below, by the disabled Submit button, and by the
+        // cloud function, which validates again against the published version.
         const pageErrors = validateAnswers(template, answers, [page.id]);
         setErrors(pageErrors);
         if (Object.keys(pageErrors).length > 0) {
-            toast.warn(`Please fix the following issues: ${Object.values(pageErrors).join(', ')}`);
-            return;
+            toast.warn(
+                'Please fill out all required fields. You will not be able to submit until all fields are complete.'
+            );
         }
 
         const saved = await saveDraft();

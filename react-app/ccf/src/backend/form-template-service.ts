@@ -37,10 +37,10 @@ import {
     canEdit,
     checkPublishable,
     createPublishedVersion,
-    discardDraftInto,
     forFirestore,
     liveVersionNumber,
     nextVersionNumber,
+    resetWorkingCopyTo,
     startDraftFrom,
     versionAsTemplate,
     whyCannotStartDraft,
@@ -198,22 +198,54 @@ export const publishTemplate = async (
     return { ok: true, version, warning: check.warning };
 };
 
-/** Make an already-published template the live one for its grant type. */
-export const activateTemplate = async (templateId: string): Promise<void> => {
+/**
+ * Make an earlier published version the one applicants fill in — the undo for
+ * "we published that too soon".
+ *
+ * `getActiveTemplate` resolves the live form through `activeVersion`, so this
+ * is one field as far as applicants are concerned. The working copy is reset
+ * alongside it, because leaving it on the newer version would show an admin
+ * one form while applicants filled in another.
+ *
+ * Refused while a draft is open: the draft is unsaved work that a reset would
+ * throw away without asking.
+ */
+export const setActiveVersion = async (
+    templateId: string,
+    version: number,
+    changedBy: string
+): Promise<FormTemplate> => {
     const template = await getTemplate(templateId);
     if (!template) throw new Error('Template not found');
-    if (template.status !== 'published') {
-        throw new Error('Only a published template can be made live.');
+    if (template.status === 'draft') {
+        throw new Error('Publish or discard the draft in progress before changing the live version.');
     }
 
+    const target = await getVersion(templateId, version);
+    if (!target) throw new Error(`Version ${version} could not be found`);
+
     const siblings = await listTemplates(template.grantType);
-    const activation = applyActivation(siblings, templateId);
+    const activation = applyActivation(
+        [...siblings.filter((t) => t.id !== templateId), { ...template, isActive: true }],
+        templateId
+    );
+    const rolled: FormTemplate = { ...resetWorkingCopyTo(template, target), isActive: true };
 
     const batch = writeBatch(db);
-    Object.entries(activation).forEach(([id, isActive]) => {
-        batch.update(templateRef(id), { isActive });
-    });
+    batch.set(
+        templateRef(templateId),
+        forFirestore({
+            ...rolled,
+            updatedAt: new Date().toISOString(),
+            lastModifiedBy: changedBy,
+        })
+    );
+    Object.entries(activation)
+        .filter(([id]) => id !== templateId)
+        .forEach(([id, isActive]) => batch.update(templateRef(id), { isActive }));
     await batch.commit();
+
+    return rolled;
 };
 
 /**
@@ -294,7 +326,7 @@ export const discardDraft = async (
         throw new Error('This form has never been published, so there is nothing to go back to.');
     }
 
-    const reverted = discardDraftInto(template, published);
+    const reverted = resetWorkingCopyTo(template, published);
     await setDoc(
         templateRef(templateId),
         forFirestore({

@@ -10,6 +10,7 @@ import {
     operatorOf,
     operatorsFor,
     testPattern,
+    validationKindFor,
     valueOf,
 } from "../../form-templates/builder-operations";
 import {
@@ -21,6 +22,8 @@ import {
 type FieldPropertiesProps = {
     template: FormTemplate;
     field: FormField;
+    /** True when a published version is on screen: a record, not a draft. */
+    readOnly?: boolean;
     onChange: (patch: Partial<FormField>) => void;
     onSetCondition: (rule: FormField["showWhen"]) => void;
     onDelete: () => void;
@@ -48,6 +51,7 @@ const FIELD_TYPES: { value: FieldType; label: string }[] = [
 function FieldProperties({
     template,
     field,
+    readOnly = false,
     onChange,
     onSetCondition,
     onDelete,
@@ -59,6 +63,12 @@ function FieldProperties({
     const sourceType = sources.find((s) => s.id === condition?.field)?.type;
     const preset = findPreset(field.validation);
     const isCustomPattern = Boolean(field.validation?.pattern) && !preset;
+    // Only the rules this answer type can actually satisfy are offered; the
+    // rest would be applied by the engine and reject every answer.
+    const validationKind = validationKindFor(field.type);
+    // A locked question keeps only its wording; a published version keeps
+    // nothing at all.
+    const frozen = readOnly || field.locked;
     const patternCheck = field.validation?.pattern && sample
         ? testPattern(field.validation.pattern, sample)
         : null;
@@ -81,6 +91,7 @@ function FieldProperties({
             <textarea
                 id="fb-label-input"
                 className="fb-input fb-textarea"
+                disabled={readOnly}
                 value={field.label}
                 onChange={(e) => onChange({ label: e.target.value })}
             />
@@ -89,6 +100,7 @@ function FieldProperties({
             <input
                 id="fb-help-input"
                 className="fb-input"
+                disabled={readOnly}
                 value={field.helpText || ""}
                 placeholder="Shown under the question"
                 onChange={(e) => onChange({ helpText: e.target.value })}
@@ -98,6 +110,7 @@ function FieldProperties({
             <input
                 id="fb-placeholder-input"
                 className="fb-input"
+                disabled={readOnly}
                 value={field.placeholder || ""}
                 onChange={(e) => onChange({ placeholder: e.target.value })}
             />
@@ -107,7 +120,7 @@ function FieldProperties({
                 id="fb-type-input"
                 className="fb-input"
                 value={field.type}
-                disabled={field.locked || Boolean(field.component)}
+                disabled={frozen || Boolean(field.component)}
                 onChange={(e) => onChange({ type: e.target.value as FieldType })}
             >
                 {FIELD_TYPES.map((t) => (
@@ -121,6 +134,7 @@ function FieldProperties({
                     <textarea
                         id="fb-options-input"
                         className="fb-input fb-textarea"
+                        disabled={readOnly}
                         value={(field.options || []).join("\n")}
                         onChange={(e) =>
                             onChange({ options: e.target.value.split("\n").map((o) => o.trim()).filter(Boolean) })
@@ -134,7 +148,7 @@ function FieldProperties({
                     id="fb-required-input"
                     type="checkbox"
                     checked={field.required}
-                    disabled={field.locked}
+                    disabled={frozen}
                     onChange={(e) => onChange({ required: e.target.checked })}
                 />
                 <label htmlFor="fb-required-input">Applicants must answer this</label>
@@ -154,6 +168,7 @@ function FieldProperties({
                         <select
                             className="fb-input"
                             aria-label="Question this depends on"
+                            disabled={readOnly}
                             value={condition?.field || ""}
                             onChange={(e) => {
                                 if (!e.target.value) return onSetCondition(undefined);
@@ -183,6 +198,7 @@ function FieldProperties({
                                 <select
                                     className="fb-input"
                                     aria-label="Comparison"
+                                    disabled={readOnly}
                                     value={operatorOf(condition)}
                                     onChange={(e) =>
                                         onSetCondition({
@@ -202,6 +218,7 @@ function FieldProperties({
                                         <select
                                             className="fb-input"
                                             aria-label="Answer to match"
+                                            disabled={readOnly}
                                             value={valueOf(condition) === "false" ? "false" : "true"}
                                             onChange={(e) =>
                                                 onSetCondition({
@@ -218,6 +235,7 @@ function FieldProperties({
                                         <input
                                             className="fb-input"
                                             aria-label="Answer to match"
+                                            disabled={readOnly}
                                             value={valueOf(condition)}
                                             onChange={(e) =>
                                                 onSetCondition({
@@ -246,84 +264,124 @@ function FieldProperties({
             )}
 
             {/* ---- validation ---- */}
-            <h4 className="fb-props-subtitle">Accepted answers</h4>
-            <div className="fb-two-up">
-                <div>
-                    <label className="fb-label" htmlFor="fb-minlen">Shortest</label>
-                    <input
-                        id="fb-minlen" className="fb-input" type="number" min={0}
-                        value={field.validation?.minLength ?? ""}
-                        onChange={(e) => setValidation({ minLength: e.target.value ? Number(e.target.value) : undefined })}
-                    />
-                </div>
-                <div>
-                    <label className="fb-label" htmlFor="fb-maxlen">Longest</label>
-                    <input
-                        id="fb-maxlen" className="fb-input" type="number" min={0}
-                        value={field.validation?.maxLength ?? ""}
-                        onChange={(e) => setValidation({ maxLength: e.target.value ? Number(e.target.value) : undefined })}
-                    />
-                </div>
-            </div>
+            {validationKind !== "none" && (
+                <h4 className="fb-props-subtitle">Accepted answers</h4>
+            )}
 
-            <label className="fb-label" htmlFor="fb-pattern-preset">Format</label>
-            <select
-                id="fb-pattern-preset"
-                className="fb-input"
-                value={isCustomPattern ? "custom" : preset?.id || "none"}
-                onChange={(e) => {
-                    if (e.target.value === "custom") {
-                        setValidation({ pattern: "^.*$", patternMessage: "" });
-                        return;
-                    }
-                    const chosen = VALIDATION_PRESETS.find((p) => p.id === e.target.value);
-                    onChange({
-                        validation: {
-                            ...(field.validation || {}),
-                            pattern: chosen?.validation.pattern,
-                            patternMessage: chosen?.validation.patternMessage,
-                        },
-                    });
-                }}
-            >
-                {VALIDATION_PRESETS.map((p) => (
-                    <option key={p.id} value={p.id}>{p.label}</option>
-                ))}
-                <option value="custom">Custom pattern…</option>
-            </select>
-
-            {isCustomPattern && (
+            {validationKind === "text" && (
                 <>
-                    <label className="fb-label" htmlFor="fb-pattern">Pattern</label>
-                    <input
-                        id="fb-pattern"
-                        className="fb-input fb-mono"
-                        value={field.validation?.pattern || ""}
-                        onChange={(e) => setValidation({ pattern: e.target.value })}
-                    />
-                    <label className="fb-label" htmlFor="fb-pattern-message">Message when it does not match</label>
-                    <input
-                        id="fb-pattern-message"
-                        className="fb-input"
-                        value={field.validation?.patternMessage || ""}
-                        placeholder="Enter an EIN like 12-3456789"
-                        onChange={(e) => setValidation({ patternMessage: e.target.value })}
-                    />
+                    <div className="fb-two-up">
+                        <div>
+                            <label className="fb-label" htmlFor="fb-minlen">Shortest</label>
+                            <input
+                                id="fb-minlen" className="fb-input" type="number" min={0} disabled={readOnly}
+                                value={field.validation?.minLength ?? ""}
+                                onChange={(e) => setValidation({ minLength: e.target.value ? Number(e.target.value) : undefined })}
+                            />
+                        </div>
+                        <div>
+                            <label className="fb-label" htmlFor="fb-maxlen">Longest</label>
+                            <input
+                                id="fb-maxlen" className="fb-input" type="number" min={0} disabled={readOnly}
+                                value={field.validation?.maxLength ?? ""}
+                                onChange={(e) => setValidation({ maxLength: e.target.value ? Number(e.target.value) : undefined })}
+                            />
+                        </div>
+                    </div>
+                    <p className="fb-hint">Number of characters. Leave blank for no limit.</p>
 
-                    <label className="fb-label" htmlFor="fb-pattern-test">Try an answer</label>
-                    <input
-                        id="fb-pattern-test"
+                    <label className="fb-label" htmlFor="fb-pattern-preset">Format</label>
+                    <select
+                        id="fb-pattern-preset"
                         className="fb-input"
-                        value={sample}
-                        placeholder="Type what an applicant might enter"
-                        onChange={(e) => setSample(e.target.value)}
-                    />
-                    {patternCheck && (
-                        <p className={patternCheck.ok ? "fb-test-ok" : "fb-test-bad"}>{patternCheck.message}</p>
+                        disabled={readOnly}
+                        value={isCustomPattern ? "custom" : preset?.id || "none"}
+                        onChange={(e) => {
+                            if (e.target.value === "custom") {
+                                setValidation({ pattern: "^.*$", patternMessage: "" });
+                                return;
+                            }
+                            const chosen = VALIDATION_PRESETS.find((p) => p.id === e.target.value);
+                            onChange({
+                                validation: {
+                                    ...(field.validation || {}),
+                                    pattern: chosen?.validation.pattern,
+                                    patternMessage: chosen?.validation.patternMessage,
+                                },
+                            });
+                        }}
+                    >
+                        {VALIDATION_PRESETS.map((p) => (
+                            <option key={p.id} value={p.id}>{p.label}</option>
+                        ))}
+                        <option value="custom">Custom pattern…</option>
+                    </select>
+
+                    {isCustomPattern && (
+                        <>
+                            <label className="fb-label" htmlFor="fb-pattern">Pattern</label>
+                            <input
+                                id="fb-pattern"
+                                className="fb-input fb-mono"
+                                disabled={readOnly}
+                                value={field.validation?.pattern || ""}
+                                onChange={(e) => setValidation({ pattern: e.target.value })}
+                            />
+                            <label className="fb-label" htmlFor="fb-pattern-message">Message when it does not match</label>
+                            <input
+                                id="fb-pattern-message"
+                                className="fb-input"
+                                disabled={readOnly}
+                                value={field.validation?.patternMessage || ""}
+                                placeholder="Enter an EIN like 12-3456789"
+                                onChange={(e) => setValidation({ patternMessage: e.target.value })}
+                            />
+
+                            <label className="fb-label" htmlFor="fb-pattern-test">Try an answer</label>
+                            <input
+                                id="fb-pattern-test"
+                                className="fb-input"
+                                disabled={readOnly}
+                                value={sample}
+                                placeholder="Type what an applicant might enter"
+                                onChange={(e) => setSample(e.target.value)}
+                            />
+                            {patternCheck && (
+                                <p className={patternCheck.ok ? "fb-test-ok" : "fb-test-bad"}>{patternCheck.message}</p>
+                            )}
+                            <p className="fb-hint">
+                                Test before publishing — a pattern nobody can satisfy locks every applicant out of this
+                                question.
+                            </p>
+                        </>
                     )}
+                </>
+            )}
+
+            {validationKind === "number" && (
+                <>
+                    <div className="fb-two-up">
+                        <div>
+                            <label className="fb-label" htmlFor="fb-min">Smallest allowed</label>
+                            <input
+                                id="fb-min" className="fb-input" type="number" step="any" disabled={readOnly}
+                                value={field.validation?.min ?? ""}
+                                onChange={(e) => setValidation({ min: e.target.value ? Number(e.target.value) : undefined })}
+                            />
+                        </div>
+                        <div>
+                            <label className="fb-label" htmlFor="fb-max">Largest allowed</label>
+                            <input
+                                id="fb-max" className="fb-input" type="number" step="any" disabled={readOnly}
+                                value={field.validation?.max ?? ""}
+                                onChange={(e) => setValidation({ max: e.target.value ? Number(e.target.value) : undefined })}
+                            />
+                        </div>
+                    </div>
                     <p className="fb-hint">
-                        Test before publishing — a pattern nobody can satisfy locks every applicant out of this
-                        question.
+                        {field.type === "currency"
+                            ? "In dollars. Leave blank for no limit."
+                            : "Leave blank for no limit."}
                     </p>
                 </>
             )}
@@ -333,7 +391,7 @@ function FieldProperties({
                     variant="outlined"
                     color="error"
                     onClick={onDelete}
-                    disabled={Boolean(deleteBlockedReason)}
+                    disabled={readOnly || Boolean(deleteBlockedReason)}
                     title={deleteBlockedReason || undefined}
                 >
                     Remove question
