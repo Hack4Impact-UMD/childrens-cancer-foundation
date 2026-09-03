@@ -18,9 +18,16 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@ccf/form-engine": [
+        "../../functions/shared/form-engine"
+      ]
+    }
   },
   "include": [
+    "../../functions/shared/form-engine.d.ts",
     "src"
   ]
 }

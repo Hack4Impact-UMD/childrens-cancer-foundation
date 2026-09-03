@@ -2,7 +2,8 @@ import { Application } from "../../types/application-types";
 import { Modal } from "../modal/modal";
 import "./CoverPageModal.css";
 import "../../pages/application-form/subquestions/SubForm.css";
-import Review from "../../pages/application-form/subquestions/Review";
+import DynamicReview from "../dynamic-forms/DynamicReview";
+import { useApplicationForm } from "../dynamic-forms/useApplicationForm";
 import { useEffect, useState } from "react";
 import { downloadPDFsByName } from "../../storage/storage";
 import { getReportByApplicationID } from "../../backend/post-grant-reports";
@@ -25,6 +26,7 @@ const AdminCoverPageModal = ({
   const [reportLink, setReportLink] = useState<any>();
   const [reportMsg, setReportMsg] = useState<string>("");
   const [decision, setDecision] = useState<Decision>();
+  const form = useApplicationForm(application);
 
   useEffect(() => {
     if (isOpen && application.applicationId) {
@@ -80,11 +82,7 @@ const AdminCoverPageModal = ({
           reportMsg
         )}
       </div>
-      <Review
-        type={application.grantType}
-        formData={application}
-        hideFile={true}
-      ></Review>
+      {form && <DynamicReview form={form} answers={application as any} hideFile={true} />}
     </div>
   );
 

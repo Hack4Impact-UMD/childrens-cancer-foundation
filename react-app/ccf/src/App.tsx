@@ -19,8 +19,7 @@ import PostGrantReport from './post-grant-report/post-grant-report';
 import PostGrantReportPage from './pages/post-grant-report/PostGrantReportPage';
 import DefaultRoute from './components/Routing/DefaultRoute'
 import ReviewerDashboard from "./pages/reviewer-dashboard/ReviewerDashboard";
-import ApplicationForm from "./pages/application-form/ApplicationForm";
-import NRApplicationForm from "./pages/application-form/NRApplicationForm";
+import DynamicApplicationForm from "./pages/application-form/DynamicApplicationForm";
 import AdminDashboardViewAllAccounts from "./pages/admin-dashboard/AdminDashboardViewAll";
 import GrantAwards from './pages/grant-awards/GrantAwards';
 import AdminSettings from "./pages/settings/AdminSettings";
@@ -39,6 +38,8 @@ import AssignReviewers from "./pages/assign-reviewers-page/AssignReviewers";
 import AdminWhitelistReviewers from "./pages/admin-whitelist/AdminWhitelistReviewers";
 import AdminPostGrantReports from "./pages/admin-post-grant-reports/AdminPostGrantReports";
 import GrantInstructions from "./pages/grant-instructions/GrantInstructions";
+import FormBuilderPage from "./pages/form-builder/FormBuilderPage";
+import FormTemplateEditor from "./pages/form-builder/FormTemplateEditor";
 import { CCF_CONTACT_INFO } from "./StaticData/CONTACT-INFO";
 
 // import AssignReviewersPage from "./pages/assign-reviewers-page/AssignReviewers";
@@ -166,15 +167,15 @@ function App(): JSX.Element {
         />
         <Route
           path="/applicant/application-form/research"
-          element={<ApplicantProtectedRoute element={<ApplicationForm type="Research" />} />}
+          element={<ApplicantProtectedRoute element={<DynamicApplicationForm grantType="research" />} />}
         />
         <Route
           path="/applicant/application-form/nextgen"
-          element={<ApplicantProtectedRoute element={<ApplicationForm type="NextGen" />} />}
+          element={<ApplicantProtectedRoute element={<DynamicApplicationForm grantType="nextgen" />} />}
         />
         <Route
           path="/applicant/application-form/nonresearch"
-          element={<ApplicantProtectedRoute element={<NRApplicationForm />} />}
+          element={<ApplicantProtectedRoute element={<DynamicApplicationForm grantType="nonresearch" />} />}
         />
         {/* Admin dashboard */}
         <Route path="/admin" element={<></>} />
@@ -186,6 +187,14 @@ function App(): JSX.Element {
         <Route
           path="/create-account-applicants"
           element={<AccountPageApplicants />}
+        />
+        <Route
+          path="/admin/form-builder"
+          element={<AdminProtectedRoute element={<FormBuilderPage />} />}
+        />
+        <Route
+          path="/admin/form-builder/:templateId"
+          element={<AdminProtectedRoute element={<FormTemplateEditor />} />}
         />
         <Route
           path="/admin/settings"

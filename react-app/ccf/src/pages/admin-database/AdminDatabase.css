@@ -353,3 +353,24 @@
     font-size: 14px;
     flex-shrink: 0;
 }
+
+/* Exports every answer the applications hold, including questions added in
+   the form builder after this page was written. */
+.admin-export-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1.5px solid #003E83;
+    background-color: #fff;
+    color: #003E83;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.admin-export-btn:hover {
+    background-color: #003E83;
+    color: #fff;
+}

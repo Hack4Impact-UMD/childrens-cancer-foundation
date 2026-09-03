@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import "./AdminDatabase.css";
 import { FaArrowDown, FaArrowUp, FaFileAlt, FaFilePdf, FaSearch } from "react-icons/fa";
 import yellowDocument from "../../assets/yellowDocumentIcon.png";
@@ -15,6 +16,10 @@ import { getFilteredApplications } from "../../backend/application-filters";
 import { getAllCycles } from "../../backend/application-cycle";
 import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
+import { applicationsToCsv, downloadCsv } from "../../form-templates/applications-export";
+import { SEED_TEMPLATES } from "../../form-templates/seed";
+import { versionKey } from "../../form-templates/viewer";
+import { getVersion, listTemplates } from "../../backend/form-template-service";
 import { downloadPDFsByName } from "../../storage/storage";
 import { compareCycleNamesDesc, groupApplicationsByCycle } from "../../utils/cycleGrouping";
 
@@ -43,6 +48,68 @@ function AdminApplicationsDatabase(): JSX.Element {
 
   const closeModal = () => {
     setOpenModal(null);
+  };
+
+  /**
+   * Exports every answer, not a fixed column list — a question an admin adds
+   * in the form builder reaches the spreadsheet without another code change.
+   * Columns come from the forms themselves, plus anything the applications
+   * answered that no current form still asks.
+   */
+  const handleExportAnswers = async () => {
+    const applications = Object.values(applicationsData).flat();
+    if (applications.length === 0) {
+      toast.info("There are no applications to export.");
+      return;
+    }
+
+    // Every distinct published version represented in the set, so each
+    // application is judged by the form it was actually submitted under
+    // rather than by whatever the working copy asks today.
+    const wanted = new Map<string, { templateId: string; version: number }>();
+    applications.forEach((app: any) => {
+      if (app?.formTemplateId && app?.formVersion) {
+        wanted.set(versionKey(app.formTemplateId, app.formVersion), {
+          templateId: app.formTemplateId,
+          version: app.formVersion,
+        });
+      }
+    });
+
+    const submitted = (
+      await Promise.all(
+        Array.from(wanted.values()).map((v) =>
+          getVersion(v.templateId, v.version).catch((error) => {
+            console.error(`Error loading form version ${v.templateId}@v${v.version}:`, error);
+            return null;
+          })
+        )
+      )
+    ).filter(Boolean) as any[];
+
+    // Order matters: the submitted versions claim their identity first, then
+    // working copies and seeds fill in labels for anything they do not cover.
+    let forms = [...submitted, ...Object.values(SEED_TEMPLATES)] as any[];
+    try {
+      const templates = await listTemplates();
+      if (templates.length > 0) forms = [...submitted, ...templates, ...Object.values(SEED_TEMPLATES)];
+    } catch (error) {
+      // The seeded forms still cover every field an application can hold, so
+      // an unreachable template collection costs labels, not answers.
+      console.error("Error loading templates for export:", error);
+    }
+
+    const csv = applicationsToCsv(applications as any[], forms, {
+      metadata: [
+        { fieldId: "applicationCycle", label: "Cycle" },
+        { fieldId: "grantType", label: "Grant Type" },
+        { fieldId: "decision", label: "Decision" },
+        { fieldId: "averageScore", label: "Average Score" },
+        { fieldId: "submitTime", label: "Submitted" },
+      ],
+    });
+    downloadCsv(`ccf-applications-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+    toast.success(`Exported ${applications.length} application(s).`);
   };
 
   useEffect(() => {
@@ -185,6 +252,14 @@ function AdminApplicationsDatabase(): JSX.Element {
                   aria-label="Search applications"
                 />
               </div>
+              <button
+                type="button"
+                className="admin-export-btn"
+                onClick={handleExportAnswers}
+                aria-label="Export every application answer as CSV"
+              >
+                Export answers (CSV)
+              </button>
             </div>
             <div className="ccf-toolbar-row">
               <div className="ccf-toolbar-filters">
@@ -385,10 +460,15 @@ function AdminApplicationsDatabase(): JSX.Element {
                                             Continuation of Funding:{" "}
                                           </span>
                                           <span className="admin-detail-value">
+                                            {/* Not a locked field, so a form
+                                                may stop asking it — read it
+                                                the same optional way as its
+                                                neighbours rather than
+                                                rendering a blank. */}
                                             {app.grantType === "nextgen"
                                               ? " N/A"
                                               : (app as ResearchApplication)
-                                                  .continuation}
+                                                  .continuation || " N/A"}
                                           </span>
                                         </div>
                                         {(() => {

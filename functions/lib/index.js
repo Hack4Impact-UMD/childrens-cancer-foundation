@@ -12,6 +12,9 @@ exports.getApplicationReviews = exports.getReviewers = exports.submitApplication
 const functions = require("firebase-functions");
 const {onRequest, onCall} = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
+// The same module the browser validates with, so the two can never disagree
+// about whether a form is complete. See functions/shared/form-engine.js.
+const formEngine = require("../shared/form-engine");
 admin.initializeApp();
 const hasDeadlinePassed = (deadlineValue) => {
   if (!deadlineValue) {
@@ -221,8 +224,14 @@ exports.submitApplication = onCall(async (request) => {
     // 6. Multiple applications are now allowed within the same cycle
     // Removed duplicate submission check to allow multiple applications per cycle
 
-    // 7. Validate application data based on grant type
-    const validationResult = validateApplicationData(application, grantType);
+    // 7. Validate application data.
+    // An application submitted against a published form template is judged by
+    // that template — the same one the browser rendered — rather than by the
+    // hardcoded field list, which only covers the pre-builder forms.
+    const formReference = await resolveFormVersion(data.formTemplateId, data.formVersion, grantType);
+    const validationResult = formReference ?
+      validateAgainstTemplate(application, formReference, storedFileName) :
+      validateApplicationData(application, grantType);
     if (!validationResult.isValid) {
       throw new functions.https.HttpsError("invalid-argument", `Invalid application data: ${validationResult.errors.join(", ")}`);
     }
@@ -271,6 +280,8 @@ exports.submitApplication = onCall(async (request) => {
       "status", "decision", "creatorId", "applicationId", "grantType", "file",
       "applicationCycle", "submitTime", "reviewStatus", "averageScore",
       "primaryScore", "secondaryScore", "assignedReviewers", "lastUpdated",
+      // Set from the version resolved server-side, never from the payload.
+      "formTemplateId", "formVersion",
     ];
     const sanitizedApplication = {...application};
     for (const field of PROTECTED_APP_FIELDS) {
@@ -278,6 +289,10 @@ exports.submitApplication = onCall(async (request) => {
     }
     const applicationDetails = {
       ...sanitizedApplication,
+      ...(formReference ? {
+        formTemplateId: formReference.templateId,
+        formVersion: formReference.version,
+      } : {}),
       status: "submitted",
       decision: "pending",
       creatorId: userId,
@@ -321,7 +336,75 @@ exports.submitApplication = onCall(async (request) => {
   }
 });
 
-// Helper function to validate application data
+/**
+ * The published form version this submission is judged by.
+ *
+ * The client names the version its browser rendered, but it does not get to
+ * choose the rules it is measured against. The live version is resolved here,
+ * and the claimed reference has to match it. Without that, omitting the
+ * reference would fall through to the pre-builder checks below, and naming an
+ * older version would be judged by whatever that version happened to require —
+ * either way an applicant could skip every question an admin has added since.
+ *
+ * Returns null only when no form is published for this grant type, which is
+ * also what the browser falls back to, so both sides agree on the seeded form.
+ */
+async function resolveFormVersion(templateId, version, grantType) {
+  const live = await findLiveVersion(grantType);
+  const decision = formEngine.resolveSubmissionForm({templateId, version}, live);
+
+  if (decision.use === "refuse") {
+    throw new functions.https.HttpsError("failed-precondition", decision.reason);
+  }
+  return decision.use === "template" ? live : null;
+}
+
+/**
+ * The published version applicants are currently filling in for a grant type,
+ * or null when there is none. Mirrors `liveVersionNumber` on the app side.
+ */
+async function findLiveVersion(grantType) {
+  const snapshot = await admin.firestore()
+    .collection("formTemplates")
+    .where("grantType", "==", grantType)
+    .where("isActive", "==", true)
+    .limit(1)
+    .get();
+
+  if (snapshot.empty) return null;
+
+  const template = snapshot.docs[0];
+  const data = template.data();
+  // Templates published before activeVersion existed are their own live version.
+  const versionNumber = data.activeVersion || (data.status === "published" ? data.version : null);
+  if (!versionNumber) return null;
+
+  const versionDoc = await admin.firestore()
+    .collection("formTemplates").doc(template.id)
+    .collection("versions").doc(String(versionNumber))
+    .get();
+
+  if (!versionDoc.exists) return null;
+
+  return {
+    templateId: template.id,
+    version: versionNumber,
+    pages: versionDoc.data().pages || [],
+  };
+}
+
+/** Validates answers against a published template, using the shared engine. */
+function validateAgainstTemplate(application, publishedVersion, storedFileName) {
+  // The PDF goes straight to Storage, so a `file` question would read as
+  // unanswered here and a required upload would reject every submission. The
+  // object itself is verified immediately after this, so standing its name in
+  // cannot let an unusable file through.
+  const answers = formEngine.withUploadedFile(publishedVersion, application, storedFileName);
+  const errors = formEngine.validateAnswers(publishedVersion, answers);
+  return { isValid: Object.keys(errors).length === 0, errors: Object.values(errors) };
+}
+
+// Helper function to validate application data (pre-builder forms)
 function validateApplicationData(application, grantType) {
   const errors = [];
 

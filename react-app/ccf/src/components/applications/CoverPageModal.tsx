@@ -2,7 +2,8 @@ import { Application } from "../../types/application-types";
 import { Modal } from "../modal/modal";
 import './CoverPageModal.css'
 import '../../pages/application-form/subquestions/SubForm.css'
-import Review from "../../pages/application-form/subquestions/Review";
+import DynamicReview from "../dynamic-forms/DynamicReview";
+import { useApplicationForm } from "../dynamic-forms/useApplicationForm";
 import { useEffect, useState } from "react";
 import { downloadPDFsByName } from "../../storage/storage";
 
@@ -15,6 +16,7 @@ interface CoverPageModalProps {
 const CoverPageModal = ({ application, isOpen, onClose }: CoverPageModalProps) => {
 
   const [pdfLink, setPdfLink] = useState<any>();
+  const form = useApplicationForm(application);
 
   useEffect(() => {
     if (isOpen) {
@@ -48,7 +50,7 @@ const CoverPageModal = ({ application, isOpen, onClose }: CoverPageModalProps) =
       )}
       <div className="section-divider" />
       <div className="review-section">
-        <Review type={application.grantType} formData={application} hideFile={true} />
+        {form && <DynamicReview form={form} answers={application as any} hideFile={true} />}
       </div>
     </div>
   )

@@ -13,6 +13,7 @@ export default interface SidebarProps {
 
 export const adminSidebar: SideBarTypes[] = [
     { name: 'Application Cycle', path: '/admin/edit-information' },
+    { name: 'Application Forms', path: '/admin/form-builder' },
     { name: 'Home', path: '/admin/dashboard' },
     { name: 'Account Settings', path: '/admin/settings' },
     { name: 'View All Accounts', path: '/admin/all-accounts' },
