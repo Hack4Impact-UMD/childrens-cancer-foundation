@@ -495,6 +495,20 @@ export const valueOf = (condition?: Condition): string => {
 const coerceValue = (sourceType: FieldType | undefined, value: string): string | boolean =>
     sourceType === 'checkbox' ? value !== 'false' : value;
 
+/**
+ * A numeric bound the engine can actually compare against.
+ *
+ * `Number('')` and `Number('abc')` are NaN, and NaN is not `undefined`, so the
+ * engine reads the comparison as present and then fails it for every answer —
+ * the question it gates would disappear for good, with "NaN" showing in the
+ * editor as the only clue. An admin mid-way through typing produces exactly
+ * that, so a value that is not a finite number falls back to zero.
+ */
+const toBound = (value: string): number => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+};
+
 /** Build the stored condition from the editor's three controls. */
 export const buildCondition = (
     field: string,
@@ -505,8 +519,8 @@ export const buildCondition = (
     switch (operator) {
         case 'answered': return { field, answered: true };
         case 'notEquals': return { field, notEquals: coerceValue(sourceType, value) };
-        case 'greaterThan': return { field, greaterThan: Number(value) };
-        case 'lessThan': return { field, lessThan: Number(value) };
+        case 'greaterThan': return { field, greaterThan: toBound(value) };
+        case 'lessThan': return { field, lessThan: toBound(value) };
         default: return { field, equals: coerceValue(sourceType, value) };
     }
 };
@@ -518,6 +532,37 @@ export const operatorsFor = (
     sourceType === 'checkbox'
         ? OPERATORS.filter((op) => op.value !== 'greaterThan' && op.value !== 'lessThan')
         : OPERATORS;
+
+/**
+ * Whether the editor's three controls can represent this rule faithfully.
+ *
+ * They express exactly one thing: a single `all` condition. The engine and the
+ * type both allow more — several conditions, and `any` — so a rule written
+ * straight into Firestore can arrive here. Editing one through these controls
+ * would rebuild it as `{ all: [first] }` and silently drop the rest, so the
+ * editor shows an unsupported rule read-only instead of quietly rewriting it.
+ */
+export const isEditableRule = (rule?: VisibilityRule): boolean => {
+    if (!rule) return true;
+    if (rule.any && rule.any.length > 0) return false;
+    return (rule.all?.length ?? 0) <= 1;
+};
+
+/** A whole rule in words, for showing one the controls cannot edit. */
+export const describeRule = (
+    rule: VisibilityRule,
+    labelFor: (fieldId: string) => string
+): string => {
+    const say = (list: Condition[] | undefined, join: string) =>
+        (list ?? []).map((c) => describeCondition(c, labelFor(c.field))).join(join);
+
+    const parts: string[] = [];
+    const all = say(rule.all, ' and ');
+    const any = say(rule.any, ' or ');
+    if (all) parts.push(all);
+    if (any) parts.push((rule.any ?? []).length > 1 ? `(${any})` : any);
+    return parts.join(' and ');
+};
 
 export const describeCondition = (condition: Condition, sourceLabel: string): string => {
     if (condition.answered !== undefined) {

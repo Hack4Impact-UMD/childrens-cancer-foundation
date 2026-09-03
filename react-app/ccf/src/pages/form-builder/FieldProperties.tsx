@@ -6,7 +6,9 @@ import {
     availableConditionSources,
     buildCondition,
     describeCondition,
+    describeRule,
     findPreset,
+    isEditableRule,
     operatorOf,
     operatorsFor,
     testPattern,
@@ -69,6 +71,13 @@ function FieldProperties({
     // A locked question keeps only its wording; a published version keeps
     // nothing at all.
     const frozen = readOnly || field.locked;
+    // A rule the three controls cannot represent must not be edited through
+    // them: rebuilding it would drop every condition but the first.
+    const ruleIsEditable = isEditableRule(field.showWhen);
+    const labelForSource = (fieldId: string) => {
+        const source = sources.find((s) => s.id === fieldId);
+        return source?.shortLabel || source?.label || fieldId;
+    };
     const patternCheck = field.validation?.pattern && sample
         ? testPattern(field.validation.pattern, sample)
         : null;
@@ -162,6 +171,16 @@ function FieldProperties({
                 </p>
             ) : field.locked ? (
                 <p className="fb-hint">This question is always asked, because other screens rely on its answer.</p>
+            ) : !ruleIsEditable ? (
+                <div className="fb-locked-note">
+                    <p>
+                        Shown when {describeRule(field.showWhen!, labelForSource)}.
+                    </p>
+                    <p>
+                        This rule combines several conditions, which is more than this panel can edit without
+                        losing part of it. It keeps working as written — change it in the form template itself.
+                    </p>
+                </div>
             ) : (
                 <>
                     <div className="fb-condition-row">
@@ -236,6 +255,12 @@ function FieldProperties({
                                             className="fb-input"
                                             aria-label="Answer to match"
                                             disabled={readOnly}
+                                            type={
+                                                operatorOf(condition) === "greaterThan"
+                                                    || operatorOf(condition) === "lessThan"
+                                                    ? "number"
+                                                    : "text"
+                                            }
                                             value={valueOf(condition)}
                                             onChange={(e) =>
                                                 onSetCondition({

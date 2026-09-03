@@ -292,6 +292,60 @@ function isComplete(form, answers) {
  * where a false rejection is an inconvenience and a false acceptance takes
  * down submissions.
  */
+
+/**
+ * Whether the quantifier at `index` can repeat without an upper bound. `?` and
+ * `{n,m}` cap the work they can cause; `*`, `+` and `{n,}` do not.
+ */
+function unboundedQuantifierAt(pattern, index) {
+    const ch = pattern[index];
+    if (ch === '*' || ch === '+') return true;
+    if (ch !== '{') return false;
+
+    const close = pattern.indexOf('}', index);
+    if (close === -1) return false;
+    return /^\{\d*,\s*\}$/.test(pattern.slice(index, close + 1));
+}
+
+/**
+ * True when the pattern repeats a group of alternatives — `(a|aa)+`.
+ *
+ * Branches that can match the same text make the repeat ambiguous, and a
+ * near-miss input then costs exponential time: `^(a|aa)+$` against thirty
+ * a's and a b already takes ~150ms, and answers reach `matchesPattern` up to
+ * `MAX_PATTERN_INPUT` long. The nested-quantifier check below cannot see it,
+ * because neither branch carries a quantifier of its own.
+ *
+ * Scanned rather than matched, because the shape needs balanced parentheses:
+ * escapes are skipped and `|` inside a character class is a literal.
+ */
+function hasRepeatedAlternation(pattern) {
+    /** One entry per open group: has it seen an alternation at its own level? */
+    const groups = [];
+    let inClass = false;
+
+    for (let i = 0; i < pattern.length; i += 1) {
+        const ch = pattern[i];
+
+        if (ch === '\\') { i += 1; continue; }
+        if (inClass) {
+            if (ch === ']') inClass = false;
+            continue;
+        }
+        if (ch === '[') { inClass = true; continue; }
+
+        if (ch === '(') {
+            groups.push(false);
+        } else if (ch === '|') {
+            if (groups.length > 0) groups[groups.length - 1] = true;
+        } else if (ch === ')') {
+            const hadAlternation = groups.pop();
+            if (hadAlternation && unboundedQuantifierAt(pattern, i + 1)) return true;
+        }
+    }
+    return false;
+}
+
 function checkPatternSafety(pattern) {
     if (pattern.length > 200) return 'Pattern is too long (limit 200 characters)';
     try {
@@ -301,6 +355,9 @@ function checkPatternSafety(pattern) {
     }
     if (/(\([^)]*[+*][^)]*\)|\[[^\]]*\][+*]|\\[dws][+*])\s*[+*]/.test(pattern)) {
         return 'Pattern has nested repetition, which can hang on long answers';
+    }
+    if (hasRepeatedAlternation(pattern)) {
+        return 'Pattern repeats a group of alternatives, such as (a|aa)+, which can hang on long answers';
     }
     return null;
 }
@@ -439,6 +496,7 @@ module.exports = {
     getProblemsByPage,
     isComplete,
     checkPatternSafety,
+    hasRepeatedAlternation,
     validateTemplate,
     getLockedFieldIds,
     MAX_PATTERN_INPUT,

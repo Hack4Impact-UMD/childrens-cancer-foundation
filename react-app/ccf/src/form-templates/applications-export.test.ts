@@ -183,3 +183,71 @@ describe('answers to questions the applicant was never actually asked', () => {
         expect(csv.split('\n')[1]).toBe('"accepted","No",""');
     });
 });
+
+describe('judging an answer by the version it was submitted under', () => {
+    // v1 asked "Continuation years" of everyone; v2 only asks it of applicants
+    // who said Continuation: Yes.
+    const v1 = {
+        templateId: 'seed-research', version: 1, grantType: 'research' as const,
+        name: 'Research', publishedAt: 'x', publishedBy: 'a@b.org',
+        pages: [{
+            id: 'q', title: 'Questions', kind: 'fields' as const, fields: [
+                { id: 'continuation', type: 'radio' as const, label: 'Continuation', required: false, options: ['Yes', 'No'] },
+                { id: 'continuationYears', type: 'text' as const, label: 'Continuation years', required: false },
+            ],
+        }],
+    };
+    const v2 = {
+        ...v1,
+        version: 2,
+        pages: [{
+            ...v1.pages[0],
+            fields: [
+                v1.pages[0].fields[0],
+                {
+                    ...v1.pages[0].fields[1],
+                    showWhen: { all: [{ field: 'continuation', equals: 'Yes' }] },
+                },
+            ],
+        }],
+    };
+
+    const onV1 = {
+        formTemplateId: 'seed-research', formVersion: 1,
+        continuation: 'No', continuationYears: '3',
+    };
+    const onV2 = {
+        formTemplateId: 'seed-research', formVersion: 2,
+        continuation: 'No', continuationYears: '3',
+    };
+
+    test('a condition added later does not erase an older answer', () => {
+        const csv = applicationsToCsv([onV1], [v1, v2]);
+        // v1 asked it unconditionally, so the answer is real and is kept —
+        // even though v2 would have hidden it for this applicant.
+        expect(csv.split('\n')[1]).toContain('"3"');
+    });
+
+    test('an answer hidden by the submitted version is still blanked', () => {
+        const csv = applicationsToCsv([onV2], [v1, v2]);
+        // v2 only asks it when Continuation is Yes, and this applicant said No.
+        expect(csv.split('\n')[1]).not.toContain('"3"');
+    });
+
+    test('both applications export side by side, each judged by its own form', () => {
+        const rows = applicationsToCsv([onV1, onV2], [v1, v2]).split('\n');
+        expect(rows[1]).toContain('"3"');
+        expect(rows[2]).not.toContain('"3"');
+    });
+
+    test('an application predating the builder falls back to any version asking', () => {
+        const legacy = { continuation: 'No', continuationYears: '3' };
+        // No reference to resolve, so the looser rule applies and v1 keeps it.
+        expect(applicationsToCsv([legacy], [v1, v2]).split('\n')[1]).toContain('"3"');
+    });
+
+    test('an answer no supplied version mentions is kept as a retired one', () => {
+        const withRetired = { ...onV2, oldQuestion: 'kept' };
+        expect(applicationsToCsv([withRetired], [v1, v2]).split('\n')[1]).toContain('"kept"');
+    });
+});

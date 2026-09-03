@@ -9,7 +9,7 @@
  */
 
 import { FormLike, isFieldVisible } from './engine';
-import { NON_ANSWER_KEYS, exportColumns, humanizeFieldId } from './viewer';
+import { NON_ANSWER_KEYS, exportColumns, humanizeFieldId, versionKey } from './viewer';
 import { Answers, FormField } from '../types/form-template-types';
 
 export interface ExportColumn {
@@ -81,6 +81,36 @@ const definitionsByFieldId = (forms: FormLike[]): Map<string, FormField[]> => {
 };
 
 /**
+ * The `templateId@vN` an entry in `forms` represents, when it carries one.
+ *
+ * A `PublishedVersion` names itself with `templateId`, a `FormTemplate` with
+ * `id`; `FormLike` promises neither, so an entry without an identity simply
+ * takes no part in the per-version lookup.
+ */
+const identityOf = (form: FormLike): string | null => {
+    const shape = form as { templateId?: string; id?: string; version?: number };
+    const templateId = shape.templateId ?? shape.id;
+    return templateId && typeof shape.version === 'number'
+        ? versionKey(templateId, shape.version)
+        : null;
+};
+
+/**
+ * Field definitions keyed by version, then by field ID. The first entry to
+ * claim a version wins, so callers put the real published versions ahead of
+ * working copies and seeds, which can share an identity with one.
+ */
+const definitionsByVersion = (forms: FormLike[]): Map<string, Map<string, FormField>> => {
+    const map = new Map<string, Map<string, FormField>>();
+    forms.forEach((form) => {
+        const key = identityOf(form);
+        if (!key || map.has(key)) return;
+        map.set(key, new Map(fieldsOf(form).map((field) => [field.id, field])));
+    });
+    return map;
+};
+
+/**
  * True when this question was never actually put to this applicant, because
  * their own earlier answers hid it — the applicant who ticks "Continuation:
  * Yes", fills in the follow-up, then switches to "No".
@@ -89,22 +119,44 @@ const definitionsByFieldId = (forms: FormLike[]): Map<string, FormField[]> => {
  * would report an answer the application's own detail page says was never
  * given. A field no form mentions at all is a different thing — a question
  * that has since been removed — and the export deliberately keeps those.
+ *
+ * Judged against the version the application was actually submitted under,
+ * the same way the viewer and the cloud function judge it — a condition added
+ * in a later version never decides whether an older answer is real. An
+ * application that predates the builder, or whose version was not supplied,
+ * falls back to "any version that would have asked for it counts", which errs
+ * toward keeping the answer.
  */
 const wasNotAsked = (
-    definitions: Map<string, FormField[]>,
+    byVersion: Map<string, Map<string, FormField>>,
+    anyVersion: Map<string, FormField[]>,
     fieldId: string,
     application: Answers
 ): boolean => {
-    const defined = definitions.get(fieldId);
-    // Judged across every version supplied, so an answer stays in the export
-    // if any version of the form would have asked for it.
+    const templateId = application?.formTemplateId;
+    const version = application?.formVersion;
+    const submitted = templateId && version
+        ? byVersion.get(versionKey(templateId, version))
+        : undefined;
+
+    if (submitted) {
+        const field = submitted.get(fieldId);
+        // Not in the submitted form at all: a retired answer, deliberately kept.
+        return field ? !isFieldVisible(field, application) : false;
+    }
+
+    const defined = anyVersion.get(fieldId);
     return Boolean(defined?.length) && defined!.every((f) => !isFieldVisible(f, application));
 };
 
 /**
- * A CSV of applications and their answers. `forms` should include every
- * template version represented in the set, so no answer is left out of a
- * mixed export.
+ * A CSV of applications and their answers.
+ *
+ * `forms` should include every published version represented in the set, so no
+ * answer is left out of a mixed export and each application can be judged by
+ * the form it was submitted under. Put those versions first: working copies
+ * and seeds can carry the same `templateId@vN` identity, and the first entry
+ * to claim one wins.
  */
 export const applicationsToCsv = (
     applications: Answers[],
@@ -113,7 +165,8 @@ export const applicationsToCsv = (
 ): string => {
     const metadata = options.metadata ?? [];
     const answers = buildExportColumns(forms, applications);
-    const definitions = definitionsByFieldId(forms);
+    const byVersion = definitionsByVersion(forms);
+    const anyVersion = definitionsByFieldId(forms);
 
     const header = [...metadata, ...answers].map((c) => csvCell(c.label)).join(',');
     const rows = applications.map((application) => [
@@ -121,7 +174,7 @@ export const applicationsToCsv = (
         // subject to the form's own visibility rules.
         ...metadata.map((c) => csvCell(application?.[c.fieldId])),
         ...answers.map((c) => csvCell(
-            wasNotAsked(definitions, c.fieldId, application) ? null : application?.[c.fieldId]
+            wasNotAsked(byVersion, anyVersion, c.fieldId, application) ? null : application?.[c.fieldId]
         )),
     ].join(','));
 

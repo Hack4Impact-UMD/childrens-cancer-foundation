@@ -482,7 +482,7 @@ function FormTemplateEditor(): JSX.Element {
             )}
 
             {showPreview ? (
-                <FormPreview template={shown} />
+                <FormPreview key={`${shown.id}@v${shown.version}`} template={shown} />
             ) : (
                 <div className="fb-columns">
                     {/* ---- pages ---- */}
@@ -504,13 +504,14 @@ function FormTemplateEditor(): JSX.Element {
                                     </button>
                                     {isEditablePage(p) && p.id === selectedPageId && !readOnly && (
                                         <div className="fb-row-actions">
-                                            <button type="button" className="fb-mini" title={whyCannotMovePage(shown, p.id, -1) || "Move up"}
+                                            <button type="button" className="fb-mini" aria-label="Move page up" title={whyCannotMovePage(shown, p.id, -1) || "Move up"}
                                                 disabled={Boolean(whyCannotMovePage(shown, p.id, -1))}
                                                 onClick={() => edit((t) => movePage(t, p.id, -1))}>↑</button>
-                                            <button type="button" className="fb-mini" title={whyCannotMovePage(shown, p.id, 1) || "Move down"}
+                                            <button type="button" className="fb-mini" aria-label="Move page down" title={whyCannotMovePage(shown, p.id, 1) || "Move down"}
                                                 disabled={Boolean(whyCannotMovePage(shown, p.id, 1))}
                                                 onClick={() => edit((t) => movePage(t, p.id, 1))}>↓</button>
                                             <button type="button" className="fb-mini fb-mini-danger"
+                                                aria-label="Remove page"
                                                 title={whyCannotDeletePage(shown, p.id) || "Remove page"}
                                                 disabled={Boolean(whyCannotDeletePage(shown, p.id))}
                                                 onClick={() => {
@@ -572,10 +573,12 @@ function FormTemplateEditor(): JSX.Element {
                                             {f.id === selectedFieldId && !readOnly && (
                                                 <div className="fb-row-actions">
                                                     <button type="button" className="fb-mini"
+                                                        aria-label="Move question up"
                                                         title={whyCannotMoveField(shown, f.id, -1) || "Move up"}
                                                         disabled={Boolean(whyCannotMoveField(shown, f.id, -1))}
                                                         onClick={() => edit((t) => moveField(t, f.id, -1))}>↑</button>
                                                     <button type="button" className="fb-mini"
+                                                        aria-label="Move question down"
                                                         title={whyCannotMoveField(shown, f.id, 1) || "Move down"}
                                                         disabled={Boolean(whyCannotMoveField(shown, f.id, 1))}
                                                         onClick={() => edit((t) => moveField(t, f.id, 1))}>↓</button>

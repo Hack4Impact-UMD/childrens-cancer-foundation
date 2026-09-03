@@ -14,6 +14,8 @@ import {
     firstBackwardsDependency,
     generateFieldId,
     generatePageId,
+    describeRule,
+    isEditableRule,
     moveField,
     moveFieldToPage,
     movePage,
@@ -520,6 +522,31 @@ describe('regressions', () => {
         const t = updateField(bounded, 'einNumber', { type: 'number' });
 
         expect(t.pages.find((p) => p.id === 'questions')!.fields[1].validation).toEqual({ min: 0.01, max: 75000 });
+    });
+
+    test('a half-typed numeric bound never stores NaN', () => {
+        // NaN is not undefined, so the engine would read the comparison as
+        // present and fail it for every answer — hiding the question for good.
+        expect(buildCondition('amt', 'greaterThan', 'abc')).toEqual({ field: 'amt', greaterThan: 0 });
+        expect(buildCondition('amt', 'lessThan', '')).toEqual({ field: 'amt', lessThan: 0 });
+        expect(buildCondition('amt', 'greaterThan', '75000')).toEqual({ field: 'amt', greaterThan: 75000 });
+        expect(buildCondition('amt', 'lessThan', '-2.5')).toEqual({ field: 'amt', lessThan: -2.5 });
+    });
+
+    test('only a single all-condition rule is editable through the panel', () => {
+        expect(isEditableRule(undefined)).toBe(true);
+        expect(isEditableRule({ all: [{ field: 'a', equals: 'Yes' }] })).toBe(true);
+        // More than the three controls can express; editing would drop the rest.
+        expect(isEditableRule({ all: [{ field: 'a', equals: 'Yes' }, { field: 'b', answered: true }] })).toBe(false);
+        expect(isEditableRule({ any: [{ field: 'a', equals: 'Yes' }] })).toBe(false);
+    });
+
+    test('an uneditable rule can still be described in words', () => {
+        const said = describeRule(
+            { all: [{ field: 'a', equals: 'Yes' }], any: [{ field: 'b', answered: true }, { field: 'c', equals: 'No' }] },
+            (id) => id.toUpperCase()
+        );
+        expect(said).toBe('A is "Yes" and (B is answered or C is "No")');
     });
 
     test('a checkbox comparison is stored as the boolean the answer holds', () => {

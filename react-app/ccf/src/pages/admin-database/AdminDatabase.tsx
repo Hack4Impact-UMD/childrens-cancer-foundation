@@ -18,7 +18,8 @@ import Button from "../../components/buttons/Button";
 import AdminCoverPageModal from "../../components/applications/AdminCoverPageModal";
 import { applicationsToCsv, downloadCsv } from "../../form-templates/applications-export";
 import { SEED_TEMPLATES } from "../../form-templates/seed";
-import { listTemplates } from "../../backend/form-template-service";
+import { versionKey } from "../../form-templates/viewer";
+import { getVersion, listTemplates } from "../../backend/form-template-service";
 import { downloadPDFsByName } from "../../storage/storage";
 import { compareCycleNamesDesc, groupApplicationsByCycle } from "../../utils/cycleGrouping";
 
@@ -62,10 +63,36 @@ function AdminApplicationsDatabase(): JSX.Element {
       return;
     }
 
-    let forms = Object.values(SEED_TEMPLATES) as any[];
+    // Every distinct published version represented in the set, so each
+    // application is judged by the form it was actually submitted under
+    // rather than by whatever the working copy asks today.
+    const wanted = new Map<string, { templateId: string; version: number }>();
+    applications.forEach((app: any) => {
+      if (app?.formTemplateId && app?.formVersion) {
+        wanted.set(versionKey(app.formTemplateId, app.formVersion), {
+          templateId: app.formTemplateId,
+          version: app.formVersion,
+        });
+      }
+    });
+
+    const submitted = (
+      await Promise.all(
+        Array.from(wanted.values()).map((v) =>
+          getVersion(v.templateId, v.version).catch((error) => {
+            console.error(`Error loading form version ${v.templateId}@v${v.version}:`, error);
+            return null;
+          })
+        )
+      )
+    ).filter(Boolean) as any[];
+
+    // Order matters: the submitted versions claim their identity first, then
+    // working copies and seeds fill in labels for anything they do not cover.
+    let forms = [...submitted, ...Object.values(SEED_TEMPLATES)] as any[];
     try {
       const templates = await listTemplates();
-      if (templates.length > 0) forms = [...templates, ...forms];
+      if (templates.length > 0) forms = [...submitted, ...templates, ...Object.values(SEED_TEMPLATES)];
     } catch (error) {
       // The seeded forms still cover every field an application can hold, so
       // an unreachable template collection costs labels, not answers.

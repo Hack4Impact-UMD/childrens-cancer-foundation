@@ -14,6 +14,7 @@ import {
     validateField,
     validateTemplate,
 } from './engine';
+import { VALIDATION_PRESETS } from './builder-operations';
 import { FormField, FormTemplate } from '../types/form-template-types';
 
 const field = (over: Partial<FormField> & { id: string }): FormField => ({
@@ -281,6 +282,32 @@ describe('checkPatternSafety', () => {
         expect(checkPatternSafety('(a+)+$')).toMatch(/nested repetition/);
         expect(checkPatternSafety('(\\d+)*$')).toMatch(/nested repetition/);
         expect(checkPatternSafety('[a-z]+*')).not.toBeNull();
+    });
+
+    test('rejects a repeated group of alternatives', () => {
+        // Ambiguous branches make the repeat exponential on a near miss, and
+        // neither branch carries a quantifier for the nested-repetition rule
+        // to catch.
+        expect(checkPatternSafety('^(a|aa)+$')).toMatch(/alternatives/);
+        expect(checkPatternSafety('^(?:a|ab)+$')).toMatch(/alternatives/);
+        expect(checkPatternSafety('(x|y){2,}')).toMatch(/alternatives/);
+        expect(checkPatternSafety('((a|b)|c)+')).toMatch(/alternatives/);
+    });
+
+    test('leaves every shipped preset, and other bounded shapes, alone', () => {
+        // A false rejection here would take a working question away from an
+        // admin, so the presets are the regression that matters most.
+        VALIDATION_PRESETS.forEach((preset) => {
+            if (preset.validation.pattern) {
+                expect(checkPatternSafety(preset.validation.pattern)).toBeNull();
+            }
+        });
+        // Bounded repetition cannot blow up; `|` outside a group is not
+        // repeated; inside a character class it is a literal.
+        expect(checkPatternSafety('^(cat|dog){1,3}$')).toBeNull();
+        expect(checkPatternSafety('^a|b$')).toBeNull();
+        expect(checkPatternSafety('^[a|b]+$')).toBeNull();
+        expect(checkPatternSafety('^(19|20)\\d{2}$')).toBeNull();
     });
 
     test('rejects patterns that will not compile', () => {
