@@ -1,0 +1,25 @@
+# Apache config for hosting the built app on GoDaddy (cPanel) at
+# portal.childrenscancerfoundation.org. Firebase Hosting ignores this file.
+
+# Force HTTPS
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Single-page app: send every route that isn't a real file to index.html
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+
+# Always fetch the latest index.html so new deploys show up immediately;
+# hashed JS/CSS in /static can be cached for a long time.
+<IfModule mod_headers.c>
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <If "%{REQUEST_URI} =~ m#^/static/#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+</IfModule>
